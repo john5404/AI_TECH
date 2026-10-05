@@ -1,10 +1,17 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 export const NOTES_PATH = path.join(process.cwd(), "content/learning-while-you-sleep.md");
 
 export function readNotesMarkdown() {
   return readFileSync(NOTES_PATH, "utf8");
+}
+
+export function readNoteById(id: string) {
+  if (!/^[\w-]{11}$/.test(id)) return null;
+  const file = path.join(process.cwd(), "content", "notes", `${id}.md`);
+  if (!existsSync(file)) return null;
+  return readFileSync(file, "utf8");
 }
 
 export function headingId(text: string) {
