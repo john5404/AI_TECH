@@ -6,21 +6,21 @@ export function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-3">
           <span className="grid size-11 place-items-center rounded-full border border-primary/40 bg-primary text-sm font-semibold text-primary-foreground shadow-sm">
-            私藏
+            筆記
           </span>
           <span>
             <span className="block font-serif text-lg leading-tight tracking-wide">
-              Tessl 繁中文庫
+              邊睡邊學
             </span>
             <span className="block text-xs text-muted-foreground">
-              只嵌入官方播放器，影片檔不落地
+              一場演講的繁中筆記
             </span>
           </span>
         </Link>
         <p className="hidden text-right text-xs text-muted-foreground sm:block">
-          單人私人收藏
+          先讀懂字幕
           <br />
-          繁體中文逐字稿與字幕
+          再整理成 Markdown
         </p>
       </div>
     </header>
@@ -30,8 +30,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-border/80 px-4 py-6 text-center text-xs leading-5 text-muted-foreground">
-      翻譯不需要 API 金鑰，使用 Google 翻譯的免金鑰介面（目標語言 zh-TW）。
-      沒有字幕的影片會標明，不會編造逐字稿。
+      筆記依繁體中文字幕整理，並對照英文原稿校正機器翻譯。影片只用 YouTube 官方嵌入，檔案不落地。
     </footer>
   );
 }

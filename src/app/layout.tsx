@@ -18,8 +18,8 @@ const serif = Noto_Serif_TC({
 });
 
 export const metadata: Metadata = {
-  title: "Tessl 繁中文庫",
-  description: "AI Native Dev 頻道的私人繁體中文逐字稿與字幕收藏。只嵌入 YouTube，不下載影片檔。",
+  title: "邊睡邊學 · 演講筆記",
+  description: "Lamis Mukta「Learning while you sleep」的繁體中文筆記。先讀懂字幕，再整理成 Markdown。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

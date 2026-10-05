@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const video = getVideo(id);
   return {
-    title: video ? `${video.titleZh || video.title} · 繁中文庫` : "找不到影片",
+    title: video ? `${video.titleZh || video.title} · 對照原片` : "找不到影片",
   };
 }
 
@@ -29,9 +29,9 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <p className="text-sm text-muted-foreground">
         <Link href="/" className="underline decoration-primary/40 underline-offset-4">
-          文庫
+          筆記
         </Link>
-        <span> / 這支影片</span>
+        <span> / 對照原片</span>
       </p>
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2">

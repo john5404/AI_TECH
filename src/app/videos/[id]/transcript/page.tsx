@@ -21,11 +21,11 @@ export default async function TranscriptPage({ params }: { params: Promise<{ id:
     <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <p className="text-sm text-muted-foreground">
         <Link href="/" className="underline decoration-primary/40 underline-offset-4">
-          文庫
+          筆記
         </Link>
         {" / "}
         <Link href={`/videos/${video.id}`} className="underline decoration-primary/40 underline-offset-4">
-          播放
+          對照原片
         </Link>
         {" / 逐字稿"}
       </p>
