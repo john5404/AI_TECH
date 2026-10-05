@@ -9,18 +9,14 @@ export function SiteHeader() {
             筆記
           </span>
           <span>
-            <span className="block font-serif text-lg leading-tight tracking-wide">
-              Learning while you sleep
-            </span>
-            <span className="block text-xs text-muted-foreground">
-              一場演講的繁中筆記
-            </span>
+            <span className="block font-serif text-lg leading-tight tracking-wide">AI Native Dev</span>
+            <span className="block text-xs text-muted-foreground">頻道筆記 · 專有名詞保持英文</span>
           </span>
         </Link>
         <p className="hidden text-right text-xs text-muted-foreground sm:block">
-          先讀懂字幕
+          依英文字幕整理
           <br />
-          再整理成 Markdown
+          播放只用 YouTube 嵌入
         </p>
       </div>
     </header>
@@ -30,7 +26,7 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-border/80 px-4 py-6 text-center text-xs leading-5 text-muted-foreground">
-      筆記依繁體中文字幕整理，並對照英文原稿校正機器翻譯。影片只用 YouTube 官方嵌入，檔案不落地。
+      筆記依英文原稿整理成繁體中文。agent、memory、harness、Skills 等專有名詞不翻譯。影片只用 YouTube 官方嵌入，檔案不落地。
     </footer>
   );
 }

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 
-const files = [
+const defaultFiles = [
   { file: "zh-Hant.txt", label: "繁中逐字稿 .txt" },
   { file: "zh-Hant.vtt", label: "繁中字幕 .vtt" },
   { file: "zh-Hant.srt", label: "繁中字幕 .srt" },
@@ -10,7 +10,14 @@ const files = [
   { file: "original.vtt", label: "原文 .vtt" },
 ] as const;
 
-export function DownloadLinks({ id }: { id: string }) {
+export function DownloadLinks({
+  id,
+  files = defaultFiles,
+}: {
+  id: string;
+  files?: readonly { file: string; label: string }[];
+}) {
+  if (files.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-2">
       {files.map((item) => (

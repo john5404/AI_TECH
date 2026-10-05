@@ -1,53 +1,21 @@
-import Link from "next/link";
-import { TalkNotes } from "@/components/talk-notes";
-import { buttonVariants } from "@/components/ui/button";
-import { notesOutline, readNotesMarkdown } from "@/lib/notes";
-import { cn } from "cn";
+import { NotesIndex } from "@/components/notes-index";
+import { listNoteIndex } from "@/lib/notes";
 
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
-  const markdown = readNotesMarkdown();
-  const outline = notesOutline(markdown);
+  const notes = listNoteIndex();
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-2xl space-y-2">
-          <p className="text-sm tracking-[0.18em] text-primary">一場演講 · 讀懂再整理</p>
-          <p className="text-base leading-7 text-foreground/80">
-            這份筆記來自 Lamis Mukta 在 AI Native DevCon 的演講字幕。下一則已整理好的是{" "}
-            <Link href="/notes/KpfnldjO3Iw" className="underline decoration-primary/40 underline-offset-4">
-              Guy Podjarny — Skills are the new Code
-            </Link>
-            。
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <a href="/notes/download" className={cn(buttonVariants())} download>
-            下載 Markdown
-          </a>
-          <Link href="/videos/tTcxVv8HHNw" className={cn(buttonVariants({ variant: "outline" }))}>
-            對照原片
-          </Link>
-        </div>
+      <div className="mb-8 max-w-3xl space-y-2">
+        <p className="text-sm tracking-[0.18em] text-primary">AI Native Dev</p>
+        <h1 className="font-serif text-4xl leading-tight tracking-tight sm:text-5xl">頻道筆記</h1>
+        <p className="text-base leading-7 text-foreground/80">
+          這裡整理 YouTube 頻道 AI Native Dev 的影片。筆記依英文字幕原稿寫成繁體中文，agent、memory、session、harness、Skills、context engineering 這類專有名詞保持英文。播放只用 YouTube 官方嵌入。
+        </p>
       </div>
-
-      <div className="grid gap-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <nav className="lg:sticky lg:top-6 lg:self-start">
-          <p className="mb-3 text-xs tracking-[0.16em] text-muted-foreground">本篇目錄</p>
-          <ol className="space-y-2 text-sm leading-6">
-            {outline.map((item) => (
-              <li key={item.id}>
-                <a href={`#${item.id}`} className="text-foreground/80 underline-offset-4 hover:text-primary hover:underline">
-                  {item.title}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-        <TalkNotes markdown={markdown} />
-      </div>
+      <NotesIndex notes={notes} />
     </main>
   );
 }

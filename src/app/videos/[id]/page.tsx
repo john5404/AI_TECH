@@ -4,8 +4,9 @@ import { DownloadLinks } from "@/components/download-links";
 import { SyncedPlayer } from "@/components/synced-player";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { getVideo, readCues } from "@/lib/catalog";
+import { availableCaptionFiles, getVideo, readCues } from "@/lib/catalog";
 import { captionLabel, formatClock, formatViews } from "@/lib/format";
+import { noteExists } from "@/lib/notes";
 import { cn } from "cn";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const video = getVideo(id);
   return {
-    title: video ? `${video.titleZh || video.title} · 對照原片` : "找不到影片",
+    title: video ? `${video.title} · 對照原片` : "找不到影片",
   };
 }
 
@@ -24,6 +25,8 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   if (!video) notFound();
   const cues = video.captionStatus === "captioned" ? readCues(id) : [];
   const views = formatViews(video.viewCount);
+  const downloads = availableCaptionFiles(id);
+  const hasNote = noteExists(id);
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-4 py-6 sm:px-6 sm:py-8">
@@ -40,8 +43,14 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
           {views ? <Badge variant="outline">{views}</Badge> : null}
           <Badge variant="secondary">{video.channel}</Badge>
         </div>
-        <h1 className="font-serif text-3xl leading-tight sm:text-4xl">{video.titleZh || video.title}</h1>
-        <p className="text-sm text-muted-foreground">{video.title}</p>
+        <h1 className="font-serif text-3xl leading-tight sm:text-4xl">{video.title}</h1>
+        {hasNote ? (
+          <p className="text-sm">
+            <Link href={`/notes/${video.id}`} className="underline decoration-primary/40 underline-offset-4">
+              閱讀這支影片的筆記
+            </Link>
+          </p>
+        ) : null}
       </div>
 
       {video.captionStatus === "captioned" ? (
@@ -76,13 +85,13 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
               打開完整逐字稿
             </Link>
           </div>
-          <DownloadLinks id={video.id} />
+            <DownloadLinks id={video.id} files={downloads} />
         </section>
       ) : null}
 
       <section className="max-w-3xl space-y-2">
         <h2 className="font-serif text-2xl">簡介</h2>
-        <p className="text-sm leading-7 whitespace-pre-wrap">{video.descriptionZh || "沒有簡介。"}</p>
+        <p className="text-sm leading-7 whitespace-pre-wrap">{video.description || video.descriptionZh || "沒有簡介。"}</p>
         <p className="text-xs text-muted-foreground">
           原片：
           <a className="underline underline-offset-4" href={video.webpageUrl}>

@@ -57,9 +57,27 @@ export function parseVtt(vtt: string): Cue[] {
 
 export function readCues(id: string): Cue[] {
   if (!/^[\w-]{11}$/.test(id)) return [];
-  const file = path.join(dataDir, "videos", id, "zh-Hant.vtt");
+  const dir = path.join(dataDir, "videos", id);
+  const zh = path.join(dir, "zh-Hant.vtt");
+  const original = path.join(dir, "original.vtt");
+  const file = fs.existsSync(zh) ? zh : original;
   if (!fs.existsSync(file)) return [];
   return parseVtt(fs.readFileSync(file, "utf8"));
+}
+
+export function availableCaptionFiles(id: string) {
+  if (!/^[\w-]{11}$/.test(id)) return [];
+  const labels: Record<string, string> = {
+    "zh-Hant.txt": "繁中逐字稿 .txt",
+    "zh-Hant.vtt": "繁中字幕 .vtt",
+    "zh-Hant.srt": "繁中字幕 .srt",
+    "original.txt": "原文逐字稿 .txt",
+    "original.vtt": "原文 .vtt",
+  };
+  const dir = path.join(dataDir, "videos", id);
+  return Object.entries(labels)
+    .filter(([file]) => fs.existsSync(path.join(dir, file)))
+    .map(([file, label]) => ({ file, label }));
 }
 
 export function readTranscript(id: string, name: "zh-Hant.txt" | "original.txt") {
