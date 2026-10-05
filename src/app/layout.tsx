@@ -19,6 +19,8 @@ const serif = Noto_Serif_TC({
   display: "swap",
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "AI Native Dev · 頻道筆記",
   description:

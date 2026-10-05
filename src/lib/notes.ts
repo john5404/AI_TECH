@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { classifyNote, PREVIEW_IDS, type NoteCategoryId } from "@/lib/categories";
 import { getCatalog } from "@/lib/catalog";
 import type { CaptionSource, CaptionStatus } from "@/lib/types";
 
@@ -16,6 +17,7 @@ export type NoteIndexItem = {
   excerpt: string;
   thumbnail: string;
   webpageUrl: string;
+  category: NoteCategoryId;
 };
 
 export function notePath(id: string) {
@@ -80,18 +82,22 @@ export function listNoteIndex(): NoteIndexItem[] {
 
   const items: NoteIndexItem[] = [];
   for (const id of orderedIds) {
+    if (PREVIEW_IDS.has(id)) continue;
     const markdown = readNoteMarkdown(id);
     if (!markdown) continue;
     const video = byId.get(id);
+    const title = video?.title || firstHeading(markdown) || id;
+    const excerpt = excerptFrom(markdown);
     items.push({
       id,
-      title: video?.title || firstHeading(markdown) || id,
+      title,
       duration: video?.duration ?? 0,
       captionStatus: video?.captionStatus ?? "unknown",
       captionSource: video?.captionSource ?? null,
-      excerpt: excerptFrom(markdown),
+      excerpt,
       thumbnail: video?.thumbnail || `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
       webpageUrl: video?.webpageUrl || `https://www.youtube.com/watch?v=${id}`,
+      category: classifyNote(title, excerpt),
     });
   }
   return items;

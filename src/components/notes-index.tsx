@@ -8,15 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { buttonVariants } from "@/components/ui/button";
+import { NOTE_CATEGORIES, categoryLabel, type NoteCategoryId } from "@/lib/categories";
 import { captionLabel, formatClock } from "@/lib/format";
 import type { NoteIndexItem } from "@/lib/notes";
 import { cn } from "cn";
 
 type Filter = "all" | "captioned" | "missing";
+type CategoryFilter = "all" | NoteCategoryId;
 
 export function NotesIndex({ notes }: { notes: NoteIndexItem[] }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [category, setCategory] = useState<CategoryFilter>("all");
 
   const counts = useMemo(
     () => ({
@@ -30,7 +33,8 @@ export function NotesIndex({ notes }: { notes: NoteIndexItem[] }) {
   const visible = notes.filter((note) => {
     if (filter === "captioned" && note.captionStatus !== "captioned") return false;
     if (filter === "missing" && note.captionStatus !== "no-captions") return false;
-    const haystack = `${note.title} ${note.excerpt}`.toLowerCase();
+    if (category !== "all" && note.category !== category) return false;
+    const haystack = `${note.title} ${note.excerpt} ${categoryLabel(note.category)}`.toLowerCase();
     return haystack.includes(query.trim().toLowerCase());
   });
 
@@ -66,6 +70,17 @@ export function NotesIndex({ notes }: { notes: NoteIndexItem[] }) {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        <CategoryButton current={category} value="all" onSelect={setCategory}>
+          全部分類
+        </CategoryButton>
+        {NOTE_CATEGORIES.map((item) => (
+          <CategoryButton key={item.id} current={category} value={item.id} onSelect={setCategory}>
+            {item.label}
+          </CategoryButton>
+        ))}
+      </div>
+
       {visible.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center text-sm text-muted-foreground">
@@ -95,6 +110,7 @@ export function NotesIndex({ notes }: { notes: NoteIndexItem[] }) {
                         <Badge>{captionLabel(note.captionSource, note.captionStatus)}</Badge>
                       )}
                       {note.duration > 0 ? <Badge variant="outline">{formatClock(note.duration)}</Badge> : null}
+                      <Badge variant="outline">{categoryLabel(note.category)}</Badge>
                     </div>
                     <h2 className="font-serif text-xl leading-snug">
                       <Link href={`/notes/${note.id}`} className="underline-offset-4 hover:underline">
@@ -127,6 +143,34 @@ function Stat({ label, value }: { label: string; value: number }) {
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="font-serif text-3xl">{value}</p>
     </div>
+  );
+}
+
+function CategoryButton({
+  current,
+  value,
+  onSelect,
+  children,
+}: {
+  current: CategoryFilter;
+  value: CategoryFilter;
+  onSelect: (value: CategoryFilter) => void;
+  children: string;
+}) {
+  const selected = current === value;
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(value)}
+      className={
+        selected
+          ? "rounded-full bg-foreground px-3 py-1.5 text-sm text-background"
+          : "rounded-full bg-card px-3 py-1.5 text-sm ring-1 ring-foreground/10"
+      }
+      aria-pressed={selected}
+    >
+      {children}
+    </button>
   );
 }
 
