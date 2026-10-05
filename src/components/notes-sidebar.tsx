@@ -98,7 +98,7 @@ function SidebarBody({
             <section key={group.id} className="mb-3" aria-label={group.label}>
               <h2 className="sticky top-0 z-10 bg-card px-2.5 py-1.5 text-xs font-medium tracking-wide text-muted-foreground">
                 {group.label}
-                <span className="ml-1.5 tabular-nums">{group.notes.length}</span>
+                <span className="ml-1.5 font-normal tabular-nums">· {group.notes.length}</span>
               </h2>
               <ul className="space-y-0.5">
                 {group.notes.map((note) => {
