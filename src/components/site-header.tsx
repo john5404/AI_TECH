@@ -10,7 +10,7 @@ export function SiteHeader() {
           </span>
           <span>
             <span className="block font-serif text-lg leading-tight tracking-wide">
-              邊睡邊學
+              Learning while you sleep
             </span>
             <span className="block text-xs text-muted-foreground">
               一場演講的繁中筆記

@@ -1,10 +1,10 @@
-# 邊睡邊學
+# Learning while you sleep
 
-把一場演講的繁體中文字幕先讀懂，再整理成可以讀的 Markdown。
+把一場演講的繁體中文字幕先讀懂，再整理成可以讀的 Markdown。專有名詞保持英文。
 
 示範只有一支影片：[Lamis Mukta — Learning while you sleep: Beyond memory to dreaming](https://www.youtube.com/watch?v=tTcxVv8HHNw)（AI Native DevCon，2026 年 6 月）。播放用 YouTube 官方嵌入，這個專案不下載、不轉存影片檔。
 
-整理後的筆記在 [`content/learning-while-you-sleep.md`](content/learning-while-you-sleep.md)。首頁會渲染這份文章。機器翻譯把 Dreaming 譯成「夢想」、agent 譯成「經紀人」、harness 譯成「安全帶」、in-band 譯成「樂團」；筆記對照英文原稿後改回原意。逐句字幕仍留在 `data/videos/tTcxVv8HHNw/`。
+整理後的筆記在 [`content/learning-while-you-sleep.md`](content/learning-while-you-sleep.md)。首頁會渲染這份文章。機器翻譯把 Dreaming 譯成「夢想」、agent 譯成「經紀人」、harness 譯成「安全帶」、in-band 譯成「樂團」；筆記對照英文原稿，這些專有名詞保持英文。逐句字幕仍留在 `data/videos/tTcxVv8HHNw/`。
 
 ## 本機執行
 

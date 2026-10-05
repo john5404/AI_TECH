@@ -18,8 +18,8 @@ const serif = Noto_Serif_TC({
 });
 
 export const metadata: Metadata = {
-  title: "邊睡邊學 · 演講筆記",
-  description: "Lamis Mukta「Learning while you sleep」的繁體中文筆記。先讀懂字幕，再整理成 Markdown。",
+  title: "Learning while you sleep · 演講筆記",
+  description: "Lamis Mukta「Learning while you sleep: Beyond memory to Dreaming」的繁體中文筆記。專有名詞保持英文。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
