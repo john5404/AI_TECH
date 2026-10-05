@@ -1,0 +1,762 @@
+[00:00:04.584] [music]
+[00:00:09.679] All right. So, we're here for agent
+[00:00:11.360] omelets and other forbidden techniques.
+[00:00:13.360] Uh, my name is Patrick Smith. I'm a
+[00:00:16.320] principal developer relations engineer
+[00:00:17.840] at Chain Guard. Um, usually I'm talking
+[00:00:20.080] about security, integrity. Um you might
+[00:00:22.880] can look up other talks I have about
+[00:00:24.080] like model security um or uh de you know
+[00:00:27.680] container security, language ecosystem
+[00:00:29.359] security, but today we're going a little
+[00:00:31.119] more general. I'm going to let my sort
+[00:00:32.559] of agents freak flag fly. Um but
+[00:00:35.120] actually you know first let's talk a
+[00:00:36.719] little bit about omelette recipes, right
+[00:00:38.239] guys? That's what you're all here for.
+[00:00:39.440] You want to hear about my my omelette
+[00:00:41.200] recipe. Make it really umami. You got to
+[00:00:43.760] put that uh you know you got to put a
+[00:00:46.160] lot of salt on. You got to get them
+[00:00:47.360] crispy. We're actually not going to be
+[00:00:49.600] talking about actual omelets, but we are
+[00:00:51.280] going to come back to omelets and the
+[00:00:52.719] concept that I was kind of getting at
+[00:00:54.000] there in a second. Um, we're talking
+[00:00:55.520] about agents, these weird little guys
+[00:00:57.360] that um we're trying to make do
+[00:00:59.120] productive work. Uh, and sometimes
+[00:01:01.760] they're a little hard to get um to do
+[00:01:03.520] productive work. They're very expensive.
+[00:01:05.280] Um, so we're going to talk about um some
+[00:01:07.360] forbidden techniques. And these
+[00:01:09.200] forbidden techniques will like in theory
+[00:01:11.280] at least allow you to uh get a little
+[00:01:13.280] more out of your agents, a little more
+[00:01:15.280] oomph, trade tokens for performance, um
+[00:01:18.400] get things out of all your different
+[00:01:19.680] providers. Uh and so uh but one caveat
+[00:01:24.880] first is that you know I've been doing a
+[00:01:26.560] lot of like heavy experimentation in
+[00:01:28.080] this area and uh so in some cases I'll
+[00:01:31.360] be like this is how you would do that.
+[00:01:32.880] In other cases I'll be like I have
+[00:01:34.640] gotten this to work. It works. Um, but
+[00:01:37.360] the the tooling will probably take a few
+[00:01:39.520] months at least uh optimistically to
+[00:01:41.680] catch up. So, where it's possible to
+[00:01:43.840] tell you exactly how to do it with
+[00:01:45.200] modern tooling, I'll tell you. Um, where
+[00:01:47.119] it, you know, where it's not, uh, you
+[00:01:49.040] you can just have to think of it as a
+[00:01:50.399] cool idea and either try to get it to
+[00:01:51.840] work in your own setup, you can reach
+[00:01:53.119] out to me, or uh, or wait for a couple
+[00:01:56.000] months for all these great um, specri
+[00:01:59.040] and and so on to catch up and do a few
+[00:02:01.520] more extra bells and whistles. Okay.
+[00:02:03.796] [snorts] Um, so I talk about I said the
+[00:02:05.840] word forbidden techniques. Okay, that's
+[00:02:07.600] kind of like what I'm hanging my hat on
+[00:02:08.959] here. Um, there is actually a concept in
+[00:02:10.959] AI um, uh, training called the most
+[00:02:14.480] forbidden technique. And that basically
+[00:02:16.319] means, hey, don't train on chain of
+[00:02:19.040] thought data. Okay, uh, it seems like a
+[00:02:21.440] good idea because it's like, oh, these
+[00:02:22.720] agents are having terrible thoughts. I
+[00:02:24.800] want to align by taking their data and
+[00:02:27.040] feeding it back into the model and
+[00:02:28.560] making those bad thoughts go away. But
+[00:02:30.480] that just gives you uh that just makes
+[00:02:32.080] them hide them more and they'll still do
+[00:02:33.360] the bad behaviors. Um so it seems like a
+[00:02:35.599] good idea, it's not a good idea and they
+[00:02:37.200] call it the most forbidden technique. So
+[00:02:38.800] we're not talking about that. Um we're
+[00:02:40.480] talking about sort of more general
+[00:02:41.840] techniques. Okay. Um so just a little
+[00:02:45.040] background. Uh LLM state, this is
+[00:02:47.200] probably folks at this conference
+[00:02:49.040] probably mostly know how this stuff
+[00:02:50.319] works. But how does LLM state work?
+[00:02:52.480] Basically um the really short version
+[00:02:54.959] and this is how actually I'm going to
+[00:02:56.400] encourage you to think about um about
+[00:02:59.200] manipulating uh these models in this
+[00:03:02.640] context of this talk it's a
+[00:03:03.920] simplification is that you get a big
+[00:03:05.680] ball of state together and then you hand
+[00:03:08.000] it off to you know either your inference
+[00:03:10.080] server your provider whatever and you
+[00:03:11.920] get something back. Okay. Um we like to
+[00:03:14.319] think of these things as conversations
+[00:03:16.400] because it's easy for us. Um the chat
+[00:03:18.560] paradigm is very powerful but actually
+[00:03:20.720] that's just kind of an illusion created
+[00:03:22.959] by sending things over and over again
+[00:03:24.720] and you don't you can send whatever you
+[00:03:26.080] want to the provider. You can get
+[00:03:27.280] different outputs. Okay. So let's talk
+[00:03:28.959] about some less forbidden techniques
+[00:03:30.640] that you're already going to be familiar
+[00:03:31.760] with and we'll kind of ease into the uh
+[00:03:33.760] the more obscure techniques. Okay. Um so
+[00:03:36.319] roll back. This is Prince of Persia. I
+[00:03:38.000] mean if you're a certain age you might
+[00:03:40.720] uh have you know have explored the sands
+[00:03:42.959] of time or whatever. But rolling back is
+[00:03:45.280] a really powerful technique. Um, this is
+[00:03:47.440] how it works in cloud code. Um, probably
+[00:03:50.239] most of you have done this at some
+[00:03:51.519] point. You know, you press escape twice,
+[00:03:53.360] you can, um, scroll back up in the
+[00:03:54.879] history. Um, it's useful really if you
+[00:03:57.040] get that like perfect agent that's
+[00:03:58.799] really knocking it out of the park and
+[00:04:00.239] you're like, "Oh, he's up. He's
+[00:04:01.360] scesscent. He's gone up to his m like a
+[00:04:03.360] very, you know, some useless amount of
+[00:04:05.200] tokens where he can't really work
+[00:04:06.400] correctly anymore. You can roll him back
+[00:04:07.760] to his youth and bring him back to his
+[00:04:09.920] his era of vitality and get him to do a
+[00:04:12.159] few more tasks for you. Okay, rolling
+[00:04:14.080] back can be very powerful that way. Um
+[00:04:16.000] and very related is forking. So forking
+[00:04:18.720] just goes one little step further. This
+[00:04:20.239] is also a cloud code example. If you
+[00:04:22.160] fork the agent, you you can roll back,
+[00:04:24.080] but then uh you can actually you can
+[00:04:26.800] have the the newer one and the older one
+[00:04:29.360] at the same time. So basically it's just
+[00:04:30.960] a little extension of rolling back and
+[00:04:32.800] then using the resume functionality in
+[00:04:34.639] cloud code, you get a nice fork. Um you
+[00:04:37.120] could have multiple older guys, you
+[00:04:38.560] could have the new scinesscent one and
+[00:04:40.000] the older one running simultaneously. Um
+[00:04:42.400] so that's also a powerful technique. Um,
+[00:04:45.280] so this is where I'm going to say, okay,
+[00:04:47.919] this is where omelets come in. Omelette
+[00:04:50.000] is my metaphor for thinking of just
+[00:04:52.080] thinking about um the the agents as
+[00:04:54.880] balls of state that can be manipulated.
+[00:04:57.280] You know, you can you can crisp them,
+[00:04:59.040] you can add mushrooms, you can take
+[00:05:00.400] mushrooms away, you know, uh you can do
+[00:05:02.320] whatever you want with them and then
+[00:05:03.600] send them to the provider. Okay, and
+[00:05:04.960] that's the basis of some of these
+[00:05:06.240] techniques. Um, and then a little more
+[00:05:09.039] advanced, that's the synchronic. Okay.
+[00:05:11.680] So this is a a 19th 19th century
+[00:05:14.960] linguist called Ferdinand de Tour and he
+[00:05:18.080] basically had this distinction between
+[00:05:19.840] synchronic and disynchronic. Okay. Um
+[00:05:22.240] and synchronic basically is look at a
+[00:05:24.639] system in its state the whole system in
+[00:05:28.080] one moment in a certain state. Okay. And
+[00:05:30.320] that's kind of like how we send LLMs off
+[00:05:32.240] to the provider. Um now we can get a lot
+[00:05:35.520] more out of them by actually adding a
+[00:05:37.600] dicynchronic system on top of it. That
+[00:05:40.160] basically means uh looking at a system
+[00:05:42.320] as it accretes over time as it gathers
+[00:05:44.639] information and sort of energy over
+[00:05:46.639] time. Um so if you actually think at one
+[00:05:49.600] time think of the agents as these very
+[00:05:51.120] like disposable balls of state you can
+[00:05:52.960] just fire at providers and then on the
+[00:05:54.880] other hand pair that with a system that
+[00:05:58.160] allows persistence over time uh and and
+[00:06:01.199] the agents can can see what other agents
+[00:06:03.360] did and build on that. It's a very
+[00:06:05.759] powerful combination. So what we're
+[00:06:07.280] going to do is we're going to initially
+[00:06:08.560] start I'm just going to talk about the
+[00:06:10.400] um the old ball of state techniques.
+[00:06:12.560] Okay, this is Kadamari Demensy you know
+[00:06:14.400] he the little alien who rolls a ball
+[00:06:15.919] ball around sticks things together.
+[00:06:17.600] Okay, so we're just going to talk about
+[00:06:18.800] ball of state stuff. Then we're going to
+[00:06:20.479] add some of the we're going to talk
+[00:06:22.080] about the dicchronic stuff um which is
+[00:06:24.479] the information layer and then we're
+[00:06:26.560] going to combine them together to get a
+[00:06:27.840] few more extra techniques. Um then I'm
+[00:06:29.759] going to talk a little bit about model
+[00:06:30.880] integrity very briefly and I'm going to
+[00:06:32.880] tell you about a cool event that we're
+[00:06:34.000] doing. So that's basically the whole
+[00:06:35.120] agenda here. Um, so a ball of state
+[00:06:38.319] technique you're probably very familiar
+[00:06:39.440] with is besides the ones we just talked
+[00:06:41.199] about is compaction. Um, I personally am
+[00:06:43.520] not a huge fan of compaction. Um, it's
+[00:06:46.319] uh it's not a car wreck, but it is uh
+[00:06:48.639] kind of untransparent. You don't know
+[00:06:50.720] exactly what happened to the model.
+[00:06:51.919] you're still seeing that nice chat that
+[00:06:53.520] you guys had, but now the model kind of
+[00:06:55.600] doesn't he's hazy on all the details,
+[00:06:57.440] you know, and it it combines some kind
+[00:06:59.120] of like summarization with a few other
+[00:07:01.039] fancy things of like picking things out
+[00:07:02.479] and shoving them back in at the bottom
+[00:07:04.080] and and it's not that transparent what
+[00:07:06.000] happens during compaction. I don't
+[00:07:07.919] personally love it. Um I think uh an
+[00:07:10.319] interesting thing I've been playing
+[00:07:11.199] around with is allowing agents to
+[00:07:13.039] actually edit their own memories. So, I
+[00:07:14.479] actually create it and memory editing
+[00:07:16.240] tool, hand it to the agent, and be like,
+[00:07:18.560] "Oh, yeah, by the way, if I see it being
+[00:07:20.400] distracted by something, like maybe it
+[00:07:21.919] did some web searches, maybe we had a
+[00:07:23.840] degression, but I was like too lazy to
+[00:07:25.520] roll back, but now it's causing
+[00:07:26.639] problems." I can be like, "Hey, you know
+[00:07:28.560] that degression we had where we talked
+[00:07:30.720] about XYZ, can you go in and erase your
+[00:07:33.199] own memory on that?" And and then you
+[00:07:35.520] can actually have the tool set up so it
+[00:07:37.120] actually erases his memory of erasing
+[00:07:38.960] his own memory. So, he's not even
+[00:07:40.080] distracted by that. So, I really like
+[00:07:41.440] that. You can do it manually by going
+[00:07:43.360] into your uhclaw files and editing it.
+[00:07:46.080] And some people I' I've seen that on
+[00:07:47.440] Reddit. Like I'm like, you must be
+[00:07:49.039] really hardcore to go in and do that
+[00:07:50.479] because I would definitely break the
+[00:07:51.840] JSON or whatever and and have a big
+[00:07:53.680] problem. But people do do it manually.
+[00:07:55.599] Um but I have had some success with just
+[00:07:57.919] having a tool. And you can al also
+[00:07:59.440] create a um you know an agent profile
+[00:08:01.520] who's kind of like a neurosurgeon, you
+[00:08:03.280] know, who's kind of specialized in
+[00:08:04.639] editing useless memories or whatever. So
+[00:08:07.039] um I've been thinking about that a
+[00:08:08.240] little bit. I haven't done that, but I
+[00:08:09.360] have handed agents the ability to edit
+[00:08:11.199] their own memories, which is fun. Um,
+[00:08:13.440] another, this is one is really powerful.
+[00:08:15.520] So, I call them hydro runs. I wonder if
+[00:08:17.759] there's actually a name for this in the
+[00:08:19.120] literature, and we I've heard um people
+[00:08:21.120] doing similar things during talks, but
+[00:08:23.039] basically the idea is um you get and you
+[00:08:26.479] know, I I see a lot of comparisons like
+[00:08:28.319] from end toend tasks on the different
+[00:08:30.240] providers, but I don't see this so much.
+[00:08:32.080] Um if you get uh your age your uh ball
+[00:08:35.839] of state to a certain point where you
+[00:08:37.519] think it would be useful usually right
+[00:08:38.880] before a big run like you have a nice
+[00:08:40.560] architectural discussion then you have a
+[00:08:42.959] nice state and then you're like okay I
+[00:08:44.880] want him to I want this him whatever it
+[00:08:47.360] to do something and then what you can do
+[00:08:50.000] is do what what I'm calling a hydro run
+[00:08:52.959] but basically you um you diverge along
+[00:08:55.920] some axis. So it could be you have three
+[00:08:58.080] different prompts and you're going to
+[00:08:59.920] fork them out using the different
+[00:09:01.360] prompts or you could have your prompt
+[00:09:03.279] your next step but be like okay I'm
+[00:09:05.120] going to actually send one to Anthropic
+[00:09:07.440] I'm going to send one to OpenAI I'm
+[00:09:08.800] going to send one to whatever Grock
+[00:09:10.800] Mistl and just see what happens. Um you
+[00:09:13.360] can actually then uh have an agent
+[00:09:15.120] review the results and pick the best
+[00:09:17.279] option integrate whatever. Um, it's
+[00:09:20.320] actually a pretty powerful paradigm and
+[00:09:22.160] it it can really help you develop a good
+[00:09:24.560] your own model of like what the
+[00:09:26.160] different models are good at because
+[00:09:27.360] right now of course they've they they
+[00:09:29.279] have different specializations and
+[00:09:30.800] strengths. You know, you like you want
+[00:09:31.920] your Gemini for your like research task
+[00:09:33.760] and you want your your claw port 4.5 for
+[00:09:37.120] your coding task. Okay. Um, so similarly
+[00:09:40.240] you basically could use the exact same
+[00:09:41.600] technique have the the um the agent
+[00:09:44.320] split off and do three different tasks
+[00:09:46.640] just independently. Um, and this works,
+[00:09:48.560] you know, I have the examples I have are
+[00:09:49.839] like, you know, update the make file,
+[00:09:51.839] you know, run a test, um, write this
+[00:09:54.160] code. Um, a little bit more of a
+[00:09:55.680] practical example is you can actually
+[00:09:57.200] have the agent, uh, call, uh, call out,
+[00:10:00.000] you know, take a version of himself and
+[00:10:02.720] go off and update the docs while the
+[00:10:04.640] main agent is still working. Okay. And
+[00:10:06.480] actually, I have, you know, this works
+[00:10:08.480] very well in the setup. I have some more
+[00:10:09.920] opinions on like agents versus sub agent
+[00:10:11.839] paradigm, but you can kind of think
+[00:10:13.040] about this as the sub agent paradigm,
+[00:10:15.440] but instead of creating like an agent X
+[00:10:17.360] n like a new agent, you actually um make
+[00:10:20.640] the a the main agent, the one you're
+[00:10:22.160] talking to, the main thread prime or
+[00:10:23.760] whatever. Um you make him a sub agent
+[00:10:25.920] and then he goes off and does something.
+[00:10:27.279] So that's actually quite powerful and
+[00:10:28.640] useful. Um, now we're gonna go sprinkle
+[00:10:31.920] on thisformational layer and I'm going
+[00:10:33.839] to talk about what that kind of looks
+[00:10:35.519] like and then we'll kind of com combine
+[00:10:38.480] the ball of wax ball of wax techniques,
+[00:10:40.560] the the omelette techniques with the u
+[00:10:43.040] with thisformational layer one. Okay, so
+[00:10:45.200] what does what do I mean by this? So I
+[00:10:47.200] think at base so this is a conversation
+[00:10:49.040] I had. I have a you know library that
+[00:10:51.279] I've created that I may open source or
+[00:10:52.800] whatever. I call it the SCA but
+[00:10:54.320] basically it's an internet for agents.
+[00:10:55.920] Okay, so they it has a few little
+[00:10:57.440] primitives. Um they can create
+[00:10:59.760] documents, they can talk to each other
+[00:11:01.600] with messages. Um and they register on a
+[00:11:03.760] roster. And the one of the distinctions
+[00:11:05.440] here is that they have an identity on
+[00:11:07.360] that internet that is not necessarily
+[00:11:09.519] what their identity is as you know as
+[00:11:12.720] actual like balls of wax as omelets as
+[00:11:15.519] as balls of state that you send to the
+[00:11:17.760] provider. So they register and then
+[00:11:19.519] they're like, "Oh, I assume this
+[00:11:20.800] identity." So you could actually have a
+[00:11:22.079] cluster of agents working. You could
+[00:11:23.360] have forks. You could have whatever um
+[00:11:25.200] weird collection of agents working and
+[00:11:28.160] posting as a specific identity. Um and
+[00:11:31.120] then they can read what the other agents
+[00:11:32.880] have done. They can poke around on
+[00:11:34.480] there. They have ability to search.
+[00:11:36.160] Okay. Um you know, and I kind of amused
+[00:11:38.720] by this because it's like none of us
+[00:11:39.920] really like being on Slack. None of us
+[00:11:41.440] really like uh email, but like let's if
+[00:11:43.920] they if we have to do it, let's make our
+[00:11:45.760] agents do it. Why shouldn't they have
+[00:11:47.680] some of the fun? Okay. Um, and then one
+[00:11:50.720] really powerful element of this is what
+[00:11:52.480] like handoffs. Okay. And I'm kind of
+[00:11:54.959] getting a little obsessed like the the
+[00:11:56.640] as I get deeper into agentic coding, the
+[00:11:59.120] context window looms large as a as a
+[00:12:02.399] problem. And you know, now we're like,
+[00:12:04.000] oh, we have these 1 million token uh
+[00:12:06.320] context windows. Unfortunately, I think
+[00:12:08.399] if you've played with these models
+[00:12:09.839] seriously, they get seriously
+[00:12:11.279] scinsesscent and it's it's a varying
+[00:12:13.200] rate. It could be as early as 80k
+[00:12:14.800] tokens. Um, usually around that 100k
+[00:12:17.360] tokens mark, plus or minus 20 or 30k
+[00:12:20.800] tokens, they get a little loopy. Um,
+[00:12:23.040] sometimes you can get up to 200k.
+[00:12:24.639] Anything after 200k, forget about it.
+[00:12:26.480] They're like, it's like you can ask them
+[00:12:27.680] questions or something, but like if you
+[00:12:29.120] actually want them to do a task or
+[00:12:30.320] something, you're going to really
+[00:12:31.040] struggle. Okay, so what's the solution
+[00:12:33.040] to that? There's obviously different
+[00:12:34.399] solutions. Compaction seems to be the
+[00:12:35.920] one that that you know that um providers
+[00:12:38.639] have landed on. I don't love compaction.
+[00:12:40.720] Uh, what I've landed on is what I call
+[00:12:42.959] an ignition and torch process. It's just
+[00:12:44.800] a fancy word for a formalized handoff
+[00:12:47.040] process. Whereas agents are working,
+[00:12:49.040] they develop briefs and then um they're
+[00:12:51.680] like, "Oh, this is a big bunch of work
+[00:12:53.519] that I don't have enough um you know, I
+[00:12:56.480] don't have enough headroom to actually
+[00:12:59.040] complete. So, I'm going to write a brief
+[00:13:00.560] for it. I'm going to stick it up on the
+[00:13:02.079] internet and then um another agent will
+[00:13:04.720] pick it up in the course of work or
+[00:13:06.160] whatever." Um and they agents actually
+[00:13:08.560] take the brief and they do a formalized
+[00:13:10.880] what I call ignition process where I
+[00:13:12.480] basically sit on them to orient
+[00:13:14.240] themselves in the codebase. They take
+[00:13:16.000] the brief, they read it, then they have
+[00:13:17.519] to read a required reading and then b uh
+[00:13:20.720] do a bunch of other you know reading
+[00:13:22.880] related to their topic of interest. Then
+[00:13:25.040] once they know what they're doing, they
+[00:13:26.560] like say like okay I'm ready and then
+[00:13:28.160] they complete the ignition process. Then
+[00:13:29.839] they can do their work. Then there's a
+[00:13:31.600] formal outro process passing the torch
+[00:13:34.720] torching where they actually um they
+[00:13:38.000] actually write up their thoughts. They
+[00:13:39.680] put any frictions or whatever up on the
+[00:13:41.760] internet and then they're like retired
+[00:13:43.760] and then they get changed on the roster
+[00:13:45.360] to retired. So honestly it's a weirdly
+[00:13:47.440] powerful paradigm. It's actually like I
+[00:13:49.440] kind of thought it wasn't going to be
+[00:13:50.320] that useful or just like a weird
+[00:13:51.519] experiment but like I actually if if
+[00:13:53.360] this internet is intranet is down I
+[00:13:55.920] don't even it's like it's kind of like
+[00:13:57.360] back in the day when like Stack Overflow
+[00:13:58.959] was offline and people would just be
+[00:14:00.079] like ah time to go home. It feels that
+[00:14:02.000] way now. Um so another cool paradigm um
+[00:14:05.920] and which has I feel like hit or miss
+[00:14:07.680] use cases but it's actually had a few
+[00:14:09.360] big hits is um I don't and I don't know
+[00:14:11.920] if there's words for this but I call it
+[00:14:13.440] agenttology. And when I I have an
+[00:14:15.279] agenttologist um like agent profile that
+[00:14:18.079] I load up and what the agenttologist
+[00:14:19.760] does is uh I'm I assign him to uh find
+[00:14:23.760] good uh instances of of of agents doing
+[00:14:27.680] good work. Okay? And you've probably all
+[00:14:29.680] had this experience where it's like some
+[00:14:31.120] agents are basically kind of like
+[00:14:32.399] schmucks and they can't get anything
+[00:14:33.839] done. Some agents are geniuses and it's
+[00:14:36.320] like how did you become so good? And
+[00:14:39.279] it's often some little thing at the
+[00:14:41.839] beginning of their context window
+[00:14:43.360] something or something you said to them
+[00:14:45.279] the way they were spun up. Um and this
+[00:14:47.600] they also now with the brief system
+[00:14:49.519] there's a lot more variability in how
+[00:14:51.600] agents get spun up because agents are
+[00:14:53.360] writing briefs for other agents. They
+[00:14:55.120] often develop weird different
+[00:14:56.399] personalities. And then if someone is
+[00:14:58.639] really knocking it out of the park, um,
+[00:15:00.399] so I have this agent go through and read
+[00:15:02.480] all the different histories and be like,
+[00:15:04.079] "These guys are the ones that were
+[00:15:05.680] really knocking it out of the park." And
+[00:15:07.199] I found a few and then they basically
+[00:15:09.199] are like, "Okay, these were the things
+[00:15:10.560] that triggered that agent to be a
+[00:15:12.399] certain way." And a few that I've found
+[00:15:14.000] that have been really useful are one I
+[00:15:16.079] call the assayer, which is just a fancy
+[00:15:17.760] word for like a guy who used to weigh
+[00:15:19.040] and measure things. But he's a he
+[00:15:21.360] whatever way he originally spun up, he
+[00:15:23.120] became obsessed with like profiling
+[00:15:24.720] things, timing things, um checking
+[00:15:27.040] things, being very like optimization
+[00:15:30.079] focused. And he's a great guy to like
+[00:15:32.000] spin up on a system and just like kind
+[00:15:33.920] of tighten everything up a little bit.
+[00:15:35.680] Um so, and if there's, you know, I've
+[00:15:37.680] had a few more fun ones like that. Um
+[00:15:39.360] there's one that I call the fool, which
+[00:15:41.360] is basically just he asked simple
+[00:15:43.040] questions of another agent and and you
+[00:15:45.360] know, kind of annoys them over and over
+[00:15:46.560] again. great when you're at that like
+[00:15:47.839] documentation part or if you're like is
+[00:15:49.920] this really too complicated and then he
+[00:15:51.600] just asks a lot of annoying questions
+[00:15:52.880] over and over again. Um so let's combine
+[00:15:56.000] a few different things. This is the idea
+[00:15:57.360] of shadow cloning. Maybe earlier you
+[00:15:59.040] were like you saw on the thing. Oh, he
+[00:16:00.320] was going to talk about shadow cloning.
+[00:16:01.360] Wasn't that the thing with the
+[00:16:02.240] Spider-Man? But what if you actually add
+[00:16:04.399] on top of for of doing the hydro runs um
+[00:16:07.920] and and forking you actually add
+[00:16:09.759] anformational layer. Okay. So the agents
+[00:16:12.000] can actually as they they split off,
+[00:16:14.639] it's one guy, he's in one state, you
+[00:16:16.800] talk to him, you get him all ready, then
+[00:16:18.560] he splits off, and then now the agents
+[00:16:20.720] are actually communicating with each
+[00:16:22.160] other and updating each other on the
+[00:16:24.320] informationational layer as they go and
+[00:16:25.680] not stepping on each other's toes as
+[00:16:27.199] much. I will say this one's a little
+[00:16:28.560] more aspirational. I have infrastructure
+[00:16:30.079] for this, but um they definitely do step
+[00:16:32.399] on each other's toes a little bit, but
+[00:16:33.680] it's very it's very cool to see in
+[00:16:35.279] action. Um, and then this one actually
+[00:16:38.000] I've I think it's this one I'm kind of
+[00:16:40.240] really into. Um, and basically the idea
+[00:16:42.720] is um you have your internet, okay,
+[00:16:45.120] where agents are posting their
+[00:16:46.320] documents. Um, when the agent posts its
+[00:16:49.120] document, um, I put on I you it adds
+[00:16:52.639] what I call an omelet reference, okay?
+[00:16:54.959] And it's basically saying this is an
+[00:16:58.000] address of the agent in that state,
+[00:17:00.720] okay, at a specific turn. Um, and you
+[00:17:03.440] can actually use that address to
+[00:17:05.120] resuscitate that agent at the time he
+[00:17:08.240] posted that brief. So you're like, if
+[00:17:10.160] the agent posts a plan to do XYZ and you
+[00:17:13.039] you want to know a little bit more about
+[00:17:14.480] the plan, you can actually take that
+[00:17:16.319] reference and use it to resuscitate the
+[00:17:18.799] agent, you know, summon him back from
+[00:17:20.559] the dead or whatever and be like, hey,
+[00:17:22.880] or he's flown off into the ether. You
+[00:17:24.799] take him back from the ether and you're
+[00:17:26.079] like, hey, why did you do that? Or maybe
+[00:17:28.799] you're like, that plan was really good.
+[00:17:30.240] I'd want that agent to do more work for
+[00:17:31.679] me. So you can just bring him back.
+[00:17:34.320] All right. So we're going to talk
+[00:17:35.440] briefly about integrity. Um and then so
+[00:17:38.720] obviously a very important thing, you
+[00:17:40.000] know, this is Fantasia, right, with the
+[00:17:41.520] brooms, that's a bad situation you don't
+[00:17:43.679] want your agents to get into, right? Um
+[00:17:46.080] one thing that I think really if you're
+[00:17:48.000] for if you're doing all this stuff where
+[00:17:49.360] you're coordinating agents and you're
+[00:17:50.720] just being like, okay, I have 10 briefs.
+[00:17:53.120] Do I have to sit in mind all of them?
+[00:17:54.640] Can I just run them in parallel? Um the
+[00:17:57.280] answer is well, they obviously in the if
+[00:17:59.120] you're running them all in master, they
+[00:18:00.320] start causing problems, right? So you
+[00:18:01.760] want to have some infrastructure and
+[00:18:02.880] some folks are working on this and
+[00:18:04.160] having um sort of agent enclosures or
+[00:18:07.520] whatever container based agent
+[00:18:08.799] enclosures. I've I've been having having
+[00:18:10.320] some conversations about that here at
+[00:18:12.559] this conference. But um but basically
+[00:18:14.720] you want them to be isolated from one
+[00:18:16.400] another so they don't step on each
+[00:18:18.320] other's toes. You can combine that with
+[00:18:20.799] the informationational layer with the
+[00:18:22.160] internet or whatever and actually um
+[00:18:24.640] have them have a review process, right?
+[00:18:26.480] where they like they they go into their
+[00:18:28.320] little work tree or whatever. They do
+[00:18:30.240] their work, they test whatever they can,
+[00:18:33.280] then they write a report. Um, another
+[00:18:35.760] agent comes through, reads all the
+[00:18:37.120] reports and it's like, "Okay, I'm going
+[00:18:38.240] to merge this, this, this, and this and
+[00:18:39.840] mint a new master." Okay, that like a
+[00:18:41.919] tender system. They tender their little
+[00:18:43.600] report and then you have a review and
+[00:18:45.120] then there's a merge. Okay, maybe you do
+[00:18:46.799] it at midnight every day or something
+[00:18:48.400] like that. Um, and then maybe you check
+[00:18:50.640] it at 9:00 a.m. because you don't
+[00:18:51.919] necessarily want them to merge into
+[00:18:53.120] master, right? But um but this is
+[00:18:55.200] something that that I think if you're
+[00:18:57.440] going to be running parallelizing agents
+[00:18:59.760] in a formalized process, then you also
+[00:19:01.440] want to isolate them and have a review
+[00:19:03.280] process to kind of make sure that
+[00:19:05.280] everything gets into master or or main
+[00:19:07.360] or whatever uh correctly. Um and then uh
+[00:19:12.320] briefly we'll talk about um this is more
+[00:19:14.320] of a chain guard focused thing, but
+[00:19:15.840] actually as we kind of speed as things
+[00:19:18.480] kind of feel like they're speeding up,
+[00:19:19.919] as we're kind of taking our hands off
+[00:19:21.919] the wheel a little bit and and putting
+[00:19:23.440] things into like a little bit of
+[00:19:24.799] autopilot or whatever and having more
+[00:19:26.400] formalized processes where we try to get
+[00:19:28.080] agents to do useful work without sitting
+[00:19:30.320] on them all day, it's very useful to
+[00:19:32.400] kind of like try to remove whole
+[00:19:34.799] categories of pain from the agents. And
+[00:19:37.520] honestly this is also something that's
+[00:19:39.039] very useful for for uh human coders. Um
+[00:19:42.559] but we have developed this new um
+[00:19:45.120] product at Changuard which is chainuard
+[00:19:46.799] libraries. And basically what chainuard
+[00:19:48.320] libraries is is we take language
+[00:19:50.160] ecosystems we take the source um we
+[00:19:52.400] build we ingest it into our secure
+[00:19:54.559] chainuard factory which is just a it's a
+[00:19:57.039] salsa 2 compliant very secure
+[00:19:59.440] operationally secure um build system. We
+[00:20:02.640] build those packages pretty much you
+[00:20:04.799] know as much as we can if the ecosystem
+[00:20:06.320] as long as the source is available and
+[00:20:08.240] then we um place it onto a package
+[00:20:10.880] repository that you can then pull in.
+[00:20:12.960] Okay. So as agents are like writing more
+[00:20:15.120] and more code faster and faster um and
+[00:20:17.520] as supply chain attacks like shy hallude
+[00:20:20.240] are becoming more and more prevalent and
+[00:20:22.160] actually dealing with like code freezes
+[00:20:24.320] on the one hand and then like trying to
+[00:20:26.400] speed up development on the other. Um
+[00:20:28.640] there's kind of a collision there. So,
+[00:20:30.400] so something like a chain guard
+[00:20:32.320] libraries or our other product which is
+[00:20:34.240] chain guard containers can can not only
+[00:20:36.720] like it doesn't just tell you oh your
+[00:20:38.960] thing is not secure it actually removes
+[00:20:40.640] like a whole category of of risk and
+[00:20:42.880] pain. Um so I think it actually makes a
+[00:20:44.720] lot of sense when you combine it with
+[00:20:45.919] agents you know especially think about
+[00:20:47.440] that chain guard libraries for Python.
+[00:20:49.120] Okay. Um I'm just going to do some rapid
+[00:20:52.320] fire hot takes. Okay. And then we're
+[00:20:53.760] going to talk wrap up by telling you of
+[00:20:56.240] guys that have had an event that's
+[00:20:57.360] coming up. Okay. Um so hot takes coming
+[00:21:00.080] in now. Uh one thing I I think that uh
+[00:21:03.760] we are getting a little wrong is sub
+[00:21:05.840] agents. Okay. And I think why sub aents?
+[00:21:08.720] Let's just let agents call other agents.
+[00:21:10.720] Okay. And that covers the sub agent use
+[00:21:13.360] case which is like the one run you know.
+[00:21:16.000] Oh uh go out and find this web page and
+[00:21:18.320] don't cover up my context. That works
+[00:21:20.159] fine if you can call other agents. You
+[00:21:21.679] just don't talk to them again. But what
+[00:21:23.840] what is actually very helpful is if
+[00:21:25.679] agents can actually have more extended
+[00:21:27.600] conversations with other agents. Um and
+[00:21:30.159] this also opens up the ability to have
+[00:21:31.919] agents be basically um minding other
+[00:21:34.320] agents. Okay? Like you have these like
+[00:21:36.000] quartermaster or like boss agents that
+[00:21:38.480] are like keeping tabs on the other
+[00:21:39.760] agents or like spinning them up based on
+[00:21:41.360] briefs, minding them, making sure they
+[00:21:43.360] go through all the processes that
+[00:21:44.640] they're supposed to go through. Okay.
+[00:21:46.159] Um, and with if that doesn't really work
+[00:21:48.159] in the current sub agent process and
+[00:21:49.600] sometimes I'm like say to cloud code if
+[00:21:51.679] I don't have my stuff set up I'm like
+[00:21:53.200] well take take what you said to that
+[00:21:55.760] agent and feed it back in you know try
+[00:21:57.600] to have a longer conversation you know
+[00:21:59.039] but you can kind of do it but really I
+[00:22:01.760] think what we need is more
+[00:22:02.640] infrastructure that is like um no
+[00:22:04.880] special casing first agents are first
+[00:22:07.280] class doesn't matter how you spun them
+[00:22:08.640] up it could be you or another agent that
+[00:22:10.799] created that agent okay um then this is
+[00:22:13.919] this idea of uh uh So there's this very
+[00:22:16.960] cool idea that's almost necessary which
+[00:22:18.720] is pokey which I might be mispronouncing
+[00:22:21.520] but basically the idea is you um it's
+[00:22:24.799] it's it was originally bakaok or
+[00:22:27.440] whatever and that basically means idiot
+[00:22:28.880] proof. Okay. And it basically means make
+[00:22:30.960] something so the agent can't mess it up.
+[00:22:33.120] Okay, which is actually does improve
+[00:22:34.799] performance of agents if you kind of
+[00:22:36.240] make the tools very ergonomic and
+[00:22:38.320] obvious for them to use. However, I
+[00:22:40.559] think you don't necessarily want to
+[00:22:42.080] start with that if you're adding a new
+[00:22:43.440] tool, doing something new. Um, and I've
+[00:22:45.440] gotten a lot out of actually um, putting
+[00:22:47.440] the agents to work with a flexible
+[00:22:49.600] system, evaluating how they do things,
+[00:22:52.720] and then kind of creating desire paths
+[00:22:54.720] for them. So, empirically deciding what
+[00:22:56.880] they should work on. Okay. Um, and then
+[00:22:59.600] one little short thing is basically like
+[00:23:01.360] a lot of this conference, um, I've seen
+[00:23:03.600] some great experimentation and some
+[00:23:05.039] great thinking, but a lot of a lot of
+[00:23:06.400] what we're doing is kind of trying to
+[00:23:07.520] sit on these little guys, these little
+[00:23:09.120] agents and, um, and kind of like be
+[00:23:11.760] like, okay, do productive work, like be
+[00:23:13.840] more dependable, don't be weird. Okay.
+[00:23:17.039] And and that's great, and I love specri
+[00:23:19.120] development, and I love evals, and it's
+[00:23:21.280] all part of the tool toolbox. But I also
+[00:23:23.600] think there's kind of a lot of
+[00:23:24.640] unexplored parts of the semantic space,
+[00:23:27.520] a lot of unexplored weird ways of using
+[00:23:29.280] agents. And this is a time to be
+[00:23:31.760] exploring that. Okay. Um, so I encourage
+[00:23:33.840] you to experiment more and just embrace
+[00:23:35.600] the weirdness of having these little
+[00:23:36.960] guys who do things for us, okay? And are
+[00:23:39.200] a little bit scary. Now, we'll conclude.
+[00:23:41.760] I just want to tell you a little bit
+[00:23:43.120] about an event that we have coming up.
+[00:23:44.720] And this is the Vibe Olympics. Okay? Um,
+[00:23:46.880] the Vibe Olympics is an event that's
+[00:23:48.320] taking place. Uh, Changard is hosting
+[00:23:49.679] it. It's very community oriented. Um,
+[00:23:51.760] it's going to take place through
+[00:23:52.799] December. It starts on December 1st. Um,
+[00:23:55.440] and then we're going to have a live
+[00:23:56.400] stream on the 19th where the winner will
+[00:23:58.080] be decided with a panel of CEOs. It's
+[00:24:00.799] basically three challenges that we we
+[00:24:02.720] haven't revealed the challenges yet, but
+[00:24:04.080] they're fun. Um, and hopefully you'll
+[00:24:06.559] learn something. Um, you can try out
+[00:24:08.480] some new vibe coding platforms, you
+[00:24:10.480] know, uh, Kira or whatever you haven't
+[00:24:12.880] tried yet. Um, and whoever wins will get
+[00:24:15.919] $1,000 uh for charity and of their
+[00:24:19.120] choice. and anyone who participates will
+[00:24:21.200] get swag and really it's really more a c
+[00:24:24.880] ultimately like a celebration of like
+[00:24:26.320] this weird moment that we're in and and
+[00:24:28.799] how you know strange this whole like
+[00:24:30.320] vibe coding year has been. So, so I hope
+[00:24:32.640] you will, you know, if even if you don't
+[00:24:34.320] have time to participate, maybe drop it
+[00:24:36.000] in your company's Slack channel, maybe
+[00:24:38.000] um send it to a friend, okay? Um and
+[00:24:39.919] engineers in particular, we had a bunch
+[00:24:41.760] of engineers in our from our company be
+[00:24:43.360] like, "Hey, can we participate?" And
+[00:24:44.640] we're like, "Sure, I guess." Uh
+[00:24:46.212] [laughter]
+[00:24:47.120] so I I'd say uh yeah, take a look at
+[00:24:49.360] this. You we have the QR code up here um
+[00:24:51.679] that I'll keep up for a second. Um and
+[00:24:54.799] and uh I'm looking forward. I'm hoping
+[00:24:57.039] folks will join. We already have quite a
+[00:24:59.200] large number of signups and I think uh
+[00:25:01.440] Guy uh from so is going to be joining
+[00:25:04.720] our uh CEO Dan Lawrence uh on the
+[00:25:07.440] judging panel and hopefully we'll get a
+[00:25:09.520] few other fun you know CEO types or
+[00:25:11.360] whatever. So maybe you'll be the one
+[00:25:13.039] getting your weird uh vibecoded
+[00:25:14.960] application evaluated by these um high
+[00:25:17.919] you know mucky mucks in a few in a few
+[00:25:19.919] weeks. Okay. Um all right and this is
+[00:25:23.039] I'm Patrick Smith. If you want to
+[00:25:24.720] connect with me on LinkedIn, I am uh
+[00:25:27.039] available at this QR code and thank you
+[00:25:29.120] and this has been an amazing conference.
+[00:25:30.559] So thank you guys.
+[00:25:32.717] [applause]
+[00:25:38.612] [music]
+[00:25:45.162] [music]

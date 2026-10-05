@@ -1,0 +1,1137 @@
+[00:00:00.920] [Music]
+[00:00:09.720] [Music]
+[00:00:12.320] Hello. Hey, how's it going? Welcome.
+[00:00:15.679] Hey, thanks for having me, Dion. Of
+[00:00:18.080] course. It's a pleasure being here.
+[00:00:19.920] Where are you coming from, actually?
+[00:00:23.119] Yeah, I'm drilling in from Egypt, Cairo.
+[00:00:25.840] Oh, nice. Well, thanks so much. Uh
+[00:00:28.160] that's uh a little bit later than here
+[00:00:30.560] even. So thanks for thanks for this. Uh
+[00:00:35.520] yeah, thanks. I'm really excited. Yeah.
+[00:00:37.760] Awesome. Well, I'm gonna I'm gonna get
+[00:00:39.520] off the stage myself and hand it over
+[00:00:41.760] for you and get your slides up and then
+[00:00:43.600] we can get going and and go from there.
+[00:00:45.920] So have a great chat. Great. Thanks,
+[00:00:48.520] Dion. So reliable DevOps agents for
+[00:00:51.039] self-driving infrastructure. So let me
+[00:00:52.800] tell you a bit about myself. So I was a
+[00:00:54.719] founding engineer at a couple of other
+[00:00:56.399] startups. Always building infrastructure
+[00:00:58.239] and doing like the security work. Um so
+[00:01:01.600] I've been writing code for 10 years now.
+[00:01:03.600] Um I really like doing calisthenics like
+[00:01:05.840] body weightight exercises riding
+[00:01:07.200] cruisers and like volunteering teaching
+[00:01:09.280] people like how to code and how to do
+[00:01:11.320] infrastructure. Um I really like like
+[00:01:14.560] developer security developer experience
+[00:01:16.799] and security which are usually two
+[00:01:18.560] things that never mix well. uh well the
+[00:01:21.680] yeah app that's what I'm mostly
+[00:01:22.880] interested in so let me tell you a bit
+[00:01:26.159] first about the problem like why is this
+[00:01:28.720] necessary like why do we need the
+[00:01:30.000] self-driving infrastructure in the first
+[00:01:31.360] place so today we've been interviewing
+[00:01:34.000] engineers like developers software
+[00:01:35.520] engineers and engineering leaders like
+[00:01:37.040] hundreds of them every year since we
+[00:01:38.560] started stack because like as you
+[00:01:40.240] guessed it like we're working on trying
+[00:01:41.600] to make infrastructure self-driving with
+[00:01:43.439] like reliable configurations and agents
+[00:01:46.079] which are things like that don't mix
+[00:01:48.159] like security and developer experience
+[00:01:49.920] so like agent and reliability. Uh like
+[00:01:52.320] how do you explain it? So here like I
+[00:01:55.200] grouped a lot of the feedback we got
+[00:01:57.040] from different people into like fixious
+[00:01:59.200] three personas. So DevOps engineers see
+[00:02:01.439] that developers have no clue what
+[00:02:02.640] they're doing. So they don't know a lot
+[00:02:04.159] of things about the system internals of
+[00:02:05.600] all the DevOps tools of all the complex
+[00:02:07.160] infrastructure they deploy their apps
+[00:02:09.039] on. At the same time, platform engineers
+[00:02:11.039] are sick of spending the majority of
+[00:02:12.879] their time on support tickets instead of
+[00:02:14.879] doing platform work that optimizes costs
+[00:02:17.040] or like makes the de developers life
+[00:02:19.120] much easier. On the other side,
+[00:02:21.080] developers like they see a huge mismatch
+[00:02:23.840] or like misalignment in in priorities.
+[00:02:26.239] So developers want to get this bucket or
+[00:02:28.319] like get this feature out. They want
+[00:02:29.760] this to work while DevOps or like the
+[00:02:31.760] infrastructure or platform team want to
+[00:02:33.519] move to Kubernetes. Um so like there's a
+[00:02:36.160] lot of misaligned like priorities and a
+[00:02:39.120] lot of like bottlenecks in the
+[00:02:40.560] infrastructure and this pain keeps
+[00:02:42.239] growing even with internal developer
+[00:02:43.519] platforms and the abstractions people
+[00:02:44.959] are building to make this thing easier.
+[00:02:47.200] And the reason this is so tough is
+[00:02:49.840] because there are like hundreds of DSLs
+[00:02:52.480] like a different configuration
+[00:02:53.840] parameters and languages and schemas
+[00:02:55.519] that you need to learn to figure this
+[00:02:57.040] out. So we call this DSL hell like
+[00:02:58.959] domain specific language hell. It's not
+[00:03:00.879] just the DSLs but also the schemas
+[00:03:02.720] themselves configuring. So like YAML is
+[00:03:05.280] sort of like a data language or DSL but
+[00:03:07.440] then there's like hundreds of ways of
+[00:03:08.959] writing YAML to configure all these
+[00:03:10.159] tools. So you're not just writing a
+[00:03:11.599] programming language and building stuff,
+[00:03:14.080] but you're configuring other tools and
+[00:03:15.440] these tools have internal top secret
+[00:03:17.680] information about how they operate and
+[00:03:19.440] you need to be aware of that to be able
+[00:03:20.720] to write these tools. So it's like a
+[00:03:22.480] very minority like the minority of
+[00:03:24.480] developers understand these tools really
+[00:03:26.720] well and understand all the different
+[00:03:28.319] combinations and I've rarely seen a
+[00:03:30.720] DevOps engineer infrastructure person
+[00:03:32.560] understands all of them but like always
+[00:03:34.239] a subset. So that's one reason why this
+[00:03:36.799] is very difficult. a lot of things to
+[00:03:38.480] learn and to you have to keep in your
+[00:03:40.319] mind to be able to do this kind of work.
+[00:03:42.879] Another thing is that most of the
+[00:03:44.720] abstractions in this like we have layers
+[00:03:46.959] of abstractions in infrastructure and
+[00:03:48.640] they're all almost all of them are
+[00:03:49.920] leaky. So for example if you're trying
+[00:03:51.680] to create a plot on Kubernetes and set a
+[00:03:53.360] limit. So limit is a contract with
+[00:03:55.280] resources you allocate to a specific
+[00:03:57.200] workload you're running and then you
+[00:03:59.040] would see like you expect or like most
+[00:04:00.879] developers expect that this limit would
+[00:04:03.120] be honored by the platform. But then
+[00:04:04.640] what happens? They find their pod or
+[00:04:06.799] workload killed because it's ran out of
+[00:04:09.519] memory and they can't correlate that
+[00:04:11.439] this is has to do with the limits. So
+[00:04:12.720] like the underlying layer that operates
+[00:04:14.879] the workload just kills it if it exceeds
+[00:04:16.880] the limit. Um so this is leak caps
+[00:04:18.720] action. So developers have to keep in
+[00:04:20.320] mind how this thing works internally how
+[00:04:22.960] like the kublet like runs the like the
+[00:04:25.680] container or like there's workload and
+[00:04:27.919] how it deals with the memory limits. The
+[00:04:30.400] same thing goes with corner cases for
+[00:04:32.080] dockerization. Like cloud native build
+[00:04:33.759] packs are amazing and people build
+[00:04:35.280] internal Docker files in a reusable way
+[00:04:37.040] so people can keep building the same
+[00:04:38.560] apps over and over again but they rarely
+[00:04:40.800] work because of all the corner cases.
+[00:04:42.800] Same thing with something like
+[00:04:44.000] Terraform. You have the underlying layer
+[00:04:45.600] that communicates with infrastructure
+[00:04:47.280] like Google cloud just made an upbrupt
+[00:04:49.120] API change that just broke a lot of
+[00:04:51.520] Terraform code that is with Google. So
+[00:04:54.720] these are some of the difficulties we
+[00:04:56.320] see but also people keep talking about
+[00:04:58.080] it. So in real life experience like
+[00:05:00.000] people keep complaining about LLMs are
+[00:05:02.639] decent at writing code but they suck at
+[00:05:05.040] infrastructure which is like the worst
+[00:05:06.479] part of coding setup and infrastructure.
+[00:05:08.639] And this guy here like after posting
+[00:05:11.199] this with after a month later he just
+[00:05:13.680] like throw decided to throw in the towel
+[00:05:15.520] and say okay AGI is here once an agent
+[00:05:18.320] can configure a do container setup CI
+[00:05:20.000] and deploy my app. That's how
+[00:05:21.440] frustrating it is. But like these are
+[00:05:23.440] all opinions and like subjective um like
+[00:05:26.479] subjective opinions of why LLMs and like
+[00:05:30.160] are suck at this kind of work. But like
+[00:05:32.320] there's a paper about one of the reasons
+[00:05:34.720] they are terrible at this work and it's
+[00:05:37.120] because they suck at domain specific
+[00:05:38.479] languages and configuration in general.
+[00:05:40.080] So from this paper you can see like a
+[00:05:41.840] trend here where LMS are really good at
+[00:05:44.400] very popular languages that change not
+[00:05:47.520] very frequently over the years um versus
+[00:05:50.960] other languages like the long tail of
+[00:05:53.120] DSLs and the longtail of non-popular
+[00:05:55.440] languages anymore they're not that good
+[00:05:57.280] at it at the same time when you see like
+[00:05:59.360] the stack valene the two data sets in
+[00:06:02.080] this like paper which compares like
+[00:06:04.479] asking about fresh knowledge versus old
+[00:06:06.800] knowledge the LMS were already trained
+[00:06:08.319] on they perform really bad like on fresh
+[00:06:11.840] knowledge and this is the mix we get in
+[00:06:15.039] DevOps tasks. So if you're trying to
+[00:06:16.479] compare coding tasks and DevOps tasks on
+[00:06:18.960] like some factors based on like
+[00:06:20.880] everything we discussed so far you'll
+[00:06:22.160] see that the feedback loop for coding
+[00:06:23.440] tasks is super tight. So you get like
+[00:06:26.639] when you have a coding agent and there's
+[00:06:28.160] a human in the loop and it changes
+[00:06:29.759] something you see it you can validate
+[00:06:31.120] the code and then keep iterating
+[00:06:32.400] quicker. But for DevOps task it's
+[00:06:34.000] usually much longer. So you're trying to
+[00:06:35.600] create a virtual machine or database on
+[00:06:37.360] AWS and you have to wait for like for 15
+[00:06:39.680] minutes at least for it to be ready. So
+[00:06:41.440] then you would know if you created it
+[00:06:42.880] with the right parameters for example.
+[00:06:44.240] So like this is dumb example but like
+[00:06:45.680] you get the idea. The feedback loop is
+[00:06:47.199] super slow. Another thing that's
+[00:06:48.720] different between regular coding tasks
+[00:06:50.080] and DevOps tasks is like the user
+[00:06:52.639] knowledge. So users or coders like or
+[00:06:55.199] developers using these coded assisting
+[00:06:57.280] coding assistants they have high
+[00:06:58.960] knowledge of the task at hand which is
+[00:07:00.240] writing code. But less than 3% of
+[00:07:01.840] developers are expert at this kind of
+[00:07:03.360] infrastructure work. At least three less
+[00:07:05.520] than 3% do this full-time. Also, the
+[00:07:07.599] syntax for coding tasks is super popular
+[00:07:09.599] compared to many domain specific
+[00:07:12.319] languages and the frequency of this
+[00:07:14.080] changes like coding languages change
+[00:07:15.919] rarely like the syntax and the features
+[00:07:18.240] unlike other DevOps tool configurations
+[00:07:20.319] because the tools keep changing quickly.
+[00:07:22.319] They add features and these
+[00:07:23.520] configuration languages configure the
+[00:07:25.039] tools. So the more tools the more
+[00:07:26.560] complexity the harder it is. And final
+[00:07:29.199] thing is about the context itself. So
+[00:07:31.520] most of the context you find for coding
+[00:07:33.360] tasks is local. So it's such like you're
+[00:07:35.520] developing locally in your machine. So
+[00:07:37.520] everything you need or almost everything
+[00:07:39.199] you need can be run locally or mocked
+[00:07:40.880] locally. But for DevOps task is super
+[00:07:42.720] hard because the context is mostly
+[00:07:44.080] remote like a bucket or configurations
+[00:07:46.160] through AWS API or like Kubernetes
+[00:07:48.000] clusters deployed in production with a
+[00:07:49.599] specific set of parameters or workloads
+[00:07:51.840] that are not available locally. So this
+[00:07:54.000] is the reason why LM agents or like
+[00:07:55.840] coding agents are really good at coding.
+[00:07:58.160] but they suck at infrastructure or
+[00:07:59.520] DevOps work. So what usually happens is
+[00:08:01.759] they like run out of steam like keep
+[00:08:03.759] going around in loops or they're unable
+[00:08:06.479] to accomplish these tasks and like this
+[00:08:09.039] is our analysis of like at least what we
+[00:08:10.639] learned over the past couple of years.
+[00:08:12.720] So self-driving infrastructure, a lot of
+[00:08:15.440] people see it this way, like cybermen
+[00:08:17.919] from Doctor Who, like they're going to
+[00:08:19.599] take over humanity basically like push
+[00:08:21.759] humans out and be more efficient, be
+[00:08:24.319] more like stronger when it comes to
+[00:08:26.800] doing these kind of infrastructure
+[00:08:28.000] tests. But like from my experience,
+[00:08:30.080] we're developing agents and how we see
+[00:08:31.919] them operate with think self-driving
+[00:08:34.000] infrastructure is going to be something
+[00:08:35.279] like this with a lot of minions that are
+[00:08:38.000] stoastic agents. They sometimes spit out
+[00:08:40.320] gibberish and they do funny things like
+[00:08:43.120] they keep walking around but like when
+[00:08:45.279] effectively managed and guided they can
+[00:08:47.360] accomplish great things like they get
+[00:08:48.720] the job done really well with human
+[00:08:51.920] guidance but they're a force like to be
+[00:08:53.920] reckoned with. So in here like today
+[00:08:57.519] we're going to talk about like how we're
+[00:08:59.600] working on this. First I'm trying to
+[00:09:01.200] help you imagine what a self-driving
+[00:09:02.560] infrastructure would look like with
+[00:09:03.680] these kind of minions. But when you're
+[00:09:05.120] thinking about agents that operate
+[00:09:06.560] infrastructure, like I want you to
+[00:09:07.760] picture minions, not cyber. So what
+[00:09:10.560] would self-driving infrastructure look
+[00:09:12.519] like? So theoretically, a self-driving
+[00:09:15.200] infrastructure would have these
+[00:09:16.720] capabilities at least. So the first
+[00:09:18.560] thing is you would have agents that work
+[00:09:20.320] 24/7. So these agents can do maintenance
+[00:09:22.880] tasks in the background. They can handle
+[00:09:24.480] support tickets. They can tune your
+[00:09:26.480] system live 24/7 without having people
+[00:09:30.320] on call. And you'll be able to keep
+[00:09:32.160] doing that over and over again. Second
+[00:09:34.160] thing is this self-driving
+[00:09:35.519] infrastructure or be technology agnostic
+[00:09:37.279] as we mentioned earlier like having a
+[00:09:38.880] lot of tools and a lot of providers with
+[00:09:40.560] different semantics and different ways
+[00:09:41.760] of describing things make things super
+[00:09:43.560] difficult. So having these self-driving
+[00:09:46.320] infrastructure capabilities it shouldn't
+[00:09:48.000] like the this self-driving
+[00:09:49.360] infrastructure shouldn't care about like
+[00:09:51.519] the the tools it's using or the cloud
+[00:09:54.240] provider it should operate across them
+[00:09:55.839] and like orchestrate across the
+[00:09:57.200] different cloud providers and
+[00:09:58.240] technologies easily. The third thing is
+[00:10:00.640] you have a dynamic platform UI. So as
+[00:10:03.040] you can see with VIP coding like you can
+[00:10:04.880] build simple applications and interfaces
+[00:10:06.880] really quickly or prototype more complex
+[00:10:09.120] stuff really quickly and the same thing
+[00:10:11.040] would be happening in a self-driving
+[00:10:12.320] infrastructure within your internal
+[00:10:14.000] tools. So internal tools would keep
+[00:10:15.440] evolving. They would keep changing
+[00:10:16.720] depending on the use cases which fixes a
+[00:10:18.959] huge problem we have with like internal
+[00:10:20.720] developer platforms today which is like
+[00:10:22.079] static abstractions and these
+[00:10:23.760] abstractions like they have to keep
+[00:10:25.519] evolving. But instead of having a
+[00:10:27.279] product manager and a developer that
+[00:10:29.200] like put a lot of effort into
+[00:10:30.399] maintaining this and keep changing them
+[00:10:32.160] because they can't change it at the same
+[00:10:33.839] rate that developers would expect the
+[00:10:35.279] platform capabilities to evolve. So this
+[00:10:37.440] can be done automatically autonomously.
+[00:10:39.760] And finally two major very important
+[00:10:41.600] things we haven't tapped. So like we
+[00:10:43.120] have super complicated infrastructure
+[00:10:45.279] service with a lot of great capabilities
+[00:10:46.800] but we still don't have that much like
+[00:10:49.040] intelligence in cost optimization and
+[00:10:50.959] scaling. So what this would entail like
+[00:10:53.200] imagine the scenario like you're running
+[00:10:54.560] a workload the Kubernetes cluster but
+[00:10:56.800] then the self-driving infrastructure
+[00:10:58.240] would detect that this workload is like
+[00:11:00.399] while monitoring the data is more suited
+[00:11:02.320] for something serverless. So it would
+[00:11:03.839] move it from your EKS cluster to Lambda
+[00:11:06.079] for a specific duration with zero
+[00:11:07.880] downtime because this is the most
+[00:11:10.160] appropriate kind of like compute
+[00:11:13.120] platform to run your workload on. So
+[00:11:14.800] this would help you reduce costs
+[00:11:16.240] dramatically and help you with scaling
+[00:11:18.160] depending on this. So you wouldn't care
+[00:11:20.160] anymore about like the underlying
+[00:11:21.600] compute because your infrastructure is
+[00:11:23.519] going to be able to migrate itself like
+[00:11:25.279] move these workloads around to save
+[00:11:26.720] costs and optimize scaling whenever you
+[00:11:28.800] you have to deal with it. So things like
+[00:11:30.560] scaling to Lambda and then going back to
+[00:11:32.640] Kubernetes or scaling to zero would be
+[00:11:34.640] easy and it wouldn't care about the
+[00:11:36.399] underlying compute platform
+[00:11:38.760] specifications because these things can
+[00:11:41.040] be self-driving. So let me give you some
+[00:11:43.560] examples of how this how this would look
+[00:11:46.079] in practice with a couple of use cases
+[00:11:47.760] from different
+[00:11:49.399] personas. So having these agents run
+[00:11:52.720] 24/7 you can do things like routine
+[00:11:54.399] maintenance and not the trivial kind of
+[00:11:56.000] routine maintenance something like this.
+[00:11:58.000] So if you have ever had to upgrade
+[00:11:59.800] Kubernetes after like months like you
+[00:12:02.160] get a new Kubernetes version every three
+[00:12:03.839] uh three months but like imagine you
+[00:12:05.600] spend a year or two like not upgrading
+[00:12:07.600] these Kubernetes clusters and then you
+[00:12:08.959] have to do it all at once. So you would
+[00:12:10.959] prompt this self-driving infrastructure
+[00:12:12.399] to upgrade my EKS cluster to the latest
+[00:12:13.920] Kubernetes version available and then it
+[00:12:15.680] would come up with a plan on how to do
+[00:12:17.279] this sequentially because you cannot do
+[00:12:18.560] it at the same time and if you're using
+[00:12:20.079] infrastructures code like terraform and
+[00:12:21.920] you're trying to do that it would fail
+[00:12:23.279] like it's not able to do this kind of
+[00:12:24.800] incremental upgrades autonomously. So
+[00:12:26.560] the agent will be able to do that. So
+[00:12:28.560] the self-driving infrastructure will
+[00:12:29.839] take this instruction, go to the
+[00:12:31.040] cluster, read the documentation that
+[00:12:32.720] changed up between the different
+[00:12:33.839] versions, migrate your workloads, test
+[00:12:35.680] it, make sure everything is great,
+[00:12:37.200] upgrade the like API server and keep
+[00:12:39.440] doing that until you reach the latest
+[00:12:40.639] version. And this will be able to like
+[00:12:42.560] this will be done can be done overnight.
+[00:12:44.880] So you don't have to monitor it. You
+[00:12:46.560] don't have to like keep guiding it on
+[00:12:49.279] how to fix this issues. It will be able
+[00:12:50.639] to figure it out. And this is what
+[00:12:52.079] agents are great at like figuring out
+[00:12:54.000] like new unpaved roads to like
+[00:12:58.560] accomplish a specific goal. So this is
+[00:13:00.639] one
+[00:13:01.560] thing. Another thing would be
+[00:13:03.360] intelligent abstractions. So this is
+[00:13:05.839] like something really painful like so
+[00:13:07.600] different cloud providers have different
+[00:13:09.360] ways of like naming a a firewall. So the
+[00:13:12.800] firewall is some sort of like a high
+[00:13:14.720] level became a high level user intent.
+[00:13:16.720] So if I'm a security engineer and I
+[00:13:18.480] faced this before like and I'm trying to
+[00:13:19.839] figure out okay where are like the
+[00:13:22.160] firewall rules where all inbound traffic
+[00:13:24.160] is like allowed within the cluster or
+[00:13:26.079] like within my environment and I'll just
+[00:13:28.000] ask it this and it would be able to
+[00:13:29.600] figure out like translate the highle
+[00:13:31.680] intent into lower level um executable
+[00:13:34.639] operation and figure out okay a firewall
+[00:13:37.600] in an AWS like in AWS is called a
+[00:13:39.920] security group at digital ocean it's
+[00:13:41.600] called a firewall and on like Google
+[00:13:44.560] compute it's called or Google cloud it's
+[00:13:46.399] the firewall. So we'll be able to figure
+[00:13:47.680] this out and aggregate the results
+[00:13:49.279] across different clouds like in a hybrid
+[00:13:50.720] environment and show them to me without
+[00:13:52.160] having to break this down and without
+[00:13:53.519] having to define a rigid abstraction. So
+[00:13:55.519] this is what I meant of like having more
+[00:13:57.440] intelligent abstractions. Um another
+[00:14:00.959] kind of example is keep trying while we
+[00:14:02.880] sleep. So if you're trying to remember
+[00:14:05.040] when I mentioned like creating docker
+[00:14:06.800] templates, docker file templates or
+[00:14:08.399] using cloud native build packs don't
+[00:14:09.920] work in every single environment in
+[00:14:11.279] every single case because applications
+[00:14:12.959] are not identical. So this is a great
+[00:14:14.880] application for self-driving
+[00:14:15.839] infrastructure. It will be able to
+[00:14:18.000] containerize an app, work on iterating,
+[00:14:20.320] coming up with a plan, creating progress
+[00:14:22.000] checklist, keep iterating on cont, but
+[00:14:24.880] like not just spitting out a docker
+[00:14:26.320] file, but actually building the image,
+[00:14:27.839] running it, and testing the health check
+[00:14:29.360] to make sure it passes and figuring out
+[00:14:31.360] issues along the way. So you can see
+[00:14:32.639] from this screenshot the sub my
+[00:14:34.399] self-driving infrastructure is able to
+[00:14:36.399] read a compos file to test the docker
+[00:14:38.079] file that's running properly spins up a
+[00:14:39.760] database locally configures all the
+[00:14:41.600] variables all the secrets to make sure
+[00:14:43.040] the app is working fine before spitting
+[00:14:44.880] out the final docker file. So it's not
+[00:14:46.320] just like previously generating
+[00:14:47.440] configurations but actually validating
+[00:14:49.199] that these configurations work and a
+[00:14:52.399] self-driving infrastructure wouldn't be
+[00:14:54.079] compete with VIP deploy. So you can
+[00:14:56.800] already try any of the existing like
+[00:14:58.959] coding agents to do vibe deploys on
+[00:15:01.040] different environments. But the cool
+[00:15:02.399] thing here is these are context
+[00:15:04.079] specific. So you're able to vive deploy
+[00:15:06.000] on your own custom infrastructure on
+[00:15:07.360] your cloud account and it will follow
+[00:15:08.560] security best practices. So this is the
+[00:15:10.000] tough part like not just vibe deploying
+[00:15:11.920] anywhere but by deploying in your own
+[00:15:13.920] environment with security best
+[00:15:15.040] practices. So here I'm asking the
+[00:15:17.040] self-driving infrastructure agent to
+[00:15:18.399] deploy an app on my AWS account with TLS
+[00:15:21.040] configured and to configure a specific
+[00:15:22.959] domain to point to it and it goes
+[00:15:24.639] through this and figures out everything.
+[00:15:26.800] And if you can see like it's pretty tiny
+[00:15:28.959] but like when it's configuring the
+[00:15:30.079] database here it didn't like create a
+[00:15:32.720] plain text like password and spit it
+[00:15:34.480] plain text into like the terminal but
+[00:15:36.160] created in a file and used this file to
+[00:15:38.959] add the password to the API without
+[00:15:40.639] having to expose this in a shell and it
+[00:15:42.959] created a secure password like a long
+[00:15:44.800] enough password so it and configured TLS
+[00:15:47.600] and added a systemd file to restart on
+[00:15:49.759] server restarts and this is like there's
+[00:15:51.440] a lot of details involved in like vibe
+[00:15:53.519] deploying or like vibe ops um as Ray
+[00:15:56.880] Myers called it. Um so there's a lot of
+[00:15:59.199] details and getting these properly
+[00:16:00.399] within your environment is hard. I mean
+[00:16:01.839] even developers struggle with this today
+[00:16:03.600] because they don't have all the details
+[00:16:05.360] and all the things they should do right
+[00:16:06.639] at the same time in their brains when
+[00:16:08.480] they're trying to do this. So it's super
+[00:16:10.079] tough. So the cool thing about this
+[00:16:11.759] example, this is already possible today.
+[00:16:14.240] So this is not the
+[00:16:15.880] future. Self-driving infrastructure
+[00:16:17.839] agents or DevOps agents are able to do
+[00:16:19.440] this today. But is it reliable enough?
+[00:16:22.240] Which is the biggest question. So like
+[00:16:23.680] if you're going to try having a
+[00:16:25.120] self-driving infrastructure with these
+[00:16:26.480] capabilities like how reliable are
+[00:16:27.920] agents today and how can you make them
+[00:16:30.160] better like how can you make be sure
+[00:16:31.759] that you can sleep at night while the
+[00:16:33.279] agent is up self upgrading your
+[00:16:35.440] Kubernetes cluster with zero downtime
+[00:16:37.440] because this is a very tough thing to
+[00:16:39.560] do. So to talk more about like how we
+[00:16:42.560] think about reliability and what we've
+[00:16:44.000] learned so far making these agents
+[00:16:45.360] reliable in a very critical task like
+[00:16:48.079] building a self-driving infrastructure
+[00:16:50.000] let me share with you how we think of an
+[00:16:51.440] agent. So, welcome Norbert. So, this is
+[00:16:53.440] one of the minions we've been building
+[00:16:54.560] or experimenting with and it's the
+[00:16:56.000] simplest possible agent. So, Norbert, as
+[00:16:58.959] you can see, like the naked minion, it
+[00:17:01.199] thinks and then it takes one of two
+[00:17:03.360] actions. So, just like very simple
+[00:17:05.120] actions and that's the first thing an
+[00:17:06.400] agent can do. Like an agent can
+[00:17:07.720] autonomously decide which action to
+[00:17:10.240] take. So, it can be two actions which is
+[00:17:12.799] the minimum. So, it has some choice or
+[00:17:14.720] it can be many
+[00:17:16.439] actions. Um the second thing is after it
+[00:17:19.280] takes an action it affects the external
+[00:17:20.959] world. So it has some way of modeling
+[00:17:22.799] the external world or observing the
+[00:17:24.640] effects of its actions. So it can
+[00:17:26.400] iterate which is the second thing of
+[00:17:28.799] making an agent. So the agent can take
+[00:17:30.160] actions autonomously, choose which
+[00:17:31.520] actions and it iterates, keeps taking
+[00:17:33.280] actions to accomplish a specific goal.
+[00:17:35.440] That's the third component. An agent
+[00:17:37.280] should have an end goal or somehow a
+[00:17:39.280] measurable end goal to be able to to
+[00:17:40.960] evaluate its reliability. Otherwise,
+[00:17:43.120] it's super hard to say if the agent is
+[00:17:44.960] done and super hard to say if the agent
+[00:17:46.480] accomplished its task successfully. So
+[00:17:48.960] this is not as easy for every single
+[00:17:50.799] domain. So in our domain we're fortunate
+[00:17:52.480] enough is like if you're trying to
+[00:17:54.240] containerize an app or like deploy
+[00:17:55.919] something or debug something you can
+[00:17:58.240] find in a deterministic way like
+[00:18:00.080] validate that the agent accomplished its
+[00:18:01.880] goal but like things like documentation
+[00:18:04.480] generation is much harder for example or
+[00:18:06.480] writing is much harder. So in this case
+[00:18:08.640] having an angle um in this in these
+[00:18:11.039] agents makes it easier to evaluate their
+[00:18:12.960] reliability and make them better or like
+[00:18:14.799] at least be able to observe this to see
+[00:18:16.960] how we can improve it. So getting this
+[00:18:19.360] out of the way, how we define agents.
+[00:18:20.799] Agent takes actions, it iterates until
+[00:18:22.559] it reaches a specific end goal. So how
+[00:18:25.039] we think about reliability, we split
+[00:18:26.480] agents into two parts. You see there's
+[00:18:28.160] the think part which is the first thing
+[00:18:29.919] we're trying to make it reliable. So how
+[00:18:31.600] it thinks, how it comes up with tools or
+[00:18:33.440] like actions to take and the other part
+[00:18:35.600] are the actions themselves because you
+[00:18:37.520] can have as many actions as you want.
+[00:18:38.960] And we found out that the actions like
+[00:18:40.640] the performance of the actions
+[00:18:41.840] themselves affect the agent a
+[00:18:43.919] dramatically. So like the the the impact
+[00:18:46.240] of having action like the the choice of
+[00:18:49.200] actions and how intelligent these
+[00:18:51.039] actions are like how for example like
+[00:18:52.799] you can have a very simple action that
+[00:18:54.160] does a lot of things or like specific
+[00:18:55.600] actions dedicated to stuff and there's
+[00:18:57.360] there's a trade-off because the more
+[00:18:58.640] tools you act add the harder it is for
+[00:19:01.120] the agent to come up with the right
+[00:19:02.320] combination of tools to execute sim to a
+[00:19:04.799] human being like if you give a human
+[00:19:06.240] being too many options like you can
+[00:19:08.320] their brains will just overload and like
+[00:19:10.240] you get decision fatigue. So the same
+[00:19:11.760] thing happens to agents. So we're
+[00:19:13.679] splitting it between reliable thinking
+[00:19:15.120] and reliable actions or reliable tools.
+[00:19:17.520] Let's start with reliable thinking. So
+[00:19:19.280] when we're talking about reliable
+[00:19:20.880] thinking of the agent is how it comes up
+[00:19:22.799] like after observing the external
+[00:19:24.400] environment um or like the distilled
+[00:19:27.039] version of the external environment in
+[00:19:28.400] its memory um like what actions would it
+[00:19:30.799] take and in which order. So reliable
+[00:19:32.559] thinking is more focused on the brain
+[00:19:34.320] and when you're thinking on the brain we
+[00:19:36.080] came up of like in the literature you
+[00:19:37.919] would see three ways of evaluating
+[00:19:39.679] success. So you can check the end goal
+[00:19:41.760] which is the easier the most
+[00:19:42.880] straightforward way because if the agent
+[00:19:44.799] doesn't accomplish the end task like
+[00:19:46.320] it's failed like it couldn't build an
+[00:19:49.039] app that runs or like couldn't migrate
+[00:19:51.039] your kubernetes cluster or couldn't
+[00:19:52.559] deploy stuff on ECS or couldn't contain
+[00:19:54.799] app. So it's it's relatively easier to
+[00:19:56.799] reason about the end goal because this
+[00:19:58.400] is the task we're trying to accomplish.
+[00:20:00.080] But then some people use sub goals
+[00:20:01.919] because sometimes the end goal keep
+[00:20:03.600] failing and you're not sure why. So if
+[00:20:05.600] you divide things into sub goals you get
+[00:20:06.960] a better idea of why the end goal is not
+[00:20:09.120] accomplished. So this is another way to
+[00:20:11.039] measure success. And finally, the most
+[00:20:12.799] complicated way to measure success is
+[00:20:14.240] the action trajectory. So the agent
+[00:20:15.840] takes specific sequence of actions given
+[00:20:18.000] a specific input. So a snapshot of the
+[00:20:20.080] real world or like the snapshot of its
+[00:20:21.520] memory or state and then it takes
+[00:20:23.679] specific actions based on this like kind
+[00:20:25.679] of snapshot and then you evaluate this
+[00:20:27.200] like is this the right course of action
+[00:20:29.280] given the initial starting parameters
+[00:20:31.600] which can be fixed. Um so this is
+[00:20:33.760] another way to measure like the the
+[00:20:35.600] evaluating success. So at stack we still
+[00:20:37.919] haven't gone through like all three.
+[00:20:40.159] We've been doing a lot of work with end
+[00:20:42.000] goals and sub goals but we still haven't
+[00:20:43.440] started evaluating trajectories yet but
+[00:20:44.880] it's something on the road map something
+[00:20:46.159] want to dig deeper in because there are
+[00:20:48.320] a lot of common like subtasks that are
+[00:20:50.799] very common between different kinds of
+[00:20:52.240] infrastructure devops tasks. So it would
+[00:20:54.320] be great to see like how trajectory of
+[00:20:57.280] agents perform on these specific like
+[00:20:59.360] sub goals or
+[00:21:00.679] like sub trajectories.
+[00:21:03.760] So since now we can like evaluate like
+[00:21:06.480] the success criteria. We know when the
+[00:21:08.000] agent is successful we can we have to
+[00:21:10.799] pick specific metrics because we're
+[00:21:12.320] trying to evaluate how reliable the
+[00:21:14.159] thinking process is. So some of the
+[00:21:16.400] metrics we people use that are generic
+[00:21:18.720] enough and you can apply to different
+[00:21:20.320] domains like these kind of like the
+[00:21:22.080] evaluation criteria. You can also apply
+[00:21:23.520] this to different domains not like
+[00:21:24.640] DevOps or infrastructure specific is
+[00:21:26.720] pass K which means if you give the agent
+[00:21:29.760] K attempts uh what's the likelihood
+[00:21:32.000] that's going to succeed at least once.
+[00:21:33.840] So K at one is the likelihood that this
+[00:21:36.559] agent is going to succeed like on a
+[00:21:38.480] single try at K at four is the
+[00:21:40.559] likelihood that this agent is going to
+[00:21:41.919] succeed at least once given four
+[00:21:44.159] attempts. Um, so this is a very good
+[00:21:46.480] indicator of can the agent actually
+[00:21:49.520] accomplish what it was designed to do or
+[00:21:51.919] not. So this basically asks that like is
+[00:21:54.159] the agent capable of doing this or not.
+[00:21:56.400] But it doesn't measure reliability
+[00:21:57.679] because if the agent is capable of doing
+[00:21:59.120] something everyone in like 10 trials
+[00:22:01.919] doesn't mean like every single user or
+[00:22:03.679] every single time we're going to do this
+[00:22:04.960] it's going to pass. And this is very
+[00:22:06.720] difficult for very security like very
+[00:22:09.200] critical infrastructure tasks. So there
+[00:22:10.720] is also pass power k or pass a k which
+[00:22:14.000] means like given k attempts what is the
+[00:22:17.360] like the likelihood that the agent would
+[00:22:19.200] pass k times. So assuming like pass to
+[00:22:23.120] the power of k is pass the power four.
+[00:22:24.960] So given four attempts what's the
+[00:22:26.320] likelihood that the agent is going to
+[00:22:27.679] pass four times which measures more
+[00:22:29.440] reliability and it's a tougher metric to
+[00:22:30.960] hit. The other thing we measure is the
+[00:22:33.840] number of steps because we notice that
+[00:22:35.600] the more steps the agent does, the more
+[00:22:38.320] it tends to hallucinate and the longer
+[00:22:40.000] it takes it to accomplish the task. So
+[00:22:41.760] if there's something critical I want to
+[00:22:43.440] recover, for example, from a failed
+[00:22:45.760] deployment or roll back or fix something
+[00:22:47.600] that you can do reliably with a
+[00:22:49.200] deterministic system and you need an
+[00:22:50.760] agent, the agent finishing its job
+[00:22:53.880] quickly is a great thing. Like it's the
+[00:22:56.159] desirable thing. At the same time, if
+[00:22:58.000] you're not doing a lot of state or
+[00:22:59.200] context compression and you want to keep
+[00:23:00.640] steps, the more steps you add, the
+[00:23:02.159] larger the context blows up and the more
+[00:23:04.559] likely the agent will listen hallucinate
+[00:23:06.400] and lose track of what it's trying to
+[00:23:08.159] do. So, it's like like dangling a banana
+[00:23:10.400] in front of a minion. So, the minion
+[00:23:11.679] when see when it sees the banana, it
+[00:23:13.280] will just abandon the task and chase the
+[00:23:14.559] banana because it's just overwhelmed and
+[00:23:16.320] it sees something interesting and just
+[00:23:17.760] chase. So, the agents that do a lot of
+[00:23:20.640] steps and keep a lot of steps in their
+[00:23:22.000] memory, they tend to lose track of what
+[00:23:23.200] we're trying to do in the first place.
+[00:23:25.200] And the same thing happens to me
+[00:23:27.000] sometimes. But that's why we measure the
+[00:23:29.520] number of steps. So the final thing is
+[00:23:31.919] the cost of success which like how much
+[00:23:34.640] would it cost us for an contization
+[00:23:37.360] agent to be able to dockerize an app
+[00:23:38.960] successfully because as you see like it
+[00:23:41.360] can take on a contization process and
+[00:23:43.679] take 15 minutes and I can like if the
+[00:23:46.480] success rate is 50% I could just like
+[00:23:48.080] run it 10 times overnight until it's
+[00:23:49.840] successful which is fine but how much
+[00:23:51.600] would it cost me? Like because what if
+[00:23:53.600] it costs me $2,000 or like $10,000 to
+[00:23:56.720] container as an app, then it doesn't
+[00:23:58.960] make sense anymore. So part of the
+[00:24:00.720] problems being solved is the cost of the
+[00:24:02.320] problem itself. Like would it cost more
+[00:24:04.400] than it would save us to do this kind of
+[00:24:06.400] task? Like if you have a big migration
+[00:24:09.360] project that would spend three years
+[00:24:10.880] modernizing your infrastructure and like
+[00:24:13.840] this thing is going like the
+[00:24:15.200] self-driving infra like DevOps agents is
+[00:24:17.039] going to cut this down into 80 months
+[00:24:19.039] like would the cost of doing so be like
+[00:24:22.960] given the time and everything like would
+[00:24:24.240] it be worth it or not. So this is an
+[00:24:26.559] example table of one of the very first
+[00:24:28.640] evaluations we built. So the task here
+[00:24:30.720] was being able to deploy um and like a
+[00:24:33.039] full stack application on AWS, a
+[00:24:34.799] statefell application on AWS with like
+[00:24:37.360] all the bells and whistles and with all
+[00:24:38.880] the security best practices including
+[00:24:40.320] TLS, secure passwords, private database,
+[00:24:42.240] bottomup security groups, stuff like
+[00:24:44.080] that. So here we tried different
+[00:24:46.000] applications with different technology
+[00:24:47.200] stacks trying to make it as diverse as
+[00:24:49.120] possible and we measured passet one and
+[00:24:51.919] measured passet 4 and you can see here
+[00:24:53.919] like we also added some custom metrics
+[00:24:55.679] which is something you might do like
+[00:24:56.960] adding custom metrics specific here. So
+[00:24:58.640] here we wanted developers to see how
+[00:25:00.320] fast it is to deploy these apps. So we
+[00:25:02.720] added in the mix like a deployment time.
+[00:25:04.240] So depending on the evaluation the kind
+[00:25:06.320] of metrics and success criteria I shared
+[00:25:08.080] are very generic but you can also add in
+[00:25:09.760] the mix like very specific things. So
+[00:25:12.080] once we got this we found out like two
+[00:25:15.919] um like two major takeaways. The first
+[00:25:18.320] one is sometimes the success rate is
+[00:25:20.799] really high and it's really fast and it
+[00:25:23.120] doesn't mean like okay so this kind of
+[00:25:25.120] task like it's really good at it. So
+[00:25:26.799] it's very reliable. It's almost as if
+[00:25:28.640] it's deterministic. Um, so this is
+[00:25:32.000] great. So this agent is great. Like we
+[00:25:33.679] didn't need to optimize further for this
+[00:25:35.120] kind of like specific task. But in other
+[00:25:36.799] tasks, we found out that the passet one
+[00:25:38.559] is very low, but the passet four is much
+[00:25:40.640] higher. Like as you see here, like if we
+[00:25:42.240] give it four attempts, it would go up
+[00:25:43.440] from 50% to just like 39 uh 93%. Which
+[00:25:47.600] is very high. Like you can afford to do
+[00:25:49.120] this in every task. Like some tasks like
+[00:25:50.799] dockerization like it's not very
+[00:25:52.559] critical. You can leave it doing that
+[00:25:54.159] overnight. Try over and over again. And
+[00:25:55.919] every trial is just an hour which is
+[00:25:57.520] amazing like it would take me four hours
+[00:25:58.880] to deploy this kind of app. Um but here
+[00:26:01.760] we can afford it but not all
+[00:26:03.120] applications we can afford this. So pass
+[00:26:05.200] four can be tricky like pass K can be
+[00:26:08.240] tricky uh in very critical situations
+[00:26:10.400] and then you need to do the pass power K
+[00:26:13.120] to make sure it's consistent and
+[00:26:14.400] reliable because you don't want to rely
+[00:26:15.679] on agent in something critical and then
+[00:26:17.440] you find out like it's just like
+[00:26:19.039] hallucinated or like broken
+[00:26:20.400] infrastructure or something. So not not
+[00:26:22.640] always like pass can be like misleading
+[00:26:25.440] in some cases but yeah you get it. So
+[00:26:28.000] the big like the big elephant in the
+[00:26:29.840] room especially for infrastructure and
+[00:26:31.520] devops task like there's no available
+[00:26:33.120] public data sets or like very few data
+[00:26:35.200] sets and with a lot of stale data uh out
+[00:26:38.000] there. So how do we evaluate without
+[00:26:39.679] data points like how we gather these
+[00:26:41.440] data points. So the first thing we
+[00:26:43.440] started is like aggregating open source
+[00:26:45.520] code on GitHub for infrastructure. But
+[00:26:48.000] unfortunately for our domain like most
+[00:26:49.520] of the code is super old and it's
+[00:26:50.880] outdated and it's not like as high
+[00:26:52.960] quality as you would see and it doesn't
+[00:26:55.279] represent the actual fact because like
+[00:26:56.640] infrastructure configurations people
+[00:26:58.000] don't usually put that on GitHub like
+[00:26:59.279] they keep it in private repositories um
+[00:27:01.679] for their infrastructure and they're
+[00:27:03.279] like like it's a closely guard kind
+[00:27:06.080] guarded kind of code for any
+[00:27:07.520] organization. So this is terrible like
+[00:27:09.679] we weren't able to rely on this much but
+[00:27:11.679] it gives us a hint and then we do a
+[00:27:13.520] synthetic data like we generate a lot of
+[00:27:15.120] synthetic data like running the agents
+[00:27:16.720] generating code and using these to build
+[00:27:18.559] the valves and they're surprisingly
+[00:27:19.840] really well because really good because
+[00:27:22.080] for very complex task even a human like
+[00:27:24.799] doesn't have like 100% success rate. So
+[00:27:27.120] synthetic data it like the success rate
+[00:27:29.679] is like 70%. This would exactly be the
+[00:27:32.000] like the success rate if you give a
+[00:27:33.279] human the same time to the data set. But
+[00:27:35.760] the highest quality of data you can get
+[00:27:37.440] is from real customer support cases. So
+[00:27:39.200] we take this cases, we study them and
+[00:27:41.279] then we analyze it like generate go back
+[00:27:43.440] to generate synthetic data based on
+[00:27:44.720] these cases like guided synthetic data
+[00:27:47.120] and these are the high quality we can
+[00:27:48.480] get and we always start seating these
+[00:27:50.320] data evaluation data sets with
+[00:27:51.679] handcrafted data. So like we create use
+[00:27:53.279] cases manually um to try to spread it
+[00:27:55.840] like to handle corner cases and stuff
+[00:27:58.159] like that um which is like the highest
+[00:28:00.799] quality data we can get but we don't get
+[00:28:02.159] a lot of quantity like a higher quantity
+[00:28:03.919] of this kind of data. So something else
+[00:28:06.480] we do like this is for the evaluation
+[00:28:08.159] but what should you do after production
+[00:28:10.399] um so we use a lot of LM like we tried a
+[00:28:12.559] lot of LM observity tools they're all
+[00:28:14.159] pretty much the same we use length views
+[00:28:15.679] at the moment so length use like it
+[00:28:17.679] gives you like kind sort of traces for
+[00:28:20.000] like the L&M workflow so if you have
+[00:28:21.760] complex workflows or agent you can track
+[00:28:23.600] everything like all the prompts all the
+[00:28:25.200] sequence the input and the output and so
+[00:28:26.960] on and then you can see when something
+[00:28:29.039] goes wrong you would extract samples
+[00:28:31.360] from this like production observability
+[00:28:34.000] data and and add it as a
+[00:28:36.679] handcrafted data point to your
+[00:28:38.559] evaluation data. So this is very
+[00:28:40.080] important not just to understand what's
+[00:28:42.240] going on in production but also be able
+[00:28:44.640] to refine the evaluation data and keep
+[00:28:46.480] like building this flywheel making these
+[00:28:48.559] agents better and better and more
+[00:28:50.120] reliable. So this is the first part
+[00:28:52.720] reliable thinking or like how to make
+[00:28:54.240] the agent thinking process better.
+[00:28:56.080] Another part is reliable tools because
+[00:28:58.000] we're huge advocates of the approach
+[00:28:59.760] that like we're trying to have very few
+[00:29:02.399] but super high quality tools and we
+[00:29:04.320] found out that these make the agents
+[00:29:05.520] much much smarter compared to very dumb
+[00:29:07.840] tools. So instead of the agent taking
+[00:29:09.679] like 20 steps to reach a specific
+[00:29:11.760] conclusion or like do something they can
+[00:29:13.679] just do a single step which keeps like
+[00:29:15.600] the context from blowing up and it keeps
+[00:29:18.080] the agents much simpler by like
+[00:29:19.919] offloading or like delegating these
+[00:29:21.440] tasks to a more capable workflow or a
+[00:29:23.679] tool. So here I'm going to show you a
+[00:29:25.679] couple of examples uh of how we're
+[00:29:27.520] evaluating tools because eval tools is
+[00:29:29.840] trickier than agents because um so it's
+[00:29:32.799] sort of like it's easier to get like to
+[00:29:34.640] build an eval data uh for for this like
+[00:29:37.200] for for tools but it's harder to come up
+[00:29:39.120] with like success metrics because they
+[00:29:41.360] vary greatly like every single tool has
+[00:29:42.880] its own success criteria and and metrics
+[00:29:45.120] to measure it with. So for the context
+[00:29:47.039] retrieval evaluation like here we're
+[00:29:48.559] trying to retrieve specific parts of
+[00:29:50.159] your infrastructure that are relevant to
+[00:29:52.080] a question or to do precise like
+[00:29:54.720] surgical edits to accomplish a specific
+[00:29:56.880] task. And here you can see like we use a
+[00:29:59.360] recall because we are optimizing for the
+[00:30:01.440] amount of information you retrieve for
+[00:30:02.720] the context in your machine like in your
+[00:30:04.720] environment. Um in another case for code
+[00:30:06.960] generation for example and Terraform
+[00:30:09.039] specifically we can't just like validate
+[00:30:11.120] the quality of the code. We want to make
+[00:30:12.480] sure this code is appliable in
+[00:30:14.399] production. So we have a metric that
+[00:30:16.000] measures zero shot terraform planning
+[00:30:17.440] success rate. So we take the code we
+[00:30:19.440] actually try apply it in a sandbox
+[00:30:20.880] environment and see if it succeeds and
+[00:30:22.320] then or like at least plan it against
+[00:30:24.000] this environment and see if it succeeds.
+[00:30:25.760] And this is like a high enough bar I
+[00:30:27.919] think so far at least so far for
+[00:30:29.600] Terapform code generation. Um and this
+[00:30:32.559] is basically how we evaluated this two
+[00:30:34.159] call. So as you can see like two calls
+[00:30:35.840] have like you have to be creative on how
+[00:30:37.520] you evaluate every single tool call
+[00:30:38.880] because like and how much how important
+[00:30:41.520] this specific task is. So you can
+[00:30:43.600] distribute your like weight or like
+[00:30:45.520] amount of work evenly so you can like
+[00:30:47.360] deal with the lowest hanging fruit
+[00:30:49.279] first, but then like add specific like
+[00:30:52.000] harder requirements and harder as you're
+[00:30:53.520] accomplishing more scores. So the more
+[00:30:55.039] higher scores we reach on specific like
+[00:30:58.159] uh metrics we're evaluating tools at the
+[00:31:00.159] harder we're trying to make the metric
+[00:31:01.440] or the goal so we can keep keep them
+[00:31:03.440] getting better and more reliable. So
+[00:31:06.240] that's it. But as you guessed so far
+[00:31:09.360] from this Cyberman, I'm a huge fan of
+[00:31:11.679] science fiction. And I found this quote
+[00:31:13.600] very relevant from like the one of the
+[00:31:15.360] very famous like um books written so far
+[00:31:18.399] on robotics and AI by Isaac Kazimov and
+[00:31:21.520] it says like there was a time when
+[00:31:22.720] humanity faced the universe alone and
+[00:31:24.640] without a friend, but now they have
+[00:31:26.320] creatures to help them. And these little
+[00:31:29.200] like minion kind of agent guys, they're
+[00:31:31.840] super helpful and super funny,
+[00:31:33.360] especially when it comes to some like
+[00:31:34.960] very dull and a very like painful kind
+[00:31:37.760] of work developers have to deal with
+[00:31:39.120] with infrastructure. So this is a great
+[00:31:41.600] chance to try control these features and
+[00:31:43.679] like make them better so we can sleep
+[00:31:45.760] better at night and like we can enjoy
+[00:31:47.200] coding
+[00:31:48.360] again. Thank you so much. So please
+[00:31:50.960] reach out if you're interested in
+[00:31:52.159] discussing this more. Uh, I would love
+[00:31:53.919] to show you what we're doing and talk
+[00:31:55.279] about these kind of like agent evals
+[00:31:56.720] because they're super tough and they're
+[00:31:58.320] super interesting. So, yeah, this is my
+[00:32:00.440] LinkedIn. Thank you.
+[00:32:03.519] Thank you so much, George. That was
+[00:32:05.840] awesome. Um,
+[00:32:08.159] yeah, that that was really fun. It
+[00:32:10.000] resonated a lot. And right at the end
+[00:32:11.919] there with the Azimoff quote, like I
+[00:32:14.880] recently had a project where I had to
+[00:32:17.279] hack on something for a couple weeks and
+[00:32:19.600] it was just me and me and some bots and
+[00:32:22.240] it felt different than back in the old
+[00:32:24.159] days or like I feel like I've got like a
+[00:32:26.159] bit of a thought partner and I like
+[00:32:28.720] write up like many specs, send it off to
+[00:32:31.840] uh to my minions uh in that case to do
+[00:32:34.799] work and it was a very different
+[00:32:36.080] experience than kind of doing it
+[00:32:37.600] solitary. I do like working with humans,
+[00:32:40.240] so I like having
+[00:32:41.960] both. I don't just want to be locked
+[00:32:44.480] away in the basement, but uh yeah, it's
+[00:32:47.640] really um so on before you go, I got a
+[00:32:52.960] couple questions here. So, this is one
+[00:32:55.279] uh have you considered using
+[00:32:56.559] reinforcement learning techniques to
+[00:32:58.640] guide these agents and potentially
+[00:33:00.080] improve their success rate compared to
+[00:33:02.159] relying on on rules and like any
+[00:33:04.399] thoughts there? Yes, definitely. Yeah,
+[00:33:07.120] definitely. Like one of the major
+[00:33:08.720] challenges with the agents is picking
+[00:33:10.159] like at least the evaluating like or
+[00:33:11.679] improving the thinking part. Like we
+[00:33:13.279] talked only about evaluation like not
+[00:33:15.200] techniques to improve the performance
+[00:33:16.399] but like one of the major things with
+[00:33:18.000] thinking is choosing the right tool at
+[00:33:19.519] the right time. And this is where like
+[00:33:21.120] reinforcement learning policies are
+[00:33:22.640] super important. Like you can yeah like
+[00:33:25.039] you can optimize the tool choice based
+[00:33:27.279] on like successful runs. But like the
+[00:33:29.120] trick here is figuring out like how to
+[00:33:31.360] create a reward function that optimizes
+[00:33:33.440] for like the success rate. Like would
+[00:33:35.200] you incorporate like there are some
+[00:33:36.159] papers they incorporate a mix of have
+[00:33:38.240] like taking the end goal and the process
+[00:33:39.919] at the same time and like add a mix it
+[00:33:41.679] like a a weighted sum for like
+[00:33:44.480] accomplishing sub goals and end goals
+[00:33:46.399] for example in the reward policy but
+[00:33:48.000] also you need a lot of good data points
+[00:33:49.840] to be able to train this. Yeah. So this
+[00:33:52.640] is definitely something we're
+[00:33:53.760] considering and working on. Yeah. Yeah.
+[00:33:56.320] I kind of picture like having minions in
+[00:33:59.120] these isolated worlds to be able to try
+[00:34:01.679] things out and be able to kind of learn
+[00:34:03.679] over time and and do the uh do the alpha
+[00:34:06.880] zero um thing but in the world of DevOps
+[00:34:10.960] that's really fun but it's super slow
+[00:34:13.520] like we have cloud sandboxes and we let
+[00:34:15.359] these agents like we have a minion farm
+[00:34:17.040] where these agents are strong freely but
+[00:34:19.040] like it takes sometimes like 15 or like
+[00:34:21.359] up to 60 minutes to accomplish a
+[00:34:22.879] specific task which is super slow to
+[00:34:25.440] generate an update Yeah, enough
+[00:34:26.879] realistic data. Oh man, that's fun. So,
+[00:34:31.280] if if I'm newer to this world, like how
+[00:34:33.760] do I build the trust to the point that I
+[00:34:36.320] can actually sleep at night and allow
+[00:34:38.720] this system to go off and be, you know,
+[00:34:41.760] self-healing and doing things and not
+[00:34:44.000] having me, you know, have my mind wake
+[00:34:46.159] myself up at 2 am worrying about, you
+[00:34:49.040] know, what happened? How do you kind of
+[00:34:50.800] go through and build that trust?
+[00:34:53.679] So, we have two things at the moment.
+[00:34:55.359] We're still discovering like we're still
+[00:34:56.639] exploring this but like one of the thing
+[00:34:58.240] we found out that really helped and is
+[00:35:00.720] like showing the users or like the
+[00:35:02.320] developers the thought process of how it
+[00:35:04.000] comes up to these conclusions and how
+[00:35:05.599] it's thinking about accomplishing this.
+[00:35:07.440] So the more you add tracing data like
+[00:35:09.920] how you for example like how we're
+[00:35:11.200] debugging these systems the more we show
+[00:35:12.640] users these kind of like internal
+[00:35:14.000] workings how these things are built how
+[00:35:15.680] they're evaluated how they think the
+[00:35:17.520] more trust they evolve and like it sets
+[00:35:19.520] expectations right to the right time. So
+[00:35:21.920] like the more like the more you see them
+[00:35:24.800] considering a lot of angles you never
+[00:35:26.400] considered before like storing secrets
+[00:35:29.119] in encrypted files and not like in plain
+[00:35:31.599] text and stuff like that the more you
+[00:35:32.800] realize okay these things are actually
+[00:35:34.320] more reliable than I thought and then
+[00:35:35.520] you would trust them more. Um so this is
+[00:35:37.599] one thing another thing we're doing is
+[00:35:39.920] we're starting like opening up like
+[00:35:41.359] these benchmark results. So the first
+[00:35:42.560] time we launched an agent last year uh
+[00:35:44.400] we published with it like a a big table
+[00:35:47.280] with what it's good at and what it sucks
+[00:35:49.200] at. As you can see like we added a row
+[00:35:51.520] um of like okay this cannot deploy
+[00:35:53.680] superbase like the success rate is zero
+[00:35:55.359] even after multiple trials. So we show
+[00:35:57.280] developers that you think like which
+[00:35:58.880] scenarios these are optimized for and
+[00:36:00.800] which scenarios we're evaluating for and
+[00:36:03.280] which other scenarios are still not very
+[00:36:05.520] explored and you can trust them to do
+[00:36:07.520] these kind of things well.
+[00:36:10.480] Got it. Nice. And then if I'm a
+[00:36:12.160] developer that hasn't done the DevOps
+[00:36:14.000] thing yet, do you feel like you the
+[00:36:17.119] world of AI makes this like more
+[00:36:18.960] approachable like would would you like
+[00:36:21.280] recommend that they actually start
+[00:36:23.599] getting into DevOps now and that you
+[00:36:25.359] know the water is warm?
+[00:36:27.920] Yes, definitely. Definitely. I mean like
+[00:36:30.720] a lot of developers I meet are scared of
+[00:36:32.400] doing infrastructure work because they
+[00:36:33.839] don't want to mess things something up
+[00:36:34.960] like they don't want to leave a firewall
+[00:36:36.400] rule open or like leave the database
+[00:36:37.920] public and so on. And you would see like
+[00:36:40.960] it's it's much easier to align like the
+[00:36:43.440] the like these kind of agents or like
+[00:36:45.280] these kind of chat bots or like the code
+[00:36:47.359] generation whatever you're doing with
+[00:36:48.720] specific security policies. So like the
+[00:36:50.800] defaults are really more secure than
+[00:36:52.800] what an average developer would do
+[00:36:54.560] because because developers are scared of
+[00:36:56.720] touching this kind of work but I think
+[00:36:58.160] now it's more manageable at least you
+[00:36:59.359] can think like you can check the thought
+[00:37:00.960] process uh of these agents and you can
+[00:37:03.200] do it yourself. But like it's it's very
+[00:37:04.560] educational. Like I've learned new AWS
+[00:37:06.640] CLI commands by watching these agents
+[00:37:08.240] work. I didn't know for example there's
+[00:37:10.160] a command subcomand for you to wait on a
+[00:37:12.240] specific resource to be ready. Like I
+[00:37:13.599] always wrote a bash script or like use
+[00:37:15.359] something else.
+[00:37:17.520] That's fun. Awesome. Well, George, thank
+[00:37:19.599] you so much for taking the time and
+[00:37:21.359] staying up late to uh to show us all of
+[00:37:24.480] this stuff. We really appreciate it and
+[00:37:26.960] look forward to chatting on Discord and
+[00:37:28.800] the like and continuing the
+[00:37:30.079] conversation.
+[00:37:32.000] Amazing. It's my pleasure. Happy to be
+[00:37:33.920] here. Thanks for having me. Yeah.
+[00:37:35.920] Cheers.

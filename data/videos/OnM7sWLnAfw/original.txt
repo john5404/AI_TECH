@@ -1,0 +1,2290 @@
+[00:00:00.000] I think one of the things about meta
+[00:00:01.520] culture is that it's very engineering
+[00:00:03.240] empowered. If you can get engineers to
+[00:00:05.760] support something from the ground up,
+[00:00:07.840] you can go a long way. And there's a
+[00:00:09.360] popular phrase code wins argument, and I
+[00:00:10.800] think in this case it's a case of like
+[00:00:12.480] proof wins argument.
+[00:00:13.720] >> One of the questions that I often ask
+[00:00:15.600] when I talk to people about spec-driven
+[00:00:17.240] development is at what level are we
+[00:00:18.920] talking about? So, what we took was
+[00:00:21.040] defining a process using repo 5, how
+[00:00:22.880] we're going to work with the LLM
+[00:00:23.920] starting with the spec, and then we
+[00:00:25.720] paired developers with that process.
+[00:00:28.320] There's a Stanford research on over
+[00:00:29.760] 100,000 employees. What they found out
+[00:00:31.240] is AI is helping generate 30 to 4% more
+[00:00:34.320] code than before. However, 15 to 25% of
+[00:00:36.920] that code ends up being junk that gets
+[00:00:38.360] reworked, right? So, they estimated the
+[00:00:40.040] actual productivity gain is like 15 to
+[00:00:41.800] 20%. I would think it's higher if you're
+[00:00:43.360] using AI in the right way. All large
+[00:00:45.400] tech companies have this issue. Your
+[00:00:47.240] software that's been in existence for
+[00:00:49.600] more than a few years using legacy that
+[00:00:52.240] no longer resemble the way that you
+[00:00:53.560] would rebuild those things today. So,
+[00:00:55.520] we're talking about shifting to
+[00:00:57.200] architecture with a semantic layer and a
+[00:00:59.800] query engine on top to serve the same
+[00:01:01.920] kinds of metrics queries, but on a
+[00:01:04.080] off-production architecture.
+[00:01:06.140] [Music]
+[00:01:13.360] Before we jump into this episode, I
+[00:01:14.880] wanted to let you know that this podcast
+[00:01:16.560] is for developers building with AI at
+[00:01:19.240] the core. So, whether that's exploring
+[00:01:21.360] the latest tools, the workflows, or the
+[00:01:24.040] best practices, this podcast's for you.
+[00:01:26.520] A really quick ask, 90% of people who
+[00:01:28.800] are listening to this haven't yet
+[00:01:30.200] subscribed. So, if this content has
+[00:01:32.000] helped you build smarter, hit that
+[00:01:33.800] subscribe button, and maybe a like. All
+[00:01:36.040] right, back to the episode. Hello, and
+[00:01:38.520] welcome to another episode of the AI
+[00:01:39.840] Native Dev. And we're here live from New
+[00:01:42.520] York at QCon AI. And on my journey here,
+[00:01:46.160] I'm going to be talking with a number of
+[00:01:47.440] different folks throughout the
+[00:01:48.920] conference
+[00:01:50.200] based on whether I think it's a a really
+[00:01:52.240] nailed-on presentation for our
+[00:01:54.520] listeners. And today's, I absolutely
+[00:01:57.280] found one. And so, this is Supa Karuravi
+[00:02:00.760] who gave a session choosing your AI
+[00:02:02.560] copilot, maximizing developer
+[00:02:04.880] productivity. And that is such a cool
+[00:02:06.400] topic, and you actually mentioned a huge
+[00:02:08.360] ton of different productivity hacks and
+[00:02:09.920] things like that in and around using
+[00:02:12.280] various agents and LLMs.
+[00:02:14.480] First of all, Supa,
+[00:02:15.920] talk to us a little bit about who you
+[00:02:17.400] are. You work for Coinbase. What do you
+[00:02:19.360] do there? And and tell us a little bit
+[00:02:20.720] about it. Yeah, yeah, I'm happy to. So,
+[00:02:22.520] I'm
+[00:02:23.920] Supa, like the fruit pear, makes it
+[00:02:25.320] easier for people to remember. I'm a
+[00:02:27.040] machine learning platform engineer at
+[00:02:28.600] Coinbase. I've actually only been in the
+[00:02:30.200] industry about 2 years. I used to sell
+[00:02:32.320] teddy bears. One of a different career.
+[00:02:35.360] And I also teach part-time at UC
+[00:02:36.840] Berkeley, where I teach people these AI
+[00:02:38.480] tools and how to use them to maximize
+[00:02:40.440] productivity or launching startups. And
+[00:02:42.520] I also run an academy for kids to teach
+[00:02:44.600] them the same thing for free, which is
+[00:02:46.000] called AI Scouts. It's kind of my
+[00:02:47.200] passion project.
+[00:02:48.040] >> That's super cool. Super cool. And so,
+[00:02:49.480] how what age groups are we talking here?
+[00:02:51.080] We actually start anywhere from like 11
+[00:02:53.240] and up to 70. Some grandpas want to
+[00:02:55.080] learn as well. And we we like put them
+[00:02:56.760] all together, but we teach them the
+[00:02:58.160] basics of AI, how to like understand
+[00:03:00.280] software, and how to use some of these
+[00:03:01.440] tools that we're going to talk about
+[00:03:02.320] today. Amazing. Amazing. So,
+[00:03:04.680] we talked about or rather you talked
+[00:03:06.160] about a bunch of different tools, a
+[00:03:07.480] bunch of different agents, and you went
+[00:03:08.880] through a number of different tips and
+[00:03:09.960] tricks to get people to to be more more
+[00:03:13.440] proficient, more effective with those
+[00:03:15.320] agents and those tools. Tell us a little
+[00:03:17.320] bit about what what is your Yeah. What
+[00:03:20.200] is your environment that you find you
+[00:03:22.240] are and I know this is very personal in
+[00:03:23.840] terms of everyone is different, but for
+[00:03:25.480] you personally, what's your what's your
+[00:03:26.960] ideal environment that makes you the
+[00:03:28.320] most productive?
+[00:03:28.880] >> Yeah, I think my ideal environment is
+[00:03:30.560] Cursor IDE set up with Claude Code on my
+[00:03:32.720] terminal, and that's where I feel I'm
+[00:03:35.040] the most productive. I'll kind of use
+[00:03:37.040] Cursor for most of the things actually,
+[00:03:39.240] like 80 to 90% of the things I'm doing
+[00:03:41.320] on Cursor. But for deep tasks, I will
+[00:03:43.960] start off my task with asking Claude
+[00:03:46.440] Code. Oh, wow. Okay. Yeah, yeah. And how
+[00:03:48.280] do you find like
+[00:03:49.640] Was that the first time you moved out of
+[00:03:51.320] IDE into terminal? Yeah, yeah. I How did
+[00:03:54.240] you bridge that not being able to see
+[00:03:55.480] everything in a kind of like typical
+[00:03:56.840] IDE? Yeah, yeah. I think initially why I
+[00:03:59.880] started is because our company was
+[00:04:01.760] actually tracking developers using AI
+[00:04:04.520] and how much they're using it. And
+[00:04:06.040] actually in a good way. It's not I know
+[00:04:07.400] some companies are like they don't want
+[00:04:09.320] to use as much AI cuz it costs a lot,
+[00:04:11.240] right? Our company was pushing a lot of
+[00:04:12.800] AI adoption. And then Claude Code uses a
+[00:04:15.360] lot more tokens than Cursor does. So, it
+[00:04:17.680] seemed like I wasn't using a lot of AI
+[00:04:19.600] even though I was pretty sure I'm using
+[00:04:20.959] AI more than most people. So, I'm like,
+[00:04:22.800] okay, let me try out Claude Code because
+[00:04:24.720] of the token usage. But it turns out
+[00:04:26.480] like it is really useful, right? For
+[00:04:28.120] those deeper tasks, I've had so many
+[00:04:29.800] projects where Cursor couldn't get it
+[00:04:31.640] done, but Claude Code could get it done.
+[00:04:33.640] >> Very interesting. Uh and yeah. And why
+[00:04:35.800] don't we go through a number of tips
+[00:04:36.960] then? So, we'll talk about Cursor first,
+[00:04:38.520] then we'll jump into Claude Code. So,
+[00:04:40.000] Cursor, you went through I think 14
+[00:04:42.280] different tips. They're on they're on
+[00:04:43.440] screen. We'll we'll flick through them,
+[00:04:44.760] and we'll we'll pull them up as you as
+[00:04:46.160] you as you find one that you like. Um
+[00:04:48.400] tell us about tell us about a few of the
+[00:04:49.880] tips that you find, hey, do you know
+[00:04:51.400] what? This is a really a game-changer.
+[00:04:52.960] Maybe for Cursor specifically or just
+[00:04:55.320] generally. Yeah, yeah. I would assume
+[00:04:57.120] most of your audience hopefully is
+[00:04:58.200] pretty AI forward. What's it not? For
+[00:05:00.560] the people who don't like AI, tab AI is
+[00:05:02.880] where I would start.
+[00:05:04.200] Cursor has this tab function. For the
+[00:05:05.880] people who don't like it, just like turn
+[00:05:07.440] on Cursor and see what it suggests cuz a
+[00:05:09.080] lot of times it'll like write 10 to 20
+[00:05:11.040] lines of code for you from you just
+[00:05:12.760] hitting tab and not having to lift a
+[00:05:14.040] finger.
+[00:05:14.520] >> Yeah. So, that's where I would start for
+[00:05:15.720] people who are really against AI.
+[00:05:17.040] >> And this is the very agent this is very
+[00:05:18.400] AI-assisted kind of like tab completion
+[00:05:20.880] levels of of AI use. Correct. Cursor has
+[00:05:23.240] their own model built for this AI tab
+[00:05:25.080] complete, which is why I recommend it
+[00:05:26.280] over a lot of other IDEs. Cool. Okay.
+[00:05:28.600] So, tab, what's next? Tab, what's next?
+[00:05:30.640] Let's see.
+[00:05:32.400] True is like So, I think most people
+[00:05:34.040] know about Cursor agent. That's where
+[00:05:35.200] you use it, right? But the multi-agent
+[00:05:36.880] mode I think is really underrated. And
+[00:05:38.920] what I like it for specifically is
+[00:05:40.800] there's like a new model coming out
+[00:05:42.040] every other day at this point, right?
+[00:05:43.560] And like how do you keep up with which
+[00:05:44.680] one's the best and which one's not? You
+[00:05:46.200] kind of want to experiment. At the same
+[00:05:47.440] time, experimenting takes up a lot of
+[00:05:48.960] time. So, what I like to do is every
+[00:05:50.640] time some new AI model comes out, use
+[00:05:52.600] this multi-agent mode where you can set
+[00:05:54.160] it up so you type in one prompt and have
+[00:05:56.240] two or more AIs answer that same prompt.
+[00:05:58.960] Mhm. So, recently with ChatGPT 5.2
+[00:06:01.080] coming out, I wanted to see if I wanted
+[00:06:02.440] to switch my daily driver from Opus 4.5
+[00:06:04.800] to this new one. So, I would have it
+[00:06:06.360] almost shadow whatever Opus 4.5 is
+[00:06:08.640] doing, see how I like the results, and
+[00:06:10.920] then after a few tries kind of decide
+[00:06:13.120] like do I want to continue using this or
+[00:06:14.600] not. So, multi-agent is a great one for
+[00:06:16.440] people to use.
+[00:06:16.840] >> That's awesome. That's awesome. And so
+[00:06:18.040] and so with this one, how would it once
+[00:06:19.360] you parallelize, how do you then choose
+[00:06:21.320] which one?
+[00:06:22.520] Uh so, there there's like a suite
+[00:06:24.160] benchmark for these models where you can
+[00:06:26.320] see which one tends to be the best. I
+[00:06:28.080] don't think that's the best metric. Like
+[00:06:29.320] you can tell like Google Gemini for
+[00:06:31.280] example recently ranks really high on
+[00:06:33.200] that, but people most of the time are
+[00:06:35.080] saying Claude is better. So, comes up to
+[00:06:37.640] your personal experience most of the
+[00:06:38.880] time. I kind of just take a look at it,
+[00:06:40.640] see if it did a good job of completing
+[00:06:41.920] it. How do I like the code it generated?
+[00:06:43.920] How do I like
+[00:06:45.040] the response that it gave. So, for
+[00:06:46.720] example, I really like Claude because
+[00:06:48.120] the responses it gives a lot of times
+[00:06:49.880] are more educational than the other AIs.
+[00:06:52.040] You can really understand what it did
+[00:06:53.520] better.
+[00:06:54.480] So, yeah, I I just leave it up to
+[00:06:55.440] personal experience. You look at it,
+[00:06:56.640] whatever works for best for you, that's
+[00:06:58.160] the one you end up using.
+[00:06:59.080] >> Yeah. Another great feature from Cursor
+[00:07:01.200] specifically is they built their own
+[00:07:02.680] model called Composer. The other IDEs
+[00:07:05.200] don't have this model, so it's native to
+[00:07:06.840] Cursor.
+[00:07:07.840] And it's specifically good at generating
+[00:07:10.040] code quickly. The biggest problem we
+[00:07:12.000] have a lot of times with these AI coding
+[00:07:13.200] is like you type something in and then
+[00:07:14.480] you're waiting 2 to 3 minutes. And
+[00:07:16.280] sometimes the task isn't even that
+[00:07:17.640] complex. For that, I'm using Composer.
+[00:07:19.760] So, for example, this page was generated
+[00:07:22.160] with Composer in 24 seconds, where
+[00:07:24.040] something like relatively similar for
+[00:07:26.040] Claude was 2 minutes and 30 seconds. And
+[00:07:28.600] the results are pretty similar.
+[00:07:30.320] >> And that's significant actually cuz like
+[00:07:31.480] I I remember when we like we're
+[00:07:32.880] originally like in the very early days
+[00:07:34.600] of of um uh
+[00:07:37.320] using AI in a more assisted way
+[00:07:38.880] particularly and when using the tab
+[00:07:40.400] completion for example, we required a
+[00:07:42.520] really really fast turnaround, right?
+[00:07:44.600] When you hit tab, you want an answer
+[00:07:45.800] like within a split second.
+[00:07:47.240] >> Yeah. Now, with more agent-based that
+[00:07:49.880] that because it goes deeper, you will
+[00:07:52.520] be, you know, more inclined to say,
+[00:07:54.320] actually I'm I'm I'm happy to wait for
+[00:07:56.080] it 30 seconds, a minute, or something
+[00:07:57.840] like that for a better answer. But now
+[00:07:59.480] actually when you look at this, the
+[00:08:00.480] difference between 30 seconds and 2
+[00:08:02.000] minutes, 2 and a half minutes, is
+[00:08:03.360] significant and actually interrupt your
+[00:08:04.840] flow, interrupt your thought process
+[00:08:06.520] when it gets that significant in in in
+[00:08:08.440] kind of like difference. So, that
+[00:08:09.640] actually matters quite a bit. Yeah,
+[00:08:11.200] yeah, 100%. It's so big of a problem
+[00:08:12.920] that it's like a funny example, but YC
+[00:08:15.360] actually invested in this company, which
+[00:08:17.200] is a brain rot IDE. It's an IDE that
+[00:08:19.320] pops up TikTok videos and games for
+[00:08:21.200] people to do while they're waiting.
+[00:08:23.080] So, if YC is putting money into it, like
+[00:08:25.360] there's a problem there. It's like that
+[00:08:26.600] classic meme like my code's compiling,
+[00:08:28.600] right? Why are you playing games? Oh, my
+[00:08:30.520] my agent's doing something, right?
+[00:08:31.640] Exactly. Okay. So,
+[00:08:33.960] so yeah, multi-models, what's what's
+[00:08:36.599] what else from from the Cursor point of
+[00:08:38.479] view, sorry? Yeah. Um
+[00:08:40.840] Next big tip is just setting up your
+[00:08:42.200] Cursor rules. A lot of people are just
+[00:08:43.400] using the agent, but not putting down
+[00:08:45.120] like the groundwork you need to do to
+[00:08:46.560] really excel with these tools. One of
+[00:08:48.160] those is going to be rules. The other
+[00:08:49.320] one is going to be MCPs. So, for rules,
+[00:08:51.240] there are actually four different types
+[00:08:52.440] of rules. You can choose rules that
+[00:08:55.280] always apply on every prompt, or you can
+[00:08:57.520] have it be specific where Cursor's
+[00:08:59.160] figuring out if it should apply it based
+[00:09:01.040] on the context, based on specific files,
+[00:09:03.640] or you can just have it set up so it
+[00:09:06.040] Cursor will never by its own look at the
+[00:09:08.400] rule, but only apply it when you
+[00:09:10.040] manually tell it, hey, I want you to set
+[00:09:11.720] up this rule. Opt-in kind of like
+[00:09:13.280] information, opt-in documentation. Very
+[00:09:14.920] actually a little bit similar to how
+[00:09:15.960] Tesla does that with the Tesla entity
+[00:09:17.960] and things like that. Awesome. Cursor
+[00:09:19.720] rules really are important. Why is
+[00:09:20.880] context so important? Yeah, I think
+[00:09:23.360] you kind of got to
+[00:09:24.360] treat your AI like a basic junior
+[00:09:26.240] engineer. If you don't give them the
+[00:09:27.880] full requirements of the task, he's not
+[00:09:30.160] going to be able to figure it out,
+[00:09:31.400] right? So, we need to make sure all the
+[00:09:33.600] details that the AI needs to know, we're
+[00:09:35.840] providing it. And I think
+[00:09:38.080] one really good way to do that as well
+[00:09:39.840] is with MCPs and setting up some sort of
+[00:09:42.040] documentation MCP because there's often
+[00:09:44.080] time a lot of gaps in our code where the
+[00:09:46.800] AI will read through your code, but
+[00:09:47.840] still not understand what's going on.
+[00:09:49.280] But when we give it access to our
+[00:09:50.600] documentation, it can read it that and
+[00:09:52.400] fill in those gaps, which will really
+[00:09:54.120] really boost the productivity of what
+[00:09:56.040] you can produce.
+[00:09:56.880] >> Yeah, amazing. And actually in the in
+[00:09:57.960] the session I asked one of the questions
+[00:09:59.080] which was about how you know, how to
+[00:10:01.400] know when to give you know, enough
+[00:10:02.920] context without giving so much context
+[00:10:04.880] that it actually degrades the
+[00:10:05.880] performance. And I guess that's what a
+[00:10:08.080] lot of the things like when we talk
+[00:10:09.080] about cursor rules and they always apply
+[00:10:10.600] and they apply manually, it's for
+[00:10:12.040] exactly that reason. And I suspect when
+[00:10:13.960] we look at if if you want to if you had
+[00:10:15.760] a huge amount of context that you wanted
+[00:10:17.120] to provide, you would probably more
+[00:10:18.760] likely to say actually there's too much
+[00:10:20.440] context here. Let's add this either
+[00:10:22.120] manually or add it more intelligently
+[00:10:24.280] apply it intelligently so that way
+[00:10:25.960] you're not actually bloating context
+[00:10:27.560] >> Yeah.
+[00:10:27.600] >> for no reason.
+[00:10:28.360] >> Yeah.
+[00:10:28.680] >> Yeah.
+[00:10:28.960] >> Yeah. So super interesting and actually
+[00:10:30.240] a really really crucial part.
+[00:10:32.160] Okay, one more cursor rule and we'll
+[00:10:33.480] jump into Claude.
+[00:10:34.640] >> Yeah. Yeah, let's do it. You can have a
+[00:10:36.200] bunch of different rules. I think one
+[00:10:37.280] that's particularly interesting Claude
+[00:10:38.760] shared this themselves is relating to
+[00:10:41.040] this context we just talked about. Often
+[00:10:42.800] times if you get close to the end of
+[00:10:44.400] your context window so you've used up
+[00:10:45.800] like 90% then you ask the AI for
+[00:10:48.320] something, it will give you a short
+[00:10:50.000] answer because it's just trying to get
+[00:10:51.320] something out before it runs out of
+[00:10:52.520] context. But if you type in a prompt
+[00:10:54.440] like this or something similar, you can
+[00:10:56.200] tell it, "Hey,
+[00:10:57.640] your your context is going to end but
+[00:10:59.400] like don't worry about that. You can
+[00:11:00.680] compact it. Actually give me the best
+[00:11:02.800] answer." And that's one useful tip.
+[00:11:04.839] Yeah. One things I love and actually
+[00:11:06.920] maybe this segues us into Claude. One of
+[00:11:08.920] the things I love particularly about the
+[00:11:10.040] slash the slash command the compact
+[00:11:13.240] is the fact that you can add some text
+[00:11:14.720] after that which is super cool cuz if
+[00:11:16.120] you do a slash sometimes it'll auto
+[00:11:17.480] compact or you just put slash compact
+[00:11:19.240] which will which will make it compact. I
+[00:11:21.160] love the slash compact where you put
+[00:11:22.600] text after it and that text is, "Hey,
+[00:11:24.280] this is what I'm going to do next." And
+[00:11:25.800] what that'll do is
+[00:11:27.120] it'll also it'll based on that it'll
+[00:11:30.280] release a a certain amount of context
+[00:11:32.200] that it doesn't need because it thinks,
+[00:11:33.640] "Actually I I don't need that for my
+[00:11:34.839] next task."
+[00:11:35.800] >> Ah. Super super cool way of actually
+[00:11:37.280] saying actually I want you to release
+[00:11:38.400] just the right context and leave me with
+[00:11:39.839] what I need to do my next task. So
+[00:11:41.280] that's a a Claude tip.
+[00:11:42.520] >> That's a good tip. That's a good tip. I
+[00:11:43.800] like that tip. And that leads us into
+[00:11:46.000] Claude Code. Now Claude Code I would
+[00:11:47.480] probably say is probably one of the most
+[00:11:49.080] functional agents in terms of the extra
+[00:11:51.520] value add that it provides you with.
+[00:11:53.440] Let's jump into the Claude Code section.
+[00:11:56.800] What I what would you say
+[00:11:59.600] is your kind of like number one tip for
+[00:12:01.320] for Claude Code?
+[00:12:02.080] >> Yeah, I guess
+[00:12:03.560] Claude Code very similar to the way I
+[00:12:05.440] use it that I do on Cursor except I
+[00:12:07.680] think the use cases are different.
+[00:12:09.320] Cursor's good cuz it gives you
+[00:12:11.360] the visual ID. You can see what you're
+[00:12:12.839] doing. It's faster than Claude Code is,
+[00:12:14.880] uses less tokens, and you can switch
+[00:12:16.360] between different AI models. But if
+[00:12:18.440] you're trying to go deep on a task
+[00:12:19.760] that's difficult, Claude Code does a lot
+[00:12:21.640] more thinking, takes up a lot more
+[00:12:22.960] tokens, but usually gives you a better
+[00:12:24.720] engineered answer.
+[00:12:25.760] >> Yeah. And like at work I had a project
+[00:12:28.760] like this that I put into Cursor and
+[00:12:30.480] into Claude and Claude Code saved me a
+[00:12:32.440] ton of time. It like searched the web,
+[00:12:34.080] found open source repos, analyzed them,
+[00:12:36.240] gave me a proper solution where Cursor
+[00:12:38.160] just like picked something, implemented
+[00:12:39.520] it, and it was done, right? But Claude
+[00:12:41.040] Code really saved me like multiple
+[00:12:42.400] hours. And I think based on your
+[00:12:44.440] language that you use in the prompt, it
+[00:12:46.120] will do the correct amount of thinking
+[00:12:47.920] based on that. So if if you type think
+[00:12:50.160] deeply, it actually adds the amount. And
+[00:12:52.440] if you another top tip, if you type in
+[00:12:54.480] ultra think, I don't know if you've
+[00:12:55.839] typed that. Let's go let's go to the
+[00:12:56.880] terminal quick.
+[00:12:58.440] If you type in if I was to go let's run
+[00:13:00.520] Claude. If you type in ultra think I'll
+[00:13:03.560] ultra
+[00:13:05.160] think it does this crazy thing.
+[00:13:07.720] >> I didn't even know about this. This is
+[00:13:08.839] one of like the lowest the deepest
+[00:13:10.280] levels of deep thinking it will do. And
+[00:13:12.720] so if you if you type something after
+[00:13:14.280] that, it'll then go in and do really
+[00:13:17.000] deep thought on that on that thing.
+[00:13:18.600] That's a good one. So super cool super
+[00:13:20.520] cool little tip there as well. So
+[00:13:22.360] thinking yeah I I totally agree. And I
+[00:13:24.160] think that's why sometimes Claude takes
+[00:13:25.480] that deeper like longer time because it
+[00:13:27.480] does do that deeper thinking. So
+[00:13:28.960] thinking completely agree with that.
+[00:13:30.520] Next tip, what's up?
+[00:13:31.320] >> 100%. Other than sub agents, this is
+[00:13:33.280] where Claude Code kind of beats out
+[00:13:34.320] Cursor as well where you can set up
+[00:13:35.640] different agents and give them all their
+[00:13:38.120] specific MCP tools that they can use.
+[00:13:40.680] And these sub agents also have their own
+[00:13:42.480] context windows. Yeah. So for more
+[00:13:44.400] complicated tasks, this might be a a lot
+[00:13:46.400] better. For example like you might set
+[00:13:48.000] up a sub agent that's a PagerDuty
+[00:13:49.920] investigation sub agent, right? Every
+[00:13:51.960] time a page comes in
+[00:13:53.520] and you call Claude Code, it'll use this
+[00:13:55.120] one. It'll specifically look at Slack,
+[00:13:57.040] find the alert, and then go into
+[00:13:58.400] DataDog, research it, and come back with
+[00:14:00.200] a solution for you. But for specific
+[00:14:02.000] workflows that need specific sets of
+[00:14:03.440] tools, these sub agents can be super
+[00:14:04.920] helpful.
+[00:14:05.320] >> And all that extra all that extra work
+[00:14:07.839] it did adding stuff into the context
+[00:14:09.880] unnecessarily just to get a small amount
+[00:14:12.079] of information, it passes that small
+[00:14:13.440] amount of information information back
+[00:14:14.680] to the main agent and then all that
+[00:14:16.320] other context just gets lost, right?
+[00:14:17.600] >> Exactly. Exactly. So useful. We use that
+[00:14:19.400] at Tesla a lot to do our research on our
+[00:14:21.320] on our kind of like our context. And
+[00:14:23.079] then we once we learn this is the piece
+[00:14:25.040] of context we need to pass back to main
+[00:14:26.400] main agent, it's it keeps it nice.
+[00:14:28.640] >> Yeah. Yeah, 100%. Context management is
+[00:14:30.720] like kind of everything. Absolutely. Now
+[00:14:32.440] sub agents, that's not a that's not a
+[00:14:33.920] thing which is which is duplicated
+[00:14:35.680] across many different agents, right?
+[00:14:37.280] It's it's quite particular to Claude in
+[00:14:39.240] terms of I would say the mainstream
+[00:14:40.600] agents. Do you feel like you know,
+[00:14:42.680] agents are going to learn from each
+[00:14:43.959] other and start building these
+[00:14:45.440] additional things? Do you feel like
+[00:14:46.640] we'll hit a
+[00:14:48.079] a kind of like feature parity across
+[00:14:49.520] these agents or how do you see that? I I
+[00:14:51.320] think it really depends to how companies
+[00:14:53.760] handle this context management problem.
+[00:14:56.600] But right now even with Claude Code,
+[00:14:58.360] there's a main agent and sub agents and
+[00:15:00.320] none of the sub agents actually talk to
+[00:15:01.720] each other. The sub agents all talk to
+[00:15:03.040] the main agent. So even Claude Code
+[00:15:04.920] itself isn't like that advanced of what
+[00:15:06.640] we could be doing in the future and I'm
+[00:15:07.959] sure these companies will start to
+[00:15:09.320] dabble in that.
+[00:15:09.839] >> Really interesting. There's also another
+[00:15:11.000] tool I think it's called Claude Flow
+[00:15:13.440] which whereby they do kick off a whole
+[00:15:15.360] ton of agents. I think it's yeah mostly
+[00:15:17.440] command line. And they have this thing
+[00:15:18.839] called Hivemind which is super cool
+[00:15:20.320] where the agents have almost like this
+[00:15:21.640] shared memory where they can start
+[00:15:23.079] writing to that memory and learning from
+[00:15:24.440] each other. So yeah, audience if you're
+[00:15:26.200] interested in that, I think it's Claude
+[00:15:27.600] Flow which is which is super cool.
+[00:15:30.280] Sub agents super cool. Really love that
+[00:15:32.480] about Claude.
+[00:15:33.760] Another tip while you're introducing
+[00:15:35.040] other tools, Claudish is another one.
+[00:15:37.360] Really love like the terminal of Claude
+[00:15:39.839] Code but you want to use different AIs
+[00:15:41.360] with it. There's different open source
+[00:15:42.480] libraries that do this but Claudish is
+[00:15:43.839] one of them. Looks exactly like Claude
+[00:15:45.280] Claude Code but you can call like
+[00:15:46.400] Gemini, ChatGPT, whatever AI model you
+[00:15:48.360] want from it. And that's and people
+[00:15:50.240] would do that because they love the
+[00:15:51.640] Claude Code UI your DX UX but they
+[00:15:55.360] presumably have a different model that
+[00:15:56.920] either the company have agreed on or
+[00:15:58.320] something like that. Do you think you'll
+[00:15:59.839] get like a much of a benefit in terms of
+[00:16:02.400] the
+[00:16:03.160] the underlying LLM being maybe certainly
+[00:16:05.280] better in certain cases or not or do
+[00:16:07.200] would you say
+[00:16:08.520] you know, if you don't care, Claude Code
+[00:16:09.959] is probably better to use Claude with. I
+[00:16:11.880] I I think if you don't care, Claude Code
+[00:16:13.160] is probably the best to use at this
+[00:16:15.440] point. Maybe that changes.
+[00:16:17.760] I wouldn't really recommend Claudish.
+[00:16:19.200] It's just exactly for that specific use
+[00:16:20.920] case I just explained.
+[00:16:22.040] >> are tied, it's a good Another thing is
+[00:16:23.600] like when you're using these AI tools,
+[00:16:25.240] it's important to evaluate like are
+[00:16:27.200] these actually working or is it slowing
+[00:16:28.680] my team down? A lot of times actually
+[00:16:30.560] initially teams will adopt AI and see a
+[00:16:32.720] little bit of slow down before they ramp
+[00:16:34.280] up and that's kind of the learning curve
+[00:16:35.640] that it takes to start using these
+[00:16:36.959] tools. But overall you want to be
+[00:16:38.880] tracking these metrics.
+[00:16:40.640] There is no perfect metric is what I
+[00:16:42.320] found, right? But what you want to do is
+[00:16:44.200] just track a bunch of different things
+[00:16:45.640] like PRs merged, how long from a PR
+[00:16:47.480] created to merge, etc. And then like
+[00:16:51.360] what I find most times is you and the
+[00:16:53.320] company build a qualitative story that
+[00:16:56.040] you want to tell your management. But
+[00:16:58.040] when you have these metrics, you can
+[00:16:59.160] pick and choose which ones you need to
+[00:17:00.400] use at the right time to tell that story
+[00:17:02.320] and back it up with evidence. So that's
+[00:17:04.120] where I think it's like really important
+[00:17:05.320] to gather as many different metrics as
+[00:17:06.800] you can and use them when you think it's
+[00:17:09.079] right.
+[00:17:09.600] >> agree more. I think I think
+[00:17:11.959] in the past AI adoption has more been
+[00:17:14.079] like people were just wanting to adopt
+[00:17:15.800] AI tooling and they they have that
+[00:17:19.240] almost that push from up top like you
+[00:17:21.760] have to be using AI. Let's let's all do
+[00:17:23.439] it. And I think there are certain people
+[00:17:25.360] who are now looking at this thinking
+[00:17:26.480] from a productivity point of view, how
+[00:17:28.160] much value is this providing me? I was
+[00:17:30.120] talking with Tracy Vannin yesterday
+[00:17:31.280] actually and Tracy who's giving the
+[00:17:32.640] closing keynote actually at the QCon.
+[00:17:35.200] And hopefully we'll chat to her as well
+[00:17:36.400] but Tracy was talking about value versus
+[00:17:38.720] things like velocity cuz velocity is
+[00:17:40.760] just a metric, all right? It's a metric
+[00:17:42.520] and it can be it can be gained. Like
+[00:17:44.400] there's a whole different ways. But
+[00:17:45.760] value is super important. It's like what
+[00:17:47.480] is this what is what is this agent
+[00:17:49.440] actually giving to us from a business
+[00:17:51.000] value point of view? I think it's super
+[00:17:52.760] crucial. Completely agree with you. I
+[00:17:54.120] think I think the practice 100%.
+[00:17:57.160] Kind of alluding to what you're talking
+[00:17:58.400] to,
+[00:17:59.320] they have some complicated research
+[00:18:00.640] methodology that they did over on a on
+[00:18:03.000] over 100,000 employees but the what they
+[00:18:04.560] found out is AI is helping generate 30
+[00:18:07.000] to 4% more code than before. However, 15
+[00:18:10.520] to 25% of that code ends up being junk
+[00:18:12.400] that gets reworked, right? So they
+[00:18:13.800] estimated the actual productivity gains
+[00:18:15.520] is like 15 to 20%. I would think it's
+[00:18:17.640] higher if you're using AI in the right
+[00:18:19.080] way. But good to know. Like there's a
+[00:18:20.600] difference between value and just
+[00:18:21.840] straight output. Absolutely. Yeah, and
+[00:18:23.480] that's the that's the biggest trip has
+[00:18:25.320] it to just to just you know, output
+[00:18:28.120] versus outcome and measuring that
+[00:18:29.480] measuring that wrong thing. 15 to 20% is
+[00:18:31.440] still still impressive and we expect
+[00:18:32.679] that to probably grow as well every time
+[00:18:34.159] when LLMs etc. 100%. Amazing session
+[00:18:37.800] today. Thank you so much. I appreciate
+[00:18:39.360] it appreciate it to be in it and and
+[00:18:41.040] meeting you at QCon today.
+[00:18:42.560] >> Thank you for having me. Absolutely.
+[00:18:43.760] Enjoy the rest of the conference and and
+[00:18:45.560] yeah, speak to you soon.
+[00:18:47.080] Hello and this time I'm with Ian Thomas
+[00:18:49.480] who is a software engineer at Meta. So
+[00:18:52.440] Ian, welcome to our podcast.
+[00:18:54.880] >> for having me. And and your as soon as I
+[00:18:57.400] saw your title
+[00:18:59.040] on the on the schedule, I thought I have
+[00:19:00.600] to have Ian on my on the podcast because
+[00:19:02.960] your title today was AI Native
+[00:19:05.800] Engineering. And of course this is the
+[00:19:07.320] AI Native Dev podcast and I'm like
+[00:19:09.679] that's a perfect match. That's a match
+[00:19:10.919] made in heaven. So tell us a little bit
+[00:19:12.560] about the session. So this is kind of a
+[00:19:15.720] case study of what we've been doing in
+[00:19:18.040] my team and my wider org in the Reality
+[00:19:20.760] Labs part of Facebook and Meta
+[00:19:23.480] where we've had a sort of ground-up
+[00:19:25.000] adoption program for people who are
+[00:19:26.640] looking to experiment and and develop
+[00:19:28.280] with AI
+[00:19:29.600] as part of their workflows. Building on
+[00:19:31.720] all the various tools that we've been
+[00:19:32.960] getting access to over the last few
+[00:19:34.240] months
+[00:19:35.440] and generally seeing how we can
+[00:19:36.600] accelerate ourselves in in terms of
+[00:19:38.280] productivity and making more
+[00:19:41.120] I guess wins product wins and outcomes
+[00:19:42.960] for our teams. And and I guess in terms
+[00:19:45.080] of like every organization is different
+[00:19:46.720] but generally how would you say how
+[00:19:48.800] would you say adoption is of these types
+[00:19:50.360] of tools in a in a large organization
+[00:19:52.200] like Meta. Do you have like people who
+[00:19:54.040] are diving in, people who are stepping
+[00:19:55.400] back, and then the majority maybe
+[00:19:57.600] leaning into it slightly? Or where where
+[00:19:58.960] where where does that sit?
+[00:20:00.000] >> So, I I'd say
+[00:20:01.640] well, it's changed a lot over the last 6
+[00:20:03.280] months. So, um I can only really speak
+[00:20:05.600] to my org and the patterns that I've
+[00:20:07.280] seen there. We had a few people that
+[00:20:09.240] were really keen and and sort of
+[00:20:10.720] experimenting, and they were they were
+[00:20:12.200] finding value of these tools outside of
+[00:20:14.480] work.
+[00:20:14.960] >> Mhm. And they were really keen to see
+[00:20:16.560] how they could apply it to internal Mhm.
+[00:20:18.640] uh Meta has some interesting engineering
+[00:20:20.560] things because it's very in-house. It's
+[00:20:23.040] it builds its own tools and platforms
+[00:20:24.520] and things. So, it's there's
+[00:20:26.040] some quite bespoke ways of working there
+[00:20:27.640] that maybe you can't just go and pull
+[00:20:29.840] some of these things off the shelf and
+[00:20:30.920] and apply them to our code base.
+[00:20:32.440] >> Yeah. Um but yeah, so we had these few
+[00:20:34.520] people that were really passionate about
+[00:20:35.840] it, and then we had a bunch of really
+[00:20:37.560] senior engineers who were perhaps a
+[00:20:38.800] little bit more skeptical. And then
+[00:20:40.440] gradually over time, we've seen adoption
+[00:20:42.640] grow, and there's been more of a push
+[00:20:44.040] from um the the company overall in
+[00:20:46.320] saying, "Look, this is going to be
+[00:20:47.280] something that we have to take
+[00:20:48.120] seriously." Yeah. Um you've got access
+[00:20:50.440] to all these tools. Let's go for it. So,
+[00:20:51.640] the adoption now is pretty good. I think
+[00:20:53.160] last time I checked, we were over 80%
+[00:20:54.680] weekly active users.
+[00:20:55.760] >> Oh, wow. Uh and the way that we measure
+[00:20:57.760] that sort of changed subtly. So, now
+[00:20:59.480] it's um
+[00:21:00.680] considering four days out of seven usage
+[00:21:03.320] of any AI-assisted tool. And can you say
+[00:21:06.120] what tools you're using or Uh well,
+[00:21:08.360] we've got a whole spectrum of internal
+[00:21:10.120] things. So, we've got Meta Mate and Dev
+[00:21:12.240] Mate, which are the kind of two main
+[00:21:13.400] ones. One's more of a chat interface,
+[00:21:15.120] and the other one's more for like coding
+[00:21:16.680] and agency workflows.
+[00:21:18.280] Um there's a whole bunch of stuff like
+[00:21:20.040] Gemini, Code uh sorry,
+[00:21:22.120] Gemini,
+[00:21:23.160] Codex,
+[00:21:24.400] uh Claude Code, um
+[00:21:27.120] etc. We've got yeah, access to
+[00:21:28.600] third-party tools as well. So, there's
+[00:21:29.960] >> a there's a kind of like trying to find
+[00:21:31.400] what works for them, and teams are
+[00:21:32.720] trying to work out what works for them.
+[00:21:33.800] >> Exactly. Exactly, yeah. And a lot of the
+[00:21:35.880] tools like um Meta Mate and Dev Mate
+[00:21:38.000] have access to the models used by things
+[00:21:40.120] like Claude Code as well. So, you get to
+[00:21:41.600] compare like things that have got a bit
+[00:21:43.160] more internal knowledge than external.
+[00:21:45.200] So, it's it's quite good. Yeah. The
+[00:21:46.880] versions that we use generally are kind
+[00:21:48.240] of tailored for
+[00:21:49.800] um Meta use cases. So, they're kind of a
+[00:21:51.560] bit more restricted than the generally
+[00:21:53.480] available stuff, but they're still
+[00:21:54.840] pretty pretty powerful. One part of your
+[00:21:57.840] your session that really resonated with
+[00:21:59.520] me was when you started talking about
+[00:22:01.160] community and growing that community.
+[00:22:03.040] Why is why is building that community so
+[00:22:05.679] important when we talk about sharing
+[00:22:08.080] that knowledge and kind of that growth
+[00:22:10.280] and adoption? Mhm. So, I think one of
+[00:22:12.520] the things about Meta culture is that
+[00:22:14.000] it's very engineering empowered. Mhm.
+[00:22:16.320] And so, what that means is if you can
+[00:22:18.280] get engineers to support something from
+[00:22:20.960] the ground up, you can go a long way.
+[00:22:23.160] And uh there's a popular phrase, "Code
+[00:22:24.679] wins argument." And I think in in this
+[00:22:26.520] case, it's case of like proof wins
+[00:22:28.679] argument. So, if you've got people that
+[00:22:30.160] are going to be forming around this idea
+[00:22:32.520] and these concepts, they can bring them
+[00:22:34.480] up to a level where people are saying,
+[00:22:35.960] "Hey, I'm getting value from this, and
+[00:22:37.400] this is how I'm using it, and this is
+[00:22:39.080] what's working." It attracts other
+[00:22:41.000] people who go, "Okay, well, if that
+[00:22:42.760] if they're doing it, then you know,
+[00:22:44.080] maybe this will work in my case, too."
+[00:22:45.440] And I think that community aspect helps
+[00:22:47.600] to get a bit of authenticity and and
+[00:22:50.160] people feeling like they're part of a
+[00:22:51.240] community, and it helps to kind of push
+[00:22:52.920] everything along with a bit more
+[00:22:53.880] momentum. Whereas sometimes, if you get
+[00:22:55.880] like a top-down mandate,
+[00:22:58.240] engineers we can be quite skeptical
+[00:22:59.520] people at times, you know, it's a bit
+[00:23:00.840] cynical. And uh so, it's not a well, if
+[00:23:03.080] I have to do it, so. But rather, it's
+[00:23:05.400] it's bottoms-up. It's a bit more kind of
+[00:23:06.800] okay, we can make this work, and I think
+[00:23:08.560] it's going to be a great thing. So, what
+[00:23:09.679] was being shared then? Like
+[00:23:11.480] problems of when peop- people were
+[00:23:12.960] having problems or people had questions,
+[00:23:15.280] uh wins maybe? Were people saying, "Hey,
+[00:23:17.679] this works really well for me." Maybe
+[00:23:19.640] context or or rules, things like that?
+[00:23:22.520] How did the community work?
+[00:23:23.640] >> All of the above, right? So, we have One
+[00:23:25.600] of the things that we rely on a lot is
+[00:23:27.840] Workplace, which is sort of like the
+[00:23:29.520] professional layer on top of Facebook.
+[00:23:32.120] Uh it wasn't an external product until
+[00:23:33.360] fairly recently. So, we use this
+[00:23:34.800] heavily. And that's kind of the basis of
+[00:23:36.760] where this community is, and we share
+[00:23:38.240] things in there. You can post, people
+[00:23:39.679] can comment. It's very it's like a
+[00:23:41.200] social experience, but for work. Um
+[00:23:44.280] and so, what we were seeing was people
+[00:23:45.679] coming in, they were asking questions.
+[00:23:47.200] They were saying, "Well, I'm trying this
+[00:23:48.679] thing." Or, "Have you seen these tools
+[00:23:49.880] available?"
+[00:23:51.200] Um generally kind of keeping everyone
+[00:23:52.679] informed about what's going on.
+[00:23:54.720] And over time, it's just gradually grown
+[00:23:56.480] and grown. Um we never really forced
+[00:23:58.679] anyone to join. It's not like it's got
+[00:23:59.800] like auto-enrollment or anything. And uh
+[00:24:02.360] I think last week, we hit 400 members.
+[00:24:04.640] Yeah. Which is pretty good for something
+[00:24:06.520] that's kind of a grassroots initiative.
+[00:24:07.920] >> Yeah, self-sustaining like well, some of
+[00:24:09.400] the best communities are like that. And
+[00:24:10.920] I guess one of the things that are
+[00:24:12.040] really nice about communities is that
+[00:24:13.640] everyone, you know, you get so many
+[00:24:14.640] different people at different levels of
+[00:24:16.560] their experience and adoption. And and
+[00:24:19.160] this kind of like leads into one thing
+[00:24:20.800] that you mentioned as well, which is
+[00:24:21.840] like these maturity models. Like I guess
+[00:24:23.760] there's maturity in terms of how an
+[00:24:25.040] individual is using it as well as a
+[00:24:26.360] team. Talk us through the maturity
+[00:24:28.200] models and why they're important. So,
+[00:24:30.600] the the thing about the maturity model,
+[00:24:32.400] I intended it to be used for a team, but
+[00:24:34.800] there is a a dimension on there which is
+[00:24:36.800] about individual productivity as well.
+[00:24:38.280] So, you can reflect on your own kind of
+[00:24:39.760] performance and ways that you're getting
+[00:24:41.000] value from it. Um the benefit of it
+[00:24:43.440] being a team-based thing is that it
+[00:24:44.960] opens up the conversation within your
+[00:24:46.480] team. Yes. And so, you can generate uh
+[00:24:49.440] ideas and have action plans that are
+[00:24:51.080] specific you because every team's going
+[00:24:52.679] to have slightly different context or
+[00:24:54.280] different levels of ability and
+[00:24:55.480] different interests. So, that's great.
+[00:24:58.000] Um we tried to model it in a way that
+[00:24:59.560] was going to be fairly agnostic of the
+[00:25:01.360] tooling and and be durable because
+[00:25:03.280] again, the value I think is that you can
+[00:25:04.800] have these models, and you can repeat
+[00:25:06.640] the the assessments time after time and
+[00:25:09.000] see how you're progressing. Um and we do
+[00:25:11.320] subtly tweak it every now and again, but
+[00:25:13.200] um generally, it's kept fairly
+[00:25:14.440] consistent. Uh and then yeah, like I
+[00:25:16.280] said, the teams run these assessment
+[00:25:17.440] workshops, and they can have the
+[00:25:18.360] discussion. And that's that's where the
+[00:25:19.640] real value lies. Yeah, yeah. Let's talk
+[00:25:21.480] about value and wins. What were the what
+[00:25:23.640] were the big wins that you saw, and and
+[00:25:25.360] how did you share that across the
+[00:25:26.679] community? So, initially, the wins were
+[00:25:29.800] people saying, "Oh, I've been using Dev
+[00:25:32.120] Mate, which is part of our our tool set
+[00:25:34.120] in VS Code that we work with on a
+[00:25:35.760] day-to-day basis. I'm finding ways to
+[00:25:37.560] use this to like understand the code
+[00:25:39.920] base better or or what have you." And
+[00:25:41.720] there were some early examples of people
+[00:25:43.560] just sort of
+[00:25:45.160] going for a a big problem and and
+[00:25:47.080] putting a prompt in, and they were
+[00:25:47.920] getting a bit of lucky. And then there
+[00:25:49.280] was equally some people that were
+[00:25:51.040] suffering that wasn't working at all.
+[00:25:52.720] >> Yeah, yeah. Um but then we found there
+[00:25:54.600] was kind of repeatable patterns emerging
+[00:25:56.080] around things like
+[00:25:57.840] um testing improvements or how to make
+[00:26:00.280] code quality improvements or reducing
+[00:26:02.000] complexity of code. Yeah. Uh and that
+[00:26:03.960] was when we started to experiment with
+[00:26:05.480] things like unsupervised agents. And you
+[00:26:07.480] could say, "Okay, with this category of
+[00:26:10.520] problem, um say like we've got test
+[00:26:12.360] coverage gaps. We want to go and find
+[00:26:14.560] all the files that are related to this
+[00:26:16.480] part of the code base related to this
+[00:26:17.880] on-call, say. Uh
+[00:26:20.400] find the ones that have got the biggest
+[00:26:21.440] coverage gaps, and then using this
+[00:26:23.440] runbook that we've put together, go and
+[00:26:25.360] go and cover them. Go and go and produce
+[00:26:27.320] diffs that help us to
+[00:26:28.880] bridge the gap."
+[00:26:30.080] And that was the sort of thing that we
+[00:26:31.720] take
+[00:26:32.720] um lots of hours of manual work and
+[00:26:34.679] >> Yeah.
+[00:26:35.520] as this sort of evolved, we found
+[00:26:36.640] actually we can go and use the tools to
+[00:26:38.000] go and query the data, find make do the
+[00:26:39.880] analysis, and then generate the tasks
+[00:26:41.760] for itself to go and then fix the tests
+[00:26:44.040] and add the coverage. Uh and I think the
+[00:26:46.120] end result was something like 93 and a
+[00:26:47.600] half percent coverage was achieved,
+[00:26:49.360] which when we were way less than 60% to
+[00:26:51.720] start with.
+[00:26:52.360] >> Yeah, yeah. Um many diffs landed. And it
+[00:26:54.679] sounds like like, you know, huge
+[00:26:56.280] productivity gains. Yeah, so that one I
+[00:26:58.400] think we ended up doing it in about 3
+[00:27:00.200] hours to to achieve this, so, which is
+[00:27:02.840] incredible. And this is again, it's one
+[00:27:04.440] engineer was just saying, "I've got a
+[00:27:06.080] hunch. I think this is going to work.
+[00:27:07.720] I'm going to go and play with it."
+[00:27:09.520] They found a pattern that works, and
+[00:27:10.720] then it became repeatable. They shared
+[00:27:12.160] it to the group. And I think I said in
+[00:27:13.880] the talk, um one of the things that came
+[00:27:15.640] about from that was another engineer was
+[00:27:17.040] like, "Hey, this kind of works. I've got
+[00:27:19.720] all these tests that are running, fine,
+[00:27:22.040] but they're a bit slower than I need
+[00:27:23.240] them to be to be eligible to run on
+[00:27:25.320] diffs.
+[00:27:26.600] I wonder if I can do the same sort of
+[00:27:28.040] thing. Can I go and put this tool to use
+[00:27:29.840] and and go and find all the tests and
+[00:27:31.200] see if I can Mhm. reduce the run time
+[00:27:33.480] down."
+[00:27:34.360] And I think they they achieved something
+[00:27:35.720] ridiculous like 1,900 tests were
+[00:27:37.880] improved. Wow.
+[00:27:39.040] >> And so, that's
+[00:27:40.120] it's a huge amount of work that you
+[00:27:41.760] could have done, yeah.
+[00:27:43.560] >> time that is, and it's probably you're
+[00:27:44.880] probably right, it just wouldn't get
+[00:27:45.960] done. So, it's a beneficial increase in
+[00:27:48.080] quality versus just time saved. Exactly,
+[00:27:50.560] yeah. And then in terms of the value of
+[00:27:51.880] that one, I think the real I was
+[00:27:53.240] chatting with that in- individual
+[00:27:54.440] engineer as well, and I said, "Look,
+[00:27:55.480] what would be amazing to know is not
+[00:27:57.480] just how many tests you fixed or
+[00:27:59.000] improved, can you tell me how many
+[00:28:01.600] issues that's actually caught because
+[00:28:03.080] they're now eligible to run on these
+[00:28:04.320] diffs?" And he went away, and he found
+[00:28:05.560] the data. He's like, "Yeah, look, I've
+[00:28:07.280] in the time since I launched this, at
+[00:28:09.480] least 200 changes have been stopped
+[00:28:11.720] because these tests now run, and
+[00:28:13.720] previously, they didn't. So,
+[00:28:15.640] >> that's the kind of it's harder to get
+[00:28:17.120] those kind of value metrics for
+[00:28:18.880] everything, but that's the sort of thing
+[00:28:20.640] that I think will it makes the
+[00:28:21.960] difference, and it helps to persuade
+[00:28:23.080] people that this is this is going to be
+[00:28:24.800] a different
+[00:28:25.400] >> Yeah, yeah. And we're just starting.
+[00:28:26.880] Yeah. Amazing. Well, thank you so so
+[00:28:28.679] much for for the session and joining our
+[00:28:31.919] joining our discussion here. Um I very
+[00:28:33.760] very much encourage folks go to the QCon
+[00:28:35.480] website, uh check out the talk in full.
+[00:28:37.919] Uh but for now, Ian, thank you very very
+[00:28:39.200] much. Appreciate it. No problem. Thanks
+[00:28:40.360] for having me. Hi there. Now, I am with
+[00:28:42.960] uh David Stein, who is a principal AI
+[00:28:45.320] engineer at ServiceTitan. And uh and
+[00:28:47.880] David gave a a really great session uh
+[00:28:50.159] yesterday, in fact, which was called
+[00:28:52.240] Moving Mountains: Migrating Legacy Code
+[00:28:54.960] in Weeks Instead of Years. Uh very nice
+[00:28:58.000] title.
+[00:28:59.040] Really really engages the thought
+[00:29:00.480] processes of of what is possible with
+[00:29:02.240] migrations in and around AI. Um David,
+[00:29:04.760] first of all, tell us a little bit about
+[00:29:05.760] what you do. Tell us a bit about
+[00:29:06.800] ServiceTitan.
+[00:29:08.360] Right. So, ServiceTitan, we're the
+[00:29:10.720] operating system of the trades. And so,
+[00:29:13.240] what that means is this is for uh
+[00:29:15.520] service trades and uh
+[00:29:18.159] residential, commercial building
+[00:29:19.600] services industries like plumbing,
+[00:29:21.679] electrician, HVAC, roofing, garage door,
+[00:29:24.960] and so on. Much of these contractor
+[00:29:26.640] businesses for uh for regular service
+[00:29:29.600] work and for construction, ServiceTitan
+[00:29:31.480] builds a technology platform that helps
+[00:29:34.320] these businesses run their business. So,
+[00:29:36.720] end-to-end platform supports
+[00:29:39.720] everything from uh you know, customer
+[00:29:41.960] relationship management taking payments
+[00:29:44.600] to answering the phones. And we have a
+[00:29:46.800] whole suite of capabilities in our in
+[00:29:49.880] our platform around those around
+[00:29:52.480] everything you need to run a business
+[00:29:53.960] like that. Uh so, that's what
+[00:29:56.400] ServiceTitan is. And I work as an AI
+[00:29:59.080] engineer, principal AI engineer at
+[00:30:01.000] ServiceTitan.
+[00:30:02.280] And
+[00:30:03.480] uh
+[00:30:04.800] you might wonder like at first, what is
+[00:30:06.800] what are the AI use cases in the trades
+[00:30:09.200] businesses? And there's actually like a
+[00:30:10.520] lot of really interesting AI
+[00:30:13.080] applications that are really important
+[00:30:15.760] for companies that want to run
+[00:30:18.840] a sophisticated operation uh
+[00:30:21.360] today. And just to name a few of them,
+[00:30:23.600] if that's Sure. I can keep going there.
+[00:30:25.680] So, there's
+[00:30:27.080] um
+[00:30:28.040] one thing that we are doing is around um
+[00:30:33.440] what's called job value prediction. We
+[00:30:35.920] can
+[00:30:37.480] a lot of
+[00:30:38.640] trades businesses, when they have
+[00:30:40.920] uh you know, many dozens of technicians
+[00:30:44.160] and lots and lots of customers and you
+[00:30:46.360] know, many jobs that they're going to
+[00:30:47.760] serve in a particular day, they have a
+[00:30:51.520] uh a big task to do at their at their
+[00:30:53.360] main office around matching which
+[00:30:55.520] technicians are going to serve which
+[00:30:56.720] customers on a particular day. And we
+[00:30:59.200] have a bunch of intelligence in our
+[00:31:00.800] product that allows for this scheduling
+[00:31:04.600] and dispatch to be matched efficiently
+[00:31:06.760] to basically help our customers run
+[00:31:09.200] their business better, more efficiently.
+[00:31:10.960] And uh
+[00:31:12.360] that's one example, but there's a bunch
+[00:31:13.560] of other areas too. using like for
+[00:31:15.680] example, we have uh a voice agent
+[00:31:18.600] product uh
+[00:31:20.280] that, you know, voice voice AI answering
+[00:31:22.800] service so that our customers can kind
+[00:31:24.440] of
+[00:31:25.160] answers the phones for our customers so
+[00:31:26.960] that it can help their customers
+[00:31:28.680] schedule service appointments 24/7. Uh
+[00:31:31.840] those are a few things that that I work
+[00:31:33.440] on.
+[00:31:34.280] Um yeah.
+[00:31:35.440] >> Yeah. And so, tell us And so, what what
+[00:31:36.960] are the big things uh
+[00:31:38.760] about your session was about how you
+[00:31:41.360] took some legacy application
+[00:31:43.480] and you wanted to migrate it. So, first
+[00:31:44.880] of all, why don't we talk a little bit
+[00:31:45.960] about the the legacy application? Uh you
+[00:31:48.840] know, what what were the you know,
+[00:31:50.560] pieces of that application
+[00:31:52.480] that you needed to migrate? There was a
+[00:31:53.960] bit of data, I think. There was some
+[00:31:55.440] code. Anything else? Yeah. So, in the
+[00:31:58.480] talk, it actually focused on
+[00:32:00.880] a a a different area than the things
+[00:32:02.000] that I just mentioned.
+[00:32:03.679] And it related to a migration that we've
+[00:32:07.200] been working on as part of like This is,
+[00:32:09.560] you know, like all large tech companies
+[00:32:11.360] have this issue if you've been around
+[00:32:13.000] for more than a few years. You've Yeah.
+[00:32:15.280] You know, your your software that's been
+[00:32:17.720] in existence for more than a few years
+[00:32:19.880] using
+[00:32:21.000] uh you know, legacy
+[00:32:22.720] uh you know,
+[00:32:24.960] using your components that have been
+[00:32:26.120] around for for some time, not you know,
+[00:32:28.360] that no longer resemble the way that you
+[00:32:30.280] would rebuild those things today using
+[00:32:32.440] more state-of-the-art foundations. And
+[00:32:34.520] so, anyone who's been in software
+[00:32:36.880] engineering, you know, hit for long
+[00:32:38.480] enough has had to work on a migration at
+[00:32:40.120] some point where you are you have to
+[00:32:42.760] kind of unpack code that was written a
+[00:32:45.200] long time ago. Uh maybe the people who
+[00:32:47.640] wrote it aren't on the team anymore. You
+[00:32:49.200] know, where not all of the context is
+[00:32:50.679] easy to find, but you have to do the
+[00:32:52.520] work of picking those things up and
+[00:32:54.280] moving them into a new implementation on
+[00:32:56.440] an improved platform. And those kinds of
+[00:32:58.840] projects, you know, that all companies
+[00:33:00.600] have these projects, ServiceTitan
+[00:33:01.840] included, they're notorious for being uh
+[00:33:04.960] you know, they take a long time. There's
+[00:33:06.600] a lot of kind of toil in understanding
+[00:33:09.120] the old legacy code and moving it over.
+[00:33:11.840] So, the example I talked about in the
+[00:33:12.960] talk was around our reporting
+[00:33:14.600] application. ServiceTitan has a
+[00:33:17.120] uh a reporting product that basically
+[00:33:20.640] allows our customers to see all sorts of
+[00:33:22.920] business metrics and KPIs relating to
+[00:33:25.000] their operations and their financials
+[00:33:26.760] and and their business. And we have a
+[00:33:28.400] bunch of
+[00:33:29.560] very complex infrastructure that
+[00:33:31.080] supports that. And something that we,
+[00:33:33.320] you know, do periodically is move the
+[00:33:35.720] the underlying machinery to use better
+[00:33:38.560] and more state-of-the-art uh
+[00:33:40.960] infrastructure. And so, that's what this
+[00:33:42.640] is about. So, the specifics are we've
+[00:33:45.520] been working on uh you know, like
+[00:33:47.960] working with uh DBT MetricFlow. It's
+[00:33:50.440] like a metric store technology based on
+[00:33:52.880] and layered on top of Snowflake. Those
+[00:33:54.360] are some of the details of of the stack
+[00:33:55.800] underneath.
+[00:33:56.800] Um but there's this big task of how do
+[00:33:59.000] you take
+[00:34:00.200] uh
+[00:34:01.360] this code that was written a long time
+[00:34:02.679] ago
+[00:34:03.720] touching
+[00:34:05.040] uh you know, legacy uh
+[00:34:07.280] Well, I I don't know how many of these
+[00:34:08.480] dirty details I should go into here, but
+[00:34:10.200] like you I'll let you actually ask the
+[00:34:11.560] questions. What do you want to know?
+[00:34:13.080] >> bit. So, what do we talk about the AI
+[00:34:15.040] piece first of all? So, so we know
+[00:34:17.200] there's a report that says it's a
+[00:34:18.560] reporting part of the application. There
+[00:34:19.840] was some code that I think you said you
+[00:34:21.520] changed language on for that. There's an
+[00:34:23.800] amount of data as well, of course. Did
+[00:34:25.840] the data migrate or is that was that
+[00:34:27.640] pretty much staying where it was? Um
+[00:34:30.480] so,
+[00:34:31.800] yeah, so we're we're talking about
+[00:34:33.720] shifting from an architecture that is
+[00:34:37.600] based on a you know, the legacy stack,
+[00:34:40.520] which is written in C# with a ORM, you
+[00:34:43.600] know, programming model that is uh
+[00:34:47.640] operating against
+[00:34:49.480] uh you know, SQL DBs in production and
+[00:34:53.480] shifting that to a kind of uh data lake
+[00:34:56.560] like architecture with a semantic layer
+[00:34:59.200] and a kind of a query engine on top of
+[00:35:00.840] that allows us to serve the same kinds
+[00:35:02.560] of metrics queries, but on a
+[00:35:04.920] off-production architecture. And there's
+[00:35:06.880] lots of reasons for that, but the uh is
+[00:35:09.520] that what you're
+[00:35:10.280] >> Yeah, yeah. No,
+[00:35:11.320] that's the one. And so, in terms of So,
+[00:35:12.760] you used agents to to help you with
+[00:35:14.800] this. Right. Um from the What what would
+[00:35:17.960] happen if you just said to an agent, you
+[00:35:19.760] know, here's my environment. I need you
+[00:35:21.680] to migrate this.
+[00:35:23.080] Create a plan. Do it yourself. Right.
+[00:35:25.240] What what what would be the problems?
+[00:35:26.600] So, for a product like this, when you
+[00:35:29.200] have hundreds of metrics and each of
+[00:35:31.480] them are underpinned with a bunch of
+[00:35:34.040] code written in C#, you know, with all
+[00:35:35.960] with all the issues I mentioned before
+[00:35:37.200] about not all the context necessarily
+[00:35:38.480] being exactly where you need it, there's
+[00:35:40.040] a lot of complexity in that. You can't
+[00:35:41.240] just open up even the state-of-the-art
+[00:35:42.840] coding tools like Cursor and say, "Hey,
+[00:35:44.800] please like migrate all of our metrics
+[00:35:47.240] into you know, into this new abstraction
+[00:35:49.720] on this new framework. And by the way,
+[00:35:51.320] convert from C# into writing SQL with
+[00:35:54.160] YAML for MetricFlow on top." You it
+[00:35:56.400] doesn't uh it doesn't work to do that
+[00:35:58.680] and is what we found. Um in order to get
+[00:36:02.120] traction there, you have to really break
+[00:36:03.760] down
+[00:36:05.000] Mhm. the
+[00:36:06.840] break down the mountain of that problem
+[00:36:08.400] into small pieces. It sounds kind of
+[00:36:10.680] obvious if you say it in this way. You
+[00:36:12.160] break it down into standardized into
+[00:36:14.480] into You break it down into basically a
+[00:36:16.040] bunch of similar tasks that can be uh
+[00:36:19.160] verified in a standardized way. Yes. And
+[00:36:22.080] then you assign a long you you basically
+[00:36:25.520] construct a long task list with with
+[00:36:28.040] with phases for individual sections of
+[00:36:29.920] the task like move these first five
+[00:36:31.880] metrics as, you know, the first phase
+[00:36:33.480] and then the next and so
+[00:36:34.600] >> And who's doing this? Is this is this
+[00:36:36.440] humans doing this? Is this humans with
+[00:36:38.359] agents as an assistant?
+[00:36:39.760] >> Right. So, humans are you know, choosing
+[00:36:43.200] the the task list. Right. Like our
+[00:36:46.240] enumerating, okay, these are all of the
+[00:36:47.840] metrics that we're going to enumerate
+[00:36:49.280] and that we're going to migrate in phase
+[00:36:50.960] one and these are the metrics that we're
+[00:36:52.240] going to migrate in phase two. So,
+[00:36:53.600] humans are making those choices as well
+[00:36:55.160] as like what the target architecture is
+[00:36:56.880] that we're going to be putting these
+[00:36:57.800] things into. And humans are also, you
+[00:36:59.720] know, with some help from like AI tools,
+[00:37:02.440] are constructing the you know, all of
+[00:37:04.359] the context that's going to go to the
+[00:37:05.840] coding agents to actually enable them to
+[00:37:07.760] do the migration work for those pieces.
+[00:37:10.200] Mhm.
+[00:37:10.960] And you went up into a bunch more detail
+[00:37:12.840] in the talk. I very much recommend it's
+[00:37:14.720] recorded talk, I believe. So, it's very
+[00:37:16.080] very much recommend folks go to the QCon
+[00:37:18.240] site and check that out. Um but in terms
+[00:37:21.040] of the agents, like now we have those
+[00:37:22.920] tasks. The agents now need to take those
+[00:37:25.760] bite-size tasks. They need to perform
+[00:37:27.520] that migration. And then essentially,
+[00:37:29.440] you can run the validation to say, you
+[00:37:31.080] know, did this work? Did this not work?
+[00:37:32.359] What needs to be changed after that? In
+[00:37:34.160] terms of I'm really interested in what
+[00:37:35.680] needed to be done to the agent to best
+[00:37:38.040] prepare it for that for that actual
+[00:37:39.840] migration.
+[00:37:40.520] >> Yeah. It's kind of hard to say it all
+[00:37:42.560] without the visuals of
+[00:37:44.280] talk. So, we can
+[00:37:45.560] watch the talk if they want to see more
+[00:37:47.120] of these details. But we talked about
+[00:37:49.080] standardizing the tools
+[00:37:51.200] that need to be used to do each of these
+[00:37:54.240] tasks.
+[00:37:55.440] And so, that means standardized tools
+[00:37:57.760] for context acquisition. So, the agent,
+[00:38:00.240] just like an engineer, is going to need
+[00:38:01.880] certain context in order to be able to
+[00:38:03.160] migrate one of these pieces of metrics
+[00:38:05.320] code. What type What type of context
+[00:38:07.080] here are we talking about? Context in
+[00:38:08.880] the like in terms of the um
+[00:38:11.720] what the underlying data looks like in
+[00:38:14.960] the database. So,
+[00:38:16.640] the the agent will be looking at the
+[00:38:18.200] reference code and it will have
+[00:38:20.040] references to some tables. And we you
+[00:38:22.840] need to know like what some example data
+[00:38:24.680] actually looks like that lives in those
+[00:38:25.760] tables and what the schemas of those
+[00:38:27.040] tables are.
+[00:38:29.680] And that's a And And in terms of what's
+[00:38:33.120] available in the destination platform.
+[00:38:35.640] Like confirming like, okay, we have this
+[00:38:38.280] table in Snowflake. We know that the
+[00:38:39.760] data is there.
+[00:38:41.400] Understanding even uh you know,
+[00:38:43.760] anything that a human engineer would
+[00:38:45.440] need to see in term in order to be able
+[00:38:47.440] to correctly write the code that's going
+[00:38:49.160] to calculate these metrics in the new
+[00:38:50.800] platform. We want the agent to be
+[00:38:52.480] equipped to see that, too. So, we would
+[00:38:55.040] have a standardized tool for context
+[00:38:56.960] acquisition. Uh or a set of tools. And
+[00:38:59.440] we would Like we would What that would
+[00:39:01.120] mean is like uh not tools in the sense
+[00:39:03.280] of actually MCP. We didn't get that
+[00:39:05.040] complicated with it. We just made sure
+[00:39:07.080] that the CLI tools, which is
+[00:39:11.200] CLI tools that a engineer would be able
+[00:39:12.880] to use to get these things, that those
+[00:39:14.760] are like set up and ready for the agent
+[00:39:16.640] to use to be able to get access to what
+[00:39:18.920] it needed in order to be able to do the
+[00:39:20.000] task. Then the other really important
+[00:39:22.240] piece is around
+[00:39:24.200] um
+[00:39:24.760] giving the agent a kind of environment
+[00:39:27.760] in which to run the code and a kind of
+[00:39:30.240] simulation engine like a like a physics
+[00:39:32.280] engine in the talk, which is not really
+[00:39:33.720] about physics, but it's about a script
+[00:39:36.320] or a program that the agent can run
+[00:39:38.680] to try out the code that it has written
+[00:39:41.120] to actually run the metrics code in a
+[00:39:44.360] context that resembles a legacy
+[00:39:46.600] application so that it can produce an
+[00:39:48.120] output that can be directly compared to
+[00:39:50.160] the output that would be produced by the
+[00:39:51.920] the legacy code. And I think what you
+[00:39:53.880] said in the session was that you're not
+[00:39:55.320] using production data at this point.
+[00:39:56.800] It's almost dummy data for a little bit
+[00:39:58.240] to say if you mess up, I don't I want
+[00:40:00.520] you to mess up in a safe environment,
+[00:40:02.480] but it it gives a good enough way of you
+[00:40:04.320] being able to say and validate almost.
+[00:40:06.640] Yes.
+[00:40:07.040] >> Yeah, I see what you're doing. You're
+[00:40:08.120] within an environment where you can
+[00:40:09.480] almost like test yourself and make sure
+[00:40:11.640] you're able to migrate and we can
+[00:40:12.920] understand Yes.
+[00:40:15.840] >> And so from a validation point of view
+[00:40:17.360] then or a validator's point of view,
+[00:40:19.320] trust is a massive piece of this, right?
+[00:40:21.120] In terms of when you when you push big
+[00:40:22.840] pieces of code and things like that, um
+[00:40:25.160] what levels of validation did you have
+[00:40:26.720] there? You obviously mentioned, you
+[00:40:29.080] know, you had this like environment that
+[00:40:30.520] you created. What else did you need to
+[00:40:32.280] do before you kind of like said, "Right,
+[00:40:33.520] we're going to put this live." Right. So
+[00:40:36.040] it
+[00:40:37.120] the validation that enables the tasks to
+[00:40:41.400] be able to be done automatically by the
+[00:40:43.120] agent,
+[00:40:44.240] we had we have
+[00:40:46.520] machinery there that can compare the
+[00:40:48.240] output produced by the new system to the
+[00:40:50.800] output produced by the old system.
+[00:40:53.240] And so
+[00:40:55.160] um
+[00:40:56.520] there's a separate set of validations
+[00:41:00.720] that we also run before actually doing
+[00:41:03.200] production cutover because it's
+[00:41:04.640] obviously extremely important that the
+[00:41:07.120] data be right when we're showing it to
+[00:41:08.640] our customers. In terms of the details
+[00:41:10.800] of those,
+[00:41:12.720] I'm not sure what level of specifics go
+[00:41:14.600] into there, but hopefully I don't
+[00:41:15.760] >> what's what's important is you were you
+[00:41:17.920] were effectively replaying things that
+[00:41:19.920] you sin saw in your previous production
+[00:41:23.040] environment and you were ensuring that
+[00:41:25.080] the output that you got from from your
+[00:41:27.040] previous production environment was, you
+[00:41:29.840] know, the same and equivalent of what
+[00:41:31.360] you were getting with the with the
+[00:41:32.480] updated code, the updated flows. Yeah,
+[00:41:34.600] that's right. So replay is a good
+[00:41:35.880] keyword there. So we of course have like
+[00:41:37.600] the
+[00:41:38.720] logs of what queries are given to the
+[00:41:40.360] old system. We're able to play those
+[00:41:42.120] queries against this engine that runs
+[00:41:44.560] using the new platform as well. Um yeah.
+[00:41:47.720] In in terms of the LLM itself um
+[00:41:50.360] and the agent itself,
+[00:41:52.240] how smart does that actually need to be?
+[00:41:53.880] Is it does it like, you know, did you
+[00:41:55.800] hit any limitations in terms of oh, we
+[00:41:57.720] need to change model or anything like
+[00:41:59.240] that or was it pretty basic in terms of
+[00:42:01.680] what it actually needed to do given the
+[00:42:03.720] context of validated intelligence?
+[00:42:05.880] >> I had
+[00:42:07.120] a couple slides about this.
+[00:42:09.320] At one level, the agent doesn't need to
+[00:42:11.680] be that smart. It doesn't really need to
+[00:42:13.480] be as smart as a human engineer. Part of
+[00:42:15.280] the point that we tried to I tried to
+[00:42:16.840] make in the talk is that as long as you
+[00:42:19.000] have that kind of self-healing loop
+[00:42:21.440] where you're able to empower the agent
+[00:42:24.520] to check its work
+[00:42:26.320] um and then
+[00:42:28.120] try to make corrections if it
+[00:42:30.120] didn't you know, if
+[00:42:31.680] didn't pass validation and the
+[00:42:34.440] uh
+[00:42:35.200] the metric computed by the new system
+[00:42:37.040] doesn't match the metric
+[00:42:38.560] uh produced by the old system. Uh it's
+[00:42:40.440] kind of interesting. This project really
+[00:42:42.680] kicked off for us when uh Claude 4
+[00:42:47.040] Opus was released in I think it was May
+[00:42:49.840] of this year.
+[00:42:51.000] We had done some experiments before that
+[00:42:53.440] at seeing how well the different coding
+[00:42:55.880] LLMs could understand some of our legacy
+[00:42:58.880] metrics code and it turned out that like
+[00:43:02.360] they could
+[00:43:03.480] understand it to an extent, but the um
+[00:43:07.040] the first time that we encountered, you
+[00:43:09.840] know, the ability the LLM to really be
+[00:43:12.440] able to understand that stuff well
+[00:43:13.880] enough to do a pretty good job of of you
+[00:43:17.680] know, rewriting the restructuring the
+[00:43:19.480] code for the new platform was with uh
+[00:43:21.880] Claude 4 Opus, which is one of the
+[00:43:23.280] bigger, you know, models that's out
+[00:43:25.360] there. So it So it needed in our case to
+[00:43:27.320] be pretty smart, but it doesn't need to
+[00:43:29.600] be perfect, which is important point cuz
+[00:43:31.480] I think that sometimes people kind of
+[00:43:33.120] get caught up in like, well, you know,
+[00:43:35.520] bots will hallucinate sometimes and you
+[00:43:37.480] know, are they really as good as a human
+[00:43:38.880] engineer, but like part of what I'm
+[00:43:40.440] trying to say is that that's not the
+[00:43:41.920] point. As long as you can have the
+[00:43:43.080] self-healing loop. So So it's
+[00:43:44.520] interesting that you needed that kind of
+[00:43:45.520] like Opus 4. Did Did Did they Did they
+[00:43:47.840] get stuck at any point? Were there any
+[00:43:49.240] common kind of like ways in which the
+[00:43:51.600] agent or the LLM failed maybe through
+[00:43:54.040] lack of context or or or, you know, lack
+[00:43:56.960] of
+[00:43:57.880] uh
+[00:43:58.760] intelligence or anything like that?
+[00:44:00.359] >> Yeah, so we have a slide about this as
+[00:44:02.040] well.
+[00:44:02.960] So the um
+[00:44:05.359] in in the in the talk we talked about a
+[00:44:07.880] few pieces that we put up to kind of
+[00:44:10.480] govern this process where you're going
+[00:44:12.400] to have the agent go through and do
+[00:44:14.600] these tasks one after the other. And the
+[00:44:18.600] it's not the case that we came up with
+[00:44:20.200] this idea and we tried it one time and
+[00:44:22.040] it was able to just do all of the
+[00:44:23.160] metrics and migrate all of them in just
+[00:44:24.760] one take. That is not how it works.
+[00:44:26.640] Instead, uh the first, you know, 10, 15,
+[00:44:30.920] 20 of them
+[00:44:32.560] we kind of did them many times
+[00:44:34.960] uh in order to get to a point where the,
+[00:44:38.640] you know, the standard context that we
+[00:44:40.160] present in the in the system prompt and
+[00:44:42.440] like the migration goals.txt that I
+[00:44:44.680] mentioned in the talk as well as the way
+[00:44:46.640] we even break down the tasks and the way
+[00:44:48.440] granularity and also the behavior of the
+[00:44:53.240] validator and simulator tool itself, um
+[00:44:56.320] we had to kind of tune those to get them
+[00:44:58.040] to work well enough that the agent was
+[00:45:00.080] able to reliably get through. And so we
+[00:45:01.920] would encounter situations where the
+[00:45:04.480] agent uh
+[00:45:06.200] you know,
+[00:45:07.200] yeah, thinks that it successfully
+[00:45:09.560] migrated and or that it that it
+[00:45:11.640] successfully converted, rewrote the code
+[00:45:13.520] for a particular metric so that it would
+[00:45:15.040] work in the new platform, uh but that
+[00:45:17.680] upon, you know, for for like let's say a
+[00:45:19.920] set of them, it would say, "Okay,
+[00:45:21.560] finished number one. Great. Okay, try
+[00:45:23.000] number two. Great, did number two." and
+[00:45:24.400] then we'd let it go until it had done uh
+[00:45:27.040] several of them and then we would find
+[00:45:28.960] like upon inspection of This is
+[00:45:30.440] obviously before shipping any of that
+[00:45:32.120] code. We would find that like, well,
+[00:45:34.280] there are some problems here in what the
+[00:45:35.440] agent did and so we would have to go
+[00:45:36.640] back and like re
+[00:45:38.400] rewrite, add certain things um to the
+[00:45:41.359] context and improve the behavior of the
+[00:45:43.040] validator and simulator so that from
+[00:45:44.920] that point on the, you know, the bot
+[00:45:46.800] would be able to do a better job of
+[00:45:48.040] producing the code. And another thing I
+[00:45:50.000] guess you can find is cases where the
+[00:45:52.640] agent would get stuck because it knows
+[00:45:54.440] that it's not able to make progress on a
+[00:45:55.800] particular task and there could be many
+[00:45:57.440] reasons why that would happen and an
+[00:45:59.480] example that I like to talk about is
+[00:46:01.720] like if the agent just doesn't have
+[00:46:04.720] sufficient uh test data for that
+[00:46:06.840] particular case, it will struggle to be
+[00:46:09.280] able to confirm that the code that it
+[00:46:11.440] tried to rewrite is actually going to
+[00:46:12.760] work, which is a similar problem that a
+[00:46:14.480] human engineer could have if they're
+[00:46:15.960] trying to write a new, you know, version
+[00:46:18.120] of some code fits the new paradigm, but
+[00:46:20.120] where they don't have sufficient test
+[00:46:21.320] data to be able to confirm that it's
+[00:46:23.080] going to behave in the same way. So
+[00:46:24.160] making sure the agent has that context.
+[00:46:25.680] Yeah, absolutely. And I guess I guess,
+[00:46:27.120] you know, in your in your session, the
+[00:46:28.640] session title was migrating legacy code
+[00:46:30.840] in weeks instead of years. Did you Do
+[00:46:32.880] you have any thoughts in terms of well,
+[00:46:34.640] actually how much time Well, first of
+[00:46:36.000] all, how long was that process? And I
+[00:46:38.120] guess secondly, how long do you think it
+[00:46:40.160] would have been had you not have used AI
+[00:46:41.600] as as a part of that? So we talked about
+[00:46:45.000] the number of metrics I mentioned in the
+[00:46:46.400] talk is 247
+[00:46:49.040] metrics that were moved into the new
+[00:46:52.080] platform. The it really does go very
+[00:46:56.280] very quickly once you get that flywheel
+[00:46:58.720] running using the approach that we're
+[00:47:00.280] talking about. This is part of like once
+[00:47:03.240] you, you know, get that assembly line
+[00:47:05.320] working where you have sufficient
+[00:47:07.160] context in there and the right tools for
+[00:47:09.440] context acquisition and the right tools
+[00:47:11.440] for validation, you can get
+[00:47:13.840] pretty good agents to run your whole
+[00:47:15.720] migration really fast. So in terms of
+[00:47:17.680] how long it took, I would say that like
+[00:47:19.680] the first 20 or 30, like I mentioned
+[00:47:22.080] before,
+[00:47:23.440] as well as getting those tools and those
+[00:47:26.840] fixtures right,
+[00:47:28.400] probably took
+[00:47:30.480] one to two months. Trying to remember is
+[00:47:32.600] my exact
+[00:47:33.920] estimates there. The once those things
+[00:47:36.440] were in place,
+[00:47:37.680] going from that 20 or 30 point all the
+[00:47:40.640] way to almost the end of that list
+[00:47:43.400] metrics was really fast. So it was like
+[00:47:46.560] just a few weeks. And it would be The
+[00:47:50.160] reason that you what's so compelling
+[00:47:52.560] about this is that as we talked about in
+[00:47:54.720] the talk,
+[00:47:57.160] anytime you would be needing have an
+[00:47:59.200] engineer, you know, read the code in one
+[00:48:01.120] language,
+[00:48:03.320] look at the underlying data, make sure
+[00:48:05.040] that the logic can be captured and put
+[00:48:06.800] into a new abstraction, like that that
+[00:48:09.160] would be like working after assigning an
+[00:48:10.640] engineer that is tasked with stretch out
+[00:48:12.080] over a long period of time. The way we
+[00:48:13.520] estimated like I said in the talk, it
+[00:48:15.320] would take quarters
+[00:48:17.000] to do that kind of work where you're
+[00:48:19.400] going to have engineers
+[00:48:21.480] migrate all that code into a new
+[00:48:22.600] platform.
+[00:48:23.240] >> And abstract them potentially from a
+[00:48:24.880] future product work or anything else
+[00:48:27.080] that Right. So I mean, that's time an
+[00:48:28.600] engineer could be spending working on
+[00:48:29.920] something else, but there's also a sense
+[00:48:31.520] of like agility that I want to kind of
+[00:48:34.359] people to take away from this where like
+[00:48:36.160] a lot of companies and also where I've
+[00:48:38.160] worked in the past, like there are often
+[00:48:41.359] you know, there are some big migrations
+[00:48:43.840] that are deemed high enough priority to
+[00:48:45.600] actually
+[00:48:47.120] uh to actually kick off and do despite
+[00:48:49.160] the huge costs that these things used to
+[00:48:50.640] take, but there's also a bunch of other
+[00:48:53.840] kinds of tech debt cleanups and like
+[00:48:57.080] um
+[00:48:58.040] you might almost say desire to migrate
+[00:49:00.120] something to use a a better foundation,
+[00:49:02.320] but where engineering teams struggle to
+[00:49:03.880] prioritize those things because of how
+[00:49:05.480] long they take. Yeah. And so Mm. trying
+[00:49:08.080] to say here that if you can break down
+[00:49:11.520] that problem in the right way, like we
+[00:49:13.240] talked about in the talk, you might be
+[00:49:14.760] able to do those migrations that you've
+[00:49:16.600] been wanting to do Yeah. much faster
+[00:49:18.600] than you might have been able to do them
+[00:49:19.560] in the past. So it kind of hopefully
+[00:49:23.040] helps people think about their strategy
+[00:49:25.480] a little differently than we have now.
+[00:49:28.000] Amazing. David, thank you so much. Um
+[00:49:30.080] and by the way, ServiceTitan they're
+[00:49:31.800] hiring right now at the time of
+[00:49:33.320] recording. That's right. At the time of
+[00:49:35.200] recording, we're hiring.
+[00:49:36.920] Uh so yeah, folks find me on LinkedIn.
+[00:49:39.480] You can reach out if you're interested.
+[00:49:41.320] There's a lot of great stuff that we're
+[00:49:42.240] doing here, so. Amazing. David, thank
+[00:49:44.440] you so much. Appreciate the amazing
+[00:49:46.280] session you gave yesterday. Thank you
+[00:49:47.480] for giving us some time, and enjoy the
+[00:49:50.000] rest of QCon. Thank you so much.
+[00:49:51.560] Appreciate it. Hi there. Joining me this
+[00:49:53.560] time is Wes Rice, and Wes is technical
+[00:49:56.600] principal at ThoughtWorks. Wes, welcome
+[00:49:59.640] to the podcast.
+[00:50:00.720] >> Thank you. It was great to be here. I'm
+[00:50:01.720] excited to be on it. Tell us a little
+[00:50:03.440] bit about what you do at ThoughtWorks.
+[00:50:05.040] Yeah, great. So, I'm a technical
+[00:50:06.520] principal. We call them technical
+[00:50:07.720] partners as well. And so, what I
+[00:50:09.720] basically do is I lead an account,
+[00:50:12.360] all the technical aspects of an account.
+[00:50:14.160] So, on this particular account I'm
+[00:50:15.400] leading, it's a large state organization
+[00:50:17.400] in the United States. I've got about 10
+[00:50:19.960] developers, about 18 people total on the
+[00:50:21.960] project with design, project, product,
+[00:50:23.840] those type of folks. So, we're basically
+[00:50:26.120] building a a knowledge graph for state
+[00:50:29.000] agency that's using a deep research
+[00:50:31.960] agent to build and populate this
+[00:50:33.240] knowledge graph. Then we're building
+[00:50:34.600] applications to access that knowledge
+[00:50:36.720] graph to be able to answer questions for
+[00:50:38.080] the state agency. So, I've been doing
+[00:50:40.000] about 3 months for this particular
+[00:50:41.120] project, and yeah, that's what we're
+[00:50:42.360] doing. Awesome. And we I joined your
+[00:50:44.480] session yesterday. Really really
+[00:50:45.800] interesting session.
+[00:50:47.440] The title for
+[00:50:49.320] those obviously not at QCon, AI first
+[00:50:51.600] software delivery, balancing innovation
+[00:50:54.280] with proven practices. And you talked a
+[00:50:55.880] ton about the various different levels
+[00:50:57.840] of
+[00:50:59.120] using specifications as part of your
+[00:51:00.520] software development. Super interesting
+[00:51:01.920] both going from I guess using
+[00:51:03.680] specifications to assist your
+[00:51:05.320] development all the way through to specs
+[00:51:07.400] being that kind of that spec centric
+[00:51:09.400] piece.
+[00:51:09.880] >> Right.
+[00:51:10.720] An amazing
+[00:51:12.400] amazing blog from Birgitta,
+[00:51:15.360] who we had on the podcast before as
+[00:51:17.200] well.
+[00:51:17.600] >> Absolutely. Absolutely. And you
+[00:51:18.560] introduced a really interesting
+[00:51:21.240] framework called Ripper or Ripper.
+[00:51:24.000] Ripper Ripper Ripper goes back and
+[00:51:25.440] forth.
+[00:51:26.280] Ripper five.
+[00:51:28.320] Why don't you introduce that to to the
+[00:51:30.200] audience, and then we can kind of like
+[00:51:31.400] delve deeper into It's first be fair, I
+[00:51:33.520] didn't come up with it. It was we
+[00:51:35.320] discovered it on a blog post or a a
+[00:51:38.160] cursor forum that was in I think March
+[00:51:40.400] of of this year or so when we first ran
+[00:51:42.480] across it. But what it stands for it's
+[00:51:45.280] really it stands for research, innovate,
+[00:51:48.120] plan, execute, and then review. So, it's
+[00:51:50.760] that plan execute model, but it goes a
+[00:51:52.600] little bit deeper. And the reason why I
+[00:51:55.560] think it's so important is you've been
+[00:51:57.480] interacting with an LM, you've been in a
+[00:51:59.160] chat console, and you're trying to do
+[00:52:01.200] something, and
+[00:52:03.040] it has to have the context of what
+[00:52:04.600] you're doing. You don't always are in
+[00:52:06.040] the same mindset. You may be trying to
+[00:52:07.680] research a particular thing, but it
+[00:52:09.560] jumps into coding, or you may be
+[00:52:11.280] planning and it jump it jumps into
+[00:52:13.200] coding, or you're coding and it's it's
+[00:52:15.360] not really doing any planning. So, what
+[00:52:17.480] the Ripper five model does is it
+[00:52:19.840] provides a set of instructions that
+[00:52:22.760] you can pass as a command on we're using
+[00:52:25.400] cursor. So, we pass it as kind of
+[00:52:28.440] property for our our our um
+[00:52:31.480] our our IDE to be able to have this
+[00:52:33.840] context. So, we give it a command. We
+[00:52:36.240] say we're in research mode, and what
+[00:52:38.040] that does is it it tells the LLM that
+[00:52:41.480] ask me questions, analyze the code base
+[00:52:43.880] of where you're at, for example.
+[00:52:45.840] But don't do is is important as what it
+[00:52:48.520] can do is is what it can't do. Don't do
+[00:52:51.680] coding. Don't do planning. Right now, I
+[00:52:53.680] just want you to understand what the
+[00:52:55.880] code is, what my what my spec is
+[00:52:58.320] actually trying to do, so that way I can
+[00:53:00.520] provide more details to refine the spec.
+[00:53:03.440] So, this Ripper five it's kind of like a
+[00:53:06.560] an execution model of how you work with
+[00:53:08.920] the LLM, and we do that in pairing with
+[00:53:11.120] the with the developer. It's really
+[00:53:12.720] interesting cuz like when often when
+[00:53:14.720] when you sometimes give an LLM a a task,
+[00:53:18.120] it will think it knows enough, it jumps
+[00:53:20.360] to the next thing. It's almost like if I
+[00:53:21.880] have enough information that I can give
+[00:53:23.400] a response,
+[00:53:24.680] I'll try and do that rather than
+[00:53:26.760] actually thinking, well,
+[00:53:28.080] I have enough information to give a
+[00:53:29.360] response, but I don't have enough
+[00:53:30.440] information to actually give the
+[00:53:32.280] response that you as a user want to
+[00:53:33.800] provide back. So, in terms of the
+[00:53:35.600] context that you give the LLM at that
+[00:53:37.440] stage,
+[00:53:39.240] I presume it's like similar to rules or
+[00:53:41.000] it's it's essentially like a a
+[00:53:42.000] step-by-step process to say, look, this
+[00:53:44.120] is what you need to do, and then this is
+[00:53:45.680] what you shouldn't do. Or if you find
+[00:53:47.120] yourself doing this, stop, and
+[00:53:49.120] you know,
+[00:53:50.320] at least at least complete that before
+[00:53:51.920] you say, I'm done, and then pass over to
+[00:53:53.720] the next. Is that Is that how it works?
+[00:53:55.120] Yeah, so I I kind of jumped straight
+[00:53:56.760] into the Ripper five. So, what what we
+[00:53:58.600] start with is spec driven development
+[00:54:00.120] that as you well know. So, what we
+[00:54:02.240] define is a well-defined spec. So, it
+[00:54:05.240] has things like acceptance criteria.
+[00:54:07.440] We're moving to actually put behavior
+[00:54:08.960] driven development type tests in there,
+[00:54:10.680] so that way we're getting the test up
+[00:54:13.560] front before the code is written. A lot
+[00:54:16.080] of times when you have it generate tests
+[00:54:18.800] as as you well know, it will fit the
+[00:54:21.200] test to the code and not create the test
+[00:54:24.240] then the code validates it. So, by
+[00:54:26.359] getting kind of BDD style tests up front
+[00:54:29.480] and in the specification, it kind of
+[00:54:31.480] creates a test driven development type
+[00:54:33.000] approach that the spec follows. So, the
+[00:54:34.560] first step is getting a well-defined
+[00:54:36.760] spec. One of the questions that I often
+[00:54:39.480] ask when I talk to people about spec
+[00:54:41.200] driven development though is what level
+[00:54:43.480] are we talking about? Are we talking
+[00:54:45.480] epics? Are we talking stories? Where are
+[00:54:47.880] we when we talk about specs? What we're
+[00:54:50.040] focused on right now, now remember if go
+[00:54:52.440] back, this is a team that we just stood
+[00:54:54.720] up with a new account, brought these
+[00:54:56.640] people together working with kind of a a
+[00:54:58.840] traditional
+[00:55:00.320] company, a state organization. So, we
+[00:55:02.280] hadn't been here long. We didn't have a
+[00:55:03.800] lot of domain knowledge yet about all
+[00:55:06.560] the processes that we were doing or how
+[00:55:08.160] we were working. So, what we took was
+[00:55:10.840] defining a process using Ripper five,
+[00:55:12.600] how we're going to work with the LLM
+[00:55:13.680] starting with the spec, and then we pair
+[00:55:16.440] developers with that process. So, with
+[00:55:19.200] that well-defined spec, with that
+[00:55:20.640] definition of done, with the acceptance
+[00:55:22.280] criteria, with the information that's
+[00:55:24.440] there, given that spec, we then go into
+[00:55:27.080] that first R stage. And again, this is
+[00:55:29.200] just a command that we share with all of
+[00:55:32.400] our development team, submodule we pull
+[00:55:34.160] into our repo
+[00:55:35.560] that means do research. So, do research,
+[00:55:38.720] give it the spec, give it the code base
+[00:55:40.600] that you're working on.
+[00:55:42.240] Make sure you understand what it is that
+[00:55:44.640] this is going to do. Ask me questions,
+[00:55:46.800] and then we refine that spec. So, as it
+[00:55:49.000] asks questions, we put it back into the
+[00:55:50.400] spec, so that way we keep refining it.
+[00:55:52.880] Then we go to the next stage.
+[00:55:54.080] >> Yeah, that's a really interesting point
+[00:55:55.359] actually, cuz when you say ask me
+[00:55:56.800] questions, I like that, because when we
+[00:55:58.400] talk about research, I guess there are
+[00:56:00.000] different ways in which the LLM can get
+[00:56:01.720] answers. It can kind of like determine
+[00:56:03.359] it itself based on its training. It can
+[00:56:05.240] do there are a ton of tools that are
+[00:56:06.440] available to LLMs these days and agents.
+[00:56:08.560] Maybe it does a web search or something
+[00:56:09.880] like that. Is it How autonomous is this
+[00:56:12.359] research? Is it Is it very interactive
+[00:56:14.440] with the user and and kind of like
+[00:56:16.440] almost like prescribed by the user, or
+[00:56:18.520] can it just go off and and come back?
+[00:56:20.400] >> Well, so that's the beauty of it, right?
+[00:56:22.000] You do have the tools, so you can use a
+[00:56:24.400] tool for web search. If in my particular
+[00:56:26.680] case we don't have like an MCP client
+[00:56:29.120] that has broader context, but if you did
+[00:56:31.520] have context like some of the stuff some
+[00:56:33.480] of the products out there that might
+[00:56:34.760] provide some context back to it, you
+[00:56:36.800] could certainly use those. In the case
+[00:56:38.920] that we're doing, it's primarily ask me.
+[00:56:41.440] You can do a web search, but generally
+[00:56:44.120] it's ask me and then the developer's
+[00:56:45.760] providing it back, but there's nothing
+[00:56:47.400] that precludes that adding the
+[00:56:48.840] additional tools into it so that they
+[00:56:50.400] can ask that you can use it. But it's up
+[00:56:52.640] in the way that we're doing it right
+[00:56:54.000] now, we're using the developer up front
+[00:56:57.040] in the process. As we move along, as we
+[00:56:59.760] gain more domain knowledge, as we gain
+[00:57:01.840] more of the context of how this business
+[00:57:04.200] operates, we can start to put evals in
+[00:57:06.600] place where we can do things more
+[00:57:08.640] autonomously. Right now, we're taking a
+[00:57:10.880] very supervised approach being that a
+[00:57:13.280] developer, a pair actually, is engaged
+[00:57:16.120] with this research.
+[00:57:16.880] >> And it keeps that developer in the loop
+[00:57:18.080] as well. So, who determines when
+[00:57:20.000] research is done? Is that a developer
+[00:57:22.000] developer decision to say, yep, we're
+[00:57:23.280] good to go?
+[00:57:23.480] >> decision. So, we're firmly keeping that
+[00:57:25.160] developer in the process. So, once that
+[00:57:27.480] research is done, then the next stage of
+[00:57:29.880] Ripper is innovate. And that's that part
+[00:57:32.160] where you're
+[00:57:33.480] you can do things many different ways in
+[00:57:34.920] software, right? Like implement this.
+[00:57:37.480] What are the ways that you would
+[00:57:38.800] implement this? And it might give you
+[00:57:40.280] one, two, three, four different options,
+[00:57:41.880] and you're like, you know what? I like
+[00:57:43.440] two. Or actually, I like two, but let's
+[00:57:45.320] make it more invented and make it event
+[00:57:47.040] past. You pass that to it. That then
+[00:57:49.440] goes back into the spec that refines it,
+[00:57:51.320] and that's the innovate. And so, the
+[00:57:52.480] innovate stage is still updating the
+[00:57:53.760] spec, but it's updating the spec more in
+[00:57:55.359] terms of the how Yes. the developer
+[00:57:58.000] would want that to be implemented.
+[00:57:59.600] >> the spec. It's adding more detail to it.
+[00:58:01.680] So, a lot of the tools do some of this
+[00:58:03.120] stuff as you go through, but this we're
+[00:58:05.120] taking a very simplified this is just
+[00:58:07.640] straight markdown. We're interacting
+[00:58:09.440] with the LLM and the developer and
+[00:58:10.800] enriching the markdown file. And is it
+[00:58:12.640] typically I mean, of course, it's just
+[00:58:14.080] markdown, so both an LLM or a user can
+[00:58:16.720] kind of go in and and play with that. Do
+[00:58:18.200] you find people leaning into the LLM
+[00:58:21.120] only to make changes, or do you find
+[00:58:22.920] people more handcrafting as they go as
+[00:58:25.000] well? So, that there's this is a common
+[00:58:27.560] question that goes back and forth. What
+[00:58:29.280] what I push for is to make sure you go
+[00:58:30.720] back to the spec at this stage. You're
+[00:58:32.600] firmly in the spec. Now, I do take a
+[00:58:35.880] spec first approach. I believe once the
+[00:58:38.640] code is developed that the code is the
+[00:58:40.640] source of truth. At this stage though,
+[00:58:42.800] we're refining the actual spec. Yep.
+[00:58:45.320] Yep. Um
+[00:58:47.120] So, we've done the innovation. Now it
+[00:58:48.840] refines the spec. P. Now, P. P is
+[00:58:51.680] planning. So, in planning what we do, if
+[00:58:54.680] you think back before AI, if if I had a
+[00:58:57.040] story, a well-defined story, and we're
+[00:58:58.920] on a scrum team together and say, we're
+[00:59:01.080] on this team, we got three or four other
+[00:59:02.640] developers. We don't know who's going to
+[00:59:04.280] pick up this story. So, we've got this
+[00:59:06.080] story, we go into planning, and we look
+[00:59:08.240] at this thing. It's like, how are we
+[00:59:09.320] going to develop this? And you're like,
+[00:59:10.640] oh, it'll be a a react component that we
+[00:59:12.880] need to build. There's maybe a service
+[00:59:14.480] that needs these methods. We need these
+[00:59:16.520] kind of things passed into it. Maybe
+[00:59:18.080] this model's there. We might need to
+[00:59:19.920] create this repository. We need to do
+[00:59:22.280] something to be able to migrate for the
+[00:59:23.920] database to do updates, but we like task
+[00:59:26.920] it out. We literally break down what's
+[00:59:29.280] going to be done. We write the tasks.
+[00:59:30.720] So, if you and I aren't here, and
+[00:59:32.280] somebody else picks it up, another pair,
+[00:59:34.360] they have the same task, they have the
+[00:59:35.720] same mental model of what's being
+[00:59:37.600] required to do it. We use the same thing
+[00:59:39.520] with planning.
+[00:59:40.680] So, what we do in planning is once we
+[00:59:42.200] have this this stage, there's a command
+[00:59:45.360] that will run that's do plan. In what do
+[00:59:47.600] plan, we give it the spec. What do plan
+[00:59:50.280] will do is it will first break it down
+[00:59:52.760] into individual tasks. So, do that same
+[00:59:55.080] tasking stage. Then as a pair, we review
+[00:59:57.600] those tasks, and we look at it and go,
+[01:00:00.160] "Okay, say we're
+[01:00:02.040] do these things match what we want, or
+[01:00:03.720] do we want to rearrange them, or do
+[01:00:05.440] things differently?" Uh one common
+[01:00:07.720] example, I think I used in the talk
+[01:00:09.400] yesterday, was in the example that I did
+[01:00:12.960] when I set up the
+[01:00:14.440] when I when it tasked it out, was doing
+[01:00:16.360] a Python project, and it didn't set up a
+[01:00:18.360] virtual environment first, right? And
+[01:00:19.880] then everything I do, I want it set up
+[01:00:21.440] in a virtual environment, so I'm
+[01:00:22.480] sandboxed off, and nothing's
+[01:00:24.160] manipulating my machine. So, the first
+[01:00:26.080] thing I did was go back to it and say,
+[01:00:28.160] "Hey, add a virtual environment to this
+[01:00:30.160] plan."
+[01:00:31.080] Going back to the spec, um I'll keep
+[01:00:33.760] trying to update that. Sometimes I have
+[01:00:35.760] to go to the plan if I can't do the
+[01:00:37.160] spec, but what I do is I task these
+[01:00:39.320] things out. So, now I have this task,
+[01:00:41.440] set up the project, do this this
+[01:00:43.440] component that I mentioned, or do this
+[01:00:45.760] service that was there, this repository,
+[01:00:47.680] the migrations.
+[01:00:49.280] I lay all those things out. Once we've
+[01:00:51.200] done that,
+[01:00:52.560] then what we can do is go to the next
+[01:00:54.400] step where we actually create the plan
+[01:00:57.080] for that tasks. Um in the in the part
+[01:01:00.080] where we actually do the task for that,
+[01:01:01.880] we try to keep these things as atomic as
+[01:01:03.720] possible, so that way they're they're
+[01:01:05.520] very they're like a discrete commit if
+[01:01:07.080] at all possible, so they're not leaking
+[01:01:09.360] across different tasks. There's a couple
+[01:01:11.440] reasons for that. One is they do have
+[01:01:13.840] that atomicity, but also we might split
+[01:01:16.840] tasks up. You might do one, I might do
+[01:01:18.640] another, we might parallelize some of
+[01:01:20.040] the work. Some things might be
+[01:01:21.640] dependent, we'll build that into a
+[01:01:23.720] little task plan that we do through it.
+[01:01:25.840] But we'll do that so that way we can
+[01:01:28.040] implement each of these things
+[01:01:29.400] individually. So, that's that's the
+[01:01:31.520] that's the planning stage. Awesome. And
+[01:01:33.840] and with with with planning, it it seems
+[01:01:36.200] like particularly with things like
+[01:01:37.600] Python, for example, there are a number
+[01:01:39.560] of common best practices, like, yeah, I
+[01:01:41.520] want it I want it to be contained in my
+[01:01:43.560] own environment. Um how much of this is
+[01:01:46.240] almost reusable across different
+[01:01:47.960] projects, cuz there's probably an amount
+[01:01:50.000] whether it's styling, whether it's just
+[01:01:51.960] ways of working, whether it's you know,
+[01:01:53.800] maybe test-driven development, or
+[01:01:55.160] whether it's
+[01:01:56.800] you know, a stack that the teams are
+[01:01:58.760] most familiar with or want to deploy
+[01:02:00.400] with. Is there is there like an amount
+[01:02:02.800] that you kind of say, "You know what,
+[01:02:04.360] for this customer, I want to reuse this
+[01:02:06.560] for every single project, therefore I'll
+[01:02:08.160] I'll I'll make this some kind of context
+[01:02:10.320] that every every project can can reuse?"
+[01:02:13.360] For for us in particular, we're using
+[01:02:15.240] Cursor, so I'm going to answer it
+[01:02:16.600] through a Cursor lens, but how I answer
+[01:02:19.280] this really is irrelevant on the
+[01:02:21.440] specific tool that you use.
+[01:02:23.520] So, what we really start with, even
+[01:02:25.600] before you jump into the Ripper 5, is
+[01:02:27.880] what are some of the foundational rules
+[01:02:29.560] that we're going to establish. So, the
+[01:02:30.920] first rules we start with around
+[01:02:32.920] documentation,
+[01:02:34.760] anything that's created, use Mermaid to
+[01:02:36.720] be able to to diagram things. We'll
+[01:02:38.640] create create some things like that. Um
+[01:02:40.880] there's some general rules that we have
+[01:02:43.040] on programming abstractions that we want
+[01:02:44.760] to have. Um I know some people will
+[01:02:46.720] actually put rules in there about DDD,
+[01:02:48.520] for example, if you want to leverage
+[01:02:49.920] domain-driven design, or maybe a clean
+[01:02:52.040] architecture that you'll add into the
+[01:02:53.920] rule set. So, you start there. As you go
+[01:02:56.440] through that Ripper 5, and you go into
+[01:02:58.040] planning, and you discover those things
+[01:03:00.200] that are cross-cutting that you want, we
+[01:03:02.120] create rules. Current project I'm
+[01:03:04.000] working on, I'm using Spanner. Um so,
+[01:03:06.480] there's some rules on how Spanner
+[01:03:08.320] operates. So, what I'll do is is I but
+[01:03:11.720] I'm still somewhat new to Spanner. So,
+[01:03:13.600] as I'm going through that, and I'm
+[01:03:14.760] working with Spanner, and I'm doing DML
+[01:03:16.560] or DDL, doing updates, and Spanner has a
+[01:03:19.000] certain way of dealing with it, I'm
+[01:03:20.200] like, "Oh, I ran into an issue here."
+[01:03:22.240] So, I add that into my my rule file, I
+[01:03:25.000] share that out with the submodule, other
+[01:03:26.760] developers pull it in. So, when they're
+[01:03:28.800] running another specification that
+[01:03:31.320] touches on Spanner, they're picking up
+[01:03:33.320] that DML rule that I added into it. So,
+[01:03:35.760] we use rules for those particular
+[01:03:37.200] things.
+[01:03:37.600] >> Gotcha. And how much is that how much of
+[01:03:39.120] that is like checked into the
+[01:03:40.160] repositories? All of it is. So, what
+[01:03:42.600] what we do is just create a submodule.
+[01:03:45.320] So, we have
+[01:03:47.200] a Cursor
+[01:03:48.720] submodule, it's our our rules, we put
+[01:03:50.920] rules and commands into that. And then
+[01:03:53.560] for all of our repos, we we've probably
+[01:03:55.880] got five repos in this one, it's not a
+[01:03:57.359] mono repo. And so, what we do is we just
+[01:04:00.080] have them clone the submodule, and that
+[01:04:02.200] pulls down the latest rules, and then we
+[01:04:04.800] apply those rules as we go through them.
+[01:04:06.600] Gotcha.
+[01:04:07.760] E is execution. Execution. Execution.
+[01:04:10.520] So,
+[01:04:11.480] I should say
+[01:04:12.720] we talked about before that as important
+[01:04:14.359] as what you can do is what you cannot do
+[01:04:16.920] in each of the stages. So, when you were
+[01:04:18.280] in research, innovate, and plan, one of
+[01:04:20.720] the rules that you cannot do is execute.
+[01:04:22.920] You cannot create code. And that's
+[01:04:24.800] important to make sure that the LLM and
+[01:04:27.359] the developer are in sync before they
+[01:04:29.520] get to that stage of execution and
+[01:04:31.080] creating the code. So, now we're in
+[01:04:32.800] execution, and now you don't plan
+[01:04:34.880] anymore. You follow the plan. That's the
+[01:04:37.400] rules that has to actually happen.
+[01:04:39.040] >> What if you realize during execution,
+[01:04:40.359] actually
+[01:04:41.560] Yeah. we need to actually go back to
+[01:04:42.920] planning, or we need to go back is it a
+[01:04:44.920] process that you can bounce around, or
+[01:04:46.880] is it kind of like best done where you
+[01:04:49.080] agree completion before you go and
+[01:04:51.040] actually makes it a bit messy to bounce
+[01:04:52.640] around?
+[01:04:52.720] >> It's it's a fine fine line. So, the
+[01:04:55.000] answer is it depends. The the general
+[01:04:57.800] rule is to go back to the specification
+[01:04:59.680] and re-plan. That's the general rule.
+[01:05:01.720] But, you know, sometimes LLMs can take a
+[01:05:03.800] minute, right? It can think of it. So,
+[01:05:05.640] maybe you just want to make a small
+[01:05:06.960] change to the plan. It that's frowned
+[01:05:09.000] upon, but that's okay. If you do it, you
+[01:05:11.200] do it. Once you get to the execution
+[01:05:13.600] stage,
+[01:05:15.280] it really begins to depend. I am a firm
+[01:05:17.720] believer, like, there's different models
+[01:05:19.359] that you can take. When you we talk
+[01:05:20.560] about spec-first development, um are we
+[01:05:23.080] spec-driven development, are we talking
+[01:05:24.960] spec as a source of truth where every
+[01:05:27.120] change must go to the spec? A lot of
+[01:05:29.240] folks A lot of tools out there that that
+[01:05:31.359] drive specifications maybe take that
+[01:05:32.960] approach. I haven't found that to be
+[01:05:35.640] really successful with me, because it
+[01:05:38.560] forces you to move up too high in the
+[01:05:40.640] abstraction. Um cuz if you're too low,
+[01:05:43.240] then you have specifications that start
+[01:05:44.600] to collide. So, I haven't found that
+[01:05:47.200] perfect balance for me. So, I tend to
+[01:05:49.520] use spec-first where spec is used to
+[01:05:53.720] define what we want to do in plain
+[01:05:55.359] English, we review that, we generate
+[01:05:57.640] that when we review what's there.
+[01:06:00.359] If there are small changes um that has
+[01:06:03.080] to happen. So, one of the techniques
+[01:06:04.720] that I picked up with a colleague of
+[01:06:06.040] mine when I worked for Equal Expert, uh
+[01:06:08.000] Marco Ramilli, and he's the the core
+[01:06:10.680] contributor creator of SDKman. He um
+[01:06:13.920] what he would do is when the code was
+[01:06:15.760] generated,
+[01:06:17.160] as you review the code with a pair with
+[01:06:19.440] others, and then we drop a to-do in the
+[01:06:21.640] code that says, "Hey, I don't want to do
+[01:06:23.840] nested for loops here. I want to use
+[01:06:25.400] streams to be able to do this." So, drop
+[01:06:27.240] a to-do in there, put that definition in
+[01:06:29.800] there, and then you would have the LLM
+[01:06:31.480] roll through there, pick up all the
+[01:06:32.840] to-dos, and update the specification
+[01:06:35.600] from that. Interesting technique. Tried
+[01:06:37.720] that a few times. That that is a useful
+[01:06:39.920] way of doing I've done that. Um other
+[01:06:42.320] times,
+[01:06:43.560] I will just make the change, because in
+[01:06:45.520] in my approach with spec-first and the
+[01:06:47.920] approach that we try to follow, the code
+[01:06:50.600] is our source of truth, not the spec.
+[01:06:52.400] The spec is used to help us get there,
+[01:06:54.480] help us align on it, help us to do some
+[01:06:56.400] of the thinking, and then just automate
+[01:06:58.280] some of the code generation, but the
+[01:07:00.359] code is actually the source of truth.
+[01:07:02.200] So, as that changes then, do you go back
+[01:07:05.160] to update the spec, or the spec is kind
+[01:07:07.840] of like a kind of old document at that
+[01:07:09.920] point?
+[01:07:10.800] >> I Oh, you mean as we go on as we go on?
+[01:07:13.160] >> you go forward, yeah. Um so, right now I
+[01:07:15.560] we get rid of the spec. We drop the
+[01:07:16.920] spec. I haven't completely excluded it
+[01:07:19.440] from the code base, but I exclude it
+[01:07:20.760] from what we what we ingest, because you
+[01:07:23.680] don't want a mixed source of truth
+[01:07:25.720] between the spec and then what's the
+[01:07:27.240] code. The code is the source of truth.
+[01:07:29.280] So, we exclude exclude the spec in what
+[01:07:31.560] we analyze. Um but I think it's going to
+[01:07:34.840] be completely moved very soon. So, the
+[01:07:36.880] execution then just leaves you with pure
+[01:07:38.480] code. Does it does it also execute does
+[01:07:40.120] it generate any any tests from there at
+[01:07:42.560] all, or is that kind of more in the last
+[01:07:44.560] stage?
+[01:07:44.720] >> So, this is what we were talking about
+[01:07:45.640] before with spec-driven development or
+[01:07:47.280] with BDD. Like, in many cases, we would
+[01:07:50.880] one of our tasks would be to generate
+[01:07:52.480] spec. And so, what what you've seen, I'm
+[01:07:55.080] sure, is when you generate code, and
+[01:07:57.720] then you have a task afterward that
+[01:08:00.040] says, "Create 95% code coverage across
+[01:08:03.320] this."
+[01:08:04.160] What the LLM will do is take the code
+[01:08:07.040] and create tests from that, which makes
+[01:08:09.240] incredibly brittle code. It makes
+[01:08:11.960] incredibly brittle tasks tests. So, what
+[01:08:15.120] I then wound up doing as we go through
+[01:08:16.960] this is I'm spending so much time trying
+[01:08:19.400] to fix these very very brittle tests
+[01:08:21.960] that I wind up just get rid of the tests
+[01:08:23.400] and re-generate them. That feels
+[01:08:24.880] disingenuous. That doesn't feel right.
+[01:08:27.040] So, what we're doing right now is we're
+[01:08:28.960] pushing tests into the specification.
+[01:08:31.680] So, during the planning process, part of
+[01:08:33.680] the spec defines BDD. So, when you're
+[01:08:36.440] generating code, you're generating the
+[01:08:38.640] spec that the tests that go with it. So,
+[01:08:41.719] it's together, it's not done as an
+[01:08:43.400] afterthought. Which I think at Tesla as
+[01:08:45.000] well in our very early learnings, we
+[01:08:46.839] originally had kind of like specs with
+[01:08:48.880] the capabilities and features
+[01:08:50.240] functionality essentially, and tests
+[01:08:51.839] separate, and we kind of like realized
+[01:08:53.440] well,
+[01:08:54.200] and we realized it pretty quick as well,
+[01:08:56.160] capabilities is just a different way of
+[01:08:57.920] describing a test, and a test actually
+[01:08:59.560] describes the capabilities, so we kind
+[01:09:01.000] of like merged it all together. Um and
+[01:09:03.600] and yeah, I think I think that's
+[01:09:04.520] absolutely right. And and yeah, I I I've
+[01:09:06.759] seen similar
+[01:09:08.120] examples of tests being written for
+[01:09:10.080] code, and and those for the absolute
+[01:09:12.280] implementation of the code as is, and
+[01:09:14.000] and it
+[01:09:14.960] it makes it hard, it makes it it puts
+[01:09:17.120] LLMs into that into that loop when it
+[01:09:18.759] wants to make changes, and things start
+[01:09:20.240] breaking, and it it it it it chases its
+[01:09:22.680] tail a little bit in terms of what to
+[01:09:24.200] what it should change, whereas the test
+[01:09:25.640] or the code so forth.
+[01:09:26.600] >> Look, what's interesting is the more you
+[01:09:27.839] have these conversations like you and I
+[01:09:29.160] haven't specifically talked about that,
+[01:09:30.759] but we're finding we are all converging
+[01:09:33.200] on similar behaviors with specs and and
+[01:09:35.520] what goes into the specs and how they're
+[01:09:36.960] created. I find that really interesting
+[01:09:39.640] that people come from similar
+[01:09:40.880] backgrounds and create a similar
+[01:09:42.200] approach to this.
+[01:09:42.920] >> Yeah, I think it's good. I think it's
+[01:09:43.920] good. The R The final R. Final R. R. So,
+[01:09:46.920] this is actually something that I think
+[01:09:48.839] we miss too much. Um and that's the QA,
+[01:09:51.880] right? This is QC. Like we've all
+[01:09:54.640] established this pattern of plan and
+[01:09:56.520] execute. You're You're seeing them
+[01:09:57.760] brought into the IDEs like Cursor now.
+[01:10:00.280] All that's there. Ripper expands that a
+[01:10:02.200] little bit. And what it does is now
+[01:10:04.600] verify the thing that was created
+[01:10:07.200] matched the specification. So, in that
+[01:10:09.080] review stage, what it does is it looks
+[01:10:11.840] at the plan, looks at the code that was
+[01:10:15.160] created, and shows you drift. Was there
+[01:10:18.280] Did it do what you asked it to do? And
+[01:10:20.320] it refers It pushes us back to the
+[01:10:22.000] developer and the developer can say,
+[01:10:23.960] "Yes,
+[01:10:25.160] I actually want that. All right, that
+[01:10:26.840] drift is okay. It It does what I want
+[01:10:28.880] cuz I'm reviewing and accepting it." In
+[01:10:30.720] that case, we have to remediate it, but
+[01:10:33.080] what it does is it It verifies that the
+[01:10:35.840] plan that was given is what was actually
+[01:10:38.520] created and then puts it in the hands of
+[01:10:40.560] the developer to decide what to do. And
+[01:10:42.080] is that like LLM as a judge style? It
+[01:10:44.000] deter It It identifies the the drift
+[01:10:46.560] based on what it's seeing versus
+[01:10:48.080] actually running some test to to
+[01:10:50.200] validate?
+[01:10:50.760] >> Yeah, I mean I haven't called it LLM as
+[01:10:52.440] a judge, but yes, it is a stage that
+[01:10:54.320] says, "Given this plan and the code that
+[01:10:57.040] was executed, what does it match?" It
+[01:11:00.080] And it has things like created
+[01:11:01.240] checklists and so it'll give us our
+[01:11:03.160] little green check marks that say it was
+[01:11:05.160] all there and red identifies the things
+[01:11:07.160] that were that were mismatched. An
+[01:11:09.280] interesting trick An interesting feature
+[01:11:11.280] of this, though,
+[01:11:12.480] is sometimes you want that drift. Like
+[01:11:15.480] it actually is something that's
+[01:11:16.920] beneficial. I say something in my talk
+[01:11:19.000] that the reason why LLMs are so powerful
+[01:11:21.480] is because they're non-deterministic. If
+[01:11:23.880] it was a pure function, we've had them
+[01:11:25.640] for a while.
+[01:11:26.320] >> Yeah. If we give it input, it gives us
+[01:11:27.600] an exact output, it's called a template.
+[01:11:29.400] We don't necessarily need a
+[01:11:30.440] non-deterministic behavior from an LLM
+[01:11:32.280] to achieve that. So, um sometimes it
+[01:11:34.840] will give you something that you're
+[01:11:36.480] like, "Oh,
+[01:11:37.720] I like that. That's okay."
+[01:11:39.120] >> Yeah. So, what In that case, what we'll
+[01:11:40.960] do is user review, get that drift, and
+[01:11:43.680] then we'll identify that drift and tell
+[01:11:44.960] it to go back and update the
+[01:11:46.040] specification so that way we can get it
+[01:11:48.160] back and we we remediate it that way.
+[01:11:50.920] For people who want to
+[01:11:52.360] you know, read more about this, uh do
+[01:11:53.880] they go to the What What is the best
+[01:11:55.000] place? The ThoughtWorks blog or uh uh Uh
+[01:11:57.240] to be honest, I we haven't blogged about
+[01:11:59.400] it. Um this talk will be published in uh
+[01:12:02.040] in a few weeks. It'll be available. Um
+[01:12:04.120] there'll be some things I'll put out on
+[01:12:05.360] LinkedIn and um yeah, I'll get some
+[01:12:08.160] posts out there, but I don't think
+[01:12:09.480] there's anything I can point to other
+[01:12:10.640] than the Cursor forum where I actually
+[01:12:11.960] found it originally, which was March of
+[01:12:13.840] But follow Wes on Where's the best
+[01:12:15.920] place?
+[01:12:16.240] >> I Uh Blue Sky. I'm on LinkedIn
+[01:12:18.200] primarily. Um don't don't really use X
+[01:12:21.240] or Twitter as much these days, but um
+[01:12:23.200] I'm out there. Amazing. Wes, it's been
+[01:12:25.120] an absolute pleasure. Thank you, Sam.
+[01:12:26.400] You know, I really uh appreciated you
+[01:12:27.560] being at the talk and I appreciate the
+[01:12:28.760] opportunity to chat with you. Thank you.
+[01:12:30.320] [Music]

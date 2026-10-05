@@ -1,0 +1,137 @@
+[00:00:00.000] Before AI and AI agents, we were really
+[00:00:02.320] used to deterministic code. We know what
+[00:00:04.560] the output is when we give it certain
+[00:00:06.400] input. But that's not the case anymore.
+[00:00:08.160] It is dangerous because then we're going
+[00:00:09.679] to make decisions about a product or a
+[00:00:12.400] feature or even our just day-to-day
+[00:00:14.160] workflow that are based on this one
+[00:00:15.759] isolated example. That [music] is just
+[00:00:17.680] an anecdote. So it's very important for
+[00:00:20.320] us to work with evals that actually
+[00:00:22.720] statistically measure how well we're
+[00:00:25.359] doing on a population.
+[00:00:28.165] >> [music]
+[00:00:33.920] >> And there are of course many different
+[00:00:35.280] things that affect that number um or or
+[00:00:38.719] that eval score. One of which is the
+[00:00:41.200] model itself, the underlying model, how
+[00:00:42.879] good the the LLM is at being able to
+[00:00:46.079] perform that task. But of course, there
+[00:00:47.840] are a bunch of other things um such as
+[00:00:50.160] the prompt you use, the context you
+[00:00:51.760] provide, and things like that that you
+[00:00:53.680] know that give the LLM a better chance
+[00:00:56.160] of success. what um we'll jump into that
+[00:00:59.280] in a little bit more depth. In terms of
+[00:01:00.960] the eval, what does the what what do
+[00:01:03.199] your evalues look like for this for this
+[00:01:05.680] report that we that we released?
+[00:01:07.760] >> Yeah, good question. So, what we did was
+[00:01:10.560] we um generated a data set, an
+[00:01:13.520] evaluation data set.
+[00:01:14.560] >> Yeah.
+[00:01:14.960] >> That consists of pairs of a question, a
+[00:01:17.520] coding question [clears throat]
+[00:01:19.119] >> and uh a criteria for evaluation. Mhm.
+[00:01:22.560] >> But these questions, they're not just
+[00:01:25.119] they don't come from thin air. We
+[00:01:27.520] actually take an existing library, open
+[00:01:29.680] source library, and we use an agent to
+[00:01:33.119] analyze this library and then generate
+[00:01:35.680] the question based on the real API of
+[00:01:38.320] this library, both the question and the
+[00:01:40.720] evaluation criteria. Um and we focus on
+[00:01:44.880] questions
+[00:01:46.399] um that have to do with the so the
+[00:01:49.040] coding task the nature of the coding
+[00:01:50.479] task is that it tries to evaluate
+[00:01:54.159] someone's a person's or or an agent's
+[00:01:56.560] ability to use a library efficiently and
+[00:01:59.040] correctly. Mhm.
+[00:02:00.079] >> Um so it's less
+[00:02:02.719] you know the typical coding tasks that
+[00:02:04.880] agents are used to are sort of like lead
+[00:02:06.640] code style you know gener like um
+[00:02:10.479] implement from scratch something like
+[00:02:12.400] bread for search or that sort of task.
+[00:02:15.120] This is not it. This is more of a oh you
+[00:02:17.599] have paidantic
+[00:02:19.280] >> pantic python library um now use pyantic
+[00:02:23.440] to generate that sort of class with that
+[00:02:26.239] sort of validation you know. Um so it's
+[00:02:28.400] it's more about it's more focused on
+[00:02:30.640] using the library.
+[00:02:31.920] >> Yeah.
+[00:02:32.720] >> Um so yeah so that's the data set and
+[00:02:35.120] then we um in order to evaluate a method
+[00:02:38.959] we ask it to solve the question
+[00:02:42.560] >> and then separately we use an agent as a
+[00:02:45.519] judge
+[00:02:46.480] >> to uh evaluate the solution based on the
+[00:02:49.120] criteria that we previously generated.
+[00:02:50.800] >> Right. Right.
+[00:02:51.599] >> So and the criteria is all about how the
+[00:02:53.760] API was used.
+[00:02:55.280] >> Gotcha. So, so your tests are twofold
+[00:02:57.120] then. Your tests are essentially this is
+[00:02:59.599] the challenge and then this is what I
+[00:03:01.760] expect. This is how your criteria is
+[00:03:04.720] this is how I expect a correct solution
+[00:03:08.239] to kind of like you know it needs to use
+[00:03:11.599] this library. It needs to use this
+[00:03:13.040] method on the library perhaps it needs
+[00:03:14.560] to pass this information and we need to
+[00:03:16.879] be able to see this kind of outcome. So,
+[00:03:18.560] it still allows the the LLM to be
+[00:03:20.720] creative in whatever ways it wants to
+[00:03:23.200] >> code it, but it needs to hit those
+[00:03:24.640] several things which, pardon me, it
+[00:03:26.239] needs to hit those several things which
+[00:03:28.319] um which require that correct use of the
+[00:03:32.080] library. Um, okay. What What are the So,
+[00:03:35.440] when things go good, they go good, you
+[00:03:37.840] get a pass. When things go bad, what are
+[00:03:39.680] the kind of things that we're looking
+[00:03:41.599] for? I can I can already guess things
+[00:03:45.040] like you know that hallucination of the
+[00:03:46.720] API that doesn't exist maybe very often
+[00:03:48.959] because it's actually picking the wrong
+[00:03:50.239] version of the API. I is that a common
+[00:03:53.200] thing? What what are the things that we
+[00:03:54.959] look for in failures?
+[00:03:57.439] >> Yeah. Um so yeah what you mentioned with
+[00:04:00.640] the versions happens uh for sure. Pantic
+[00:04:03.760] actually that I mentioned already is a
+[00:04:05.360] good example of this because pyantic
+[00:04:07.840] version two is quite different to
+[00:04:09.120] pyantic version version one and LLMs
+[00:04:11.439] often confuse it.
+[00:04:13.360] >> Um
+[00:04:15.200] >> but also we have I think there is a more
+[00:04:17.519] fundamental problem which is uh new or
+[00:04:20.880] or private libraries right things that
+[00:04:23.600] might not be in the training in the
+[00:04:25.360] pre-training data of uh the LLM. there
+[00:04:28.479] is no pre-existing knowledge about this.
+[00:04:30.639] >> Um, and now suddenly
+[00:04:33.280] >> you're asked to use this library, but
+[00:04:35.040] you don't know anything about it. So the
+[00:04:36.639] if it's an agent, so if it's an LLM,
+[00:04:38.560] it's just going to hallucinate. If it's
+[00:04:40.720] an agent, it might do web search, it
+[00:04:42.880] might read documentation and so on, but
+[00:04:44.720] this is quite expensive, quite a lengthy
+[00:04:47.440] process, and it might not find what it
+[00:04:49.040] needs because some libraries are not
+[00:04:50.720] that well documented. Yeah. So niche
+[00:04:52.639] libraries, not well-known libraries,
+[00:04:55.199] libraries that have a smaller community,
+[00:04:57.520] maybe an academic community behind them,
+[00:04:59.199] you know, things like this, they're
+[00:05:01.440] going to be overlooked.
+[00:05:02.479] >> Yeah.
+[00:05:03.360] >> And not to mention private libraries
+[00:05:05.120] where there is no pre-existing knowledge
+[00:05:07.360] and you might not be able to
+[00:05:09.919] >> access that much knowledge about them.

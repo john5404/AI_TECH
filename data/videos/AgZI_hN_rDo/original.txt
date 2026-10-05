@@ -1,0 +1,748 @@
+[00:00:04.880] [Music]
+[00:00:19.000] uh apart from uh spending time in the
+[00:00:21.119] application security business and also
+[00:00:23.000] focusing on cloud security I'm a code
+[00:00:25.920] scanning nerd uh you'll see this in a
+[00:00:27.760] couple of slides I feel uh I've spent uh
+[00:00:30.560] inor amount of time learning the various
+[00:00:33.960] ways in which a code needs to be
+[00:00:35.520] interpreted and understood um that um is
+[00:00:39.160] a skill I can only use in my job um and
+[00:00:41.840] uh I'm looking forward to sharing a lot
+[00:00:43.719] of uh uh dos and don'ts and a lot of
+[00:00:46.520] pitfalls of some of the approaches that
+[00:00:48.800] we try to take here at buz um let me um
+[00:00:53.440] also in terms of housekeeping um if you
+[00:00:56.440] want to track buzz in how we um operate
+[00:00:59.519] today can check out our website at b.co
+[00:01:01.920] you can follow uh me uh on GitHub and my
+[00:01:04.840] team um on LinkedIn and Twitter uh
+[00:01:07.799] that's where we share most of our
+[00:01:09.640] research findings and uh some of the
+[00:01:11.280] progress we've made so
+[00:01:12.840] far um so this talk is called ordering
+[00:01:15.720] files for AI assisted development and uh
+[00:01:18.640] we're essentially going to cover um an
+[00:01:21.280] interesting uh set of uh uh research uh
+[00:01:24.960] initiatives we took here internally ever
+[00:01:26.600] since starting buz about a year ago and
+[00:01:29.640] um
+[00:01:30.479] as of I mean if you if you are listening
+[00:01:33.759] to this talk you may not be surprised
+[00:01:35.479] one of the um most promising
+[00:01:38.720] applications of large language models
+[00:01:40.600] has been Cod generation uh we've seen
+[00:01:43.119] this uh in our previous companies
+[00:01:45.119] working on solving problems in the
+[00:01:47.640] security space um and we're now taking
+[00:01:50.079] that and scaling that up and
+[00:01:51.439] generalizing some of the approaches that
+[00:01:52.920] we've taken previously to see how we can
+[00:01:55.640] uh help teams uh perform code reviews in
+[00:01:58.000] the age of AI using these uh these
+[00:01:59.960] amazing
+[00:02:01.399] tools so this talk will get very
+[00:02:03.719] technical very fast so we'll start
+[00:02:05.600] really um putting up some uh basic
+[00:02:08.399] premises to get us uh going a few
+[00:02:10.239] analogies that we'll use along the
+[00:02:13.760] way the first one uh is a code grammar
+[00:02:17.599] uh so even before we dive into ordering
+[00:02:20.319] files and specifically in the context of
+[00:02:22.560] code review um we should uh take a look
+[00:02:25.480] at code and code grammar and see what it
+[00:02:28.080] brings to the table I mean um ever since
+[00:02:30.400] I learned how to program uh initially on
+[00:02:33.160] python I love this analogy that coding
+[00:02:36.519] is uh very much like driving even before
+[00:02:38.560] autonomous um and uh that uh struct and
+[00:02:42.360] the grammar of python can really serve
+[00:02:44.560] as a set of traffic signals for us to be
+[00:02:47.599] able to understand and read code and
+[00:02:50.239] this is a very simplified example where
+[00:02:52.720] I took a bunch of uh traffic signs that
+[00:02:55.000] we all know and fairly simply understand
+[00:02:58.440] and um they all actually have within our
+[00:03:01.239] code uh specific meanings in the form of
+[00:03:03.440] structs um input validation for a stop
+[00:03:06.959] sign where the input validation acts
+[00:03:09.080] like a stop signing code it's ensuring
+[00:03:11.760] inputs that are uh defined uh as
+[00:03:14.280] criteria proceeding before errors and
+[00:03:16.080] crashes um and you can look through
+[00:03:18.000] these examples not to spend too much
+[00:03:19.560] time on them but I think it's an
+[00:03:21.200] interesting way to think about the
+[00:03:23.480] Unseen part of code uh you you'll see me
+[00:03:26.480] talk about the implicit and the explicit
+[00:03:28.360] areas of code even when it's not um you
+[00:03:31.400] know kind of neatly displayed on a
+[00:03:33.439] single file or on multiple files code is
+[00:03:36.120] going to have a lot of um uh various uh
+[00:03:39.680] grammar components that are going to
+[00:03:41.519] take uh into account as code is either
+[00:03:44.200] executed interpolated or compiled um and
+[00:03:46.920] we'll talk about what those mean in a
+[00:03:49.120] couple of
+[00:03:50.640] minutes specifically when I focus on AI
+[00:03:54.159] coding and this is everything with uh
+[00:03:56.799] that has to do with coding agents and
+[00:03:58.360] how we think about using Frontier models
+[00:04:00.840] to understand codee base code bases
+[00:04:03.040] better and use you know these great
+[00:04:05.319] capabilities of how these these new
+[00:04:08.000] generation of lmms understand code to be
+[00:04:09.799] able to perform coding tasks and um I
+[00:04:13.079] really love this 4x4 grid I use it all
+[00:04:15.159] the time to you know kind of organize my
+[00:04:17.120] thoughts on how uh we should or we could
+[00:04:20.160] uh Implement these llms for a variety of
+[00:04:22.079] use cases when we think about
+[00:04:24.120] incorporating LMS into specific
+[00:04:25.919] workflows within um within developer
+[00:04:28.560] flows um so my XS goes between code
+[00:04:31.639] completion kind of very straightforward
+[00:04:33.400] give me the next components uh help me
+[00:04:35.960] complete this uh code that I've already
+[00:04:37.680] begun to write and all the way goes uh
+[00:04:40.280] to the right side to code generation
+[00:04:42.160] this is where sometimes my starting
+[00:04:44.080] point won't be existing code would be an
+[00:04:45.840] idea uh as an example um my y AIS
+[00:04:49.759] includes the use cases in which I want
+[00:04:51.919] AI to have more control um this is where
+[00:04:54.360] I can use things like agentic workflows
+[00:04:56.840] to um take multiple steps in order to
+[00:05:00.160] plan spec and then evaluate and execute
+[00:05:03.160] the code that I plan to write and on the
+[00:05:05.120] bottom we have kind of the current
+[00:05:06.639] mature model for co-pilots where
+[00:05:08.759] developers are in control they can use
+[00:05:11.080] tab to accept a recommendation um or uh
+[00:05:14.440] we can uh refine through a chat
+[00:05:16.400] interface what exactly we want the code
+[00:05:18.039] to do and you can see that grammar
+[00:05:20.919] actually matters for all of these use
+[00:05:22.639] cases and the fact that llms understand
+[00:05:25.120] grammar um already help us especially in
+[00:05:28.000] this uh top uh excuse me this bottom uh
+[00:05:31.080] left quartile um where we're mostly
+[00:05:33.800] focusing on code completion using
+[00:05:35.440] co-pilots and we're mostly relying on
+[00:05:37.919] human in the loop to be able to enforce
+[00:05:40.039] and provide uh the feedback that's
+[00:05:42.120] required to accept results you can see
+[00:05:45.039] that as we progress to both generation
+[00:05:47.919] and uh areas in which we want to AI to
+[00:05:50.400] take more control um the use cases
+[00:05:53.360] become more interesting in the sense of
+[00:05:55.039] being able to use either past context or
+[00:05:58.160] existing context in in a specific code
+[00:06:00.240] base or project to be able to provide
+[00:06:03.160] additional um coding uh coding elements
+[00:06:06.039] and this is where things get really
+[00:06:07.960] interesting for grammar because on one
+[00:06:10.199] end we want um you know AI to be able to
+[00:06:13.080] take control even maybe to write code
+[00:06:15.080] better better than us but on the other
+[00:06:17.639] we wanted to continue and maintain the
+[00:06:19.199] conventions of a past project and uh the
+[00:06:21.680] promise here could be one of a variety
+[00:06:24.400] of uh interesting um uh research areas
+[00:06:28.440] uh two that we won't focus on today one
+[00:06:30.199] is reasoning models um that can kind of
+[00:06:33.639] create these chains of thoughts of
+[00:06:35.800] different uh questions about how code
+[00:06:38.080] should be composed before providing the
+[00:06:40.639] eventual
+[00:06:41.720] result and the second one is mostly
+[00:06:44.240] around increasing uh the context window
+[00:06:46.840] so uh we assume and we've seen early
+[00:06:49.680] results of that that if we cram an
+[00:06:52.240] entire code base to a model that's
+[00:06:54.440] susceptible for uh for that amount of um
+[00:06:57.759] of tokens uh we can really ask it
+[00:07:00.280] anything and get uh consistent results
+[00:07:02.440] and the model doesn't get lazy or tired
+[00:07:04.759] um as you might uh sometimes find out
+[00:07:07.400] when you use some of the commercial off
+[00:07:08.680] the shelf or some of the smaller models
+[00:07:10.280] on hugging face uh those are the two we
+[00:07:12.639] won't be uh talking about today we'll
+[00:07:14.479] talk about an area of research that's
+[00:07:16.720] slightly overlooked and even you can
+[00:07:18.879] think of it as kind of almost low cost
+[00:07:21.599] uh which is just uh changing the order
+[00:07:23.759] in which we feed data into a model uh so
+[00:07:26.840] this has kind of semblance to this idea
+[00:07:28.800] of a Chain of Thought
+[00:07:30.280] but it also utilizes the fact that we
+[00:07:32.240] can use other tools uh to figure out
+[00:07:35.560] code grammar before we cram it into um
+[00:07:38.160] into our context
+[00:07:39.960] window if you think about it today uh
+[00:07:43.319] grammar already makes all of our
+[00:07:45.520] developer tools work um so when we look
+[00:07:47.919] at our IDE um it uses a uh language
+[00:07:52.560] server protocol and it helps us find go
+[00:07:55.879] from definitions to references and
+[00:07:57.560] navigate uh within our project based on
+[00:08:01.039] uh the ability to identify these node uh
+[00:08:03.800] cross node relationships across files
+[00:08:05.879] for a variety of different languages uh
+[00:08:08.280] you can use plugins you can use a local
+[00:08:10.400] server protocol um and that's generally
+[00:08:12.919] how you navigate within a codebase in
+[00:08:14.479] your IDE
+[00:08:15.440] today um when you think about package
+[00:08:17.560] managers uh this is your npm most recent
+[00:08:20.479] uh Bond um and and and cargo and Maven
+[00:08:24.080] and everything that you you need to get
+[00:08:25.800] a product Set uh excuse me your project
+[00:08:27.840] set up with a required dependency
+[00:08:30.440] it builds a dependency graph uh there's
+[00:08:32.760] different ways to build a dependency
+[00:08:34.240] graph but the end result is quite the
+[00:08:36.120] same we want to use um the dependency
+[00:08:39.640] manager grammar um to import a subset of
+[00:08:43.760] packages that's required to the project
+[00:08:45.560] and nothing more uh some languages do
+[00:08:48.080] this better than others um and that's an
+[00:08:49.880] area that we've already seen a lot of
+[00:08:51.399] improvement when it comes to um giving
+[00:08:53.880] models only the correct set of
+[00:08:55.600] dependencies instead of giving them
+[00:08:57.480] everything that we've ever wished to
+[00:08:58.800] import
+[00:09:00.640] my last example uh quite non-trivial is
+[00:09:03.120] actually cloud and my background in
+[00:09:04.839] infrastructure is code infrastructure is
+[00:09:07.279] code languages like um terraform from
+[00:09:09.959] Hashi Corp cloud formation from AWS they
+[00:09:13.360] all use a graph back end that describes
+[00:09:16.200] the different relationships between
+[00:09:17.959] resources that then enables me when I
+[00:09:20.480] want to make changes to see only the
+[00:09:22.279] incremental change without destroying
+[00:09:24.640] elements of my infrastructure that
+[00:09:26.720] aren't supposed to be impacted by a
+[00:09:28.240] change uh if you think about it's quite
+[00:09:30.760] quite the most impressive or elegant
+[00:09:32.600] implementation of of grammar um in in
+[00:09:35.760] our modern stack it really uh makes
+[00:09:38.000] changes much more seamless compared to
+[00:09:40.000] when we think about application
+[00:09:44.360] code so what problem are we trying to
+[00:09:47.200] tackle uh we're tackling the problem of
+[00:09:49.519] pull requests uh pull requests whether
+[00:09:52.079] we like it we like it or not are the
+[00:09:54.320] main convention to introduce code edits
+[00:09:57.079] to to our existing code base um but code
+[00:10:00.079] doesn't live in isolation when we ask
+[00:10:01.920] our peers to evaluate code changes from
+[00:10:05.120] a massive project we give them only a
+[00:10:07.120] subset of files we
+[00:10:09.440] assume that they can see the Matrix
+[00:10:11.880] that's how I call it we assume that
+[00:10:13.480] they'll be able to interpolate just as a
+[00:10:16.399] compiler can or an interpreter can the
+[00:10:18.880] different Downstream impact in the blast
+[00:10:20.600] radius of a change and uh for humans
+[00:10:24.160] it's not easy right if you haven't been
+[00:10:26.200] uh at the company for very long or if
+[00:10:28.000] you aren't as proficient with with a
+[00:10:29.519] programming language and you don't
+[00:10:30.839] really understand some areas of the
+[00:10:32.519] grammar um then then you won't be able
+[00:10:35.040] to comprehend the entire scope of change
+[00:10:37.000] maybe maybe you're not supposed to maybe
+[00:10:39.240] you're only supposed to understand that
+[00:10:40.760] subset but effectively that's not really
+[00:10:42.839] the case effectively P requests will
+[00:10:45.600] often ignore uh the downstream grammar
+[00:10:48.800] they'll give you a subset of code to
+[00:10:50.600] evaluate and we'll kind of have our
+[00:10:52.440] fingers crossed that other um processes
+[00:10:56.200] down Downstream like our cicd or
+[00:10:58.720] integration our build systems will help
+[00:11:01.040] help us catch these Downstream impacts
+[00:11:02.920] that humans um find it harder to to
+[00:11:05.800] extrapolate and
+[00:11:08.000] evaluate uh one last rant or maybe two
+[00:11:10.519] last rants is uh possibly git could have
+[00:11:13.000] solved this right so if you think about
+[00:11:15.440] G logs and specifically commit messages
+[00:11:18.240] think about a world where we can
+[00:11:20.160] constantly iterate on Commit messages
+[00:11:21.920] and constantly use them to Anchor
+[00:11:24.360] changes and make them our context or our
+[00:11:27.600] grammar anchor for for understanding
+[00:11:29.880] changes within the scope of a commit or
+[00:11:31.800] PR um but uh just as uh my man David
+[00:11:35.880] Beckham said that's not really the case
+[00:11:37.519] right if you open um my code this is
+[00:11:40.399] probably the types of commit messages
+[00:11:41.920] you'll see uh we don't have uh
+[00:11:44.399] sufficient tooling today but we also
+[00:11:46.200] don't have uh sufficient processes to
+[00:11:48.959] help us make that um that commit uh uh
+[00:11:52.920] message back and the the connective
+[00:11:55.200] Fabric or connective tissue for
+[00:11:57.760] code um there is an interesting area of
+[00:12:00.600] that by the way if you're interested uh
+[00:12:02.120] the concept of stacking uh could be
+[00:12:04.320] stacking combined potentially with uh
+[00:12:06.000] with AI maybe for an idea for my next
+[00:12:09.160] talk is is an area we're exploring to uh
+[00:12:11.680] maybe bridge that Gap as well okay uh
+[00:12:14.240] last rant I promise um what do you think
+[00:12:16.600] about reading a GitHub PR in order right
+[00:12:18.639] if you think about Pro requests you're
+[00:12:19.959] probably seeing them on GitHub if I have
+[00:12:21.720] to imagine um there's four areas within
+[00:12:24.760] the GitHub PR tab where you would
+[00:12:26.519] generally go um to understand that the
+[00:12:29.279] flow of a change uh you can use the
+[00:12:31.839] description tag that's where you have
+[00:12:34.160] like this timeline of all of the changes
+[00:12:35.959] that have occurred you have your main
+[00:12:38.000] description you have all of the um you
+[00:12:40.320] know uh your uh your your checks on the
+[00:12:42.480] bottom what's kind of the merge blockers
+[00:12:44.360] everything you probably need on a time
+[00:12:46.199] uh based format you don't see the code
+[00:12:48.920] uh that's uh that's not something you'd
+[00:12:50.360] see there you'd see all the interaction
+[00:12:51.480] of your
+[00:12:52.320] teammates um the second aspect is
+[00:12:54.560] commits and uh commits again if we would
+[00:12:56.720] have organized commits uh and if you're
+[00:12:59.160] organization organizes commits in an
+[00:13:00.800] amazing way please let me know but
+[00:13:02.079] generally um commits are a good place
+[00:13:04.079] only to see the incremental change after
+[00:13:05.920] you've already reviewed the pr um I
+[00:13:09.279] won't spend too much time about checks
+[00:13:11.199] not page that I like that much it's
+[00:13:12.800] where you go to see the results of of
+[00:13:14.880] your CI uh your CI checks usually get
+[00:13:17.040] thrown out to get actions tab then you
+[00:13:18.600] have to go back out of order but in 90%
+[00:13:20.680] of the time you'll spend your time in
+[00:13:21.839] this a toz sorted file change Tab and
+[00:13:25.480] that's uh that's where most of us spend
+[00:13:26.720] our time that's where we look at uh at
+[00:13:28.800] coach changes again a subset based on a
+[00:13:31.120] g diff and that's how we try to make
+[00:13:32.920] sense of it and to be honest I think
+[00:13:35.519] that's not good enough right I find it
+[00:13:38.040] again my man uh number seven uh David
+[00:13:41.279] Beckham uh wants us to be honest this
+[00:13:45.199] this process is is difficult and it's
+[00:13:47.600] hard to continuously use um these uh
+[00:13:51.000] these workflows to see and understand um
+[00:13:54.800] the the linearity of a code change uh
+[00:13:57.160] because you do see only a subset of it
+[00:13:59.279] every on every one of these GitHub
+[00:14:01.959] tabs and that's a pro probably the best
+[00:14:05.079] best way to describe our motivation for
+[00:14:06.560] going on this journey we felt like um we
+[00:14:09.440] can take git and GitHub um in the Pro
+[00:14:13.199] request process and and dismantle it and
+[00:14:15.759] re rebuild it in a new pattern new um a
+[00:14:20.120] new um a new order um and the way we
+[00:14:22.920] wanted to do that is using um automation
+[00:14:26.040] that will essentially read code the same
+[00:14:28.399] way that us as humans would read code uh
+[00:14:31.480] so you know the you know the best
+[00:14:33.800] practice for for is actually to check
+[00:14:35.920] out the branch run it locally and look
+[00:14:38.519] at the debug logs and errors and and
+[00:14:40.519] kind of test it out for yourself and
+[00:14:42.120] kind of go through within your ID
+[00:14:44.079] through the definitions and references
+[00:14:45.399] and look through um all of them um and
+[00:14:48.399] that brings me to code indexing or code
+[00:14:50.360] directionality that's generally our
+[00:14:52.000] starting point for this
+[00:14:53.639] journey um so code indexing has been
+[00:14:56.040] around for a while right so you've
+[00:14:58.240] already seen this if you've been using
+[00:14:59.920] an IDE for for the past 12 years or 15
+[00:15:02.560] years um this is what gets you from
+[00:15:04.600] point A to B within within your IDE um
+[00:15:07.920] tools like LSP the language uh server
+[00:15:10.720] protocol that's maintained by Microsoft
+[00:15:12.800] um the LF which is an improvement on on
+[00:15:15.240] that protocol uh GitHub has two project
+[00:15:18.320] that kind of go back and forth between
+[00:15:20.160] indexing and references called stag
+[00:15:22.000] graphs and Tre sitter um Sor graph has a
+[00:15:25.480] great project um that uh that's supposed
+[00:15:27.800] to kind of solve some of problem that uh
+[00:15:30.040] LSPs have and most recently we've had
+[00:15:33.199] we've gotten the addition of um of large
+[00:15:35.800] language models I'll specifically talk
+[00:15:37.600] about open AI 40 model and I know you
+[00:15:40.720] can kind of rant that maybe son 3.5 is
+[00:15:43.480] better but believe me based on some of
+[00:15:45.800] this Empirical research generally we've
+[00:15:47.800] gotten the same kind of consistent
+[00:15:49.079] results for this type of use case but in
+[00:15:51.120] general what I wanted to show you is
+[00:15:52.800] that there's generally three ways to
+[00:15:54.440] look at this problem uh the first one is
+[00:15:56.199] L LSPs language server protocols they're
+[00:15:58.360] kind of the
+[00:15:59.480] um oneoff approach right so given a
+[00:16:02.680] symbol in code uh this language server
+[00:16:05.680] protocol it's an open source you can
+[00:16:07.440] check it out um in GitHub and the
+[00:16:09.399] Microsoft website will help you Traverse
+[00:16:12.160] uh your languages uh uh as and reach the
+[00:16:15.199] next area in which that code is either
+[00:16:16.959] referenced or defined um stag graph
+[00:16:19.639] actually works very similarly it's it's
+[00:16:21.600] what powers some of github's uh
+[00:16:23.759] Precision or search if you've seen it on
+[00:16:25.680] the right and tritter um is the same
+[00:16:27.959] thing but only in incrementally it can
+[00:16:29.920] kind of run through the entire codebase
+[00:16:31.360] you can kind of Mount it with more and
+[00:16:32.639] more context um the outlier here and all
+[00:16:36.079] of these are what I would call like
+[00:16:37.680] stattic code analyzers they have not a
+[00:16:39.480] lot to do with AI um all of these on one
+[00:16:42.079] side and the other one is is large
+[00:16:43.680] language models and large language
+[00:16:45.519] models are in the same bat because uh
+[00:16:48.360] you can essentially do the same thing
+[00:16:49.920] you can open your CH GPT or Cloud
+[00:16:52.040] console right now and uh you can insert
+[00:16:55.360] either a entire codebase or entire repo
+[00:16:58.480] and ask questions about how code is
+[00:17:01.480] defined and referenced um in specific
+[00:17:04.160] languages and unlike these static
+[00:17:06.880] analyzers um that build out or output a
+[00:17:10.640] a an abstra abstract syntax tree that
+[00:17:13.439] represents to the best of its ability um
+[00:17:16.160] the execution path um of a given code
+[00:17:18.640] language it's kind of It kind of works
+[00:17:19.919] like your interpreter or compiler um it
+[00:17:23.520] uses um uh language to understand the
+[00:17:26.319] definitions and references so if it's
+[00:17:27.959] visible um uh then uh then then there's
+[00:17:30.960] a good likelihood uh um the models will
+[00:17:33.360] capture it and uh we'll talk about
+[00:17:35.440] benchmarking now and you can see what
+[00:17:37.039] I'm talking
+[00:17:37.440] [Music]
+[00:17:44.280] about um so this is a kind of a early
+[00:17:47.640] phase um um part of our research uh back
+[00:17:51.240] in uh the beginning of
+[00:17:53.360] 2024 uh we use skip which is uh the
+[00:17:56.760] extension or the augment of the indexing
+[00:18:00.039] protocol that's that's uh available to
+[00:18:02.480] the Microsoft
+[00:18:04.120] projects and we used it to analyze Java
+[00:18:07.039] repos um and it um and it's effective it
+[00:18:10.240] uh does a good job for um for a variety
+[00:18:13.240] of kind of standard use cases um but uh
+[00:18:16.400] as always it's imperfect we found a
+[00:18:19.080] variety of uh areas in which we had
+[00:18:21.240] expected this uh to be much more
+[00:18:23.000] accurate for example local variable
+[00:18:24.440] handling uh which was uh severely
+[00:18:26.799] limited uh the other one was a package
+[00:18:29.080] structure track tracking uh that was
+[00:18:31.280] also somewhat foundationally flawed we
+[00:18:33.679] found it to Output uh lines of zero uh
+[00:18:36.760] for some Java elements um we might uh
+[00:18:39.880] contribute a fix to that as well and um
+[00:18:43.039] and despite our work arounds it it it
+[00:18:46.559] just couldn't work for all of the
+[00:18:47.840] languages that we were interested in in
+[00:18:50.159] uh sorting and
+[00:18:51.520] ordering my second example is a Tre
+[00:18:54.240] sitter treit is a very popular project
+[00:18:56.120] it's a great incremental study code
+[00:18:58.159] scanning uh tool it's used by a lot of
+[00:19:00.400] security um static analyzers including
+[00:19:03.159] my uh my old team uh that uses a subset
+[00:19:05.559] of it um it's great creating um
+[00:19:08.360] snapshots um and we sought out to
+[00:19:11.240] Benchmark it against a rust project our
+[00:19:13.760] project is kind of a combination of um
+[00:19:16.039] some core core capabilities in Rust
+[00:19:18.720] that's now augmented by the usual
+[00:19:20.720] JavaScript and python for specific use
+[00:19:23.039] cases um again uh for some use cases we
+[00:19:27.320] found it was successfully able to parse
+[00:19:29.159] the basic structs in fields the field
+[00:19:30.919] types it helped us establish the
+[00:19:32.960] reliable parent children relationships
+[00:19:34.600] that we had expected to get um but it it
+[00:19:37.360] it was also somewhat flawed that uh the
+[00:19:39.840] imper functions couldn't be mapped to
+[00:19:42.000] their parent structs um and uh found uh
+[00:19:45.400] and intended to uh to break the entire
+[00:19:48.120] the entire chain uh we found multi-line
+[00:19:50.880] use statements also caused the identif
+[00:19:53.400] identifier splitting issues um in some
+[00:19:56.080] cases and um essentially we looked at
+[00:19:59.240] different ways to combine um something
+[00:20:01.640] like a skip that's really good at
+[00:20:03.200] specific languages but it actually for
+[00:20:05.080] some languages it runs the compiler Runs
+[00:20:07.200] The Interpreter which we didn't really
+[00:20:08.440] like um with triter to get some optimal
+[00:20:11.120] results because there was some overlap
+[00:20:13.640] but you can see it's an imperfect uh
+[00:20:15.720] imper no Silver Bullet right not
+[00:20:17.440] imperfect end result and the static
+[00:20:19.520] tools didn't really get us to where we
+[00:20:20.720] wanted and then we started to check out
+[00:20:24.159] um GPT 4.40 um uh this work um started
+[00:20:29.559] uh a good six probably five six months
+[00:20:32.520] back um and we had a benchmark right we
+[00:20:34.640] had the Benchmark of um how the static
+[00:20:37.720] analyzers are able to uh Traverse
+[00:20:40.360] through the in specific languages and we
+[00:20:42.360] were able to see what the gaps are um
+[00:20:45.480] and we were initially pleasantly
+[00:20:47.440] surprised we found that a full spectrum
+[00:20:50.120] of Def definitions was available and the
+[00:20:52.520] um multilanguage support was much better
+[00:20:54.320] better than we thought I mean uh think
+[00:20:56.520] of uh these models as essentially being
+[00:20:59.039] able to support any language I would
+[00:21:00.559] assume that even very new languages
+[00:21:02.440] would get great results for everything
+[00:21:04.640] like variable assignments constructs
+[00:21:06.559] aliases Etc um but reference ma matching
+[00:21:10.279] uh was the biggest problem so what llms
+[00:21:13.080] do not do is they don't Traverse the
+[00:21:15.039] graph un like the tools that I mentioned
+[00:21:17.000] previously um they input a um a a piece
+[00:21:22.720] of code and um they will essentially
+[00:21:26.360] read it and use the probabilistic mod
+[00:21:28.760] the same one that they would use to
+[00:21:30.279] write a beautiful love song they would
+[00:21:32.559] use that same probabilistic model um to
+[00:21:35.360] explain the code back to us as
+[00:21:38.760] users so by relying on llms only for
+[00:21:42.600] that direct string matching we actually
+[00:21:44.279] fail to handle some of the most common
+[00:21:46.080] pattern like aliases paralyzed name
+[00:21:48.320] contextual method calls and a few
+[00:21:50.520] others um so uh unfortunately this
+[00:21:53.679] wasn't a great kind of end result for
+[00:21:56.000] This research um but it did get us to a
+[00:21:58.919] point where I think um it's worth uh
+[00:22:01.000] worth spending some time on um I call
+[00:22:03.919] this the PO request grammar gradient and
+[00:22:06.600] I'll I'll go to my U my last version of
+[00:22:10.159] it because uh my time is kind of
+[00:22:11.520] starting to run out uh but it
+[00:22:13.440] essentially breaks down the areas in
+[00:22:15.960] which we found the different models to
+[00:22:17.400] be very good at or actually um not as
+[00:22:20.240] good as we expected so uh there's three
+[00:22:23.240] sections here one of it is probably the
+[00:22:25.520] most human or manual area which is the
+[00:22:27.200] review and suggestion uh uh human
+[00:22:29.720] feedback loop second one is testing and
+[00:22:31.840] feedback and fixes and the one is and
+[00:22:34.279] the last one is uh deploying the code
+[00:22:36.080] into a production system and using
+[00:22:37.520] things like integration and CI builds to
+[00:22:40.039] uh to troubleshoot it and you can see
+[00:22:42.279] that in each one of these sections we
+[00:22:43.760] found specific areas in which um um the
+[00:22:47.760] deterministic model combined with the
+[00:22:49.760] llms could actually make the difference
+[00:22:52.200] um so let's take the the bottom uh the
+[00:22:54.919] bottom section the semantics and
+[00:22:56.240] conventions um surprisingly the area
+[00:22:58.320] where humans are especially interested
+[00:23:00.919] in or focused on um not the area where
+[00:23:03.480] AI is the best um logical and syntactic
+[00:23:06.520] correctness is actually an area where AI
+[00:23:07.919] excels input a log output log in from CI
+[00:23:11.919] um in a bash format ask for the best way
+[00:23:14.000] to fix it uh you'll get an act a pretty
+[00:23:16.919] accurate response and the last one is
+[00:23:19.080] coherence this is where uh we use models
+[00:23:21.200] to try to help us understand whether or
+[00:23:22.679] not code will eventually impact existing
+[00:23:24.880] artifacts in production so this is
+[00:23:26.279] interesting we can take different types
+[00:23:28.720] of attributes of how code eventually
+[00:23:30.880] gets manifested into services and
+[00:23:32.400] infrastructures and apis um and ask AI
+[00:23:35.159] whether or not they'll be impacted
+[00:23:36.400] whether or not they'll be making
+[00:23:37.279] breaking
+[00:23:38.919] changes um so that's what we saw uh we
+[00:23:41.679] saw that the human Reviewer is generally
+[00:23:43.720] good at um the left side of uh um of
+[00:23:47.200] this uh uh of this model the AI reviewer
+[00:23:50.440] begins to uh begins to be very efficient
+[00:23:53.120] on uh Tex testing and fixes and actually
+[00:23:56.559] outperform the static models when it
+[00:23:58.120] cames to to coherence um and uh there's
+[00:24:00.880] a lot of more research that we have
+[00:24:02.919] lined up based on this work um I'd like
+[00:24:05.760] to shout out my colleague uh Hower um
+[00:24:08.679] this this is his giabellas and his
+[00:24:11.279] LinkedIn profile he's been leading some
+[00:24:12.720] of this uh exciting work you can see
+[00:24:14.840] some of the um uh work that he did to
+[00:24:18.159] understand large uh scale code bases
+[00:24:20.000] using um uh sequence um analysis using a
+[00:24:24.000] variety of these static and dynamic
+[00:24:26.480] tools as well as some of the um more
+[00:24:28.600] complex large code based uh research
+[00:24:30.720] that he's been doing um for for the past
+[00:24:34.200] uh past few months um yeah I think uh
+[00:24:39.039] that's uh generally
+[00:24:40.679] time thank you for for listening
+[00:24:43.399] in awesome well thank you very much sky
+[00:24:45.960] that was a really really interesting
+[00:24:47.399] session um yeah I'll invite anyone to to
+[00:24:50.240] ask some uh ask some questions in the
+[00:24:53.200] chat and we'll uh we'll we'll ask guy to
+[00:24:56.000] uh to to ask answer those um where would
+[00:25:00.159] people want to where should people go
+[00:25:01.919] guy what would you say the kind of like
+[00:25:03.159] next steps for people to to kind of get
+[00:25:05.159] more involved um I think uh I would
+[00:25:08.159] really encourage people to test out um
+[00:25:11.159] um the existing models with their
+[00:25:13.799] existing uh code bases uh both on the
+[00:25:16.440] public consoles uh try to feed a file a
+[00:25:19.720] diff your entire repo and ask questions
+[00:25:22.600] ask you know claw 3.5 Sonet and see what
+[00:25:24.960] types of results you'll find and start
+[00:25:26.399] to get the feel of where these models
+[00:25:28.000] really Excel and where where the gaps
+[00:25:29.799] are and if you really want to geek out
+[00:25:32.360] um I would really check out some of
+[00:25:33.799] these um static analyzers like Tre
+[00:25:35.840] sitter um and uh and Skip and try to use
+[00:25:39.080] their output as a potential input for uh
+[00:25:42.559] for your prompts so for example ask ask
+[00:25:45.120] you know AI to now help you figure out
+[00:25:47.440] what's going to get broken in some kind
+[00:25:49.600] of uh diff um that uh that was analyzed
+[00:25:52.720] by something like a treesitter and see
+[00:25:54.000] if you get better results compared to
+[00:25:55.320] what you've seen previously amazing uh
+[00:25:57.760] we got a question in from Richard um see
+[00:26:00.520] Richard wants to see the world burn see
+[00:26:02.399] he wants to know what are the what's the
+[00:26:04.520] worst ordering of the data you saw for
+[00:26:07.080] model performance let's start with the
+[00:26:10.640] worst um worst um AI models so probably
+[00:26:15.840] uh previous generation of uh of the open
+[00:26:17.880] AI models just before for for for o it
+[00:26:20.360] was very uh clear Before 40 that the
+[00:26:24.559] model wasn't even trying to consistently
+[00:26:28.399] parse out um common code structs like we
+[00:26:32.919] see it par now and now if you I mean
+[00:26:34.840] we're like light years away from where
+[00:26:36.600] we saw that uh about a year maybe nine
+[00:26:38.919] months back right yeah yeah and SS are
+[00:26:41.919] the
+[00:26:42.760] best um the best is probably so there's
+[00:26:46.440] two two parts that answer uh we found um
+[00:26:50.760] that 01 is uh the best at um finding or
+[00:26:55.600] answering questions around um the
+[00:26:59.000] maintenance of a convention so if we
+[00:27:01.200] asked if we get if we got 01 to
+[00:27:03.960] understand um let's say uh the uh
+[00:27:07.919] contract or the API spec of a program it
+[00:27:10.360] was the best at figuring out whether or
+[00:27:12.039] not a change will generate a downstream
+[00:27:14.039] impact that could result in a breaking
+[00:27:15.279] change yeah uh from interpretability and
+[00:27:18.159] explainability perspective this won't
+[00:27:20.520] surpris anyone I think anthropics 3.5
+[00:27:23.480] Sonet is the best we've seen so far it's
+[00:27:26.080] incrementally good compared to the last
+[00:27:28.520] version and um that's probably the model
+[00:27:30.559] I would of generally start with yeah
+[00:27:33.320] interesting and do you find much of a
+[00:27:34.919] difference or any variance in local
+[00:27:37.399] models to Cloud models or not much oh oh
+[00:27:40.399] yeah um the we we've tested some of the
+[00:27:42.840] small scale models um uh the instruct
+[00:27:46.399] you know the massive instruct models and
+[00:27:48.440] uh you can't compare it's uh the
+[00:27:51.320] unfortunately uh the commercial models
+[00:27:53.320] in this type of work where where context
+[00:27:55.320] is a kind of multivariant it could be a
+[00:27:58.399] Json that describes an A A diff that's
+[00:28:00.760] kind of written in kind of a git output
+[00:28:02.440] and code that could be written in
+[00:28:03.760] anything from a yaml to a python file um
+[00:28:07.320] unfortunately the open source models are
+[00:28:10.159] not as good as the commercial ones yeah
+[00:28:12.320] okay makes sense um have question from
+[00:28:14.640] Min um I think this is probably we can
+[00:28:17.480] answer this you know specifically from
+[00:28:19.720] from your own experience but I think
+[00:28:20.840] this is kind of like fairly general
+[00:28:22.320] question in terms of General usage of
+[00:28:24.519] llms any privacy security concerns for
+[00:28:27.000] feeding company Cod and
+[00:28:29.720] models um definitely an area of interest
+[00:28:32.600] in my past life um I'll first state the
+[00:28:36.720] obvious I think given the level of um um
+[00:28:41.919] efficiency we are bound to get from
+[00:28:44.080] these models especially for coding I
+[00:28:46.039] think it's inevitable that we will take
+[00:28:48.640] on some of that exposure over time I've
+[00:28:50.600] worked at large companies like paral
+[00:28:53.279] networks that currently I've learned use
+[00:28:55.399] Source graphs Cod I mean if par networks
+[00:28:58.440] have done their research modeling and
+[00:29:00.000] found out that uh you know uh the
+[00:29:02.240] lemon's worth the The Squeeze I would I
+[00:29:04.399] would definitely advise and you know
+[00:29:06.080] everybody out on my team is already need
+[00:29:07.760] deep in co-pilots and cursors and
+[00:29:09.480] everything and are just you 10xs better
+[00:29:11.919] yeah yeah and and I'd probably just add
+[00:29:13.399] to that um you know talk talk to your
+[00:29:16.760] own legal teams as well uh if you're if
+[00:29:19.679] you're working for a large company uh
+[00:29:22.120] talk to your own companies legal teams
+[00:29:23.840] they will very likely have advice for
+[00:29:25.880] you in terms of what you can and can't
+[00:29:27.559] use that in that space as
+[00:29:31.080] well uh I think we're are we out of
+[00:29:34.640] questions I think we're out of questions
+[00:29:36.080] now um guy uh why don't we uh let me
+[00:29:39.679] move your session off screen um thank
+[00:29:42.559] you very much guy really insightful
+[00:29:44.080] actually a very very interesting session
+[00:29:45.640] which which is truly truly practical in
+[00:29:48.360] terms of how we can actually get the
+[00:29:49.880] best and the most out of what we have
+[00:29:52.159] today of course llms and so forth will
+[00:29:54.919] get better and better and better over
+[00:29:56.480] time but we always need to get get the
+[00:29:58.240] most out of that and I think the uh the
+[00:29:59.720] ordering the prompts the context are
+[00:30:02.159] just just key for us to understand how
+[00:30:04.080] to get the most out of those these
+[00:30:05.440] systems so thank you very very much very
+[00:30:07.279] very very uh very very good session
+[00:30:10.159] thank you thank you Simon and and Shout
+[00:30:12.320] Out tesle team for uh putting this
+[00:30:14.320] together we don't have enough uh
+[00:30:15.519] opportunities to kick out about these
+[00:30:17.360] sorts of things and it's really where
+[00:30:18.519] the world's heading so great keep it
+[00:30:21.200] coming thank you so much appreciate that

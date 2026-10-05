@@ -1,0 +1,891 @@
+[00:00:00.160] This one is much harder like you can
+[00:00:02.480] start with trace loop SDK report the
+[00:00:04.960] open telemetry tracing data to either
+[00:00:07.440] trace loop or any other vendor. This one
+[00:00:10.000] is easy but once it gets to defining and
+[00:00:13.200] configuring the or building the right
+[00:00:16.080] evals then it gets much harder and this
+[00:00:18.720] is the heavy lifting uh monitoring and
+[00:00:21.439] observing like LLM applications to
+[00:00:24.240] actually get valid insights back. What
+[00:00:26.880] would you say then as advice to people
+[00:00:29.760] who are trying to build eval suites?
+[00:00:32.399] What are the gotchas? What should people
+[00:00:33.920] look out for and where should they
+[00:00:35.280] start? You're listening to the AI native
+[00:00:37.040] dev brought to you by
+[00:00:39.340] [Applause]
+[00:00:40.880] [Music]
+[00:00:47.879] Tesla. Hello and welcome to another
+[00:00:50.640] episode of the AI native dev. My name is
+[00:00:53.360] Simon Maple and joining me today is Gal
+[00:00:55.840] Kleinman who is the CTO and co-founder
+[00:00:58.879] of Trace Loop. Welcome Gal. How are you?
+[00:01:02.079] Thank you. I'm great. How are you? I'm
+[00:01:04.239] doing very well, thank you. Yeah, not
+[00:01:05.600] too bad. It's just turning summer. Not
+[00:01:07.840] summer, but we're just turning into
+[00:01:09.439] spring in the UK. So, finally, we're
+[00:01:12.159] getting a little bit heat back in our
+[00:01:13.600] day. I'm all the better for a little bit
+[00:01:15.760] of sun. Cool. In the place I'm located
+[00:01:17.759] at, it's already summer. Like, it's 25°
+[00:01:20.720] outside. Stop.
+[00:01:23.520] You're hurting me. Yeah. So, Gal, tell
+[00:01:27.360] us a little bit about your story, your
+[00:01:29.439] journey before Trace Loop. First of all,
+[00:01:31.520] before Trace Loop, I will tell you
+[00:01:33.200] briefly about my last role before
+[00:01:35.360] starting Trace Loop. I was a group
+[00:01:37.759] manager at Fiverr leading a group
+[00:01:40.240] developing like the machine learning
+[00:01:42.720] platform for the data science teams at
+[00:01:45.119] Fiverr. Also another team who was
+[00:01:47.600] dealing with the data infrastructure.
+[00:01:49.759] This is it. Then once I left Fiverr
+[00:01:52.320] together with near my co-founder and the
+[00:01:55.439] CEO of Trace Loop we joined we we got
+[00:01:58.799] accepted to Y combinator batch winter 23
+[00:02:02.640] and like the rest is history from that
+[00:02:05.280] point trace loop fresh loop started.
+[00:02:07.840] Yeah. Awesome. And so trace loops in and
+[00:02:10.080] around the space of LLM observability
+[00:02:11.920] and we'll talk about that generally but
+[00:02:13.440] also a little bit about trace loop
+[00:02:15.440] itself as well. So I guess first of all
+[00:02:18.480] what's the problem I guess that trace
+[00:02:20.560] loop is trying to solve? What space is
+[00:02:22.720] it in? So we are at the space like the
+[00:02:26.959] famous space of LLM observability which
+[00:02:30.640] is a derivative of general observability
+[00:02:33.599] of applications. What we do actually and
+[00:02:36.080] what we solve in addition to the classic
+[00:02:38.560] classic observability is the part of
+[00:02:41.440] evaluation. the part of evaluation both
+[00:02:44.480] in real time like in terms of monitoring
+[00:02:47.280] your LLM application and helping you
+[00:02:50.000] improve your LLM application in the like
+[00:02:53.360] the development cycle
+[00:02:55.840] using mostly offline evaluations. So
+[00:02:59.360] that's that's the like the problem
+[00:03:02.400] definition or another problem but more
+[00:03:04.560] about the solutions we help you observe
+[00:03:07.440] and improve your LLM application using
+[00:03:10.400] using the findings from the production
+[00:03:12.800] and tracing. Yeah. Awesome. And what was
+[00:03:14.959] your inspiration or motivation almost to
+[00:03:17.440] to start trace loop? Was there a pain
+[00:03:19.519] point you had previously? Yeah, actually
+[00:03:22.560] during the Y combinator batch we've been
+[00:03:25.120] developing a totally different product.
+[00:03:27.280] It was like just the beginning of the
+[00:03:29.840] LLM and generative AI era. OpenAI has
+[00:03:33.360] just released SHA GPT and all of the GPT
+[00:03:36.640] models. We we've been developing a
+[00:03:39.840] solution which was based on a multi-
+[00:03:42.640] aent architecture. It was like rocket
+[00:03:45.920] science that days. Today every other
+[00:03:48.720] startup is developing autonomous agents.
+[00:03:51.040] But we've been developing autonomous
+[00:03:52.799] agents who which was which were supposed
+[00:03:55.599] to solve the generation of end to end
+[00:03:58.560] end to end tasks for distributed
+[00:04:01.200] systems. I know a lot of buzzwords but
+[00:04:04.239] this is what we've been dealing with
+[00:04:06.159] that time and we've got to to an MVP
+[00:04:09.920] somewhere at close to the end of Y
+[00:04:12.640] combinator batch. we've got to working
+[00:04:15.760] MVP of that architecture and it wasn't
+[00:04:19.840] it wasn't stable and it wasn't reliable
+[00:04:23.120] at all like always there is the argue
+[00:04:27.280] between me and near my co-founder
+[00:04:29.600] whether it was working 30 I claimed that
+[00:04:32.560] it was working 30% near as the CEO who's
+[00:04:36.080] supposed to be the optimistic between us
+[00:04:38.639] he claims that it was around between 60
+[00:04:41.840] to 70% working but It wasn't reliable at
+[00:04:44.560] all and we were afraid of going out of
+[00:04:47.520] out of beta with this product. At that
+[00:04:50.080] point we thought okay we got to have
+[00:04:53.199] some observability solution. We are a
+[00:04:55.440] startup. It's fine if it will be sprayb
+[00:04:58.080] at the first at the first day of our
+[00:05:00.400] product but we got to somehow observe
+[00:05:03.440] what happened what happens to our users
+[00:05:06.240] in production and using those
+[00:05:08.080] observations we got to we have to
+[00:05:10.960] improve our product continuously and get
+[00:05:13.199] to a point where it works I wouldn't say
+[00:05:15.520] perfectly because probably 100% is not
+[00:05:18.720] achievable with AI to a point where we
+[00:05:20.960] feel it's 90% working and it's a hard
+[00:05:24.000] work then we started developing
+[00:05:26.639] internally an observability solution
+[00:05:29.360] based on open telemetry which I guess we
+[00:05:32.000] will talk about later in this in this
+[00:05:34.560] podcast and the rest is history. Yeah,
+[00:05:37.680] it's really interesting as a startup to
+[00:05:39.680] understand when to go to when to go to
+[00:05:42.800] market at what time. And I think there's
+[00:05:44.960] a couple I guess there's a couple of
+[00:05:46.240] important things. One is meeting the
+[00:05:48.400] expectations of potential users or first
+[00:05:50.560] on boarding those first users. I guess
+[00:05:52.400] you there's probably an amount of that
+[00:05:54.800] which is in and around messaging in
+[00:05:56.639] terms of we don't want to promise too
+[00:05:58.080] much necessarily but we want to gau we
+[00:06:00.560] want to like level expectations but then
+[00:06:02.320] I guess the other important thing is we
+[00:06:03.759] call it at Tesla we call it developing
+[00:06:05.520] in a lab. You don't want to be
+[00:06:06.720] developing in a lab. You want to get
+[00:06:08.080] that external like real user feedback
+[00:06:10.720] and get that real user feedback in
+[00:06:12.479] early. Did you find I'm curious before
+[00:06:14.160] we jump into a little bit more around
+[00:06:16.240] the observability. Did you find that
+[00:06:18.880] once you pushed your product to market
+[00:06:21.120] and you started getting that user
+[00:06:22.560] feedback, was that an accelerator to
+[00:06:25.919] that percentage going from whether it
+[00:06:27.919] was 30 or 60 that that much higher or
+[00:06:30.880] was it a steady increase still similar
+[00:06:33.440] to how you were developing in the lab
+[00:06:35.199] before? I can tell you the the beautiful
+[00:06:38.960] story about yeah we launched the MVP and
+[00:06:42.000] then we improved our our accuracy from
+[00:06:44.800] 30% to 90% in I don't know in a week or
+[00:06:48.240] two but I prefer to tell you the truth
+[00:06:50.400] that we were like we we fell in love
+[00:06:54.560] with the idea of observability for LLM
+[00:06:56.960] applications and then like that MVP was
+[00:06:59.680] never was never launched we since then
+[00:07:02.479] we've been working on on the LLM
+[00:07:04.319] observability solution
+[00:07:06.160] Yeah. Gotcha. Gotcha. Awesome.
+[00:07:08.720] Observability. Then let's talk a little
+[00:07:10.319] bit about for developers who are using
+[00:07:12.080] LLMs today, the need for LLM
+[00:07:14.599] observability. I guess what are the
+[00:07:16.560] biggest misconceptions that developers
+[00:07:18.319] have when they're trying to build an LLM
+[00:07:20.800] using an LLM? What are the biggest
+[00:07:22.720] misconceptions or falsehoods that I
+[00:07:24.720] guess that developers have about LLMs
+[00:07:27.520] whereby LLMs can really bite them if
+[00:07:29.759] they don't know about these?
+[00:07:31.680] I think like every everyone probably you
+[00:07:34.639] will talk to will say the same thing.
+[00:07:37.919] It's quite easy to get into a sort of
+[00:07:41.199] working P and most of the developers
+[00:07:44.080] they think because we think we are
+[00:07:47.039] better than others then we think that
+[00:07:49.199] okay no it's a super simple prompt and a
+[00:07:52.160] super simple pipeline and I know how it
+[00:07:54.560] will behave yeah we will develop that P
+[00:07:57.919] and quite quickly it will get into a
+[00:07:59.919] production grade application it is a
+[00:08:02.319] misconception the truth is that taking
+[00:08:05.240] application or The vast amount of the
+[00:08:09.199] vast amount of time is spent taking that
+[00:08:12.639] P which is working probably as I
+[00:08:14.800] mentioned in our idea which is working
+[00:08:17.120] probably 30% uh of the times taking this
+[00:08:20.879] one into a 90% working application this
+[00:08:24.479] is what you spend most of the time on
+[00:08:26.960] and this is this is a great
+[00:08:28.840] misconception also another misconception
+[00:08:31.840] is the fact that okay if I will just
+[00:08:34.159] have a way to see what happened what
+[00:08:36.640] happens in production or have have some
+[00:08:40.399] sort of simple tracing or simple logging
+[00:08:43.279] capabilities. this is what will help me
+[00:08:46.720] to get into like production grade
+[00:08:49.320] application that 90 90% dream also I
+[00:08:54.480] think it's a misconception and you need
+[00:08:56.399] to be much more sophisticated as this
+[00:08:59.040] solution does not scale and you can't go
+[00:09:01.120] for example trace by trace and monitor
+[00:09:03.680] that way your production traffic and by
+[00:09:06.080] that improve your application let's jump
+[00:09:08.320] into the some of the differences between
+[00:09:10.399] this black box of an LLM existing in our
+[00:09:13.440] app and just current our traditional
+[00:09:15.320] code even simple things like debugging
+[00:09:18.560] for example right it's easy for me to
+[00:09:20.080] step through my code and understand why
+[00:09:22.959] things happen and how things get to how
+[00:09:25.120] I get an answer out of that with an LLM
+[00:09:27.920] it's completely obviously different we
+[00:09:29.519] throw a prompt in we get a response and
+[00:09:31.680] it can be very this is my input this is
+[00:09:33.680] my output and actually if I give that
+[00:09:35.839] same input 10 times to the same LLM uh
+[00:09:39.440] with without context I will get 10
+[00:09:41.600] different answers how do we even think
+[00:09:43.920] about what are the fundamental
+[00:09:45.440] differences that we need to be aware of
+[00:09:47.519] when debugging or doing anything in
+[00:09:50.160] detail with a traditional application in
+[00:09:53.519] comparison to an LLM. So just as you
+[00:09:56.399] mentioned the fact that it's not
+[00:09:58.519] deterministic make it much more harder
+[00:10:01.760] to debug because even if I copy the
+[00:10:05.200] exact same example I saw in production
+[00:10:08.080] for example and try to mock it in my dev
+[00:10:10.560] environment I will probably not get the
+[00:10:13.200] same results which makes everything
+[00:10:15.360] harder to to debug test and fix in terms
+[00:10:20.320] of this is in terms of debugging but in
+[00:10:23.040] terms of observability
+[00:10:24.880] The big difference is the fact that in
+[00:10:28.079] classic observability we have the common
+[00:10:31.440] common metrics and way to to understand
+[00:10:34.640] which flow which flows didn't work as we
+[00:10:37.519] expected. For example, we can track
+[00:10:40.160] errors by I don't know looking for
+[00:10:43.040] status codes of HTTP for example like
+[00:10:45.760] looking for 500 status code or just
+[00:10:49.680] looking for exceptions. I don't know
+[00:10:51.680] looking for other metrics like latency
+[00:10:54.640] and stuff like that. These are all thing
+[00:10:57.360] that as engineers we are familiar with
+[00:11:00.079] and a lot of best practices were written
+[00:11:03.600] about about tracking those metrics and
+[00:11:05.920] by that understanding which flows are
+[00:11:08.399] misfunctioning in your application. when
+[00:11:11.279] we are getting to LLM based flows then
+[00:11:14.880] we have a whole a whole different space
+[00:11:17.839] of problems and the like the most tricky
+[00:11:22.640] stuff is understanding which actual
+[00:11:25.839] flows didn't work as we expected. Why it
+[00:11:29.120] is so hard? Because the whole term of
+[00:11:32.800] good or bad or su or between success and
+[00:11:36.880] failure, it's not that clear like it's
+[00:11:40.000] not a binary result. And even if we will
+[00:11:42.560] look at the same result, let's imagine
+[00:11:45.519] me and you look at the same response for
+[00:11:48.000] a prompt we gave to Chip. You can think
+[00:11:50.880] it's a good it's a good answer for the
+[00:11:52.959] question and I can think it's a bad
+[00:11:54.640] answer for the question. Even when you
+[00:11:56.880] look at like manual annotator manual
+[00:11:59.760] annotators and companies companies we
+[00:12:02.480] are working with then the practice is
+[00:12:05.200] usually taking more than one annotator
+[00:12:08.480] for each example because it is
+[00:12:11.200] subjective and there is no clear answer
+[00:12:13.360] for anything. Then you will have to set
+[00:12:15.839] up some metrics or way to evaluate what
+[00:12:19.279] what really happens in your in your
+[00:12:21.760] production and evaluate whether it's
+[00:12:24.399] good or bad. And this is a hard task
+[00:12:26.560] which we don't have in classic
+[00:12:28.399] observability.
+[00:12:30.079] Yeah. Yeah. It's so frustrating, right?
+[00:12:32.320] In order to
+[00:12:33.480] determine whether something is right or
+[00:12:36.079] wrong or it's not even like you say it's
+[00:12:38.240] not even right or wrong. There's a scale
+[00:12:39.760] of do you know what for most people this
+[00:12:41.600] will probably be right but actually
+[00:12:43.200] there's a group that this will be wrong.
+[00:12:45.040] That's so hard to ascertain. I guess the
+[00:12:47.920] second thing is in terms of in terms of
+[00:12:50.800] being able to test would you say that
+[00:12:55.519] it's harder to almost mock up production
+[00:12:58.720] like quality tests actual user flows or
+[00:13:03.839] compared to traditional input output or
+[00:13:07.200] do you think that's reasonable as well
+[00:13:09.680] because I guess you have to care about
+[00:13:11.360] not just here's a flow here's some input
+[00:13:13.440] and we get some expected output but it's
+[00:13:15.440] the intent of the user And is that user
+[00:13:18.000] satisfied with the result that they get?
+[00:13:19.920] So I guess my question is from a from
+[00:13:23.920] the point of view of actually even being
+[00:13:25.600] able to mock those tests from an
+[00:13:28.320] observability point of view, is it
+[00:13:30.639] harder as well in in development testing
+[00:13:34.720] scenarios to create those tests that are
+[00:13:37.519] representative of of production quality
+[00:13:40.800] flows and actually then work out if it's
+[00:13:43.760] correct or not in terms of responses.
+[00:13:46.160] Yeah, it's much harder in general to map
+[00:13:49.760] all the options, all the like all the
+[00:13:52.800] possible examples of input. As a result,
+[00:13:55.920] it's much harder to create a good
+[00:13:58.079] coverage or a good set of tests because
+[00:14:01.560] LLMs by their definition, they are quite
+[00:14:05.160] open-ended as long as you are not
+[00:14:08.240] scoping your application to super super
+[00:14:11.600] specific flows. For example, we can
+[00:14:13.440] think of some chatbot, some support
+[00:14:16.240] chatbot. So if I will just expose the LM
+[00:14:19.760] interface to the user and to my user and
+[00:14:22.240] tell him, okay, I'm a support chatbot.
+[00:14:25.040] Do ask me whatever you want, then the
+[00:14:28.480] amount of possibilities for the input is
+[00:14:30.800] endless. But if I will scope you and
+[00:14:33.040] this is a good practice in general for
+[00:14:35.120] for such products. If I will scope you
+[00:14:37.600] to stuff that AI chatbot can do then I
+[00:14:41.519] can scope the the variations of the
+[00:14:44.000] input and then it will be a little bit
+[00:14:46.480] easier to create good coverage for that
+[00:14:49.440] for those use cases. Yeah, I love that
+[00:14:52.399] structured inputs really reduce the the
+[00:14:54.800] level of variance that you could
+[00:14:56.320] receive. When we think about the
+[00:14:58.800] challenges that we face in the real
+[00:15:00.480] world today, we talked about some of the
+[00:15:01.920] problems that exist there from a
+[00:15:03.519] developer point of view, some of the
+[00:15:05.600] scenarios that that they might see as
+[00:15:08.639] potential issue. Hallucinations is the
+[00:15:11.199] obvious, I guess, when the LLM's just
+[00:15:13.600] make up that you just is false, but
+[00:15:16.800] obviously need some level of citation.
+[00:15:19.199] What are the other things that we as
+[00:15:21.199] developers or end users need to be
+[00:15:23.040] worried about? I guess that that we need
+[00:15:26.480] you know is a candidate that we can
+[00:15:28.240] identify in an observability point of
+[00:15:30.240] view. Just what we talked about earlier
+[00:15:33.199] like the terministic behavior which we
+[00:15:36.959] are used to does not exist in in this
+[00:15:40.000] world and this is an issue because we
+[00:15:42.560] can deploy some code to production which
+[00:15:44.959] involves some prompt or some pipeline or
+[00:15:47.839] LLM based some LLM based application and
+[00:15:52.079] what we saw for example with our one of
+[00:15:55.120] our customers is the performance or the
+[00:15:58.959] quality of the answers from that LLM can
+[00:16:02.959] degrade or drift a long time and this is
+[00:16:06.720] something to be aware of. Open AI for
+[00:16:09.360] example even like even if we're using
+[00:16:12.399] the exact same model with the revision
+[00:16:15.680] with the date of the release of that
+[00:16:18.079] model they are doing a lot of changes
+[00:16:20.880] not to the foundation model itself but
+[00:16:23.839] usually to the let's say to the
+[00:16:25.920] inference architecture like they have a
+[00:16:29.120] complex architecture which handles the
+[00:16:32.240] inference inference request and they are
+[00:16:35.440] having those those changes frequently
+[00:16:38.079] which can result in degradation in the
+[00:16:40.399] performance of your of your LLM calls.
+[00:16:43.600] Uh for example, we saw in our customers
+[00:16:46.800] that someday some random day they
+[00:16:50.720] realized that one of their summary tasks
+[00:16:53.440] or summary prompts it started they track
+[00:16:56.639] the amount of amount of words in the
+[00:16:59.120] summary as some proxy metric to the
+[00:17:01.440] quality of the to the quality of the
+[00:17:03.519] summary. And some random day they
+[00:17:06.799] realized that the median that the median
+[00:17:09.280] number of words in the summary just
+[00:17:11.600] decreased dramatically. I guess it was
+[00:17:14.400] around 20 20 words which is quite
+[00:17:17.520] significant in in their case because the
+[00:17:20.240] whole summary was about between 50
+[00:17:23.319] to 150 words as far as I remember. Don't
+[00:17:27.120] catch me here. But a lot of changes can
+[00:17:30.400] happen during even if you tested your
+[00:17:32.960] code and everything is working someday
+[00:17:35.200] everything can change and affect
+[00:17:36.919] dramatically your your product.
+[00:17:39.760] Obviously there is the case of
+[00:17:42.200] hallucinations which I guess it is so
+[00:17:44.960] widely discussed but I don't know if I
+[00:17:47.280] can add a lot more in these terms. Yeah.
+[00:17:50.720] No, that makes sense. That makes sense.
+[00:17:52.240] So let's jump into some of the
+[00:17:55.520] observability terms. them. We mentioned
+[00:17:57.679] open telemetry at the start and open
+[00:18:00.480] almetry which I think is maybe was that
+[00:18:02.320] coined by Patrick Devoir. Yeah, exactly.
+[00:18:04.960] It was he he loves naming things doesn't
+[00:18:07.280] he? Tell us a so first of all why don't
+[00:18:08.720] you just remind us what open telemetry
+[00:18:10.320] is? Open telemetry it's a CNCF project
+[00:18:14.799] totally open source which is like
+[00:18:17.679] formalizing standardizing structuring
+[00:18:20.320] the way applications applications in our
+[00:18:23.200] area of distributed systems and complex
+[00:18:26.400] systems and architectures of SAS should
+[00:18:29.360] report metrics logs and tracing data
+[00:18:33.520] that way and they provide a lot of SDKs
+[00:18:36.320] and tools around it like collectors
+[00:18:39.200] which we can discuss it later if you
+[00:18:41.600] want. I'm not sure how important is it
+[00:18:44.320] in in this phase, but they provide a lot
+[00:18:47.120] of tools reporting data and
+[00:18:49.000] instrumenting client client libraries
+[00:18:51.440] mostly. And when I'm talking about
+[00:18:53.600] client libraries, I'm talking about SDKs
+[00:18:56.160] and and stuff like that mostly for a
+[00:18:58.480] back end. Today it's also exist in the
+[00:19:00.880] client and even in mobile I think so.
+[00:19:03.360] And you can report structured tracing
+[00:19:06.720] data to any destination since it's
+[00:19:10.440] standardized. So every destination and
+[00:19:13.440] every observability platform which
+[00:19:16.799] supports open telemetry and exposes open
+[00:19:19.840] telemetry endpoint can consume and
+[00:19:22.880] visualize and present in in their
+[00:19:25.840] application. I hope it makes sense. I'm
+[00:19:27.679] not sure it was clear at all but that's
+[00:19:30.320] good. It's good. Open Lmetry now that
+[00:19:33.600] sits on top of open telemetry. tell us a
+[00:19:36.320] little bit about what that does and I
+[00:19:38.000] guess the differences once we so as I
+[00:19:40.880] mentioned every open telemetry they have
+[00:19:44.080] their contrib and also I think in the
+[00:19:46.960] main repo they provide a lot of a lot of
+[00:19:49.720] instrumentations and instrumentation is
+[00:19:52.480] actually a library or a sub library in
+[00:19:56.559] let's take the example of python it's a
+[00:19:58.559] package who's wrapping a specific
+[00:20:01.440] specific SDK for example we can think of
+[00:20:04.480] I don't know if you have in Python you
+[00:20:07.360] are working with posgress and you use
+[00:20:10.080] SQL alchemy as as your client or OM so
+[00:20:15.120] open telemetry instrument they have open
+[00:20:17.760] telemetry instrumentation for SQL
+[00:20:19.840] alchemy which is wrapping the library
+[00:20:22.880] and knows how to extract the data in
+[00:20:26.240] some magic way out of the SDK methods
+[00:20:30.480] and report it in a standard way as open
+[00:20:33.320] telemetry logs traces metrics. What we
+[00:20:36.720] did with open lomemetry back then we
+[00:20:40.159] were looking for an observ how to report
+[00:20:43.919] let's call it observability data which
+[00:20:46.400] is actually traces we saw it as traces
+[00:20:49.919] because we thought oh there are we've
+[00:20:52.960] been developing agents it reminded us
+[00:20:56.080] some microservices architecture with you
+[00:21:00.000] have an orchestrator and which is the
+[00:21:02.720] agent or a lot of agents communicating
+[00:21:05.760] with each other. You have the
+[00:21:07.360] orchestrator then you have sort of
+[00:21:09.840] micros service which is agent which is
+[00:21:12.000] doing something as a tool for another
+[00:21:14.640] agent. So I thought oh open telemetry
+[00:21:17.679] can make can make a lot of sense in in
+[00:21:20.960] these terms in these terms as well maybe
+[00:21:23.919] that's a good like we are both me and
+[00:21:27.760] near my co-founder we have we are quite
+[00:21:31.760] experienced engineers and as long as you
+[00:21:35.039] become as long as you become an
+[00:21:36.559] experienced engineer you realize that
+[00:21:39.120] you don't have to invent the wheel for
+[00:21:41.760] every task you are doing and as much you
+[00:21:44.159] are adapting as much you are adopting
+[00:21:46.320] already developed solutions or out
+[00:21:49.039] ofthebox solutions then I guess you
+[00:21:51.919] become a better better engineer at least
+[00:21:54.000] in my opinion so we thought okay open
+[00:21:57.600] telemetry could be or can be a great
+[00:22:00.480] tool for the purpose of observing agents
+[00:22:03.840] observing LLM applications because even
+[00:22:06.480] if you are not developing agents the
+[00:22:08.240] pipelines uh were getting more and more
+[00:22:11.280] complex that time and involved also API
+[00:22:14.960] calls and stuff like that which is super
+[00:22:17.280] innative to open telemetry because HTTP
+[00:22:20.799] calls are being instrumented over there.
+[00:22:23.679] So we thought okay let's adopt open
+[00:22:25.919] telemetry. Back then once we realized it
+[00:22:28.799] we said okay let's create a repository a
+[00:22:32.159] project which is extending open
+[00:22:34.799] telemetry. What we've just added is a
+[00:22:38.559] set of instrumentation or most of the
+[00:22:41.280] relevant SDKs and libraries during the
+[00:22:44.480] development of LLM based applications.
+[00:22:46.960] It is combined of three different types
+[00:22:50.080] of
+[00:22:51.159] instrumentations. One is for foundation
+[00:22:54.320] models. You can find their open AI,
+[00:22:57.240] anthropic, bedrock, gemini and or vertex
+[00:23:00.880] AI and and so on. We have 40 40
+[00:23:04.400] instrumentations today or something
+[00:23:06.640] around that. I can't I don't even count
+[00:23:09.039] it anymore anymore. We have their vector
+[00:23:12.400] databases instrumentations and
+[00:23:15.039] frameworks. The third pillar is
+[00:23:17.799] frameworks like lench chain, lama index,
+[00:23:20.640] crewi, hay stack and and other friends.
+[00:23:24.240] That way we provide instrumentations for
+[00:23:27.919] most of the building blocks of of LLM
+[00:23:31.520] applications.
+[00:23:33.120] Combining this one with the already
+[00:23:35.280] existing the already existing
+[00:23:36.960] instrumentations provided by open
+[00:23:39.360] telemetry and using the mechanism of
+[00:23:41.440] open telemetry, we are able to to report
+[00:23:44.960] or ingest open telemetry data both to
+[00:23:48.559] our platform but also to any other
+[00:23:51.840] observability platform supporting open
+[00:23:54.679] telemetry. And you can see like a great
+[00:23:57.520] you can observe and see great traces
+[00:24:00.799] which contains the prompts the responses
+[00:24:03.280] some metadata around that like the token
+[00:24:06.320] tokens used the cost for every call the
+[00:24:10.240] let's say the top K documents you've
+[00:24:12.559] retrieved from from your vector database
+[00:24:15.679] the transformation the transform tasks
+[00:24:19.360] inside the frameworks like langchain and
+[00:24:22.159] llama index and a lot more data you can
+[00:24:25.200] get get it for free. You just have to
+[00:24:27.600] initialize our SDK like trace loop and
+[00:24:30.159] you get it out of the box. So what would
+[00:24:32.799] the best practices be someone starting
+[00:24:34.640] with LM observability? Is there an
+[00:24:37.360] amount that would need to be set up in
+[00:24:40.080] terms of obviously does everything get
+[00:24:42.960] switched on and then you apply alerts
+[00:24:45.279] apply kind of like thresholds which you
+[00:24:47.039] care about. How much configuration does
+[00:24:49.760] there need to be per application based
+[00:24:52.000] on subtle differences between
+[00:24:53.600] implementations? So if you are just
+[00:24:56.720] working with the basic tracing and the
+[00:24:58.960] basic metrics that that are provided
+[00:25:02.559] from the SDK it's only the raw data then
+[00:25:06.240] you will have the classic the classic
+[00:25:08.559] observability metrics let's say the
+[00:25:10.880] deterministic ones the token usage and
+[00:25:13.919] latency and stuff like that you can set
+[00:25:16.480] and configure alerts and monitors based
+[00:25:19.279] on that. So as a first step, it's a good
+[00:25:23.200] step towards the direction of of being
+[00:25:25.760] monitored and being covered, but it's
+[00:25:28.320] not enough to be honest. As we talked as
+[00:25:30.480] we talked before, what's more important
+[00:25:33.520] is defining defining evaluations in
+[00:25:36.880] production which are using the which are
+[00:25:40.159] using the the real content of the
+[00:25:42.720] response and trying to evaluate and
+[00:25:44.960] score the response itself and not the
+[00:25:47.480] metadata metrics. Yeah. And is that the
+[00:25:50.240] is that one of the kind of hardest
+[00:25:51.760] things if you think about the lift that
+[00:25:53.200] it need that a user needs in terms of
+[00:25:55.679] getting good observability data back is
+[00:25:59.120] creating the right
+[00:26:01.960] eval is that the lift from the user
+[00:26:04.159] point of view. Yeah, this one is much
+[00:26:06.880] harder like you can start with trace
+[00:26:09.039] loop SDK report the open telemetry
+[00:26:11.679] tracing data to either trace loop or any
+[00:26:14.080] other vendor. This one is easy but once
+[00:26:17.039] it gets to defining and configuring the
+[00:26:19.840] or building the right evals then it gets
+[00:26:23.279] much harder and this is the heavy
+[00:26:25.039] lifting monitoring and observing like
+[00:26:28.080] LLM applications to actually get valid
+[00:26:31.360] insights back. What would you say then
+[00:26:34.080] as advice to people who are trying to
+[00:26:36.159] build eval suites? What are the gotchas?
+[00:26:39.360] What should people look out for and
+[00:26:40.880] where should they start?
+[00:26:42.880] So from what we
+[00:26:45.159] s I will say like a good starting point
+[00:26:49.760] can be working with some proxy metrics
+[00:26:54.320] which usually can be they can be
+[00:26:57.120] slightly naive like I mentioned the word
+[00:27:00.480] count and stuff like that. It can be a
+[00:27:02.720] good proxy for some cases,
+[00:27:05.640] but if you want to take it one step
+[00:27:08.880] further than what we saw at least, it is
+[00:27:12.640] super dependent on the context of your
+[00:27:15.679] application. There is no silver bullet
+[00:27:17.919] and general metrics which you know which
+[00:27:21.200] tend to be used in classic NLP, I don't
+[00:27:23.840] know, rouge, grun, they are all great
+[00:27:26.480] matrix. they just didn't provide the
+[00:27:29.039] usually the expected the expected result
+[00:27:31.919] and you you will have to uh find your
+[00:27:35.200] evals and provide the context of your
+[00:27:37.520] evalu of your application. It requires a
+[00:27:40.720] lot of like you first have to manual
+[00:27:44.240] annotate data and and understand as a
+[00:27:47.440] person as a human annotating or
+[00:27:51.200] evaluating the responses I got to first
+[00:27:53.760] understand which criterias I want to
+[00:27:56.159] evaluate myself and make sure that as a
+[00:28:00.159] human I can evaluate it and get
+[00:28:02.320] consistent result results with other
+[00:28:04.720] humans for example. Yeah. And I think
+[00:28:06.720] that's really interesting actually
+[00:28:07.919] because I think it's one of those hard
+[00:28:09.200] ones where you actually don't really
+[00:28:10.880] know how good your eval is because it
+[00:28:14.080] could provide you with some results. Say
+[00:28:15.840] certain models are better than others.
+[00:28:17.200] Say certain changes are better than
+[00:28:18.640] others. You don't really know until it's
+[00:28:21.279] in production, right? Because it's only
+[00:28:23.520] when you get users that are happier or
+[00:28:25.919] less happy based on the results that
+[00:28:28.399] that you actually know whether your LLMs
+[00:28:30.399] are providing good value. Is that fair
+[00:28:32.640] in all cases or I think maybe with the
+[00:28:34.960] structured inputs structured outputs
+[00:28:36.320] there's probably a little bit more more
+[00:28:38.320] of a measurability without having to
+[00:28:40.559] rely on users sentiment but yeah does it
+[00:28:44.720] feel like sometimes we're guessing a
+[00:28:46.880] little bit with
+[00:28:47.720] eval we need to truly get that
+[00:28:51.200] production level user feedback so to be
+[00:28:54.000] honest as far as I see it user feedback
+[00:28:56.799] when you ask for it explicitly it tends
+[00:28:59.600] to be biased like it's not a it's not a
+[00:29:02.799] good metric. If you want to take
+[00:29:05.760] something from production, then I will
+[00:29:07.840] look for for implicit scoring by users.
+[00:29:10.799] Let's say I'm working on a product who
+[00:29:14.240] suggesting completions, then if the user
+[00:29:17.600] actually accepted my completion, I can
+[00:29:19.679] count it as a thumb up. But if I will
+[00:29:22.480] proactively ask for his feedback,
+[00:29:24.720] usually it tends it tends to be biased
+[00:29:28.399] because probably you will get only the
+[00:29:32.200] angry most of the time you will get the
+[00:29:34.559] angry users and even if you have 90% of
+[00:29:37.760] them which are actually satisfied you
+[00:29:39.600] will see only the ones who who are
+[00:29:42.159] angry. setting up valuations. We believe
+[00:29:45.760] by the way in using real production data
+[00:29:49.919] and examples. It can be it can be hard
+[00:29:53.440] in terms of in terms of privacy of data
+[00:29:56.399] for some for some companies who you know
+[00:29:59.440] everyone respects their the privacy of
+[00:30:02.159] their clients and their customers. So
+[00:30:05.039] not everyone can do it but if you can do
+[00:30:07.360] it and take examples from real world
+[00:30:10.000] like real world use cases within your
+[00:30:12.799] product then you can use this one to
+[00:30:15.360] train evaluators which you can then use
+[00:30:19.200] during your development process. Yeah.
+[00:30:22.559] Yeah. Makes sense. From a trace data
+[00:30:24.640] point of view and an alerts point of
+[00:30:26.080] view is there are there ever problems in
+[00:30:28.559] and around kind of like signal to noise
+[00:30:30.480] ratio between the traces? Is there is is
+[00:30:33.679] it hard to create alerts that are
+[00:30:36.720] meaningful?
+[00:30:38.320] Yeah, definitely because you can at the
+[00:30:42.159] beginning you can go trace by trace and
+[00:30:44.720] it's fine. You do it manually. Most of
+[00:30:46.640] the companies are doing it even the
+[00:30:49.039] biggest ones because they start with a
+[00:30:51.919] really small really small roll out of
+[00:30:54.159] the LLM feature they are launching. So
+[00:30:57.120] it's fine you can go trace by trace.
+[00:30:59.679] Then you use as I mentioned like the
+[00:31:02.720] basic metrics of latency and stuff like
+[00:31:04.960] that and you think it solve it solves
+[00:31:06.880] your issue but once you get you get to
+[00:31:10.399] like a significant scale you can't go
+[00:31:12.960] trace by trace. So if you don't have the
+[00:31:15.760] capability or the right evaluators set
+[00:31:20.080] up and developed before then you find
+[00:31:23.679] yourself with let's say I don't know a
+[00:31:26.720] million a million generations a day and
+[00:31:30.640] it just it just doesn't doesn't scale
+[00:31:33.679] even if you want to spend a lot of a lot
+[00:31:35.679] of money on the problem and put a lot of
+[00:31:38.559] human resources it feels like super
+[00:31:41.360] super primitive going over a million of
+[00:31:44.880] examples every day and tag them. So you
+[00:31:48.240] gota set up the right evaluations and
+[00:31:51.360] the right evaluators to score the traces
+[00:31:55.360] in production and that way get only the
+[00:31:58.799] interesting one the interesting traces
+[00:32:01.679] and investigate and debug them in order
+[00:32:04.000] to improve your application. Yeah. And
+[00:32:06.880] in terms of who users typically are for
+[00:32:09.120] this kind of thing, how how much is the
+[00:32:11.039] spread of these types of activities done
+[00:32:13.919] by developers say versus versus folks
+[00:32:16.399] who are more on the operation side? The
+[00:32:18.880] whole world of the whole space of AI and
+[00:32:21.840] NML development has shifted towards
+[00:32:25.200] towards back-end developers and even
+[00:32:27.519] front-end developers today are
+[00:32:29.880] developing those features and
+[00:32:32.000] applications. When it was data
+[00:32:34.039] scientists developing these
+[00:32:35.960] applications, they are used to work with
+[00:32:39.120] they have they got to have some
+[00:32:40.880] evaluation some evaluation system and
+[00:32:43.279] like the practice and they working more
+[00:32:45.760] in a more methodical way because they
+[00:32:49.600] trained they were trained to do but
+[00:32:52.240] today backend engineers they are not
+[00:32:54.480] used to do it. So a lot of the effort is
+[00:32:58.559] going towards the is shifting to the
+[00:33:01.039] operations side. You can find a lot of
+[00:33:03.840] teams which existed even before like in
+[00:33:07.679] classic data science teams for example
+[00:33:10.080] they tend to use it in the past
+[00:33:12.240] annotation teams or which are creating
+[00:33:15.440] and curating data sets of label data.
+[00:33:19.279] Hey, product managers can do it,
+[00:33:21.200] annotation teams or domain experts,
+[00:33:24.960] which makes sense actually because if
+[00:33:27.360] I'm building, for example, let's imagine
+[00:33:29.679] a doctor, a medical doctor who's based
+[00:33:32.799] on on AI, on generative AI, then it
+[00:33:35.440] makes much more sense that a doctor will
+[00:33:38.559] rank and score and label the responses
+[00:33:41.760] of the LLM instead of the back-end
+[00:33:44.559] developer who understanding like I have
+[00:33:48.080] some understanding ing in like in health
+[00:33:50.559] just
+[00:33:51.559] because my just because I was trained I
+[00:33:54.799] was trained for the by by my family but
+[00:33:58.799] the common developer usually does not
+[00:34:01.840] understand anything in health so it's
+[00:34:04.000] better if a doctor will be the one to
+[00:34:06.320] the responses
+[00:34:08.480] yeah yeah cool let's look a little bit
+[00:34:11.200] forward now and think about what's
+[00:34:13.040] happening in the future obviously
+[00:34:14.320] agentic AI is something that's
+[00:34:15.839] absolutely flying right now and everyone
+[00:34:17.599] wanting to be more and more agentic.
+[00:34:19.679] There's talk of everyone being close to
+[00:34:21.839] AGI, but let's assume that's a few years
+[00:34:23.760] off. I think that's a fair assumption.
+[00:34:25.919] With those types of things where LM are
+[00:34:28.560] users of LM as well and you have
+[00:34:31.440] orchestrators of of agents, does that
+[00:34:34.159] make does this make things harder for
+[00:34:36.079] from an observability point of view as
+[00:34:38.000] data and things are being passed between
+[00:34:40.639] agents and between various flavors of
+[00:34:42.720] LMS, various vendors of LMS within the
+[00:34:45.040] same application? Does it make it
+[00:34:47.200] harder? and what's the importance of
+[00:34:49.480] observability in that space? Yeah,
+[00:34:52.560] definitely as as much as the like the
+[00:34:56.879] flows and the use cases of LLM
+[00:34:59.560] applications will get more and more
+[00:35:02.320] complex then observability will play a
+[00:35:05.440] much major role in in that game. And
+[00:35:11.040] why? Because today imagine a flow which
+[00:35:14.480] is only based on a single single prompt
+[00:35:17.040] to the same model every time. If one of
+[00:35:20.880] my users like he has an issue, it is
+[00:35:24.240] super simple or quite simple to
+[00:35:26.960] understand. Why? Because the flow is
+[00:35:29.280] super simple. But once it get it gets
+[00:35:32.560] much more complex and there are a lot of
+[00:35:35.520] there are more prompts more prompts
+[00:35:37.599] involved more models involved more
+[00:35:40.440] databases more tools like you can today
+[00:35:43.839] access the whole world of MCPS we didn't
+[00:35:47.119] cover it it at all but you can access
+[00:35:50.640] Google you can do a lot of stuff and you
+[00:35:53.200] got to somehow understand and trace what
+[00:35:56.000] happened along that way in order to
+[00:35:58.480] understand and debug
+[00:36:00.560] Both if you have an existing ticket from
+[00:36:03.200] a customer and you want to debug it, but
+[00:36:05.839] also and this is more of the space we
+[00:36:09.040] are dealing with understanding the
+[00:36:11.280] health and the quality and of the
+[00:36:13.920] generation of your system. So you want
+[00:36:16.800] to break it down like if I get some
+[00:36:19.839] general score for example of I don't
+[00:36:22.079] know it's 50% working but I don't know
+[00:36:24.640] how to break it down and when it get
+[00:36:27.599] when the flow get gets complex it's much
+[00:36:30.720] harder to break it down or you have a
+[00:36:32.880] lot more components that you want to
+[00:36:34.720] build some dashboard and understand
+[00:36:37.440] which is the leaking component which
+[00:36:40.000] makes me be only 50% at the end. It is
+[00:36:44.320] possible that all the rest like I have
+[00:36:47.040] all of the components functioning at I
+[00:36:49.280] don't know 90% 90% quality let's say and
+[00:36:53.440] one which is which is leaking and having
+[00:36:55.920] like missed malfunctioning and having a
+[00:36:58.240] bad performance. I want to be able to
+[00:37:00.320] track this one and understand which
+[00:37:02.560] exact component is in charge of this
+[00:37:04.720] one. Yeah. Yeah. No, that makes complete
+[00:37:06.400] sense. Otherwise, the black box just
+[00:37:07.839] gets bigger and you have no idea then
+[00:37:09.680] which part is at fault. That makes a lot
+[00:37:11.440] of sense. Let's wrap up Gal and I guess
+[00:37:14.160] from a developer point of view is there
+[00:37:17.040] a takeaway around managing observability
+[00:37:21.160] across apps that are using LLM that you
+[00:37:24.560] would kind of say this is the thing that
+[00:37:26.000] a developer needs to know about or needs
+[00:37:28.000] to do. This is the most important thing
+[00:37:29.680] that they should know. What would that
+[00:37:30.960] be? quite a cliche but there is that
+[00:37:34.720] thing what is not what is not measured
+[00:37:37.760] cannot be improved and what is not
+[00:37:40.480] improved is always degraded. It makes a
+[00:37:43.119] lot of sense in in this space and
+[00:37:45.520] actually this is the problem we are
+[00:37:47.119] dealing with. How do you measure the
+[00:37:49.680] actual the actual quality of your
+[00:37:52.240] responses and once you are able to
+[00:37:54.800] measure it you can improve it and you
+[00:37:57.280] can make sure it isn't it isn't
+[00:37:59.280] degraded. This is what I would expect
+[00:38:01.599] every developer to have in mind and this
+[00:38:04.480] is I think the main or the key takeaway
+[00:38:08.000] I'm going out with from this space.
+[00:38:10.880] Yeah. Yeah. Which is quite a classic
+[00:38:13.040] observability takeaway as well. So it's
+[00:38:15.359] almost don't discount your LLM from an
+[00:38:18.000] observability point of view. It needs to
+[00:38:19.680] be it needs to be held as accountable as
+[00:38:22.400] every other part of your app from a from
+[00:38:23.760] an observability point of view. And you
+[00:38:25.200] need to you absolutely need to know
+[00:38:26.880] what's happening. Don't just leave this
+[00:38:28.400] piece of magic that exists in your
+[00:38:29.920] application without without measuring it
+[00:38:32.240] which which is excellent advice. Gal,
+[00:38:34.880] thank you very much. This has been super
+[00:38:36.800] relevant to our audience. I think it's I
+[00:38:39.040] think it's super important that we when
+[00:38:41.520] we do introduce these things and I
+[00:38:42.960] remember years ago I've said this to a
+[00:38:44.320] few folks on the podcast years ago. We
+[00:38:46.400] used to scrutinize these LLMs that we
+[00:38:48.720] add into our apps much much more than we
+[00:38:50.640] do today. It's amazing how mainstream
+[00:38:53.839] LMS in applications or in our workflows
+[00:38:57.920] has become and how prevalent it is and
+[00:39:00.000] how accepted it is. But I think we need
+[00:39:02.079] to apply the same rigorous measures and
+[00:39:04.640] practices that we do across LMS as we do
+[00:39:08.240] our traditional code. So yeah, love this
+[00:39:10.640] session on observability and some really
+[00:39:12.480] nice practical insights there. So gal
+[00:39:14.560] very much appreciate your time. Thank
+[00:39:15.920] you for your insights. Thank you. I had
+[00:39:18.560] a great time.
+[00:39:20.119] Awesome. And thanks all for listening.
+[00:39:22.400] Make sure you if you enjoyed the
+[00:39:23.440] session, make sure you subscribe. Give
+[00:39:25.040] us a thumbs up on YouTube as well. And
+[00:39:27.200] thanks for tuning in and we'll see you
+[00:39:28.640] next time. Bye for
+[00:39:29.770] [Music]
+[00:39:36.200] now. Thanks for tuning in. Join us next
+[00:39:38.960] time on the AI Native Dev brought to you
+[00:39:41.359] by Tesla.
+[00:39:43.820] [Music]

@@ -1,0 +1,546 @@
+[00:00:00.760] we're in this very interesting moment.
+[00:00:02.720] Like on the one hand, agents are amazing.
+[00:00:04.960] They're also terrible because what the heck are they doing?
+[00:00:08.200] We really need our code review processes,
+[00:00:11.960] our guide rail processes to be more efficient.
+[00:00:14.240] We need a practical way
+[00:00:16.080] to get through checking that we're actually getting what we want,
+[00:00:18.280] and we can't really trust that we are going to be getting what we want.
+[00:00:29.800] So. Hello.
+[00:00:30.840] Yeah. So welcome to Tessl. So as mentioned.
+[00:00:33.200] So I get to work in this lovely office,
+[00:00:34.640] but it's always such a pleasure when we have a bunch of people
+[00:00:39.000] come by.
+[00:00:39.640] Can you hear me?
+[00:00:41.600] So. Yeah.
+[00:00:43.480] My name is Amy Heineike.
+[00:00:44.600] I'm a researcher and engineer here,
+[00:00:47.880] and I've been helping build our internal software factory.
+[00:00:52.000] And then I've also been spending a lot of time evaluating what agents
+[00:00:55.280] are doing and building different tools that we're putting into our product.
+[00:00:58.440] I am so delighted that I'm doing this talk right after Dave,
+[00:01:02.480] because I feel like so much of what you talked about
+[00:01:04.360] resonates really strongly with what I'm going to talk about,
+[00:01:06.800] and I'm going to talk about the rise of the harness engineer.
+[00:01:09.600] And this is kind of the skill set that you exemplify, basically,
+[00:01:13.720] and thinking about how for a lot of us, this is changing
+[00:01:16.720] what our jobs are going to look like. Right?
+[00:01:18.240] So agents are doing more and more coding, and we need to start thinking in
+[00:01:22.840] these new kinds of ways that aren't quite the way that we used to work,
+[00:01:26.120] but what what unlock us to make the most of agents in this world.
+[00:01:30.960] So I'm going to start with a few observations
+[00:01:33.720] that are probably obvious to everybody here, and repeat some of your ideas.
+[00:01:38.160] So first of all, the agents got pretty great and we're all using them a lot.
+[00:01:42.360] So there's lots of studies on this.
+[00:01:45.240] There's a great one from Faros where they showed
+[00:01:48.760] this incredible rate of AI coding tool adoption.
+[00:01:52.240] And I think we went from last year, it was like very spiky, the adoption.
+[00:01:56.200] And now we're seeing
+[00:01:59.120] the vast majority of
+[00:02:00.200] code in, in many organizations is actually AI authored.
+[00:02:04.400] We're also seeing
+[00:02:08.720] the benchmarks getting completely saturated.
+[00:02:12.480] So if you can define a task, you can ask an agent to do it.
+[00:02:17.080] You'll normally find that the agent can complete it.
+[00:02:19.720] And we're finding it hard to write.
+[00:02:21.800] We're finding it hard to write benchmarks that are kind of task
+[00:02:24.600] driven that agents can't complete.
+[00:02:29.960] When we stare a bit closer, though, I mean, we start to see some crack
+[00:02:33.960] so agents can do tasks, but do they do it in a way that's maintainable?
+[00:02:39.880] Do they do it in a way that leads to kind of health of the code base over time?
+[00:02:45.560] We have more questions there.
+[00:02:47.040] So this is the same.
+[00:02:48.120] This is the same report that looked at adoption of AI.
+[00:02:51.760] This staggered me actually.
+[00:02:52.960] Like the number of bugs that they're monitoring has jumped up.
+[00:02:56.080] The number of incidents has jumped up.
+[00:02:57.800] And this resonates very deeply because I don't know about you,
+[00:03:00.320] but when you use software these days, it feels like everything is just
+[00:03:03.440] a little bit crunchier and like cracks around the edges.
+[00:03:07.440] And so.
+[00:03:12.120] We're in this very interesting moment.
+[00:03:14.640] There are some new benchmarks.
+[00:03:17.360] This one's called Slop Code Bench, where they try and have
+[00:03:21.240] like a long running agent, do a series of tasks.
+[00:03:23.840] It doesn't know what order it's going to have to do the tasks in.
+[00:03:25.880] And so it needs to have built in a nice,
+[00:03:28.240] incremental way to be able to pull it off.
+[00:03:30.680] And as soon as you do tasks like this, you see much, much lower scores
+[00:03:34.360] that agents are struggling a lot more.
+[00:03:38.160] I think there's kind of this idea,
+[00:03:40.120] I think
+[00:03:40.520] that a lot of us are also noticing,
+[00:03:41.840] like in a way the agents are just getting better and better.
+[00:03:44.560] And so you can think like, oh, better models will solve all of this,
+[00:03:48.120] this chart.
+[00:03:49.440] I don't know if you've seen one like this before.
+[00:03:51.240] This is the frontier.
+[00:03:52.800] And so we basically plot how much it cost to use an agent versus
+[00:03:56.760] kind of an intelligence score.
+[00:03:58.760] And so if you draw the line across it, you get the best value model
+[00:04:02.800] for each, each level of intelligence.
+[00:04:06.440] What's crazy about this is that the left hand scale is kind of a linear one.
+[00:04:11.680] So we're seeing kind of incremental improvement.
+[00:04:13.800] The bottom one is a log scale.
+[00:04:16.120] So there's a hundred x price difference between the left and the right.
+[00:04:19.560] And the green line in the middle is ten.
+[00:04:21.560] So it's ten times as expensive to run fable
+[00:04:25.280] five as it is to run GPT 5.6.
+[00:04:28.480] So on a medium reasoning.
+[00:04:31.120] So even in cases where the better model
+[00:04:36.280] can do the task, we're seeing like
+[00:04:40.680] that sure is an expensive way to solve problems.
+[00:04:43.320] And if you're in an organization where you're starting
+[00:04:45.360] to have a lot of throughput of agents, we become more
+[00:04:48.400] and more aware of this.
+[00:04:51.520] I think we had 600 PRs closed this week
+[00:04:56.200] like, at Tessl, we're like a fairly small organization,
+[00:04:58.960] like we're talking about, you know,
+[00:05:00.000] if you've got a lot of code going through, we need to think about this carefully.
+[00:05:03.600] We've also we think a lot about skills here.
+[00:05:06.800] So we've launched
+[00:05:07.400] loaded products to help people manage skills in their organizations,
+[00:05:11.480] govern them, optimize them, share them, understand what's what they've built.
+[00:05:15.360] And we built a benchmark for skills.
+[00:05:18.360] So we took a thousand skills that we found in different open source repos.
+[00:05:22.240] We built tasks that would use the skills,
+[00:05:26.760] and then we got agents to do those tasks with them without the skill.
+[00:05:30.960] So we could kind of compare how well they behaved.
+[00:05:33.240] And we graded both how well they finish their tasks
+[00:05:36.440] and the the ability of them to follow all of the instructions in the skill.
+[00:05:41.280] So did they get the thing done?
+[00:05:42.560] And did they do exactly the way that the skill defined?
+[00:05:45.520] And we found a few really interesting things. So
+[00:05:50.640] you can and I'll show you some more charts
+[00:05:52.720] in a second so you can drive agents quite dramatically with skills.
+[00:05:56.240] You can get them to approach tasks in a very different way.
+[00:05:58.720] So these are great tools.
+[00:06:01.480] A well-defined skill will mean that you can get
+[00:06:04.720] the same level of success with a much cheaper, smaller agent.
+[00:06:09.000] So there's a path to kind of making better use of the agents that we have.
+[00:06:15.320] But also we find that instructions are not followed very thoroughly by agents.
+[00:06:21.920] So what we were able to find is that task completion rates were very high.
+[00:06:25.560] And all of these tasks that we studied, but only about 70% of instructions
+[00:06:29.720] from skills were getting followed on average.
+[00:06:31.920] So there's a big gap here.
+[00:06:33.480] So this is comparing instruction following across
+[00:06:36.640] a ton of different models.
+[00:06:37.960] And there's a big range in this.
+[00:06:39.640] So even the best models are ignoring a lot of the instructions that they get.
+[00:06:48.000] And so we classified all of the different skills that we found.
+[00:06:53.720] And there's a big difference.
+[00:06:54.960] So in some domains you can see this
+[00:06:57.960] kind of.
+[00:07:01.080] You see
+[00:07:02.280] very different levels of instruction following than we do in other domains.
+[00:07:06.400] So what this is showing is kind of the gray bar
+[00:07:11.240] is how many of the instructions in a skill an agent would have done anyway.
+[00:07:15.000] So some stuff agents agreed they're kind of doing whatever they
+[00:07:18.840] you know, they've learned some best practices.
+[00:07:20.880] But then the green bar is how well they adapted to work
+[00:07:25.560] the way that they were told to work.
+[00:07:27.040] And that bit on the end is how much they didn't do.
+[00:07:29.920] So the steering question, I think maybe the labs have been slightly
+[00:07:35.360] under rotating on ability and over rotating on task completion.
+[00:07:39.840] And we feel this
+[00:07:40.760] when we try and get agents to do the things that we want them to do.
+[00:07:44.440] So we're in this very interesting moment.
+[00:07:48.160] Like on the one hand, agents are amazing.
+[00:07:50.400] They're also terrible because what the heck are they doing?
+[00:07:54.640] We really need kind of
+[00:07:59.120] our code review processes, our guide rail processes to be more efficient.
+[00:08:03.080] If we're going to have rocket boots, we're going to generate tons of stuff.
+[00:08:08.000] We need a practical way to get through checking
+[00:08:11.080] that we're actually getting what we want,
+[00:08:12.440] and we can't really trust that we are going to be getting what we want.
+[00:08:15.800] And so this is an incredible and interesting moment.
+[00:08:22.960] I think all of this points to the fact
+[00:08:24.880] that engineering really matters and it matters more now, not less.
+[00:08:29.840] So I think in the past, we when we were doing
+[00:08:34.520] a lot of engineering, when we were building code bases,
+[00:08:36.880] we could kind of accumulate knowledge, we could share knowledge,
+[00:08:39.880] and we could kind of build incrementally and rely on individuals
+[00:08:44.320] kind of reviewing peers and teaching each other
+[00:08:47.360] and kind of training each other as the way that we could kind of steer
+[00:08:51.440] and shape the code that we were writing, the software,
+[00:08:54.640] the engineering we were doing, and now we're letting agents run at it.
+[00:08:58.160] A lot of that needs to become more explicit.
+[00:09:00.680] We need to think about how do we encode this into our practices
+[00:09:05.000] in a way that will work and kind of survive the agents.
+[00:09:08.960] And I'm seeing like three kind of big
+[00:09:12.480] skill sets that are really important and a little bit different
+[00:09:17.600] from the ones that maybe we had to really develop previously.
+[00:09:22.080] So one of them is systems thinking, one of them is analytics,
+[00:09:27.160] and then the other is kind of risk and operations of reasoning about those.
+[00:09:33.240] So what does that mean.
+[00:09:34.200] So systems thinking.
+[00:09:38.600] In when we think about
+[00:09:39.760] what we want from as we build code, as we kind of ship new features,
+[00:09:44.680] some of what we want is specific to the task we're doing.
+[00:09:48.000] And some of it is actually an expression of kind
+[00:09:51.040] of a general principle that we want to kind of keep on being true.
+[00:09:54.640] And I think this kind of resonates with the prompts that you were talking about.
+[00:09:58.200] So if we can start to identify invariants, we can if we can think of
+[00:10:03.800] kind of a systems level about things that we want to be true in our code,
+[00:10:08.000] then if we can capture these and enforce them, then we've got more of a
+[00:10:12.640] chance of kind of keeping consistency, keeping the quality bar high.
+[00:10:17.760] So what does this look like?
+[00:10:19.440] I think things like design systems are an example of invariants.
+[00:10:24.240] So rather than kind of designing what an individual page looks like,
+[00:10:28.240] it might be kind of talking about the types of layouts that we want,
+[00:10:31.760] the type of brand voice that we want, the types of components,
+[00:10:36.160] what buttons look like this could be on architecture.
+[00:10:41.240] So it could be how we want our code to be structured.
+[00:10:45.720] It could be on what libraries we're using, opinionated views on
+[00:10:50.120] which particular styles we want them to be,
+[00:10:52.840] or how we want to call and use those libraries.
+[00:10:56.640] It could be opinionated practices.
+[00:10:58.760] So it could be how do we want errors to surface through our stack?
+[00:11:02.920] How do we want things to be named?
+[00:11:05.280] How do we want our data flow to be through the stack. So
+[00:11:11.120] these are all things that like
+[00:11:14.160] in the past, we would have expected that was probably a code owner
+[00:11:17.960] who had a instinct or had developed a theory of this.
+[00:11:22.640] Like you could ask them to draw you a systems diagram
+[00:11:24.720] and that were like an architecture diagram. They draw you a picture of it.
+[00:11:26.920] You could sit down with the designer, they choose the Figma files and you,
+[00:11:32.160] you could ask them to go and kind of check PR by PR hey, does this kind of match?
+[00:11:36.960] But now we need to actually capture these and start thinking about them as key
+[00:11:41.600] parts of the system as kind of prompts or definitions that we enforce and encode.
+[00:11:46.840] So it's now actually possible
+[00:11:50.960] to enforce these kinds of patterns in a bunch of different ways.
+[00:11:55.960] So we can write skills that describe
+[00:11:59.360] what we care about and give them to our agents so we can make sure.
+[00:12:05.120] That we've
+[00:12:05.760] kind of tuned in exactly the description of what we were expecting.
+[00:12:09.480] We get that to be loaded at the right time and we can put deterministic checks
+[00:12:14.160] into our CI.
+[00:12:15.160] So linters, as you know,
+[00:12:18.200] I hadn't even heard of ast-grep probably, I don't know, 4 or 5 months ago.
+[00:12:22.320] And now we seem to be talking about all the time.
+[00:12:24.480] So you can write kind of deterministic rules.
+[00:12:27.040] And actually agents are really good at this.
+[00:12:28.520] So I think maybe in the past
+[00:12:29.800] it was a pain to write this kind of stuff, but now it's really easy.
+[00:12:33.360] So you can enforce patterns and check that, you know, code
+[00:12:37.520] only imports from other code or, and certain libraries
+[00:12:40.720] never used or certain names that ever used.
+[00:12:44.280] We've expanded this to look for we have this concept of verifiers,
+[00:12:48.760] which are very narrow rules that we can kind of measure
+[00:12:53.640] on every single file with a quick agent to, to look at them so we can
+[00:13:00.600] expose more of
+[00:13:01.840] these tight rules that we want to apply everywhere.
+[00:13:06.000] And then we can do agentic code review.
+[00:13:07.440] So we can say kind of broader prompts to agents of the types of rules
+[00:13:11.840] that we want them to follow.
+[00:13:18.720] I want to dig into this a little bit more to this idea of guide.
+[00:13:22.160] So we've been collecting
+[00:13:25.480] more and more of the patterns that we find,
+[00:13:28.680] especially from code review, where we see agents making the same comments
+[00:13:32.400] over and over again.
+[00:13:33.360] We want to make sure that we can effectively
+[00:13:35.240] turn them into a big checklist, every single rule that we believe in.
+[00:13:38.920] And then we can kind of guarantee that they're getting followed
+[00:13:43.520] in every single PR in a really repeatable way.
+[00:13:46.600] And I think it's it's been fascinating to me.
+[00:13:50.400] Perhaps this is the researcher like model tinkerer of me.
+[00:13:54.880] I don't know, I think as models have been getting better at coding.
+[00:13:58.840] They were also getting better at judging.
+[00:14:00.560] And so if you have very clear criteria, you can get very clean judgments.
+[00:14:05.560] And this is a really powerful tool that we can be using.
+[00:14:09.880] Okay.
+[00:14:10.200] So we are going to be thinking more and more about the system
+[00:14:13.520] and reasoning about it.
+[00:14:14.680] But I think today's point earlier, the way to really reason about
+[00:14:18.800] systems is to think about analytics.
+[00:14:21.000] And I think, you know, it's not maybe what we were doing as engineers
+[00:14:24.760] as much before thinking that we needed to think analytically
+[00:14:29.040] in order to unlock engineering.
+[00:14:31.040] But what's cool is, is we automate more of the code generation processes.
+[00:14:35.880] We have more and more data that we can look at,
+[00:14:38.000] and there's a bunch of signals that we can be using.
+[00:14:40.480] So agent logs are super fascinating.
+[00:14:43.360] If does anyone here to spend a lot of time reading coding agent logs.
+[00:14:48.760] Yeah.
+[00:14:50.160] Okay. I'm getting a couple of nodding heads.
+[00:14:51.760] I'm not the weirdest one.
+[00:14:53.600] That's very reassuring.
+[00:14:55.280] Sometimes if you read them, you see,
+[00:14:57.080] agents will just spin in a cycle and get confused so we can spot.
+[00:15:00.880] Where are they wasting time?
+[00:15:02.480] We found there are certain tools that our agents
+[00:15:06.040] got really super confused about, actually.
+[00:15:09.560] Linear.
+[00:15:10.280] Turns out that API are agents for some reason always got confused about.
+[00:15:13.640] So we ended up writing like a simple, a simple kind of CLI
+[00:15:18.120] that could call the linear
+[00:15:19.400] API, that we could observe that it was finding much easier.
+[00:15:23.200] So we can look at agent logs.
+[00:15:24.720] We can see what problems are in agent logs.
+[00:15:26.560] We can look at PR comments so we can see what things are
+[00:15:29.960] they doing wrong over and over again.
+[00:15:31.680] And then they might be things that we want to turn into guardrails or lint rules,
+[00:15:36.480] or there might be things where we need to just tell the agent ahead of time, like,
+[00:15:39.480] remember to follow this rule, and we can look at architecture
+[00:15:44.200] that's emerged in the code base.
+[00:15:45.600] So we can run complexity analysis on the code base.
+[00:15:47.960] We can see are there places where it's turning into spaghetti
+[00:15:51.000] where everything's importing from everything?
+[00:15:52.960] We can run mutation analysis on our tests, where we can say,
+[00:15:58.840] are there parts of our test suite that aren't actually earning their keep?
+[00:16:03.320] They're not actually useful tests?
+[00:16:05.440] Are there gaps in part of our testing coverage?
+[00:16:09.560] So we can use all of these signals and turn those back into hypotheses
+[00:16:15.400] that we might build about where the agents are going wrong
+[00:16:18.600] and into kind of choices about new invariants
+[00:16:22.520] that we might want to describe name and then figure out how to enforce
+[00:16:26.320] so that we don't have to worry about that again.
+[00:16:29.160] So these can be manual review.
+[00:16:31.640] So you can grab the data and stare at it for a long time and then pontificate
+[00:16:36.200] about, you know, the ideal architecture.
+[00:16:39.440] They could be automated loops where you have an agent go
+[00:16:42.000] and do a quick check of things and spot, hey, something was going wrong here.
+[00:16:45.640] Maybe we should strengthen something.
+[00:16:48.880] So analytics is a super important
+[00:16:52.480] is super important new way to start thinking to draw on.
+[00:16:57.320] And the next one is kind of risk and operations.
+[00:16:59.440] And I think I think this has come up a couple of times.
+[00:17:02.880] What's interesting is that we have a load,
+[00:17:06.680] you know, we've got all these new capabilities.
+[00:17:09.000] They work differently than they used to do.
+[00:17:11.120] We've got all of these controls and we need to be able to reason about,
+[00:17:17.040] you know,
+[00:17:18.440] is it good enough to let it kind of run on its own?
+[00:17:21.400] Is it not good enough to let it run its own?
+[00:17:23.800] Like how much review do we need?
+[00:17:25.280] And so I feel like the kind of ideas about risk, what our risk policies are,
+[00:17:30.560] suddenly need to become much more fine grained.
+[00:17:32.720] And they need to be something that more and more of us
+[00:17:34.400] are talking about and using.
+[00:17:36.200] So one thing we've thought a bit about here at
+[00:17:39.040] Tessl is we have this kind of ladder where there are actually quite a lot of
+[00:17:44.240] auto merge.
+[00:17:44.960] So we have certain parts of our code base where we're like,
+[00:17:48.000] you know, like the research code base, for example, is free for all.
+[00:17:51.040] You can just merge anything you like.
+[00:17:52.800] There are no absolutely no rules here.
+[00:17:55.400] Some of our internal tooling is auto merged.
+[00:17:58.440] So we have like hundreds of going through all the time.
+[00:18:01.560] Nobody looks at any of them.
+[00:18:03.040] And then other parts of our code base
+[00:18:06.480] are you absolutely need an engineer to look at it.
+[00:18:09.840] So whoever's kind of working on the feature who's staring it through,
+[00:18:13.400] they need to go in and kind of do that final merge.
+[00:18:17.320] There are a few very kind
+[00:18:20.160] of higher leverage parts of the code base where you probably should realize that.
+[00:18:23.920] You should ask somebody who's thought about it
+[00:18:25.480] before rather than ramming something through.
+[00:18:29.240] So thinking about what these levels of risks are,
+[00:18:33.280] thinking about which parts of the code
+[00:18:34.440] base they are trying to kind of codify that into rules that then go
+[00:18:38.560] into your GitHub settings and change what checks and balances
+[00:18:42.080] you put on different parts of the code base.
+[00:18:44.000] This is suddenly really important. So
+[00:18:49.480] so this is
+[00:18:50.960] this is all the kind of harness engineering skill set, I would say.
+[00:18:53.720] And I think for most organizations we're either going to have like a few,
+[00:18:57.640] a few of our Daves who are going to live this. Right.
+[00:19:00.240] They're going to think about variants, they're going to think about analytics.
+[00:19:03.640] They're going to think about risk.
+[00:19:05.640] They're going to think about these policies.
+[00:19:07.760] I think it might also be that for many of us who are working in engineering,
+[00:19:11.640] this becomes more and more of where we spend our time.
+[00:19:14.640] And it's actually quite a big shift to think of spending a bunch of our time
+[00:19:19.320] like this, as well as spending it thinking about the features that we want.
+[00:19:22.720] So this is kind of how we're going to be tenders and gardeners of our
+[00:19:27.680] of our code and our software
+[00:19:30.440] alongside kind of builders who are thinking about shipping.
+[00:19:34.480] So I mentioned this quickly.
+[00:19:36.840] So Tessl, we've been building a factory, a software factory internally.
+[00:19:41.600] So I think like 95% of our code went through this factory this week.
+[00:19:47.560] And over, over the last month we've been at over over 90%.
+[00:19:53.160] And we're also starting to ship more of these components.
+[00:19:57.640] So if you want to get started and tinker with stuff,
+[00:20:00.320] you can install the Tessl CLI.
+[00:20:03.000] And we're starting to put out
+[00:20:04.320] more content now about the Tessl agent that you can use to kind of talk, talk
+[00:20:08.320] to and kind of see what tools there are so you can go play with it.
+[00:20:11.560] So part of the vision of the factory
+[00:20:13.440] is that what happens is more of your coding goes
+[00:20:16.600] into kind of remote execution, code
+[00:20:18.920] engagement that you're loading up with all these kind of skills and context.
+[00:20:22.120] You have a bunch of guardrails.
+[00:20:23.560] So these kind of deterministic checks, verifiers, things
+[00:20:27.120] that are in CI, you've got kind of automated code review.
+[00:20:30.360] You may have this kind of triage gating step of a k.
+[00:20:34.080] Can we reason about how much risk
+[00:20:35.480] we need to apply, how much care we need to apply.
+[00:20:38.560] And then all of this then has these update loops
+[00:20:41.040] where we're going to monitor what's going on.
+[00:20:42.760] We're going to learn from that about how we can improve each part of the stack.
+[00:20:46.800] So yeah, if you want to tinker, please feel free to come in and chat about it.
+[00:20:51.960] But I think the big thing I want to take you to take away from
+[00:20:55.280] this is this this role of the harness engineer, these new skills,
+[00:20:58.400] this new way of thinking that I think more and more of us need to embrace.
+[00:21:02.680] And I wanted to leave you with kind of one set of ideas
+[00:21:07.720] on what are things to get started.
+[00:21:11.440] So if you're not doing this kind of job full time, where you would start.
+[00:21:16.080] So I think the first exercise is thinking about this invariance.
+[00:21:19.200] Like for the code that you're working on, could you describe
+[00:21:22.800] could you describe some of the invariants?
+[00:21:24.400] I'd say it's quite an uncomfortable thing to start doing actually.
+[00:21:27.880] It's like working out what precise rules
+[00:21:31.040] you would actually claim should always be true across your code.
+[00:21:34.160] It's worth just trying it out.
+[00:21:36.800] Going through that exercise, think about how you could make at least one of those
+[00:21:41.840] become a CI gate that you apply, and then see what happens with it.
+[00:21:46.280] So think about did that start catching this problem that you were aware of that
+[00:21:50.200] you cared about? Like how often is that thing firing?
+[00:21:53.120] And then I think the last thing is to try out thinking about building a data set.
+[00:21:59.120] So again, it turns out that agents are great at this.
+[00:22:01.240] Tell your agent to go grab the last 50 in your repo
+[00:22:05.800] and ask it to summarize what it observed about what was going wrong.
+[00:22:11.040] So what was repeatedly being said by people in comments or what?
+[00:22:16.360] What repeated errors there were?
+[00:22:18.400] Where was it tripping up and triggering CI failures?
+[00:22:21.560] And then use that to think a bit more about,
+[00:22:24.280] okay, what were the invariants I cared about?
+[00:22:26.560] What what could we have improved?
+[00:22:29.640] Okay.
+[00:22:31.080] That's it.
+[00:22:32.160] Thank you.
+[00:22:40.000] General, have any questions?
+[00:22:46.200] Cheers.
+[00:22:46.920] You talk about this software factory.
+[00:22:49.040] What does that mean for
+[00:22:51.600] the engineer?
+[00:22:52.160] 50% of
+[00:22:54.640] the software suites.
+[00:22:56.760] Yeah.
+[00:22:59.280] Engineer.
+[00:22:59.760] Right. Issues.
+[00:23:03.320] Yeah, yeah.
+[00:23:04.560] So our prompt is a linear ticket,
+[00:23:07.560] and we have some skills for writing linear tickets
+[00:23:12.120] where we have described in those skills kind of how much detail to put in there
+[00:23:16.800] and when to push back and ask for more detail.
+[00:23:20.720] We've got a number of ways that you can get stuff into that linear ticket.
+[00:23:24.040] So I will often be working in like conductor,
+[00:23:27.320] and I'll set up an agent session where I'll be like,
+[00:23:29.520] I'm thinking about this kind of thing, and then maybe,
+[00:23:34.760] you know, do some exploration with an agent
+[00:23:37.760] and then when I'm ready, then I might say, okay, read this skill and fire
+[00:23:41.240] off the ticket as soon as it lands in, in, in linear, we've got an orchestrator
+[00:23:45.880] that's watching and it will pick it up and push it through all the steps.
+[00:23:51.040] And we've also got some slack bots where you can at we call the Dark Factory
+[00:23:55.640] app. At Dark Factory app, we should make a ticket for this,
+[00:23:58.520] and it will have seen the slack thread and it will make a ticket.
+[00:24:01.920] And then that's what will be the starting point.
+[00:24:12.600] I was actually going
+[00:24:13.480] to ask the question, but maybe you didn't answer this as well.
+[00:24:16.480] How do you prevent vocal models from happening there?
+[00:24:20.240] You know, in a in a PR when it gets along, the opposite things set
+[00:24:24.240] and then you forget.
+[00:24:25.160] And in the world of agents, it's very easy for the agent
+[00:24:28.200] to agree on the opposite things. Yeah.
+[00:24:30.560] Before you know, your prompts and skills have all been modified,
+[00:24:33.360] then contradictions.
+[00:24:34.720] So first of all, if you if you have a dance of factory,
+[00:24:38.880] you don't know that these contradictions are happening.
+[00:24:41.040] And at what point it's gone in the wrong direction.
+[00:24:44.200] So how do you.
+[00:24:45.520] So for two two questions how do you watch for this
+[00:24:48.960] in a non software factory process as well as in the software factory process.
+[00:24:54.080] Yeah. So I think
+[00:24:56.400] I think code review is hard.
+[00:24:58.960] It's hard to trust an agent exactly.
+[00:25:02.560] When it does a code review.
+[00:25:03.800] It's hard to know whether all the the findings of Allied.
+[00:25:06.760] So it's really important that nothing thinks that it's authoritative.
+[00:25:11.520] So you don't want to have prompted your coding agents to say fix
+[00:25:15.840] all of the issues.
+[00:25:17.120] You want to prompt them to say, consider the issue,
+[00:25:21.680] consider these findings and decide whether to respond to them.
+[00:25:25.240] And you might also need
+[00:25:29.200] yeah.
+[00:25:29.440] So you basically need them to be able to weigh up and then give up on it,
+[00:25:33.880] I would say.
+[00:25:34.920] So that's the simple answer.
+[00:25:36.760] I think the longer answer is, again, think about the system as data.
+[00:25:40.000] So I think if
+[00:25:44.280] I don't think
+[00:25:45.200] any of this is easy or we know the answers to it.
+[00:25:48.200] And so I think what we have to be
+[00:25:49.640] is pretty vigilant about thinking and spotting problems.
+[00:25:53.840] And as soon as we spotted a problem
+[00:25:55.200] thinking, how can I turn this into an analytics query?
+[00:25:57.520] So can I create a query where I'm getting a distribution of like
+[00:26:00.520] how many comments are getting posted back and forth there is?
+[00:26:04.000] And then if I'm monitoring that, if I make changes to
+[00:26:07.360] how I've prompted my agents, can I see if that's improving or not?
+[00:26:11.400] And then,
+[00:26:14.400] you know, you have to experiment again.
+[00:26:16.920] Yeah, the scientific method.
+[00:26:19.000] Try stuff out and try and work out what's hanging up the the agents.
+[00:26:23.160] But definitely the starting point is that none of these things are,
+[00:26:28.160] you know, none of them are kind of true forever
+[00:26:31.240] and need to be absolutely implemented because you'll go crazy.
+[00:26:35.400] Yeah, yeah.
+[00:26:39.440] Thank you for the question.
+[00:26:42.480] I have is those skills and
+[00:26:45.200] reducing the cost.
+[00:26:47.240] So that's the end in one.
+[00:26:49.240] Feels like you were saying the skills.
+[00:26:51.680] The models are already 1,770% of the skills.
+[00:26:55.840] Right. And then they need 70%.
+[00:26:58.840] Is it the way the scale of the weekend which is actually making 70%?
+[00:27:04.120] This is something I said.
+[00:27:06.520] Yeah, I think I think there's a few things. So.
+[00:27:12.560] So actually in our benchmark,
+[00:27:14.280] we made the agents read the skill
+[00:27:17.280] in real coding you don't make unless you've used the command.
+[00:27:21.160] So agents ignore skills all the time so they just won't even read them.
+[00:27:25.520] That's partly a problem of the descriptions in the skill.
+[00:27:29.120] And we've actually Tessl have got a feature in the CLI called
+[00:27:33.040] like Tessl Review that you can pipe a skill into,
+[00:27:36.240] and it will help you check if you've got good disclosure in there.
+[00:27:39.280] So you kind of have to write the description in a skill
+[00:27:42.080] as like an advertisement to the agent of like,
+[00:27:44.160] hey, you should read me,
+[00:27:45.040] but you don't want to make it too exciting because you don't want the agents
+[00:27:48.800] to read it when you don't want it to read it.
+[00:27:50.760] So yeah, the first problem is getting the agent to read it at the right time.
+[00:27:53.880] The second one is we
+[00:27:57.120] I think what we see with agents.
+[00:28:00.520] So the 70% was out of all of the instructions in the skills.
+[00:28:04.920] So we take a skill apart and we write out each instruction.
+[00:28:07.440] Then we see how many of them are followed.
+[00:28:09.200] So having analyzed a lot of skills there are a few things that go wrong.
+[00:28:13.080] One of them
+[00:28:13.680] is that we write overly prescriptive skills with tons of instructions in.
+[00:28:17.360] And if you go back and sometimes a good exercise
+[00:28:21.120] to do is to just read the entire prompt
+[00:28:22.920] you're giving to an agent and think about it.
+[00:28:25.080] And it might be that we've just overloaded the agent with so many skills
+[00:28:28.880] and rules and context that it's like, I don't know,
+[00:28:33.760] I'll do this, but this seems like too much of a fast.
+[00:28:36.480] Sometimes it's really easy to accidentally right?
+[00:28:38.840] Two skills that contradict with each other.
+[00:28:40.760] And then again, the agent's like, I don't know,
+[00:28:44.280] I guess I wouldn't do any of it.
+[00:28:45.440] So some of it is on the authoring side, but I think also,
+[00:28:49.720] I don't know, agents get tired, bless them,
+[00:28:54.320] I don't know. It's a mystery.
+[00:28:55.640] It's a, you know, it's a bunch of numbers
+[00:28:58.840] in a massive matrix and who knows what's happening inside of there.
+[00:29:02.320] So it's useful to be aware really carefully of,
+[00:29:06.640] you know, where it's easy for the agent to get it right
+[00:29:09.640] and where you're really having to push the agent,
+[00:29:11.960] because maybe it's against something that's been heavily trained into it.
+[00:29:15.280] And it's just like not going to go there.
+[00:29:18.040] Yeah.
+[00:29:20.920] So we've everyone out time unfortunately.
+[00:29:23.120] But we'll be hanging around afterwards.
+[00:29:24.560] Absolutely. Yeah.
+[00:29:26.160] More questions.
+[00:29:27.200] Lots of things out there. So.

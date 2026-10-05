@@ -1,0 +1,426 @@
+[00:00:00.520] I'm sure we've all had the experience of like using an agent and telling it
+[00:00:04.160] to do something, and it does something you don't want it to do.
+[00:00:07.680] I want the agents to be able to be making the right decisions
+[00:00:11.160] and doing the things that I expect them to do.
+[00:00:12.920] It is like wearing rocket boots, and if you're wearing rocket boots,
+[00:00:16.400] you really had better hope that you're pointed in the right direction.
+[00:00:27.920] I'm Dave Kirk.
+[00:00:29.040] Thank you for coming.
+[00:00:30.640] And today I'd like to talk to you all about sort of how we are approaching
+[00:00:34.480] agentic PR review at Wayve and sort of more generally,
+[00:00:37.680] how we're approaching agents and workflows.
+[00:00:42.680] So briefly, about me.
+[00:00:44.280] I started programming 21 years ago.
+[00:00:46.720] Has anyone in here written Linden Scripting Language before?
+[00:00:51.320] Excellent.
+[00:00:51.960] Very good, very good.
+[00:00:53.520] I've been doing DevOps since 2015 and have been with Wayve since 2024.
+[00:00:58.800] Primarily started in the DevOps area, building, dev, tooling.
+[00:01:02.760] All the VMs that are our nerds use
+[00:01:06.600] this guy and a couple of my teammates.
+[00:01:09.320] But for the past 6 or 7 months, I've been working on our effort
+[00:01:13.600] to adopt agent AI across the organization.
+[00:01:16.520] So today, what we're going to be talking about
+[00:01:18.360] is sort of what are the underlying motivations behind our approach
+[00:01:22.320] for how we're building agent tick code review.
+[00:01:25.680] Then some of the specifics about the mechanics
+[00:01:27.880] of how we're actually approaching it, and then as well, how we have been
+[00:01:32.440] evaluating our agent to make sure that the code review is good.
+[00:01:37.120] Now, I want to start off with a little complaint, which is that
+[00:01:39.920] I find that one of the more frustrating things,
+[00:01:41.920] one of the more challenging things, and kind of for me,
+[00:01:43.800] surprising things in the industry is that with the adoption of agents,
+[00:01:47.560] I mean, I suppose it makes sense.
+[00:01:48.800] It's decently vibes based, but one of the hard parts right now is making sure.
+[00:01:53.480] Do the agents actually work?
+[00:01:54.880] Are the agents actually doing the thing that you want them to do?
+[00:01:58.520] You know, I don't really care too much about how many different MCP servers
+[00:02:03.160] can use or what tools it can use.
+[00:02:04.760] If I don't have confidence that it's going to be using those things, well,
+[00:02:08.240] I'm sure we've all had the experience of like using an agent and telling it
+[00:02:11.880] to do something, and it does something you don't want it to do.
+[00:02:15.800] making sure that it doesn't do that in high stakes environments, especially if
+[00:02:19.080] you've got a two ton car driving near me when I'm cycling down the street.
+[00:02:23.280] I I want the agents to be able to be making the right decisions
+[00:02:27.080] and doing the things that I expect them to do.
+[00:02:28.920] have a coworker who has used my favorite metaphor for agents,
+[00:02:32.760] which is that It is like wearing rocket boots, and if you're wearing rocket boots,
+[00:02:37.120] you really had better hope that you're pointed in the right direction.
+[00:02:40.920] So I had a lot of this was influenced by my experience
+[00:02:46.000] with using Claude multi-agent teams, which for anyone who's not familiar,
+[00:02:50.000] sort of the way that that works is you've got a top level agent
+[00:02:52.760] that you give tasks to, and then that agent delegates
+[00:02:56.560] tasks to other subjects that you have defined with prompts.
+[00:03:00.840] Really, really impressive stuff.
+[00:03:03.280] I mean, like it was it was really, really cool.
+[00:03:05.640] And, you know, I could just leave it
+[00:03:06.560] running in the background and it would just build stuff.
+[00:03:08.440] And it was also not great in a lot of ways.
+[00:03:11.120] Granted, this was my first time building this,
+[00:03:14.040] but I did have to write an article internally
+[00:03:16.160] and share it for educational purposes for the rest of the organization.
+[00:03:19.520] About how I spent 1,600 pounds $1,600 in two days of Claude usage.
+[00:03:25.720] It was hard.
+[00:03:26.920] You know they are.
+[00:03:27.800] I set up the classic like top level agent and then some to implement the tickets,
+[00:03:33.560] some to QA the tickets, and then another one
+[00:03:35.560] to handle all the merge conflicts and everything.
+[00:03:37.680] And they kept on getting confused about what their roles were.
+[00:03:40.920] They kept on taking all of the wrong actions.
+[00:03:43.200] And the hard part was that when I wanted to improve things,
+[00:03:47.080] I didn't have great visibility
+[00:03:48.960] into whether or not the changes that I was making were helpful.
+[00:03:52.040] Would adding another agent at this layer be helpful on the outcomes?
+[00:03:56.200] I needed more information to be able to know.
+[00:03:58.360] I even like built a bunch of dashboards and tools and stuff.
+[00:04:04.080] I've actually gone through two different iterations of this
+[00:04:07.800] that I've built for myself to try to build, like multi-agent software
+[00:04:10.960] development factories, and it's it's it's it's a challenging thing.
+[00:04:14.840] And I really came to conclude, like observability is critical
+[00:04:19.400] if you can't, let alone don't even get me talking about multi-agent.
+[00:04:24.360] If you can't even observe a single agent, you're going to really struggle to make
+[00:04:27.440] a reliable, production ready agent workflow.
+[00:04:31.600] And it's because they're unreliable and they're stochastic.
+[00:04:34.000] Like, we're relatively we're familiar with writing software and building
+[00:04:38.800] workflows that are relatively easy to predict, especially compared to agents.
+[00:04:45.120] And then alignment is a difficult challenge.
+[00:04:46.840] Not only the challenge of is the agent going to do the thing that you told it to
+[00:04:51.040] do, but also, did you tell it the thing that you want it to do?
+[00:04:54.800] These are very, very difficult things.
+[00:04:56.560] You need to really understand the impact of the changes that you make
+[00:05:00.040] if you modify the agents.
+[00:05:04.080] Is that modification helpful?
+[00:05:05.960] If you, you know, have read an article about a cool new MCP endpoint
+[00:05:10.520] that gives your agents memory and allows all of your agents
+[00:05:12.720] across your organization to all have memory that's shared.
+[00:05:16.640] Is that helpful on the outcomes, or is that just burning more tokens?
+[00:05:20.080] You need evidence to be able to conclude this
+[00:05:21.880] because like we're humans, we're all susceptible to confirmation bias.
+[00:05:25.800] And if you are working on a project related to agents,
+[00:05:31.520] you have strong incentives to think that the actions that you're taking
+[00:05:34.680] to make your agent better are making it better.
+[00:05:37.080] And you really do need evidence to not rely purely
+[00:05:40.560] or at least in my opinion, too heavily on vibes.
+[00:05:46.280] Yeah, mature adoption of agents.
+[00:05:48.200] It really, really requires
+[00:05:49.520] understanding their behavior and the actions that they're taking.
+[00:05:52.600] So that gets me to agentic code review.
+[00:05:56.640] Here at Wayve, we're working on self-driving cars.
+[00:05:59.960] We're not trying to pull humans out of the code review process.
+[00:06:03.240] We're trying to extend the capabilities of humans in the code
+[00:06:07.320] review process, identify areas that the humans are missing out on, catch
+[00:06:11.440] the obvious things, catch the complex things that humans miss out on.
+[00:06:16.280] And then really, really, really importantly, we want to be able
+[00:06:20.360] to improve that code review process through data that we collect on
+[00:06:25.880] that code view that on on the outcomes of that code review process.
+[00:06:30.520] And as well, this is meant to be a trailblazer project, sort of setting out
+[00:06:35.320] best practices and how we want to approach agent workflows more generally.
+[00:06:40.600] At Wayve, this is meant to serve as an example
+[00:06:45.000] of a feedback loop for for improving agent behavior.
+[00:06:48.840] And, you know, we were considering going with, with with off the shelf offerings.
+[00:06:53.640] But I mean, honestly, like as these agents have gotten better, the benchmarks
+[00:06:59.760] are becoming more and more difficult to trust in a meaningful way.
+[00:07:03.720] And as well, I don't know
+[00:07:04.760] if the contents of the public benchmarks really reflect the nature of my code base
+[00:07:09.160] and relevance to the public benchmarks, not necessarily being trustworthy.
+[00:07:14.200] This came from a cursor article
+[00:07:17.600] that they wrote, where they found that
+[00:07:21.840] if they put Opus 4.8 Max
+[00:07:25.600] under a harness
+[00:07:26.920] that really, really heavily restricted how much it would be hypothetically able
+[00:07:30.760] to cheat, they identified a lot of ways that it cheated on these benchmarks.
+[00:07:34.640] They found that if they prevented these obvious ways of cheating,
+[00:07:38.440] performance drops way down.
+[00:07:39.720] And in fact, most of the performance on this benchmark from 4.6
+[00:07:44.960] Max to 4.8 Max was just the agent figuring out how to cheat better.
+[00:07:48.560] And that's impressive.
+[00:07:49.560] But that's not exactly what I'm looking for.
+[00:07:52.600] So another priority as well is steerability.
+[00:07:56.640] You know, I'm sure I had the experience quite a bit
+[00:08:02.280] that I would ask the agent for suggestions on how
+[00:08:08.280] I can improve the code in my branch, simplify it, make it better, etc.
+[00:08:12.200] and everything.
+[00:08:13.040] Single time that I would ask it to do that, it would give me feedback.
+[00:08:16.160] And I'm sort of suspicious of you here, Claude.
+[00:08:19.000] Like at some point you got to be fibbing a little.
+[00:08:21.520] And, you know, we want to reduce the noise.
+[00:08:23.600] We want to make sure if you have something that is always giving you feedback,
+[00:08:27.000] a lot of that feedback isn't going to be great.
+[00:08:28.640] And then you're going to learn to not read that feedback.
+[00:08:31.440] So we need a really high signal to noise ratio.
+[00:08:33.760] And as well tokens are getting expensive.
+[00:08:36.640] We want to make sure that we're spending our money efficiently and effectively.
+[00:08:40.240] And as well our code base is complex building self-driving cars.
+[00:08:43.440] We've got robotics engineers,
+[00:08:44.720] we've got ML engineers, data scientists, full stack web developers, DevOps.
+[00:08:48.480] We have so many different things
+[00:08:49.800] that we need to deal with, and we have a lot of very domain specific
+[00:08:55.760] implementations.
+[00:08:57.040] So a lot of this is built around steering the behavior of the agent
+[00:09:01.080] based on the code that changed
+[00:09:04.280] our employees will define prompts
+[00:09:07.360] that will guide the feedback that the agent leaves.
+[00:09:10.680] And then based upon what files changed, we will leave feedback.
+[00:09:14.600] And you run one agent per prompt,
+[00:09:17.640] which hey, look, it's a hub action that I took a screenshot of.
+[00:09:22.440] This is a flowchart that I think is genuinely beautiful
+[00:09:26.160] of how we have implemented our code review.
+[00:09:30.120] So you open up your PR, we just run it when it is opened and in draft,
+[00:09:34.640] and when you transition it from draft to
+[00:09:37.720] not ready for review, that's what it's called.
+[00:09:40.640] And that's mostly just because like if we ran this on every push,
+[00:09:44.440] I mean, boy yeah, we would turn through that series D money real fast.
+[00:09:49.600] So then we run the GitHub action.
+[00:09:51.960] It evaluates what prompts to run.
+[00:09:54.280] We fan out across a bunch of different agents and then to steer the agent.
+[00:09:59.360] We have a common skill
+[00:10:00.560] that defines the mechanics of how it should leave the feedback.
+[00:10:03.760] And then for each of that, we inject each of those different prompts
+[00:10:07.000] into the prompt that we give to the agent.
+[00:10:10.120] It leaves feedback. And then we report metrics.
+[00:10:14.520] So this is
+[00:10:15.000] an example of one of our review prompts.
+[00:10:18.040] And this is actually kind of neat.
+[00:10:19.680] With this approach you can do.
+[00:10:22.240] This is a very very trivial example.
+[00:10:25.120] But you can do like interesting things with it.
+[00:10:28.800] At the top we are A/B testing different reasoning
+[00:10:31.880] or effort levels for the model that we're using.
+[00:10:35.600] The prompt here, it's basically just we have some quirks in our infrastructure.
+[00:10:40.480] And if you're modifying these certain pieces of infrastructure,
+[00:10:43.360] you need to run the Terraform apply in the right spot.
+[00:10:45.760] So now if you modify that infrastructure,
+[00:10:47.800] the agent will comment on the PR and remind you of that fact.
+[00:10:51.080] And then at the bottom we select which files causes prompt run.
+[00:10:56.640] And also you can set the percentage of how often this will run.
+[00:10:59.560] If you're creating a prompt that is going to be running in a section
+[00:11:04.040] of the code base that is modified a lot, you can set it to a lower percentage
+[00:11:08.440] probability of running in order to reduce the noise that you're creating.
+[00:11:14.000] While you are collecting data on how good this prompt is.
+[00:11:20.040] So yeah, the feedback loop.
+[00:11:21.680] This is like a very, very important thing.
+[00:11:24.640] We want to be able to improve our prompt.
+[00:11:27.520] We want to see the areas in which we incorrectly defined the prompt in our art
+[00:11:33.440] where when given this prompt, an agent is making a common,
+[00:11:38.800] frequent mistake that we can then prevent it from doing again in the future.
+[00:11:43.280] So we do that through just basic sentiment,
+[00:11:45.680] thumbs up and thumbs down emojis.
+[00:11:47.240] You can also leave comments, which is incredibly helpful
+[00:11:51.280] for then iterating on and improving the prompts.
+[00:11:54.880] And then as well we have an agent that, after you merge, looks at each
+[00:11:59.000] individual piece of feedback that was left and tries
+[00:12:02.800] to evaluate whether or not that feedback was actually used.
+[00:12:06.600] So we get both sentiment of whether or not it was good or bad,
+[00:12:11.080] and we also get information on whether or not it was actually used.
+[00:12:15.520] And then as well, we have a skill for improving the prompts.
+[00:12:19.480] Agents are really, really good at looking at tons of data
+[00:12:22.840] and then pulling out sort of common themes.
+[00:12:24.960] So whenever we've collected enough data on one of these prompts
+[00:12:28.960] that we're using for evaluating subsection of the code base,
+[00:12:32.680] we will kick off a skill to look at all of those
+[00:12:36.920] instances of the feedback being left, and whether or not it was used to try
+[00:12:40.920] to extract common themes and then improve the prompt.
+[00:12:44.800] You know you need a good amount of data for this.
+[00:12:48.040] We are still in the relatively early days, but we have been seeing like this.
+[00:12:51.760] This works and it has led to at the very least.
+[00:12:55.880] And I'll get to some more detail about this
+[00:12:57.760] in in a minute, but at the very least,
+[00:12:59.560] the sentiment line goes up and the usage line goes up.
+[00:13:03.600] So at the very least this works for making those lines go up.
+[00:13:09.840] So yeah, we collect the sentiment, thumbs up, thumbs down.
+[00:13:13.000] And we compare it to try to get an idea of whether or not it's good.
+[00:13:17.360] I was thinking of be neat to compare it against a baseline of just telling.
+[00:13:21.880] GPT-5.3 Codex.
+[00:13:23.760] Make suggestions to make the PR better.
+[00:13:25.880] If I ask it to make the PR better, how useful is that compared
+[00:13:30.040] to putting the time and effort to actually defining a real prompt?
+[00:13:33.960] And we have actually had some prompts that are meaningfully better.
+[00:13:38.360] The hard part is that the baseline of this,
+[00:13:41.680] it kind of just provide feedback that people like.
+[00:13:44.960] And I think that this started to unpeeled
+[00:13:49.040] the serious limitation that exists with just sentiment and
+[00:13:52.960] the serious limitation with boiling down something so complex to a single metric
+[00:13:57.040] that like whether or not you like it, is not really telling you.
+[00:14:02.320] How useful is this feedback?
+[00:14:03.720] Or is this covering something
+[00:14:05.080] that a human would have missed or, you know, other things like that?
+[00:14:09.320] We can track this across different modes.
+[00:14:12.280] So whether we're commenting top level on the first page of a GitHub pull request
+[00:14:18.040] or in line in line with like a specific line of code,
+[00:14:22.440] generally it's pretty much the same overall,
+[00:14:25.000] but there are some prompts that people prefer that do a better job
+[00:14:29.120] with top level comments versus inline, and then we can compare across
+[00:14:32.720] different models.
+[00:14:34.040] Yeah. Here you go for this prompt.
+[00:14:37.360] Much better sentiments for the inline comments versus the top level.
+[00:14:41.400] And then interestingly, oh, this one maybe as interesting.
+[00:14:46.480] But you know we want to know for all of these different prompts
+[00:14:49.320] like that prompt that I showed you earlier of,
+[00:14:52.480] hey, if this file is modified, remind the user of this.
+[00:14:55.520] You don't need extra high effort for that.
+[00:14:57.360] But something like one of our security engineers
+[00:14:59.640] put together a prompt to try to catch security issues and PRs.
+[00:15:04.120] You want high extra high effort for that.
+[00:15:06.760] One thing that I have found interesting is that the medium effort on GPT
+[00:15:14.800] 5.3 Codex, and now we've switched over to GPT-5.6.
+[00:15:18.920] The medium effort actually gets used more often,
+[00:15:22.840] even though the extra high effort gets like better sentiment.
+[00:15:27.480] I what conclusions can I draw from that?
+[00:15:30.760] I can try to draw some, but in reality I need more data
+[00:15:37.480] because simple
+[00:15:38.160] metrics trivialize complex problems and giving doing
+[00:15:42.040] pull request feedback like giving, giving feedback on a pull request.
+[00:15:45.920] It's a complex problem.
+[00:15:47.160] It's nuanced, it's sophisticated, it is qualitative.
+[00:15:50.480] And it's it's hard.
+[00:15:52.040] I mean, honestly, like, I don't have too many conclusions
+[00:15:56.000] for y'all about the right way to do this
+[00:15:58.040] sort of stuff, because the main conclusions
+[00:15:59.920] that I've drawn from this effort is that this is hard,
+[00:16:03.080] and you really need to put effort into evaluations
+[00:16:06.320] and collecting the metrics to understand what your agents are doing,
+[00:16:09.400] to be confident that they are doing things well.
+[00:16:13.960] Yeah, sentiment is not enough.
+[00:16:15.080] I just thought this picture was funny.
+[00:16:21.360] Yeah.
+[00:16:21.800] I mean, you know, is this feedback good?
+[00:16:23.840] That doesn't tell you a huge amount.
+[00:16:25.720] And heuristics are just heuristics.
+[00:16:27.960] You know, it's just telling us that people like it, which is a useful thing.
+[00:16:31.720] But as I've said so many times, you need more.
+[00:16:34.280] There's also I was really on a roll today.
+[00:16:36.920] Yeah.
+[00:16:38.920] So we do as well.
+[00:16:40.640] This was one that I was really psyched about, using an agent
+[00:16:43.800] to evaluate whether or not the feedback was used.
+[00:16:46.840] So we're collecting metrics on sentiment and whatnot, but also
+[00:16:52.560] agent to collect metrics to
+[00:16:54.480] evaluate the quality of the output of the other agent.
+[00:16:56.920] And I know what you must be thinking.
+[00:16:58.360] I hope that you are thinking this
+[00:16:59.680] because I have a Watchmen poster on here who's watching the Watchmen?
+[00:17:02.920] Well, it's called a script and a test, and we have evals.
+[00:17:08.280] I generated a number of synthetic examples.
+[00:17:11.920] I also scraped a number of actual
+[00:17:15.120] pull requests and pieces of feedback that were left manually.
+[00:17:18.200] Went through about like 50 examples.
+[00:17:20.480] God, I would love more, but I don't have infinite time to try
+[00:17:24.520] to make sure that the feedback used
+[00:17:28.280] eval agent was actually telling the truth and reliably doing so.
+[00:17:31.320] And what was really cool that I didn't expect is I ended up
+[00:17:34.600] doing eval driven development where I had the eval built before
+[00:17:39.120] I ended up actually writing the agent to do the eval,
+[00:17:43.720] and the fricking eval caught issues in my prompt
+[00:17:47.520] that was causing that eval agent to do incorrect
+[00:17:50.560] things like the value of doing eval driven development was just fantastic to me
+[00:17:54.440] here, and it also means that we can be confident
+[00:17:57.440] that it is pulling out truthful information.
+[00:18:04.040] Yeah, we also have CI.
+[00:18:05.080] If you modify this agent, it will run it against the evals
+[00:18:09.080] and make sure that you're not making the agent worse.
+[00:18:13.560] Yeah like I said conclusion.
+[00:18:15.360] It's guys. It's hard.
+[00:18:17.200] You need a lot of heuristics.
+[00:18:18.360] You need a lot of information.
+[00:18:20.760] You can't trivialize these complex problems down
+[00:18:24.360] as if they are simple problems.
+[00:18:25.920] And you need you need an appropriate amount of metrics
+[00:18:30.640] and measurements to actually be able to draw meaningful conclusions.
+[00:18:34.800] Because every metric has its own truths, in its own lies,
+[00:18:37.360] and you need to aggregate them together to get that fuller picture.
+[00:18:40.720] You can do multi-agent pipelines.
+[00:18:42.800] It's it's hard, though, and it again, takes effort.
+[00:18:46.440] And you really got to lean on the scientific method to move away from vibes.
+[00:18:52.120] Yeah.
+[00:18:53.040] Lack of data leads to vibes.
+[00:18:54.880] Vibes leads to trouble.
+[00:18:56.320] Can you guys believe that?
+[00:18:57.120] That's on my family crest, I think.
+[00:18:59.520] So coincidental.
+[00:19:00.480] It's like adjacent to nominative determinism.
+[00:19:03.280] But yeah, I'd highly recommend like, really establish
+[00:19:06.400] these practices for your organization if you can.
+[00:19:09.400] The earlier on that you can establish these practices in this sort of like
+[00:19:13.360] cultural drive and understanding that you need to be scientific
+[00:19:16.680] about this the better of the time you're going to have.
+[00:19:20.160] Otherwise it so much, so much chance
+[00:19:23.240] for burning a lot of tokens and having a lot of chaos.
+[00:19:26.920] And that's pretty much it.
+[00:19:29.480] Yeah.
+[00:19:29.920] Cool.
+[00:19:39.840] Well, thanks very much for sharing.
+[00:19:42.120] Just because you mentioned quite a lot about sentiment.
+[00:19:45.720] Can I just just for the point of clarification,
+[00:19:48.320] are you operating on a new code base or a century old code
+[00:19:52.520] base where you know, the human who would develop this code base?
+[00:19:56.520] They do have a lot of understanding of the...
+[00:19:58.920] This is a long lasting code base.
+[00:20:02.240] Long lasting.
+[00:20:03.680] Right.
+[00:20:04.120] So so that's almost a similar situation that I'm in, is that
+[00:20:08.640] sometimes I do have to trust human because like our code base is so old
+[00:20:13.280] and sometimes the people who developed it are the knowledge base.
+[00:20:17.600] And. Right.
+[00:20:19.080] So how come you said sentiment, you know.
+[00:20:22.760] Oh, so the sentiment is evaluating
+[00:20:26.440] the sentiment.
+[00:20:27.200] Is a user leaving feedback on the feedback that the agent gave.
+[00:20:35.200] Yes. The I always I always like when someone's like
+[00:20:40.560] I don't need the microphone and look at me doing it now.
+[00:20:43.520] Yeah.
+[00:20:45.440] So the sentiment is meant to be a signal to us
+[00:20:49.280] to determine whether or not the feedback being left by the agent is good.
+[00:20:53.360] So it's basically you create a PR,
+[00:20:58.080] you open it, the agent will run against your PR
+[00:21:00.520] and look at your code changes and provide feedback based on your code changes.
+[00:21:04.280] And you can say that was good or that was bad.
+[00:21:08.320] We're not like trying to take the domain expert out of it.
+[00:21:11.480] And in fact, we really want the domain expert
+[00:21:13.720] to come in and say, you got this wrong, agent.
+[00:21:16.520] And here's specifically what was wrong, because then hopefully we can codify that
+[00:21:21.280] and they won't have to, you know, deal with that same problem again.
+[00:21:25.840] Doesn't it cool. Anyone else. Yeah.
+[00:21:30.360] Oh you got that now.
+[00:21:31.640] Cool. All right.
+[00:21:32.240] Great.
+[00:21:37.680] Nice.
+[00:21:40.120] Thank you I enjoyed that.
+[00:21:41.520] It's another question also related to the sentiment.
+[00:21:44.120] So you were saying that you collect data based on the sentiment.
+[00:21:47.280] And what I'd like to know is whether you actually
+[00:21:50.400] use that data to modify the prompts.
+[00:21:53.960] Okay. If that's the case. Yeah.
+[00:21:57.240] How are you objectively determining whether your team is giving sentiment?
+[00:22:02.160] That's good quality sentiment.
+[00:22:04.120] We're just trying to trying to make their lives a bit easier.
+[00:22:07.280] In terms of the agent not criticizing that, the things that they make.
+[00:22:13.440] Yeah, that no, that is such a good question.
+[00:22:16.240] And we're not.
+[00:22:17.840] And it's hard to do.
+[00:22:20.000] And that is why I really like emphasize.
+[00:22:23.440] That's why like the main lesson I've come from with this is you can't rely
+[00:22:27.760] just on one metric like sentiment that has its own implicit flaws.
+[00:22:32.160] Yeah, exactly as you're describing. Yeah.
+[00:22:41.360] Yeah.
+[00:22:42.640] Oh, you might need to hold the bike a little closer.
+[00:22:45.960] For you.
+[00:22:47.000] Describe
+[00:22:48.800] the lot of decision points happening there.
+[00:22:52.160] So is there an audit trail that you have
+[00:22:55.440] because you would not know for compliance reasons later on?
+[00:22:59.920] Yeah.
+[00:23:03.560] Yeah.
+[00:23:04.080] All of the agents logs are being output
+[00:23:08.400] in the actions logs.
+[00:23:12.320] And you know, all of its feedback that it leaves is in the GitHub comments.
+[00:23:17.640] Honestly, that's not enough.
+[00:23:20.040] We are currently working on getting an LLM gateway in place
+[00:23:22.640] because I want to be auditing and logging every single,
+[00:23:25.760] every single turn in every action that an agent takes.
+[00:23:29.920] Yeah. Cool.
+[00:23:31.520] Thank you.
+[00:23:32.960] So I know there's a couple more questions, but Dave will be sticking around
+[00:23:36.160] afterwards if you've got any more. So come and find him.
+[00:23:38.760] We've got two more talks again for him, but yeah.
+[00:23:41.400] Thanks, David. Give him another round of applause.
+[00:23:46.640] And next up we've got Amy

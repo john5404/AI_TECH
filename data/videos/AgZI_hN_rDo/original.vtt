@@ -1,0 +1,2993 @@
+WEBVTT
+
+1
+00:00:04.880 --> 00:00:18.910
+[Music]
+
+2
+00:00:19.000 --> 00:00:23.000
+uh apart from uh spending time in the
+
+3
+00:00:21.119 --> 00:00:25.920
+application security business and also
+
+4
+00:00:23.000 --> 00:00:27.760
+focusing on cloud security I'm a code
+
+5
+00:00:25.920 --> 00:00:30.560
+scanning nerd uh you'll see this in a
+
+6
+00:00:27.760 --> 00:00:33.960
+couple of slides I feel uh I've spent uh
+
+7
+00:00:30.560 --> 00:00:35.520
+inor amount of time learning the various
+
+8
+00:00:33.960 --> 00:00:39.160
+ways in which a code needs to be
+
+9
+00:00:35.520 --> 00:00:41.840
+interpreted and understood um that um is
+
+10
+00:00:39.160 --> 00:00:43.719
+a skill I can only use in my job um and
+
+11
+00:00:41.840 --> 00:00:46.520
+uh I'm looking forward to sharing a lot
+
+12
+00:00:43.719 --> 00:00:48.800
+of uh uh dos and don'ts and a lot of
+
+13
+00:00:46.520 --> 00:00:53.440
+pitfalls of some of the approaches that
+
+14
+00:00:48.800 --> 00:00:56.440
+we try to take here at buz um let me um
+
+15
+00:00:53.440 --> 00:00:59.519
+also in terms of housekeeping um if you
+
+16
+00:00:56.440 --> 00:01:01.920
+want to track buzz in how we um operate
+
+17
+00:00:59.519 --> 00:01:04.840
+today can check out our website at b.co
+
+18
+00:01:01.920 --> 00:01:07.799
+you can follow uh me uh on GitHub and my
+
+19
+00:01:04.840 --> 00:01:09.640
+team um on LinkedIn and Twitter uh
+
+20
+00:01:07.799 --> 00:01:11.280
+that's where we share most of our
+
+21
+00:01:09.640 --> 00:01:12.840
+research findings and uh some of the
+
+22
+00:01:11.280 --> 00:01:15.720
+progress we've made so
+
+23
+00:01:12.840 --> 00:01:18.640
+far um so this talk is called ordering
+
+24
+00:01:15.720 --> 00:01:21.280
+files for AI assisted development and uh
+
+25
+00:01:18.640 --> 00:01:24.960
+we're essentially going to cover um an
+
+26
+00:01:21.280 --> 00:01:26.600
+interesting uh set of uh uh research uh
+
+27
+00:01:24.960 --> 00:01:29.640
+initiatives we took here internally ever
+
+28
+00:01:26.600 --> 00:01:30.479
+since starting buz about a year ago and
+
+29
+00:01:29.640 --> 00:01:33.759
+um
+
+30
+00:01:30.479 --> 00:01:35.479
+as of I mean if you if you are listening
+
+31
+00:01:33.759 --> 00:01:38.720
+to this talk you may not be surprised
+
+32
+00:01:35.479 --> 00:01:40.600
+one of the um most promising
+
+33
+00:01:38.720 --> 00:01:43.119
+applications of large language models
+
+34
+00:01:40.600 --> 00:01:45.119
+has been Cod generation uh we've seen
+
+35
+00:01:43.119 --> 00:01:47.640
+this uh in our previous companies
+
+36
+00:01:45.119 --> 00:01:50.079
+working on solving problems in the
+
+37
+00:01:47.640 --> 00:01:51.439
+security space um and we're now taking
+
+38
+00:01:50.079 --> 00:01:52.920
+that and scaling that up and
+
+39
+00:01:51.439 --> 00:01:55.640
+generalizing some of the approaches that
+
+40
+00:01:52.920 --> 00:01:58.000
+we've taken previously to see how we can
+
+41
+00:01:55.640 --> 00:01:59.960
+uh help teams uh perform code reviews in
+
+42
+00:01:58.000 --> 00:02:01.399
+the age of AI using these uh these
+
+43
+00:01:59.960 --> 00:02:03.719
+amazing
+
+44
+00:02:01.399 --> 00:02:05.600
+tools so this talk will get very
+
+45
+00:02:03.719 --> 00:02:08.399
+technical very fast so we'll start
+
+46
+00:02:05.600 --> 00:02:10.239
+really um putting up some uh basic
+
+47
+00:02:08.399 --> 00:02:13.640
+premises to get us uh going a few
+
+48
+00:02:10.239 --> 00:02:13.640
+analogies that we'll use along the
+
+49
+00:02:13.760 --> 00:02:20.319
+way the first one uh is a code grammar
+
+50
+00:02:17.599 --> 00:02:22.560
+uh so even before we dive into ordering
+
+51
+00:02:20.319 --> 00:02:25.480
+files and specifically in the context of
+
+52
+00:02:22.560 --> 00:02:28.080
+code review um we should uh take a look
+
+53
+00:02:25.480 --> 00:02:30.400
+at code and code grammar and see what it
+
+54
+00:02:28.080 --> 00:02:33.160
+brings to the table I mean um ever since
+
+55
+00:02:30.400 --> 00:02:36.519
+I learned how to program uh initially on
+
+56
+00:02:33.160 --> 00:02:38.560
+python I love this analogy that coding
+
+57
+00:02:36.519 --> 00:02:42.360
+is uh very much like driving even before
+
+58
+00:02:38.560 --> 00:02:44.560
+autonomous um and uh that uh struct and
+
+59
+00:02:42.360 --> 00:02:47.599
+the grammar of python can really serve
+
+60
+00:02:44.560 --> 00:02:50.239
+as a set of traffic signals for us to be
+
+61
+00:02:47.599 --> 00:02:52.720
+able to understand and read code and
+
+62
+00:02:50.239 --> 00:02:55.000
+this is a very simplified example where
+
+63
+00:02:52.720 --> 00:02:58.440
+I took a bunch of uh traffic signs that
+
+64
+00:02:55.000 --> 00:03:01.239
+we all know and fairly simply understand
+
+65
+00:02:58.440 --> 00:03:03.440
+and um they all actually have within our
+
+66
+00:03:01.239 --> 00:03:06.959
+code uh specific meanings in the form of
+
+67
+00:03:03.440 --> 00:03:09.080
+structs um input validation for a stop
+
+68
+00:03:06.959 --> 00:03:11.760
+sign where the input validation acts
+
+69
+00:03:09.080 --> 00:03:14.280
+like a stop signing code it's ensuring
+
+70
+00:03:11.760 --> 00:03:16.080
+inputs that are uh defined uh as
+
+71
+00:03:14.280 --> 00:03:18.000
+criteria proceeding before errors and
+
+72
+00:03:16.080 --> 00:03:19.560
+crashes um and you can look through
+
+73
+00:03:18.000 --> 00:03:21.200
+these examples not to spend too much
+
+74
+00:03:19.560 --> 00:03:23.480
+time on them but I think it's an
+
+75
+00:03:21.200 --> 00:03:26.480
+interesting way to think about the
+
+76
+00:03:23.480 --> 00:03:28.360
+Unseen part of code uh you you'll see me
+
+77
+00:03:26.480 --> 00:03:31.400
+talk about the implicit and the explicit
+
+78
+00:03:28.360 --> 00:03:33.439
+areas of code even when it's not um you
+
+79
+00:03:31.400 --> 00:03:36.120
+know kind of neatly displayed on a
+
+80
+00:03:33.439 --> 00:03:39.680
+single file or on multiple files code is
+
+81
+00:03:36.120 --> 00:03:41.519
+going to have a lot of um uh various uh
+
+82
+00:03:39.680 --> 00:03:44.200
+grammar components that are going to
+
+83
+00:03:41.519 --> 00:03:46.920
+take uh into account as code is either
+
+84
+00:03:44.200 --> 00:03:49.120
+executed interpolated or compiled um and
+
+85
+00:03:46.920 --> 00:03:50.640
+we'll talk about what those mean in a
+
+86
+00:03:49.120 --> 00:03:54.159
+couple of
+
+87
+00:03:50.640 --> 00:03:56.799
+minutes specifically when I focus on AI
+
+88
+00:03:54.159 --> 00:03:58.360
+coding and this is everything with uh
+
+89
+00:03:56.799 --> 00:04:00.840
+that has to do with coding agents and
+
+90
+00:03:58.360 --> 00:04:03.040
+how we think about using Frontier models
+
+91
+00:04:00.840 --> 00:04:05.319
+to understand codee base code bases
+
+92
+00:04:03.040 --> 00:04:08.000
+better and use you know these great
+
+93
+00:04:05.319 --> 00:04:09.799
+capabilities of how these these new
+
+94
+00:04:08.000 --> 00:04:13.079
+generation of lmms understand code to be
+
+95
+00:04:09.799 --> 00:04:15.159
+able to perform coding tasks and um I
+
+96
+00:04:13.079 --> 00:04:17.120
+really love this 4x4 grid I use it all
+
+97
+00:04:15.159 --> 00:04:20.160
+the time to you know kind of organize my
+
+98
+00:04:17.120 --> 00:04:22.079
+thoughts on how uh we should or we could
+
+99
+00:04:20.160 --> 00:04:24.120
+uh Implement these llms for a variety of
+
+100
+00:04:22.079 --> 00:04:25.919
+use cases when we think about
+
+101
+00:04:24.120 --> 00:04:28.560
+incorporating LMS into specific
+
+102
+00:04:25.919 --> 00:04:31.639
+workflows within um within developer
+
+103
+00:04:28.560 --> 00:04:33.400
+flows um so my XS goes between code
+
+104
+00:04:31.639 --> 00:04:35.960
+completion kind of very straightforward
+
+105
+00:04:33.400 --> 00:04:37.680
+give me the next components uh help me
+
+106
+00:04:35.960 --> 00:04:40.280
+complete this uh code that I've already
+
+107
+00:04:37.680 --> 00:04:42.160
+begun to write and all the way goes uh
+
+108
+00:04:40.280 --> 00:04:44.080
+to the right side to code generation
+
+109
+00:04:42.160 --> 00:04:45.840
+this is where sometimes my starting
+
+110
+00:04:44.080 --> 00:04:49.759
+point won't be existing code would be an
+
+111
+00:04:45.840 --> 00:04:51.919
+idea uh as an example um my y AIS
+
+112
+00:04:49.759 --> 00:04:54.360
+includes the use cases in which I want
+
+113
+00:04:51.919 --> 00:04:56.840
+AI to have more control um this is where
+
+114
+00:04:54.360 --> 00:05:00.160
+I can use things like agentic workflows
+
+115
+00:04:56.840 --> 00:05:03.160
+to um take multiple steps in order to
+
+116
+00:05:00.160 --> 00:05:05.120
+plan spec and then evaluate and execute
+
+117
+00:05:03.160 --> 00:05:06.639
+the code that I plan to write and on the
+
+118
+00:05:05.120 --> 00:05:08.759
+bottom we have kind of the current
+
+119
+00:05:06.639 --> 00:05:11.080
+mature model for co-pilots where
+
+120
+00:05:08.759 --> 00:05:14.440
+developers are in control they can use
+
+121
+00:05:11.080 --> 00:05:16.400
+tab to accept a recommendation um or uh
+
+122
+00:05:14.440 --> 00:05:18.039
+we can uh refine through a chat
+
+123
+00:05:16.400 --> 00:05:20.919
+interface what exactly we want the code
+
+124
+00:05:18.039 --> 00:05:22.639
+to do and you can see that grammar
+
+125
+00:05:20.919 --> 00:05:25.120
+actually matters for all of these use
+
+126
+00:05:22.639 --> 00:05:28.000
+cases and the fact that llms understand
+
+127
+00:05:25.120 --> 00:05:31.080
+grammar um already help us especially in
+
+128
+00:05:28.000 --> 00:05:33.800
+this uh top uh excuse me this bottom uh
+
+129
+00:05:31.080 --> 00:05:35.440
+left quartile um where we're mostly
+
+130
+00:05:33.800 --> 00:05:37.919
+focusing on code completion using
+
+131
+00:05:35.440 --> 00:05:40.039
+co-pilots and we're mostly relying on
+
+132
+00:05:37.919 --> 00:05:42.120
+human in the loop to be able to enforce
+
+133
+00:05:40.039 --> 00:05:45.039
+and provide uh the feedback that's
+
+134
+00:05:42.120 --> 00:05:47.919
+required to accept results you can see
+
+135
+00:05:45.039 --> 00:05:50.400
+that as we progress to both generation
+
+136
+00:05:47.919 --> 00:05:53.360
+and uh areas in which we want to AI to
+
+137
+00:05:50.400 --> 00:05:55.039
+take more control um the use cases
+
+138
+00:05:53.360 --> 00:05:58.160
+become more interesting in the sense of
+
+139
+00:05:55.039 --> 00:06:00.240
+being able to use either past context or
+
+140
+00:05:58.160 --> 00:06:03.160
+existing context in in a specific code
+
+141
+00:06:00.240 --> 00:06:06.039
+base or project to be able to provide
+
+142
+00:06:03.160 --> 00:06:07.960
+additional um coding uh coding elements
+
+143
+00:06:06.039 --> 00:06:10.199
+and this is where things get really
+
+144
+00:06:07.960 --> 00:06:13.080
+interesting for grammar because on one
+
+145
+00:06:10.199 --> 00:06:15.080
+end we want um you know AI to be able to
+
+146
+00:06:13.080 --> 00:06:17.639
+take control even maybe to write code
+
+147
+00:06:15.080 --> 00:06:19.199
+better better than us but on the other
+
+148
+00:06:17.639 --> 00:06:21.680
+we wanted to continue and maintain the
+
+149
+00:06:19.199 --> 00:06:24.400
+conventions of a past project and uh the
+
+150
+00:06:21.680 --> 00:06:28.440
+promise here could be one of a variety
+
+151
+00:06:24.400 --> 00:06:30.199
+of uh interesting um uh research areas
+
+152
+00:06:28.440 --> 00:06:33.639
+uh two that we won't focus on today one
+
+153
+00:06:30.199 --> 00:06:35.800
+is reasoning models um that can kind of
+
+154
+00:06:33.639 --> 00:06:38.080
+create these chains of thoughts of
+
+155
+00:06:35.800 --> 00:06:40.639
+different uh questions about how code
+
+156
+00:06:38.080 --> 00:06:41.720
+should be composed before providing the
+
+157
+00:06:40.639 --> 00:06:44.240
+eventual
+
+158
+00:06:41.720 --> 00:06:46.840
+result and the second one is mostly
+
+159
+00:06:44.240 --> 00:06:49.680
+around increasing uh the context window
+
+160
+00:06:46.840 --> 00:06:52.240
+so uh we assume and we've seen early
+
+161
+00:06:49.680 --> 00:06:54.440
+results of that that if we cram an
+
+162
+00:06:52.240 --> 00:06:57.759
+entire code base to a model that's
+
+163
+00:06:54.440 --> 00:07:00.280
+susceptible for uh for that amount of um
+
+164
+00:06:57.759 --> 00:07:02.440
+of tokens uh we can really ask it
+
+165
+00:07:00.280 --> 00:07:04.759
+anything and get uh consistent results
+
+166
+00:07:02.440 --> 00:07:07.400
+and the model doesn't get lazy or tired
+
+167
+00:07:04.759 --> 00:07:08.680
+um as you might uh sometimes find out
+
+168
+00:07:07.400 --> 00:07:10.280
+when you use some of the commercial off
+
+169
+00:07:08.680 --> 00:07:12.639
+the shelf or some of the smaller models
+
+170
+00:07:10.280 --> 00:07:14.479
+on hugging face uh those are the two we
+
+171
+00:07:12.639 --> 00:07:16.720
+won't be uh talking about today we'll
+
+172
+00:07:14.479 --> 00:07:18.879
+talk about an area of research that's
+
+173
+00:07:16.720 --> 00:07:21.599
+slightly overlooked and even you can
+
+174
+00:07:18.879 --> 00:07:23.759
+think of it as kind of almost low cost
+
+175
+00:07:21.599 --> 00:07:26.840
+uh which is just uh changing the order
+
+176
+00:07:23.759 --> 00:07:28.800
+in which we feed data into a model uh so
+
+177
+00:07:26.840 --> 00:07:30.280
+this has kind of semblance to this idea
+
+178
+00:07:28.800 --> 00:07:32.240
+of a Chain of Thought
+
+179
+00:07:30.280 --> 00:07:35.560
+but it also utilizes the fact that we
+
+180
+00:07:32.240 --> 00:07:38.160
+can use other tools uh to figure out
+
+181
+00:07:35.560 --> 00:07:39.960
+code grammar before we cram it into um
+
+182
+00:07:38.160 --> 00:07:43.319
+into our context
+
+183
+00:07:39.960 --> 00:07:45.520
+window if you think about it today uh
+
+184
+00:07:43.319 --> 00:07:47.919
+grammar already makes all of our
+
+185
+00:07:45.520 --> 00:07:52.560
+developer tools work um so when we look
+
+186
+00:07:47.919 --> 00:07:55.879
+at our IDE um it uses a uh language
+
+187
+00:07:52.560 --> 00:07:57.560
+server protocol and it helps us find go
+
+188
+00:07:55.879 --> 00:08:01.039
+from definitions to references and
+
+189
+00:07:57.560 --> 00:08:03.800
+navigate uh within our project based on
+
+190
+00:08:01.039 --> 00:08:05.879
+uh the ability to identify these node uh
+
+191
+00:08:03.800 --> 00:08:08.280
+cross node relationships across files
+
+192
+00:08:05.879 --> 00:08:10.400
+for a variety of different languages uh
+
+193
+00:08:08.280 --> 00:08:12.919
+you can use plugins you can use a local
+
+194
+00:08:10.400 --> 00:08:14.479
+server protocol um and that's generally
+
+195
+00:08:12.919 --> 00:08:15.440
+how you navigate within a codebase in
+
+196
+00:08:14.479 --> 00:08:17.560
+your IDE
+
+197
+00:08:15.440 --> 00:08:20.479
+today um when you think about package
+
+198
+00:08:17.560 --> 00:08:24.080
+managers uh this is your npm most recent
+
+199
+00:08:20.479 --> 00:08:25.800
+uh Bond um and and and cargo and Maven
+
+200
+00:08:24.080 --> 00:08:27.840
+and everything that you you need to get
+
+201
+00:08:25.800 --> 00:08:30.440
+a product Set uh excuse me your project
+
+202
+00:08:27.840 --> 00:08:32.760
+set up with a required dependency
+
+203
+00:08:30.440 --> 00:08:34.240
+it builds a dependency graph uh there's
+
+204
+00:08:32.760 --> 00:08:36.120
+different ways to build a dependency
+
+205
+00:08:34.240 --> 00:08:39.640
+graph but the end result is quite the
+
+206
+00:08:36.120 --> 00:08:43.760
+same we want to use um the dependency
+
+207
+00:08:39.640 --> 00:08:45.560
+manager grammar um to import a subset of
+
+208
+00:08:43.760 --> 00:08:48.080
+packages that's required to the project
+
+209
+00:08:45.560 --> 00:08:49.880
+and nothing more uh some languages do
+
+210
+00:08:48.080 --> 00:08:51.399
+this better than others um and that's an
+
+211
+00:08:49.880 --> 00:08:53.880
+area that we've already seen a lot of
+
+212
+00:08:51.399 --> 00:08:55.600
+improvement when it comes to um giving
+
+213
+00:08:53.880 --> 00:08:57.480
+models only the correct set of
+
+214
+00:08:55.600 --> 00:08:58.800
+dependencies instead of giving them
+
+215
+00:08:57.480 --> 00:09:00.640
+everything that we've ever wished to
+
+216
+00:08:58.800 --> 00:09:03.120
+import
+
+217
+00:09:00.640 --> 00:09:04.839
+my last example uh quite non-trivial is
+
+218
+00:09:03.120 --> 00:09:07.279
+actually cloud and my background in
+
+219
+00:09:04.839 --> 00:09:09.959
+infrastructure is code infrastructure is
+
+220
+00:09:07.279 --> 00:09:13.360
+code languages like um terraform from
+
+221
+00:09:09.959 --> 00:09:16.200
+Hashi Corp cloud formation from AWS they
+
+222
+00:09:13.360 --> 00:09:17.959
+all use a graph back end that describes
+
+223
+00:09:16.200 --> 00:09:20.480
+the different relationships between
+
+224
+00:09:17.959 --> 00:09:22.279
+resources that then enables me when I
+
+225
+00:09:20.480 --> 00:09:24.640
+want to make changes to see only the
+
+226
+00:09:22.279 --> 00:09:26.720
+incremental change without destroying
+
+227
+00:09:24.640 --> 00:09:28.240
+elements of my infrastructure that
+
+228
+00:09:26.720 --> 00:09:30.760
+aren't supposed to be impacted by a
+
+229
+00:09:28.240 --> 00:09:32.600
+change uh if you think about it's quite
+
+230
+00:09:30.760 --> 00:09:35.760
+quite the most impressive or elegant
+
+231
+00:09:32.600 --> 00:09:38.000
+implementation of of grammar um in in
+
+232
+00:09:35.760 --> 00:09:40.000
+our modern stack it really uh makes
+
+233
+00:09:38.000 --> 00:09:43.279
+changes much more seamless compared to
+
+234
+00:09:40.000 --> 00:09:43.279
+when we think about application
+
+235
+00:09:44.360 --> 00:09:49.519
+code so what problem are we trying to
+
+236
+00:09:47.200 --> 00:09:52.079
+tackle uh we're tackling the problem of
+
+237
+00:09:49.519 --> 00:09:54.320
+pull requests uh pull requests whether
+
+238
+00:09:52.079 --> 00:09:57.079
+we like it we like it or not are the
+
+239
+00:09:54.320 --> 00:10:00.079
+main convention to introduce code edits
+
+240
+00:09:57.079 --> 00:10:01.920
+to to our existing code base um but code
+
+241
+00:10:00.079 --> 00:10:05.120
+doesn't live in isolation when we ask
+
+242
+00:10:01.920 --> 00:10:07.120
+our peers to evaluate code changes from
+
+243
+00:10:05.120 --> 00:10:09.440
+a massive project we give them only a
+
+244
+00:10:07.120 --> 00:10:11.880
+subset of files we
+
+245
+00:10:09.440 --> 00:10:13.480
+assume that they can see the Matrix
+
+246
+00:10:11.880 --> 00:10:16.399
+that's how I call it we assume that
+
+247
+00:10:13.480 --> 00:10:18.880
+they'll be able to interpolate just as a
+
+248
+00:10:16.399 --> 00:10:20.600
+compiler can or an interpreter can the
+
+249
+00:10:18.880 --> 00:10:24.160
+different Downstream impact in the blast
+
+250
+00:10:20.600 --> 00:10:26.200
+radius of a change and uh for humans
+
+251
+00:10:24.160 --> 00:10:28.000
+it's not easy right if you haven't been
+
+252
+00:10:26.200 --> 00:10:29.519
+uh at the company for very long or if
+
+253
+00:10:28.000 --> 00:10:30.839
+you aren't as proficient with with a
+
+254
+00:10:29.519 --> 00:10:32.519
+programming language and you don't
+
+255
+00:10:30.839 --> 00:10:35.040
+really understand some areas of the
+
+256
+00:10:32.519 --> 00:10:37.000
+grammar um then then you won't be able
+
+257
+00:10:35.040 --> 00:10:39.240
+to comprehend the entire scope of change
+
+258
+00:10:37.000 --> 00:10:40.760
+maybe maybe you're not supposed to maybe
+
+259
+00:10:39.240 --> 00:10:42.839
+you're only supposed to understand that
+
+260
+00:10:40.760 --> 00:10:45.600
+subset but effectively that's not really
+
+261
+00:10:42.839 --> 00:10:48.800
+the case effectively P requests will
+
+262
+00:10:45.600 --> 00:10:50.600
+often ignore uh the downstream grammar
+
+263
+00:10:48.800 --> 00:10:52.440
+they'll give you a subset of code to
+
+264
+00:10:50.600 --> 00:10:56.200
+evaluate and we'll kind of have our
+
+265
+00:10:52.440 --> 00:10:58.720
+fingers crossed that other um processes
+
+266
+00:10:56.200 --> 00:11:01.040
+down Downstream like our cicd or
+
+267
+00:10:58.720 --> 00:11:02.920
+integration our build systems will help
+
+268
+00:11:01.040 --> 00:11:05.800
+help us catch these Downstream impacts
+
+269
+00:11:02.920 --> 00:11:08.000
+that humans um find it harder to to
+
+270
+00:11:05.800 --> 00:11:10.519
+extrapolate and
+
+271
+00:11:08.000 --> 00:11:13.000
+evaluate uh one last rant or maybe two
+
+272
+00:11:10.519 --> 00:11:15.440
+last rants is uh possibly git could have
+
+273
+00:11:13.000 --> 00:11:18.240
+solved this right so if you think about
+
+274
+00:11:15.440 --> 00:11:20.160
+G logs and specifically commit messages
+
+275
+00:11:18.240 --> 00:11:21.920
+think about a world where we can
+
+276
+00:11:20.160 --> 00:11:24.360
+constantly iterate on Commit messages
+
+277
+00:11:21.920 --> 00:11:27.600
+and constantly use them to Anchor
+
+278
+00:11:24.360 --> 00:11:29.880
+changes and make them our context or our
+
+279
+00:11:27.600 --> 00:11:31.800
+grammar anchor for for understanding
+
+280
+00:11:29.880 --> 00:11:35.880
+changes within the scope of a commit or
+
+281
+00:11:31.800 --> 00:11:37.519
+PR um but uh just as uh my man David
+
+282
+00:11:35.880 --> 00:11:40.399
+Beckham said that's not really the case
+
+283
+00:11:37.519 --> 00:11:41.920
+right if you open um my code this is
+
+284
+00:11:40.399 --> 00:11:44.399
+probably the types of commit messages
+
+285
+00:11:41.920 --> 00:11:46.200
+you'll see uh we don't have uh
+
+286
+00:11:44.399 --> 00:11:48.959
+sufficient tooling today but we also
+
+287
+00:11:46.200 --> 00:11:52.920
+don't have uh sufficient processes to
+
+288
+00:11:48.959 --> 00:11:55.200
+help us make that um that commit uh uh
+
+289
+00:11:52.920 --> 00:11:57.760
+message back and the the connective
+
+290
+00:11:55.200 --> 00:12:00.600
+Fabric or connective tissue for
+
+291
+00:11:57.760 --> 00:12:02.120
+code um there is an interesting area of
+
+292
+00:12:00.600 --> 00:12:04.320
+that by the way if you're interested uh
+
+293
+00:12:02.120 --> 00:12:06.000
+the concept of stacking uh could be
+
+294
+00:12:04.320 --> 00:12:09.160
+stacking combined potentially with uh
+
+295
+00:12:06.000 --> 00:12:11.680
+with AI maybe for an idea for my next
+
+296
+00:12:09.160 --> 00:12:14.240
+talk is is an area we're exploring to uh
+
+297
+00:12:11.680 --> 00:12:16.600
+maybe bridge that Gap as well okay uh
+
+298
+00:12:14.240 --> 00:12:18.639
+last rant I promise um what do you think
+
+299
+00:12:16.600 --> 00:12:19.959
+about reading a GitHub PR in order right
+
+300
+00:12:18.639 --> 00:12:21.720
+if you think about Pro requests you're
+
+301
+00:12:19.959 --> 00:12:24.760
+probably seeing them on GitHub if I have
+
+302
+00:12:21.720 --> 00:12:26.519
+to imagine um there's four areas within
+
+303
+00:12:24.760 --> 00:12:29.279
+the GitHub PR tab where you would
+
+304
+00:12:26.519 --> 00:12:31.839
+generally go um to understand that the
+
+305
+00:12:29.279 --> 00:12:34.160
+flow of a change uh you can use the
+
+306
+00:12:31.839 --> 00:12:35.959
+description tag that's where you have
+
+307
+00:12:34.160 --> 00:12:38.000
+like this timeline of all of the changes
+
+308
+00:12:35.959 --> 00:12:40.320
+that have occurred you have your main
+
+309
+00:12:38.000 --> 00:12:42.480
+description you have all of the um you
+
+310
+00:12:40.320 --> 00:12:44.360
+know uh your uh your your checks on the
+
+311
+00:12:42.480 --> 00:12:46.199
+bottom what's kind of the merge blockers
+
+312
+00:12:44.360 --> 00:12:48.920
+everything you probably need on a time
+
+313
+00:12:46.199 --> 00:12:50.360
+uh based format you don't see the code
+
+314
+00:12:48.920 --> 00:12:51.480
+uh that's uh that's not something you'd
+
+315
+00:12:50.360 --> 00:12:52.320
+see there you'd see all the interaction
+
+316
+00:12:51.480 --> 00:12:54.560
+of your
+
+317
+00:12:52.320 --> 00:12:56.720
+teammates um the second aspect is
+
+318
+00:12:54.560 --> 00:12:59.160
+commits and uh commits again if we would
+
+319
+00:12:56.720 --> 00:13:00.800
+have organized commits uh and if you're
+
+320
+00:12:59.160 --> 00:13:02.079
+organization organizes commits in an
+
+321
+00:13:00.800 --> 00:13:04.079
+amazing way please let me know but
+
+322
+00:13:02.079 --> 00:13:05.920
+generally um commits are a good place
+
+323
+00:13:04.079 --> 00:13:09.279
+only to see the incremental change after
+
+324
+00:13:05.920 --> 00:13:11.199
+you've already reviewed the pr um I
+
+325
+00:13:09.279 --> 00:13:12.800
+won't spend too much time about checks
+
+326
+00:13:11.199 --> 00:13:14.880
+not page that I like that much it's
+
+327
+00:13:12.800 --> 00:13:17.040
+where you go to see the results of of
+
+328
+00:13:14.880 --> 00:13:18.600
+your CI uh your CI checks usually get
+
+329
+00:13:17.040 --> 00:13:20.680
+thrown out to get actions tab then you
+
+330
+00:13:18.600 --> 00:13:21.839
+have to go back out of order but in 90%
+
+331
+00:13:20.680 --> 00:13:25.480
+of the time you'll spend your time in
+
+332
+00:13:21.839 --> 00:13:26.720
+this a toz sorted file change Tab and
+
+333
+00:13:25.480 --> 00:13:28.800
+that's uh that's where most of us spend
+
+334
+00:13:26.720 --> 00:13:31.120
+our time that's where we look at uh at
+
+335
+00:13:28.800 --> 00:13:32.920
+coach changes again a subset based on a
+
+336
+00:13:31.120 --> 00:13:35.519
+g diff and that's how we try to make
+
+337
+00:13:32.920 --> 00:13:38.040
+sense of it and to be honest I think
+
+338
+00:13:35.519 --> 00:13:41.279
+that's not good enough right I find it
+
+339
+00:13:38.040 --> 00:13:45.199
+again my man uh number seven uh David
+
+340
+00:13:41.279 --> 00:13:47.600
+Beckham uh wants us to be honest this
+
+341
+00:13:45.199 --> 00:13:51.000
+this process is is difficult and it's
+
+342
+00:13:47.600 --> 00:13:54.800
+hard to continuously use um these uh
+
+343
+00:13:51.000 --> 00:13:57.160
+these workflows to see and understand um
+
+344
+00:13:54.800 --> 00:13:59.279
+the the linearity of a code change uh
+
+345
+00:13:57.160 --> 00:14:01.959
+because you do see only a subset of it
+
+346
+00:13:59.279 --> 00:14:05.079
+every on every one of these GitHub
+
+347
+00:14:01.959 --> 00:14:06.560
+tabs and that's a pro probably the best
+
+348
+00:14:05.079 --> 00:14:09.440
+best way to describe our motivation for
+
+349
+00:14:06.560 --> 00:14:13.199
+going on this journey we felt like um we
+
+350
+00:14:09.440 --> 00:14:15.759
+can take git and GitHub um in the Pro
+
+351
+00:14:13.199 --> 00:14:20.120
+request process and and dismantle it and
+
+352
+00:14:15.759 --> 00:14:22.920
+re rebuild it in a new pattern new um a
+
+353
+00:14:20.120 --> 00:14:26.040
+new um a new order um and the way we
+
+354
+00:14:22.920 --> 00:14:28.399
+wanted to do that is using um automation
+
+355
+00:14:26.040 --> 00:14:31.480
+that will essentially read code the same
+
+356
+00:14:28.399 --> 00:14:33.800
+way that us as humans would read code uh
+
+357
+00:14:31.480 --> 00:14:35.920
+so you know the you know the best
+
+358
+00:14:33.800 --> 00:14:38.519
+practice for for is actually to check
+
+359
+00:14:35.920 --> 00:14:40.519
+out the branch run it locally and look
+
+360
+00:14:38.519 --> 00:14:42.120
+at the debug logs and errors and and
+
+361
+00:14:40.519 --> 00:14:44.079
+kind of test it out for yourself and
+
+362
+00:14:42.120 --> 00:14:45.399
+kind of go through within your ID
+
+363
+00:14:44.079 --> 00:14:48.399
+through the definitions and references
+
+364
+00:14:45.399 --> 00:14:50.360
+and look through um all of them um and
+
+365
+00:14:48.399 --> 00:14:52.000
+that brings me to code indexing or code
+
+366
+00:14:50.360 --> 00:14:53.639
+directionality that's generally our
+
+367
+00:14:52.000 --> 00:14:56.040
+starting point for this
+
+368
+00:14:53.639 --> 00:14:58.240
+journey um so code indexing has been
+
+369
+00:14:56.040 --> 00:14:59.920
+around for a while right so you've
+
+370
+00:14:58.240 --> 00:15:02.560
+already seen this if you've been using
+
+371
+00:14:59.920 --> 00:15:04.600
+an IDE for for the past 12 years or 15
+
+372
+00:15:02.560 --> 00:15:07.920
+years um this is what gets you from
+
+373
+00:15:04.600 --> 00:15:10.720
+point A to B within within your IDE um
+
+374
+00:15:07.920 --> 00:15:12.800
+tools like LSP the language uh server
+
+375
+00:15:10.720 --> 00:15:15.240
+protocol that's maintained by Microsoft
+
+376
+00:15:12.800 --> 00:15:18.320
+um the LF which is an improvement on on
+
+377
+00:15:15.240 --> 00:15:20.160
+that protocol uh GitHub has two project
+
+378
+00:15:18.320 --> 00:15:22.000
+that kind of go back and forth between
+
+379
+00:15:20.160 --> 00:15:25.480
+indexing and references called stag
+
+380
+00:15:22.000 --> 00:15:27.800
+graphs and Tre sitter um Sor graph has a
+
+381
+00:15:25.480 --> 00:15:30.040
+great project um that uh that's supposed
+
+382
+00:15:27.800 --> 00:15:33.199
+to kind of solve some of problem that uh
+
+383
+00:15:30.040 --> 00:15:35.800
+LSPs have and most recently we've had
+
+384
+00:15:33.199 --> 00:15:37.600
+we've gotten the addition of um of large
+
+385
+00:15:35.800 --> 00:15:40.720
+language models I'll specifically talk
+
+386
+00:15:37.600 --> 00:15:43.480
+about open AI 40 model and I know you
+
+387
+00:15:40.720 --> 00:15:45.800
+can kind of rant that maybe son 3.5 is
+
+388
+00:15:43.480 --> 00:15:47.800
+better but believe me based on some of
+
+389
+00:15:45.800 --> 00:15:49.079
+this Empirical research generally we've
+
+390
+00:15:47.800 --> 00:15:51.120
+gotten the same kind of consistent
+
+391
+00:15:49.079 --> 00:15:52.800
+results for this type of use case but in
+
+392
+00:15:51.120 --> 00:15:54.440
+general what I wanted to show you is
+
+393
+00:15:52.800 --> 00:15:56.199
+that there's generally three ways to
+
+394
+00:15:54.440 --> 00:15:58.360
+look at this problem uh the first one is
+
+395
+00:15:56.199 --> 00:15:59.480
+L LSPs language server protocols they're
+
+396
+00:15:58.360 --> 00:16:02.680
+kind of the
+
+397
+00:15:59.480 --> 00:16:05.680
+um oneoff approach right so given a
+
+398
+00:16:02.680 --> 00:16:07.440
+symbol in code uh this language server
+
+399
+00:16:05.680 --> 00:16:09.399
+protocol it's an open source you can
+
+400
+00:16:07.440 --> 00:16:12.160
+check it out um in GitHub and the
+
+401
+00:16:09.399 --> 00:16:15.199
+Microsoft website will help you Traverse
+
+402
+00:16:12.160 --> 00:16:16.959
+uh your languages uh uh as and reach the
+
+403
+00:16:15.199 --> 00:16:19.639
+next area in which that code is either
+
+404
+00:16:16.959 --> 00:16:21.600
+referenced or defined um stag graph
+
+405
+00:16:19.639 --> 00:16:23.759
+actually works very similarly it's it's
+
+406
+00:16:21.600 --> 00:16:25.680
+what powers some of github's uh
+
+407
+00:16:23.759 --> 00:16:27.959
+Precision or search if you've seen it on
+
+408
+00:16:25.680 --> 00:16:29.920
+the right and tritter um is the same
+
+409
+00:16:27.959 --> 00:16:31.360
+thing but only in incrementally it can
+
+410
+00:16:29.920 --> 00:16:32.639
+kind of run through the entire codebase
+
+411
+00:16:31.360 --> 00:16:36.079
+you can kind of Mount it with more and
+
+412
+00:16:32.639 --> 00:16:37.680
+more context um the outlier here and all
+
+413
+00:16:36.079 --> 00:16:39.480
+of these are what I would call like
+
+414
+00:16:37.680 --> 00:16:42.079
+stattic code analyzers they have not a
+
+415
+00:16:39.480 --> 00:16:43.680
+lot to do with AI um all of these on one
+
+416
+00:16:42.079 --> 00:16:45.519
+side and the other one is is large
+
+417
+00:16:43.680 --> 00:16:48.360
+language models and large language
+
+418
+00:16:45.519 --> 00:16:49.920
+models are in the same bat because uh
+
+419
+00:16:48.360 --> 00:16:52.040
+you can essentially do the same thing
+
+420
+00:16:49.920 --> 00:16:55.360
+you can open your CH GPT or Cloud
+
+421
+00:16:52.040 --> 00:16:58.480
+console right now and uh you can insert
+
+422
+00:16:55.360 --> 00:17:01.480
+either a entire codebase or entire repo
+
+423
+00:16:58.480 --> 00:17:04.160
+and ask questions about how code is
+
+424
+00:17:01.480 --> 00:17:06.880
+defined and referenced um in specific
+
+425
+00:17:04.160 --> 00:17:10.640
+languages and unlike these static
+
+426
+00:17:06.880 --> 00:17:13.439
+analyzers um that build out or output a
+
+427
+00:17:10.640 --> 00:17:16.160
+a an abstra abstract syntax tree that
+
+428
+00:17:13.439 --> 00:17:18.640
+represents to the best of its ability um
+
+429
+00:17:16.160 --> 00:17:19.919
+the execution path um of a given code
+
+430
+00:17:18.640 --> 00:17:23.520
+language it's kind of It kind of works
+
+431
+00:17:19.919 --> 00:17:26.319
+like your interpreter or compiler um it
+
+432
+00:17:23.520 --> 00:17:27.959
+uses um uh language to understand the
+
+433
+00:17:26.319 --> 00:17:30.960
+definitions and references so if it's
+
+434
+00:17:27.959 --> 00:17:33.360
+visible um uh then uh then then there's
+
+435
+00:17:30.960 --> 00:17:35.440
+a good likelihood uh um the models will
+
+436
+00:17:33.360 --> 00:17:37.039
+capture it and uh we'll talk about
+
+437
+00:17:35.440 --> 00:17:37.440
+benchmarking now and you can see what
+
+438
+00:17:37.039 --> 00:17:40.690
+I'm talking
+
+439
+00:17:37.440 --> 00:17:40.690
+[Music]
+
+440
+00:17:44.280 --> 00:17:51.240
+about um so this is a kind of a early
+
+441
+00:17:47.640 --> 00:17:53.360
+phase um um part of our research uh back
+
+442
+00:17:51.240 --> 00:17:56.760
+in uh the beginning of
+
+443
+00:17:53.360 --> 00:18:00.039
+2024 uh we use skip which is uh the
+
+444
+00:17:56.760 --> 00:18:02.480
+extension or the augment of the indexing
+
+445
+00:18:00.039 --> 00:18:04.120
+protocol that's that's uh available to
+
+446
+00:18:02.480 --> 00:18:07.039
+the Microsoft
+
+447
+00:18:04.120 --> 00:18:10.240
+projects and we used it to analyze Java
+
+448
+00:18:07.039 --> 00:18:13.240
+repos um and it um and it's effective it
+
+449
+00:18:10.240 --> 00:18:16.400
+uh does a good job for um for a variety
+
+450
+00:18:13.240 --> 00:18:19.080
+of kind of standard use cases um but uh
+
+451
+00:18:16.400 --> 00:18:21.240
+as always it's imperfect we found a
+
+452
+00:18:19.080 --> 00:18:23.000
+variety of uh areas in which we had
+
+453
+00:18:21.240 --> 00:18:24.440
+expected this uh to be much more
+
+454
+00:18:23.000 --> 00:18:26.799
+accurate for example local variable
+
+455
+00:18:24.440 --> 00:18:29.080
+handling uh which was uh severely
+
+456
+00:18:26.799 --> 00:18:31.280
+limited uh the other one was a package
+
+457
+00:18:29.080 --> 00:18:33.679
+structure track tracking uh that was
+
+458
+00:18:31.280 --> 00:18:36.760
+also somewhat foundationally flawed we
+
+459
+00:18:33.679 --> 00:18:39.880
+found it to Output uh lines of zero uh
+
+460
+00:18:36.760 --> 00:18:43.039
+for some Java elements um we might uh
+
+461
+00:18:39.880 --> 00:18:46.559
+contribute a fix to that as well and um
+
+462
+00:18:43.039 --> 00:18:47.840
+and despite our work arounds it it it
+
+463
+00:18:46.559 --> 00:18:50.159
+just couldn't work for all of the
+
+464
+00:18:47.840 --> 00:18:51.520
+languages that we were interested in in
+
+465
+00:18:50.159 --> 00:18:54.240
+uh sorting and
+
+466
+00:18:51.520 --> 00:18:56.120
+ordering my second example is a Tre
+
+467
+00:18:54.240 --> 00:18:58.159
+sitter treit is a very popular project
+
+468
+00:18:56.120 --> 00:19:00.400
+it's a great incremental study code
+
+469
+00:18:58.159 --> 00:19:03.159
+scanning uh tool it's used by a lot of
+
+470
+00:19:00.400 --> 00:19:05.559
+security um static analyzers including
+
+471
+00:19:03.159 --> 00:19:08.360
+my uh my old team uh that uses a subset
+
+472
+00:19:05.559 --> 00:19:11.240
+of it um it's great creating um
+
+473
+00:19:08.360 --> 00:19:13.760
+snapshots um and we sought out to
+
+474
+00:19:11.240 --> 00:19:16.039
+Benchmark it against a rust project our
+
+475
+00:19:13.760 --> 00:19:18.720
+project is kind of a combination of um
+
+476
+00:19:16.039 --> 00:19:20.720
+some core core capabilities in Rust
+
+477
+00:19:18.720 --> 00:19:23.039
+that's now augmented by the usual
+
+478
+00:19:20.720 --> 00:19:27.320
+JavaScript and python for specific use
+
+479
+00:19:23.039 --> 00:19:29.159
+cases um again uh for some use cases we
+
+480
+00:19:27.320 --> 00:19:30.919
+found it was successfully able to parse
+
+481
+00:19:29.159 --> 00:19:32.960
+the basic structs in fields the field
+
+482
+00:19:30.919 --> 00:19:34.600
+types it helped us establish the
+
+483
+00:19:32.960 --> 00:19:37.360
+reliable parent children relationships
+
+484
+00:19:34.600 --> 00:19:39.840
+that we had expected to get um but it it
+
+485
+00:19:37.360 --> 00:19:42.000
+it was also somewhat flawed that uh the
+
+486
+00:19:39.840 --> 00:19:45.400
+imper functions couldn't be mapped to
+
+487
+00:19:42.000 --> 00:19:48.120
+their parent structs um and uh found uh
+
+488
+00:19:45.400 --> 00:19:50.880
+and intended to uh to break the entire
+
+489
+00:19:48.120 --> 00:19:53.400
+the entire chain uh we found multi-line
+
+490
+00:19:50.880 --> 00:19:56.080
+use statements also caused the identif
+
+491
+00:19:53.400 --> 00:19:59.240
+identifier splitting issues um in some
+
+492
+00:19:56.080 --> 00:20:01.640
+cases and um essentially we looked at
+
+493
+00:19:59.240 --> 00:20:03.200
+different ways to combine um something
+
+494
+00:20:01.640 --> 00:20:05.080
+like a skip that's really good at
+
+495
+00:20:03.200 --> 00:20:07.200
+specific languages but it actually for
+
+496
+00:20:05.080 --> 00:20:08.440
+some languages it runs the compiler Runs
+
+497
+00:20:07.200 --> 00:20:11.120
+The Interpreter which we didn't really
+
+498
+00:20:08.440 --> 00:20:13.640
+like um with triter to get some optimal
+
+499
+00:20:11.120 --> 00:20:15.720
+results because there was some overlap
+
+500
+00:20:13.640 --> 00:20:17.440
+but you can see it's an imperfect uh
+
+501
+00:20:15.720 --> 00:20:19.520
+imper no Silver Bullet right not
+
+502
+00:20:17.440 --> 00:20:20.720
+imperfect end result and the static
+
+503
+00:20:19.520 --> 00:20:24.159
+tools didn't really get us to where we
+
+504
+00:20:20.720 --> 00:20:29.559
+wanted and then we started to check out
+
+505
+00:20:24.159 --> 00:20:32.520
+um GPT 4.40 um uh this work um started
+
+506
+00:20:29.559 --> 00:20:34.640
+uh a good six probably five six months
+
+507
+00:20:32.520 --> 00:20:37.720
+back um and we had a benchmark right we
+
+508
+00:20:34.640 --> 00:20:40.360
+had the Benchmark of um how the static
+
+509
+00:20:37.720 --> 00:20:42.360
+analyzers are able to uh Traverse
+
+510
+00:20:40.360 --> 00:20:45.480
+through the in specific languages and we
+
+511
+00:20:42.360 --> 00:20:47.440
+were able to see what the gaps are um
+
+512
+00:20:45.480 --> 00:20:50.120
+and we were initially pleasantly
+
+513
+00:20:47.440 --> 00:20:52.520
+surprised we found that a full spectrum
+
+514
+00:20:50.120 --> 00:20:54.320
+of Def definitions was available and the
+
+515
+00:20:52.520 --> 00:20:56.520
+um multilanguage support was much better
+
+516
+00:20:54.320 --> 00:20:59.039
+better than we thought I mean uh think
+
+517
+00:20:56.520 --> 00:21:00.559
+of uh these models as essentially being
+
+518
+00:20:59.039 --> 00:21:02.440
+able to support any language I would
+
+519
+00:21:00.559 --> 00:21:04.640
+assume that even very new languages
+
+520
+00:21:02.440 --> 00:21:06.559
+would get great results for everything
+
+521
+00:21:04.640 --> 00:21:10.279
+like variable assignments constructs
+
+522
+00:21:06.559 --> 00:21:13.080
+aliases Etc um but reference ma matching
+
+523
+00:21:10.279 --> 00:21:15.039
+uh was the biggest problem so what llms
+
+524
+00:21:13.080 --> 00:21:17.000
+do not do is they don't Traverse the
+
+525
+00:21:15.039 --> 00:21:22.720
+graph un like the tools that I mentioned
+
+526
+00:21:17.000 --> 00:21:26.360
+previously um they input a um a a piece
+
+527
+00:21:22.720 --> 00:21:28.760
+of code and um they will essentially
+
+528
+00:21:26.360 --> 00:21:30.279
+read it and use the probabilistic mod
+
+529
+00:21:28.760 --> 00:21:32.559
+the same one that they would use to
+
+530
+00:21:30.279 --> 00:21:35.360
+write a beautiful love song they would
+
+531
+00:21:32.559 --> 00:21:38.760
+use that same probabilistic model um to
+
+532
+00:21:35.360 --> 00:21:42.600
+explain the code back to us as
+
+533
+00:21:38.760 --> 00:21:44.279
+users so by relying on llms only for
+
+534
+00:21:42.600 --> 00:21:46.080
+that direct string matching we actually
+
+535
+00:21:44.279 --> 00:21:48.320
+fail to handle some of the most common
+
+536
+00:21:46.080 --> 00:21:50.520
+pattern like aliases paralyzed name
+
+537
+00:21:48.320 --> 00:21:53.679
+contextual method calls and a few
+
+538
+00:21:50.520 --> 00:21:56.000
+others um so uh unfortunately this
+
+539
+00:21:53.679 --> 00:21:58.919
+wasn't a great kind of end result for
+
+540
+00:21:56.000 --> 00:22:01.000
+This research um but it did get us to a
+
+541
+00:21:58.919 --> 00:22:03.919
+point where I think um it's worth uh
+
+542
+00:22:01.000 --> 00:22:06.600
+worth spending some time on um I call
+
+543
+00:22:03.919 --> 00:22:10.159
+this the PO request grammar gradient and
+
+544
+00:22:06.600 --> 00:22:11.520
+I'll I'll go to my U my last version of
+
+545
+00:22:10.159 --> 00:22:13.440
+it because uh my time is kind of
+
+546
+00:22:11.520 --> 00:22:15.960
+starting to run out uh but it
+
+547
+00:22:13.440 --> 00:22:17.400
+essentially breaks down the areas in
+
+548
+00:22:15.960 --> 00:22:20.240
+which we found the different models to
+
+549
+00:22:17.400 --> 00:22:23.240
+be very good at or actually um not as
+
+550
+00:22:20.240 --> 00:22:25.520
+good as we expected so uh there's three
+
+551
+00:22:23.240 --> 00:22:27.200
+sections here one of it is probably the
+
+552
+00:22:25.520 --> 00:22:29.720
+most human or manual area which is the
+
+553
+00:22:27.200 --> 00:22:31.840
+review and suggestion uh uh human
+
+554
+00:22:29.720 --> 00:22:34.279
+feedback loop second one is testing and
+
+555
+00:22:31.840 --> 00:22:36.080
+feedback and fixes and the one is and
+
+556
+00:22:34.279 --> 00:22:37.520
+the last one is uh deploying the code
+
+557
+00:22:36.080 --> 00:22:40.039
+into a production system and using
+
+558
+00:22:37.520 --> 00:22:42.279
+things like integration and CI builds to
+
+559
+00:22:40.039 --> 00:22:43.760
+uh to troubleshoot it and you can see
+
+560
+00:22:42.279 --> 00:22:47.760
+that in each one of these sections we
+
+561
+00:22:43.760 --> 00:22:49.760
+found specific areas in which um um the
+
+562
+00:22:47.760 --> 00:22:52.200
+deterministic model combined with the
+
+563
+00:22:49.760 --> 00:22:54.919
+llms could actually make the difference
+
+564
+00:22:52.200 --> 00:22:56.240
+um so let's take the the bottom uh the
+
+565
+00:22:54.919 --> 00:22:58.320
+bottom section the semantics and
+
+566
+00:22:56.240 --> 00:23:00.919
+conventions um surprisingly the area
+
+567
+00:22:58.320 --> 00:23:03.480
+where humans are especially interested
+
+568
+00:23:00.919 --> 00:23:06.520
+in or focused on um not the area where
+
+569
+00:23:03.480 --> 00:23:07.919
+AI is the best um logical and syntactic
+
+570
+00:23:06.520 --> 00:23:11.919
+correctness is actually an area where AI
+
+571
+00:23:07.919 --> 00:23:14.000
+excels input a log output log in from CI
+
+572
+00:23:11.919 --> 00:23:16.919
+um in a bash format ask for the best way
+
+573
+00:23:14.000 --> 00:23:19.080
+to fix it uh you'll get an act a pretty
+
+574
+00:23:16.919 --> 00:23:21.200
+accurate response and the last one is
+
+575
+00:23:19.080 --> 00:23:22.679
+coherence this is where uh we use models
+
+576
+00:23:21.200 --> 00:23:24.880
+to try to help us understand whether or
+
+577
+00:23:22.679 --> 00:23:26.279
+not code will eventually impact existing
+
+578
+00:23:24.880 --> 00:23:28.720
+artifacts in production so this is
+
+579
+00:23:26.279 --> 00:23:30.880
+interesting we can take different types
+
+580
+00:23:28.720 --> 00:23:32.400
+of attributes of how code eventually
+
+581
+00:23:30.880 --> 00:23:35.159
+gets manifested into services and
+
+582
+00:23:32.400 --> 00:23:36.400
+infrastructures and apis um and ask AI
+
+583
+00:23:35.159 --> 00:23:37.279
+whether or not they'll be impacted
+
+584
+00:23:36.400 --> 00:23:38.919
+whether or not they'll be making
+
+585
+00:23:37.279 --> 00:23:41.679
+breaking
+
+586
+00:23:38.919 --> 00:23:43.720
+changes um so that's what we saw uh we
+
+587
+00:23:41.679 --> 00:23:47.200
+saw that the human Reviewer is generally
+
+588
+00:23:43.720 --> 00:23:50.440
+good at um the left side of uh um of
+
+589
+00:23:47.200 --> 00:23:53.120
+this uh uh of this model the AI reviewer
+
+590
+00:23:50.440 --> 00:23:56.559
+begins to uh begins to be very efficient
+
+591
+00:23:53.120 --> 00:23:58.120
+on uh Tex testing and fixes and actually
+
+592
+00:23:56.559 --> 00:24:00.880
+outperform the static models when it
+
+593
+00:23:58.120 --> 00:24:02.919
+cames to to coherence um and uh there's
+
+594
+00:24:00.880 --> 00:24:05.760
+a lot of more research that we have
+
+595
+00:24:02.919 --> 00:24:08.679
+lined up based on this work um I'd like
+
+596
+00:24:05.760 --> 00:24:11.279
+to shout out my colleague uh Hower um
+
+597
+00:24:08.679 --> 00:24:12.720
+this this is his giabellas and his
+
+598
+00:24:11.279 --> 00:24:14.840
+LinkedIn profile he's been leading some
+
+599
+00:24:12.720 --> 00:24:18.159
+of this uh exciting work you can see
+
+600
+00:24:14.840 --> 00:24:20.000
+some of the um uh work that he did to
+
+601
+00:24:18.159 --> 00:24:24.000
+understand large uh scale code bases
+
+602
+00:24:20.000 --> 00:24:26.480
+using um uh sequence um analysis using a
+
+603
+00:24:24.000 --> 00:24:28.600
+variety of these static and dynamic
+
+604
+00:24:26.480 --> 00:24:30.720
+tools as well as some of the um more
+
+605
+00:24:28.600 --> 00:24:34.200
+complex large code based uh research
+
+606
+00:24:30.720 --> 00:24:39.039
+that he's been doing um for for the past
+
+607
+00:24:34.200 --> 00:24:40.679
+uh past few months um yeah I think uh
+
+608
+00:24:39.039 --> 00:24:43.399
+that's uh generally
+
+609
+00:24:40.679 --> 00:24:45.960
+time thank you for for listening
+
+610
+00:24:43.399 --> 00:24:47.399
+in awesome well thank you very much sky
+
+611
+00:24:45.960 --> 00:24:50.240
+that was a really really interesting
+
+612
+00:24:47.399 --> 00:24:53.200
+session um yeah I'll invite anyone to to
+
+613
+00:24:50.240 --> 00:24:56.000
+ask some uh ask some questions in the
+
+614
+00:24:53.200 --> 00:25:00.159
+chat and we'll uh we'll we'll ask guy to
+
+615
+00:24:56.000 --> 00:25:01.919
+uh to to ask answer those um where would
+
+616
+00:25:00.159 --> 00:25:03.159
+people want to where should people go
+
+617
+00:25:01.919 --> 00:25:05.159
+guy what would you say the kind of like
+
+618
+00:25:03.159 --> 00:25:08.159
+next steps for people to to kind of get
+
+619
+00:25:05.159 --> 00:25:11.159
+more involved um I think uh I would
+
+620
+00:25:08.159 --> 00:25:13.799
+really encourage people to test out um
+
+621
+00:25:11.159 --> 00:25:16.440
+um the existing models with their
+
+622
+00:25:13.799 --> 00:25:19.720
+existing uh code bases uh both on the
+
+623
+00:25:16.440 --> 00:25:22.600
+public consoles uh try to feed a file a
+
+624
+00:25:19.720 --> 00:25:24.960
+diff your entire repo and ask questions
+
+625
+00:25:22.600 --> 00:25:26.399
+ask you know claw 3.5 Sonet and see what
+
+626
+00:25:24.960 --> 00:25:28.000
+types of results you'll find and start
+
+627
+00:25:26.399 --> 00:25:29.799
+to get the feel of where these models
+
+628
+00:25:28.000 --> 00:25:32.360
+really Excel and where where the gaps
+
+629
+00:25:29.799 --> 00:25:33.799
+are and if you really want to geek out
+
+630
+00:25:32.360 --> 00:25:35.840
+um I would really check out some of
+
+631
+00:25:33.799 --> 00:25:39.080
+these um static analyzers like Tre
+
+632
+00:25:35.840 --> 00:25:42.559
+sitter um and uh and Skip and try to use
+
+633
+00:25:39.080 --> 00:25:45.120
+their output as a potential input for uh
+
+634
+00:25:42.559 --> 00:25:47.440
+for your prompts so for example ask ask
+
+635
+00:25:45.120 --> 00:25:49.600
+you know AI to now help you figure out
+
+636
+00:25:47.440 --> 00:25:52.720
+what's going to get broken in some kind
+
+637
+00:25:49.600 --> 00:25:54.000
+of uh diff um that uh that was analyzed
+
+638
+00:25:52.720 --> 00:25:55.320
+by something like a treesitter and see
+
+639
+00:25:54.000 --> 00:25:57.760
+if you get better results compared to
+
+640
+00:25:55.320 --> 00:26:00.520
+what you've seen previously amazing uh
+
+641
+00:25:57.760 --> 00:26:02.399
+we got a question in from Richard um see
+
+642
+00:26:00.520 --> 00:26:04.520
+Richard wants to see the world burn see
+
+643
+00:26:02.399 --> 00:26:07.080
+he wants to know what are the what's the
+
+644
+00:26:04.520 --> 00:26:10.600
+worst ordering of the data you saw for
+
+645
+00:26:07.080 --> 00:26:10.600
+model performance let's start with the
+
+646
+00:26:10.640 --> 00:26:17.880
+worst um worst um AI models so probably
+
+647
+00:26:15.840 --> 00:26:20.360
+uh previous generation of uh of the open
+
+648
+00:26:17.880 --> 00:26:24.559
+AI models just before for for for o it
+
+649
+00:26:20.360 --> 00:26:28.399
+was very uh clear Before 40 that the
+
+650
+00:26:24.559 --> 00:26:32.919
+model wasn't even trying to consistently
+
+651
+00:26:28.399 --> 00:26:34.840
+parse out um common code structs like we
+
+652
+00:26:32.919 --> 00:26:36.600
+see it par now and now if you I mean
+
+653
+00:26:34.840 --> 00:26:38.919
+we're like light years away from where
+
+654
+00:26:36.600 --> 00:26:41.919
+we saw that uh about a year maybe nine
+
+655
+00:26:38.919 --> 00:26:42.760
+months back right yeah yeah and SS are
+
+656
+00:26:41.919 --> 00:26:46.440
+the
+
+657
+00:26:42.760 --> 00:26:50.760
+best um the best is probably so there's
+
+658
+00:26:46.440 --> 00:26:55.600
+two two parts that answer uh we found um
+
+659
+00:26:50.760 --> 00:26:59.000
+that 01 is uh the best at um finding or
+
+660
+00:26:55.600 --> 00:27:01.200
+answering questions around um the
+
+661
+00:26:59.000 --> 00:27:03.960
+maintenance of a convention so if we
+
+662
+00:27:01.200 --> 00:27:07.919
+asked if we get if we got 01 to
+
+663
+00:27:03.960 --> 00:27:10.360
+understand um let's say uh the uh
+
+664
+00:27:07.919 --> 00:27:12.039
+contract or the API spec of a program it
+
+665
+00:27:10.360 --> 00:27:14.039
+was the best at figuring out whether or
+
+666
+00:27:12.039 --> 00:27:15.279
+not a change will generate a downstream
+
+667
+00:27:14.039 --> 00:27:18.159
+impact that could result in a breaking
+
+668
+00:27:15.279 --> 00:27:20.520
+change yeah uh from interpretability and
+
+669
+00:27:18.159 --> 00:27:23.480
+explainability perspective this won't
+
+670
+00:27:20.520 --> 00:27:26.080
+surpris anyone I think anthropics 3.5
+
+671
+00:27:23.480 --> 00:27:28.520
+Sonet is the best we've seen so far it's
+
+672
+00:27:26.080 --> 00:27:30.559
+incrementally good compared to the last
+
+673
+00:27:28.520 --> 00:27:33.320
+version and um that's probably the model
+
+674
+00:27:30.559 --> 00:27:34.919
+I would of generally start with yeah
+
+675
+00:27:33.320 --> 00:27:37.399
+interesting and do you find much of a
+
+676
+00:27:34.919 --> 00:27:40.399
+difference or any variance in local
+
+677
+00:27:37.399 --> 00:27:42.840
+models to Cloud models or not much oh oh
+
+678
+00:27:40.399 --> 00:27:46.399
+yeah um the we we've tested some of the
+
+679
+00:27:42.840 --> 00:27:48.440
+small scale models um uh the instruct
+
+680
+00:27:46.399 --> 00:27:51.320
+you know the massive instruct models and
+
+681
+00:27:48.440 --> 00:27:53.320
+uh you can't compare it's uh the
+
+682
+00:27:51.320 --> 00:27:55.320
+unfortunately uh the commercial models
+
+683
+00:27:53.320 --> 00:27:58.399
+in this type of work where where context
+
+684
+00:27:55.320 --> 00:28:00.760
+is a kind of multivariant it could be a
+
+685
+00:27:58.399 --> 00:28:02.440
+Json that describes an A A diff that's
+
+686
+00:28:00.760 --> 00:28:03.760
+kind of written in kind of a git output
+
+687
+00:28:02.440 --> 00:28:07.320
+and code that could be written in
+
+688
+00:28:03.760 --> 00:28:10.159
+anything from a yaml to a python file um
+
+689
+00:28:07.320 --> 00:28:12.320
+unfortunately the open source models are
+
+690
+00:28:10.159 --> 00:28:14.640
+not as good as the commercial ones yeah
+
+691
+00:28:12.320 --> 00:28:17.480
+okay makes sense um have question from
+
+692
+00:28:14.640 --> 00:28:19.720
+Min um I think this is probably we can
+
+693
+00:28:17.480 --> 00:28:20.840
+answer this you know specifically from
+
+694
+00:28:19.720 --> 00:28:22.320
+from your own experience but I think
+
+695
+00:28:20.840 --> 00:28:24.519
+this is kind of like fairly general
+
+696
+00:28:22.320 --> 00:28:27.000
+question in terms of General usage of
+
+697
+00:28:24.519 --> 00:28:29.720
+llms any privacy security concerns for
+
+698
+00:28:27.000 --> 00:28:32.600
+feeding company Cod and
+
+699
+00:28:29.720 --> 00:28:36.720
+models um definitely an area of interest
+
+700
+00:28:32.600 --> 00:28:41.919
+in my past life um I'll first state the
+
+701
+00:28:36.720 --> 00:28:44.080
+obvious I think given the level of um um
+
+702
+00:28:41.919 --> 00:28:46.039
+efficiency we are bound to get from
+
+703
+00:28:44.080 --> 00:28:48.640
+these models especially for coding I
+
+704
+00:28:46.039 --> 00:28:50.600
+think it's inevitable that we will take
+
+705
+00:28:48.640 --> 00:28:53.279
+on some of that exposure over time I've
+
+706
+00:28:50.600 --> 00:28:55.399
+worked at large companies like paral
+
+707
+00:28:53.279 --> 00:28:58.440
+networks that currently I've learned use
+
+708
+00:28:55.399 --> 00:29:00.000
+Source graphs Cod I mean if par networks
+
+709
+00:28:58.440 --> 00:29:02.240
+have done their research modeling and
+
+710
+00:29:00.000 --> 00:29:04.399
+found out that uh you know uh the
+
+711
+00:29:02.240 --> 00:29:06.080
+lemon's worth the The Squeeze I would I
+
+712
+00:29:04.399 --> 00:29:07.760
+would definitely advise and you know
+
+713
+00:29:06.080 --> 00:29:09.480
+everybody out on my team is already need
+
+714
+00:29:07.760 --> 00:29:11.919
+deep in co-pilots and cursors and
+
+715
+00:29:09.480 --> 00:29:13.399
+everything and are just you 10xs better
+
+716
+00:29:11.919 --> 00:29:16.760
+yeah yeah and and I'd probably just add
+
+717
+00:29:13.399 --> 00:29:19.679
+to that um you know talk talk to your
+
+718
+00:29:16.760 --> 00:29:22.120
+own legal teams as well uh if you're if
+
+719
+00:29:19.679 --> 00:29:23.840
+you're working for a large company uh
+
+720
+00:29:22.120 --> 00:29:25.880
+talk to your own companies legal teams
+
+721
+00:29:23.840 --> 00:29:27.559
+they will very likely have advice for
+
+722
+00:29:25.880 --> 00:29:31.080
+you in terms of what you can and can't
+
+723
+00:29:27.559 --> 00:29:34.640
+use that in that space as
+
+724
+00:29:31.080 --> 00:29:36.080
+well uh I think we're are we out of
+
+725
+00:29:34.640 --> 00:29:39.679
+questions I think we're out of questions
+
+726
+00:29:36.080 --> 00:29:42.559
+now um guy uh why don't we uh let me
+
+727
+00:29:39.679 --> 00:29:44.080
+move your session off screen um thank
+
+728
+00:29:42.559 --> 00:29:45.640
+you very much guy really insightful
+
+729
+00:29:44.080 --> 00:29:48.360
+actually a very very interesting session
+
+730
+00:29:45.640 --> 00:29:49.880
+which which is truly truly practical in
+
+731
+00:29:48.360 --> 00:29:52.159
+terms of how we can actually get the
+
+732
+00:29:49.880 --> 00:29:54.919
+best and the most out of what we have
+
+733
+00:29:52.159 --> 00:29:56.480
+today of course llms and so forth will
+
+734
+00:29:54.919 --> 00:29:58.240
+get better and better and better over
+
+735
+00:29:56.480 --> 00:29:59.720
+time but we always need to get get the
+
+736
+00:29:58.240 --> 00:30:02.159
+most out of that and I think the uh the
+
+737
+00:29:59.720 --> 00:30:04.080
+ordering the prompts the context are
+
+738
+00:30:02.159 --> 00:30:05.440
+just just key for us to understand how
+
+739
+00:30:04.080 --> 00:30:07.279
+to get the most out of those these
+
+740
+00:30:05.440 --> 00:30:10.159
+systems so thank you very very much very
+
+741
+00:30:07.279 --> 00:30:12.320
+very very uh very very good session
+
+742
+00:30:10.159 --> 00:30:14.320
+thank you thank you Simon and and Shout
+
+743
+00:30:12.320 --> 00:30:15.519
+Out tesle team for uh putting this
+
+744
+00:30:14.320 --> 00:30:17.360
+together we don't have enough uh
+
+745
+00:30:15.519 --> 00:30:18.519
+opportunities to kick out about these
+
+746
+00:30:17.360 --> 00:30:21.200
+sorts of things and it's really where
+
+747
+00:30:18.519 --> 00:30:25.799
+the world's heading so great keep it
+
+748
+00:30:21.200 --> 00:30:25.799
+coming thank you so much appreciate that

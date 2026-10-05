@@ -1,0 +1,177 @@
+[00:00:00.000] Back in June, at AI DevCon in London, one idea came up in almost every room
+[00:00:05.000] that the hard part of working with AI is no longer the prompt.
+[00:00:08.960] And it isn't the model either.
+[00:00:10.800] It's the context you put around it.
+[00:00:13.560] Let's first hear from Lamis
+[00:00:15.280] Mukta at Anthropic, who walked us through how context engineering has changed over
+[00:00:19.440] the past year, and why she thinks it's the thing that multiplies everything else.
+[00:00:24.760] By way of introduction, my name is Lamis.
+[00:00:26.880] I'm a member of technical staff at Anthropic.
+[00:00:29.480] I work on our applied AI team, and this is a team
+[00:00:32.960] which sits between research, product and go-to-market.
+[00:00:36.240] So we do a mixture of working on internal projects as well as directly
+[00:00:39.960] with customers who are building agents at the frontier.
+[00:00:44.080] Me specifically, I work with startups and founders,
+[00:00:47.120] many of whom I'm sure are in this room today,
+[00:00:49.640] and I think I have the best seat in the house
+[00:00:52.040] because these are the users that are constantly pushing us right up
+[00:00:56.200] against the boundary of what is possible with models and products today.
+[00:01:00.120] And as such, we just get to, like, ride the exponential together.
+[00:01:06.160] One thing that constantly comes up, as I'm sure you're all aware,
+[00:01:10.040] is what it really takes to take the raw model intelligence
+[00:01:14.280] that we have today and translate that into durable, scalable, useful products.
+[00:01:19.920] And one of the main levers that we have in order to do
+[00:01:23.080] this is context engineering, which will be the focus of my talk today.
+[00:01:29.800] So on this journey, I want to
+[00:01:32.200] quickly do a recap of where context engineering has gone in the past year.
+[00:01:36.920] It's a space that's completely blown up, and through that,
+[00:01:40.800] we'll kind of distill the primitives that have proven
+[00:01:42.760] to be really useful, some stuff that has been a little bit less useful.
+[00:01:47.000] Secondly, we'll talk about
+[00:01:48.400] what the state of the art is for memory management today.
+[00:01:52.280] And thirdly, and in particular with that, we'll talk about not just what
+[00:01:57.040] nice theoretical principles are,
+[00:01:58.360] but what it takes to actually build these systems in production.
+[00:02:01.760] And then finally, we'll talk about where this will go on the path to continual
+[00:02:05.520] learning, and in particular, touching on a paradigm called dreaming.
+[00:02:12.280] So we said this before.
+[00:02:14.680] And models — we release new models all the time.
+[00:02:18.680] They are more and more intelligent.
+[00:02:20.640] But when it comes to actually deploying these models in your agents,
+[00:02:23.920] in your environments, in your organization,
+[00:02:27.200] the intelligence alone is not going to compound because they need this context
+[00:02:31.200] that helps them perform the specific tasks that you need them to.
+[00:02:34.680] In particular, a lot of this context is often
+[00:02:37.320] kind of orthogonal to the model intelligence, right?
+[00:02:39.800] Like the newest model we've just released, one isn't going to
+[00:02:44.480] isn't going to, out of the box, know exactly what it takes to succeed
+[00:02:47.360] in your organization and with the tasks that you want them to.
+[00:02:50.440] And so it's a really great investment to work on the context engineering part,
+[00:02:55.240] because this over time has the effect of multiplying
+[00:02:58.960] the intelligence even as models get smarter.
+[00:03:02.240] We also heard from Ryan Lopopolo at OpenAI.
+[00:03:05.920] He argues that most of the old limits on software engineering are gone,
+[00:03:09.760] and what's left is human time, attention, and the context window.
+[00:03:14.520] He can only really hold three sessions in his head at once. So,
+[00:03:20.760] having just told
+[00:03:21.880] everybody here that the core constraints on software
+[00:03:25.440] engineering no longer apply, what are those core constraints, right?
+[00:03:28.680] We have kind of a new set of problems to contend with, using agents
+[00:03:32.440] in order to produce our software.
+[00:03:34.000] And to me, these three things are the foundational limits that remain
+[00:03:39.160] in a world where we are, as a team of humans and agents, producing software.
+[00:03:44.080] Human time is the fundamentally scarce resource that we have.
+[00:03:48.760] You know, I know I max out probably at three concurrent sessions on my laptop.
+[00:03:54.080] If I want to be more parallel and have higher throughput,
+[00:03:57.360] I must find ways to remove my own synchronous attention from the process.
+[00:04:03.640] Human and model attention
+[00:04:04.920] are these foundational limits, right?
+[00:04:06.640] In the architecture of these LLMs, attention must sum to one.
+[00:04:11.640] Thrashing the agents by having them do more and more work
+[00:04:14.600] with conflicting and overbearing requirements in the course of a task
+[00:04:17.920] is something that is always going to degrade performance less
+[00:04:21.200] and less over time, but it is one of those core limits of the models.
+[00:04:25.040] So we need to retool the way we work in order to be more parallel.
+[00:04:29.360] Fork off a bunch more tasks, be willing to accept smaller or larger
+[00:04:33.920] or many more PRs in order to let the agents explore what it means to
+[00:04:38.480] do the job that we need them to do.
+[00:04:40.280] And finally, you all probably deeply live this model context window.
+[00:04:46.200] Things that get bigger over time.
+[00:04:47.560] Still a scarce resource, something we need to protect.
+[00:04:50.640] I will say, in my own experience with the GPT series of models,
+[00:04:54.320] auto-compaction is fantastic.
+[00:04:55.840] I never think about a context window anymore.
+[00:04:58.120] I can let a task go for six, 12, 36 hours and still get good results,
+[00:05:03.320] but the context window being obliterated and rebuilt
+[00:05:06.920] over the course of these auto-compactions is something you must contend with.
+[00:05:10.440] And there are ways that we structure the context
+[00:05:14.080] we give the model, or
+[00:05:14.960] continually resurface context to the model to deal with this constraint,
+[00:05:18.800] that context windows are continually being emptied and filled.
+[00:05:21.960] Birgitta Böckeler is a Distinguished Engineer at Thoughtworks.
+[00:05:25.560] She splits the work of building a harness into two halves: guides
+[00:05:29.520] that point the agent forward, and sensors that tell it how it's doing.
+[00:05:33.640] So we're starting with these guides.
+[00:05:35.160] But then we also want to give it feedback.
+[00:05:37.800] Right.
+[00:05:38.240] So, ideally, so that we can trigger immediately
+[00:05:42.200] a self-correction loop
+[00:05:43.520] before we even look at the code so that we don't have to, like,
+[00:05:46.560] have all those low-hanging fruit still in there.
+[00:05:48.800] So the most common way that people do
+[00:05:51.800] that right now is with code review agents, right?
+[00:05:54.920] But there's also all of these other tools that we have in our toolbox
+[00:05:58.040] from before AI, like static code analysis.
+[00:06:01.080] And then, of course, an agent usually has access to the log
+[00:06:04.960] so it can start the application, see what logs come out of it.
+[00:06:08.720] Many people give an agent access to the browser so it can look at, like,
+[00:06:12.960] something when it has changed a web component or something like that.
+[00:06:17.360] And there's actually a difference between these.
+[00:06:21.280] Sort of, like, a review agent is an LLM judging the work of another LLM.
+[00:06:25.600] Right.
+[00:06:25.800] So it's kind of inferential.
+[00:06:27.080] It's running on the GPU, but we have a bunch of tools as well
+[00:06:30.440] that are computational, as I decided to call them here.
+[00:06:34.400] So kind of things that run on the CPU, right, like the static analysis
+[00:06:37.920] is the best example, I think, to think about this.
+[00:06:42.240] Yeah.
+[00:06:42.520] And we have the same distinction on the feed-forward, on the guide side.
+[00:06:45.720] So we can also think about computational guides on that side.
+[00:06:50.960] And the best example for me there is codemods. Ian from Meta
+[00:06:55.440] also just mentioned those, which is, for example, tools like OpenRewrite
+[00:07:00.600] that are really good at doing version upgrades and migrations of frameworks.
+[00:07:07.560] I don't know if you remember,
+[00:07:08.560] like, quite a while ago, Amazon had a really big headline about
+[00:07:12.400] saving 400 or 500 developer years or something for Java upgrades.
+[00:07:16.920] That was, under the hood, actually mostly codemods being made available to AI.
+[00:07:21.120] So that combination is really powerful, right?
+[00:07:23.240] So all of these things, or maybe providing a different type of code search
+[00:07:27.760] that is more effective for your really large code base.
+[00:07:30.760] All of those are ways, again, to increase the probability that AI does
+[00:07:34.520] what you want in the first go.
+[00:07:36.560] And to close, Guy Podjarny, CEO and co-founder of Tessl.
+[00:07:41.840] He makes the case that all of this adds up to a whole new life
+[00:07:45.160] cycle, sitting alongside the one we already know.
+[00:07:48.200] Humans move into the context development lifecycle and the agents
+[00:07:52.760] get the software one.
+[00:07:54.160] And at the end of the day, we can build really quality software.
+[00:07:56.880] But there's only so far you can get in the lab.
+[00:07:59.040] And so you can build your software, you can test it, you can secure it,
+[00:08:02.880] you can optimize it. And then at some point you need to step out.
+[00:08:05.680] And that comes into observability for agents.
+[00:08:08.480] Runtime observability is monitoring the coding agents.
+[00:08:11.480] And when you monitor
+[00:08:12.480] those, you can use those to improve the quality of what you have.
+[00:08:15.840] So you can extract real-world eval scenarios and problems
+[00:08:18.800] and use those to update and optimize your skills.
+[00:08:21.840] And you can mine for gaps.
+[00:08:23.560] So you can look at agents' success as a whole and
+[00:08:28.160] extract out of
+[00:08:28.800] that opportunities for new skills or things that you should remove.
+[00:08:31.840] And in general, as you think about this whole process, combining
+[00:08:35.120] all these tools together, you increasingly should see a development lifecycle.
+[00:08:39.440] But it should be a context development lifecycle, not a skill,
+[00:08:43.520] not a software development lifecycle.
+[00:08:45.360] We should, as humans, live in the context development lifecycle and leave the SDLC
+[00:08:50.680] to the agents, or be able to enable the agents to do the SDLC,
+[00:08:54.880] in which we generate context, evaluate and test it,
+[00:08:58.040] optimize it as we need to, distribute it via good package management.
+[00:09:01.560] Securely consume them, observe what has happened, and do that again and again.
+[00:09:07.120] So in summary,
+[00:09:08.840] we have a new software stack for agent development.
+[00:09:13.640] It builds on the models that are like our operating systems.
+[00:09:16.200] We need to make sure what we build is compatible with them.
+[00:09:18.560] We have tools as utilities.
+[00:09:20.000] We have context as the new code.
+[00:09:21.640] We have harnesses that are like frameworks.
+[00:09:23.640] Not every developer will
+[00:09:24.960] build their own harness, but probably more and more organizations would
+[00:09:28.040] substantially customize harnesses if not build their own, with those
+[00:09:32.120] composing into factory lines that feel very much like pipelines.
+[00:09:35.520] You have repeatable type of input coming in, successful
+[00:09:38.560] output coming out, and into whole dev processes in factories.
+[00:09:42.360] And within those, skills are the new code,
+[00:09:45.640] and we should treat them that way and give them the right tools for it.
+[00:09:49.680] Thanks for watching.
+[00:09:51.120] Be sure to join us for the next AI DevCon this November in New York City.
+[00:09:55.840] Visit AI DevCon to learn more and book your ticket.

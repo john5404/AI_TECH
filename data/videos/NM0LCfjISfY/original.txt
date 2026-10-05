@@ -1,0 +1,691 @@
+[00:00:01.200] In the last three weeks of February, we've shipped more code
+[00:00:05.440] than almost all of September and October combined.
+[00:00:09.600] So how do we increase our velocity so much
+[00:00:12.000] and how do we maintain quality.
+[00:00:24.800] Hi, everyone.
+[00:00:25.960] So this is actually my first, proper talk at an event like this.
+[00:00:30.440] So, bear with me if I trip over my list.
+[00:00:38.320] The talk that I'm going to be giving
+[00:00:39.280] today is just about how I've actually stopped handwriting code.
+[00:00:42.680] And I'm actually not the only one either.
+[00:00:44.920] So I stopped writing code by hand
+[00:00:47.360] in about September of 2025.
+[00:00:50.440] And it's not just me.
+[00:00:51.640] Every single one of our engineers has actually completely
+[00:00:54.480] restructured their code development workflows to be more AI native.
+[00:00:58.600] And then as a result, developer velocity has significantly increased.
+[00:01:03.760] And I'm going to go into some of these things.
+[00:01:05.840] But before I start just a quick show of hands, who uses coding agents
+[00:01:09.680] like every single day in their like, code workflows, right?
+[00:01:12.440] You open up your laptop,
+[00:01:13.920] you have the coding agent there, and you're executing on tasks.
+[00:01:17.840] Yeah. Fantastic. Okay, good.
+[00:01:19.160] Hopefully you guys will get something out of this. And,
+[00:01:22.520] we have a lot of coding agents, right?
+[00:01:23.920] There's a bunch of different types of coding agents.
+[00:01:26.000] And I mentioned earlier
+[00:01:26.840] that we've all restructured and become a lot more AI native.
+[00:01:31.040] When someone says something like that to me, my first question is,
+[00:01:33.680] what the heck does it mean to be a AI native?
+[00:01:35.920] And second, what were the outcomes, right?
+[00:01:37.920] Like what actually happened?
+[00:01:39.600] What were the results?
+[00:01:41.560] And so I mentioned earlier that I developer velocity has increased
+[00:01:45.320] significantly.
+[00:01:46.520] So developer velocity is notoriously difficult to measure.
+[00:01:50.120] Right.
+[00:01:50.800] But a simple definition that I think generally people can agree on
+[00:01:54.440] is that we're asking how quickly can we reliably turn ideas
+[00:01:58.680] into working software, right.
+[00:02:00.560] How reliably can we do that?
+[00:02:02.680] And so there are a few signals
+[00:02:03.960] that we kind of now rely on to figure out whether those things happen.
+[00:02:07.800] And it doesn't need to be perfect.
+[00:02:10.280] But if you keep these things in mind and you use the same measures
+[00:02:14.440] across the time span, you can get an idea that, hey, something is changing,
+[00:02:18.080] something is improving, something might not be working as well.
+[00:02:21.280] So one of them is deployment frequency.
+[00:02:23.200] So how often do we ship changes to production?
+[00:02:25.880] For us
+[00:02:26.360] this works with number of commits because we deploy on a continuous timeline.
+[00:02:30.120] So we deploy every single day on almost every commit.
+[00:02:33.480] What does that change? Failure rate. Right.
+[00:02:34.960] Like what percentage of those changes and the closing incidents.
+[00:02:38.520] And someone gets paged on call.
+[00:02:41.160] And then that needs to be rolled back.
+[00:02:43.760] And what are the lead times for our changes?
+[00:02:45.640] So how long does it take for us to go from being open to being merged?
+[00:02:49.520] And how long do our issues, you know, like issue management system
+[00:02:52.880] in our case, Linear?
+[00:02:54.120] How long do they stay in progress until they get moved to done?
+[00:02:56.960] So again, they don't need to be perfect.
+[00:02:58.400] But if you use the same measures across a period of time,
+[00:03:00.760] you'll get an indication that something has changed or hasn't changed.
+[00:03:05.200] So this is a
+[00:03:05.720] commit graph over the last six months.
+[00:03:08.920] That's yeah, that's our actual commit graph over the last six months.
+[00:03:12.080] In the last three weeks of February, we've shipped more code
+[00:03:16.320] than almost all of September and October combined.
+[00:03:20.120] And that's while we've been doing that.
+[00:03:23.680] Our change failure rate has stayed pretty much consistent,
+[00:03:26.840] and it's even decreased a little bit in February.
+[00:03:29.720] Same with our lead times.
+[00:03:30.920] For our peers, we're trending down, which means we're merging code a lot faster.
+[00:03:35.520] And then the same thing with our linear issues
+[00:03:37.800] where they're staying in the in-progress state a lot less,
+[00:03:42.400] headcount hasn't changed much in those last few weeks.
+[00:03:45.200] Right.
+[00:03:45.560] And you'll notice also there's the P50 and the P90 five times.
+[00:03:49.080] There are some linear tickets that really mess up this, this data.
+[00:03:54.520] So how do we increase
+[00:03:55.360] our velocity so much and how do we maintain quality.
+[00:03:58.360] Right.
+[00:03:58.720] The change failure rate is a good measure of as we increase
+[00:04:02.480] our velocity, does that quality decrease or get messed up.
+[00:04:06.680] So let me introduce you to some tools just to give you
+[00:04:08.800] a bit of an overview on what I'm using every single day.
+[00:04:11.800] And I'll take you through a workflow that essentially works for me.
+[00:04:16.720] So you've got your main coding agents, you have Claude
+[00:04:18.760] Codex, you have this interesting tool in the middle here called conductor.
+[00:04:22.240] How many people have heard of conductor?
+[00:04:25.040] Oh, okay. Interesting. Cool.
+[00:04:27.160] We have cursor, which also actually is a creating agent,
+[00:04:30.480] but is also an ID.
+[00:04:33.920] And then any sort of anything you can use to use a terminal, I use warp.
+[00:04:37.360] In this case it doesn't really matter.
+[00:04:39.280] I'll go through how these play into the workflow a little bit more later.
+[00:04:45.520] So let's talk about the actual workflow
+[00:04:47.120] that makes this AI native right?
+[00:04:51.440] As an engineer, when someone gives you a task
+[00:04:53.920] or an issue or a problem, how do you usually start right?
+[00:04:57.640] You start with a plan.
+[00:04:58.680] Some way of gathering context, gathering information,
+[00:05:03.720] and then you come up with an idea of a solution that you want to work on.
+[00:05:07.920] So you then review that plan, right.
+[00:05:10.000] You might give it to a colleague, you might give it to someone else,
+[00:05:12.480] or you review it yourself to see if it makes sense.
+[00:05:14.920] If it meets the the requirements that you've met and then you execute, right.
+[00:05:19.600] You write your code, you will make the changes
+[00:05:22.760] that you need to make, and then you review it again.
+[00:05:25.200] Right? You give it to someone else. You give it to one of your colleagues.
+[00:05:27.440] You get someone to review those changes, and then you ship and then you review.
+[00:05:32.280] So there's a lot of reviewing that happens,
+[00:05:34.040] and there's a lot of changes and plans and things that you're doing in between.
+[00:05:38.240] So what's interesting about this new workflow or the way
+[00:05:41.360] a new way of working is that
+[00:05:44.160] these stages, the planning,
+[00:05:45.560] the execute stages are largely automated by coding agents.
+[00:05:49.520] I, as the engineer,
+[00:05:50.560] actually focus a lot more, and a lot heavily on the review stages.
+[00:05:54.760] And so what does that actually look like in practice?
+[00:05:57.240] Right.
+[00:05:58.200] If you've got any sort of, coding agent opened up here,
+[00:06:01.520] you have a prompt, you give it a prompt, but you're in the plan mode initially.
+[00:06:05.120] Right.
+[00:06:05.320] So something that I really recommend for everyone is that if you're making
+[00:06:08.520] big, complex changes, it's really, really beneficial to start in plan mode.
+[00:06:13.160] You kind of want to work with your agent just as you were working with one of
+[00:06:16.520] your colleagues, where you're spending time exploring the code base,
+[00:06:19.600] discovering what needs to change and why.
+[00:06:22.640] So you give the agent a clear and concise prompt,
+[00:06:25.840] and you treat the agent's response like a mini design doc
+[00:06:29.840] that you would review, just as you would
+[00:06:31.800] any other design doc that you received from your team.
+[00:06:35.480] You're right.
+[00:06:35.760] You need to review the plan that ends up.
+[00:06:38.000] You look at the structure. Does it make sense?
+[00:06:39.880] Will it meet your requirements, all that sort of stuff.
+[00:06:42.320] So this is the best part about the planning stage
+[00:06:45.240] that you can go back and forth with the agent.
+[00:06:47.000] And another really important thing is it's a great time to intervene.
+[00:06:50.400] Intervene early right.
+[00:06:52.000] Think about plans that you create as tech designs and then you implement them.
+[00:06:55.920] And then someone's like, hey, why did we plan it this way?
+[00:06:58.280] We should have just done something differently.
+[00:07:00.000] And now you have to change your entire implementation.
+[00:07:02.800] This the same principle here.
+[00:07:04.880] Nothing really changes.
+[00:07:07.160] So the next thing is you execute.
+[00:07:09.520] But the tip here is that you execute with a fresh context window.
+[00:07:12.840] And so why does this actually help.
+[00:07:14.160] Why what what benefit does it provide here.
+[00:07:16.160] Right.
+[00:07:17.520] Context.
+[00:07:18.080] Your context window is really important because if you start loading things up
+[00:07:22.440] with things that you don't need,
+[00:07:24.080] the agent finds it more difficult to figure out what's actually relevant.
+[00:07:27.960] Right?
+[00:07:28.160] Your agent is focussed on what it needs to do,
+[00:07:30.600] but if it has a bunch of information that's irrelevant.
+[00:07:33.080] It's going to make.
+[00:07:34.000] It's going to be much more likely to make mistakes.
+[00:07:37.520] But this is where usually most people will find the issues
+[00:07:40.640] with coding agents, right? They're going to write broken code.
+[00:07:43.520] They're going to get stuck.
+[00:07:44.440] They don't really know how to fix the issues that they face.
+[00:07:47.200] And so this is where I want to introduce probably the most important concept of
+[00:07:50.480] this talk. And that's feedback loops.
+[00:07:55.240] So if the workflow is like
+[00:07:57.120] the skeleton, the feedback loops are like the nervous system.
+[00:08:00.200] They give you away or they give the agent a way to actually
+[00:08:03.680] react to things that are happening.
+[00:08:06.680] Feedback loops give your agent a way to verify their own work,
+[00:08:10.000] and the better your feedback loops, the more likely it is for your agent
+[00:08:13.280] to actually give you a working output that meets your requirements.
+[00:08:18.080] Some examples of feedback loops that you probably already
+[00:08:20.480] have in your repositories. By the way.
+[00:08:23.000] Running tests through the CLI
+[00:08:25.320] type checking, linting, formatting a new one that looks a bit new
+[00:08:29.480] but actually already exists and has existed for a while,
+[00:08:32.000] but it's browser access, so you have your end to end tests that you run.
+[00:08:36.320] Sometimes through the CLI,
+[00:08:37.680] but this is just another interface for your agent to be able to then access
+[00:08:40.760] the browser and get information in context on what's happening.
+[00:08:44.960] You have your system logs, so information that might exist somewhere
+[00:08:48.920] in like some log file, in a Docker container somewhere that,
+[00:08:53.200] you can read through and exist and you read through yourself,
+[00:08:57.000] but you might want to give the agent a way to read through those log files as well.
+[00:09:00.800] And then you have, again, a relatively new concept, but MCP servers
+[00:09:05.000] that essentially allow your agent to communicate with external systems
+[00:09:08.960] in a more structured way.
+[00:09:11.920] So how does your agent
+[00:09:12.920] actually know that those feedback loops are available?
+[00:09:15.920] So I'm sure everyone that works with agents have an idea that you have
+[00:09:19.480] these things called like agent or MD
+[00:09:20.960] files, claude.md files, things like that right there.
+[00:09:25.040] Files that are always
+[00:09:27.680] added to your conversations with your agents.
+[00:09:30.880] So you might have a cloud file or an agent, somebody file at the start
+[00:09:33.840] of every single new thread that you have with your agent,
+[00:09:36.880] that all the information, that file gets added into your thread.
+[00:09:40.800] And so the agent always knows that the things in that file exist
+[00:09:44.240] and there and can refer back to them.
+[00:09:46.000] So you don't have to retell it over and over again.
+[00:09:49.040] And so this is one of those situations where your feedback loops
+[00:09:52.280] what feedback loops are available.
+[00:09:54.280] How do you invoke them.
+[00:09:55.640] And then when do you invoke them.
+[00:09:57.560] That's really important stuff to put in your agent.
+[00:10:00.000] So MD file so your agent can go back and refer to those things when you need to.
+[00:10:04.960] He's like a snippet of our agent.
+[00:10:06.680] So MD5 I'm
+[00:10:07.360] not sure if that's readable everywhere, but it's really, really straightforward.
+[00:10:11.120] We just tell it that, hey you can run install using but install
+[00:10:14.480] you can run test using run tests, you can run lint, you can run a specific
+[00:10:19.240] test file using bug test and then the path to the test file.
+[00:10:23.120] So it's things like this.
+[00:10:24.080] And that can get a little bit more complicated.
+[00:10:26.480] But what and if you set this up properly by the way,
+[00:10:28.640] you'll notice that at the end of your agent's work
+[00:10:31.120] you'll see a bunch of linting steps, testing steps, and ways
+[00:10:33.880] to verify that the code that been produced actually works.
+[00:10:37.240] And actually runs at the minimum. And so
+[00:10:41.040] what's
+[00:10:41.360] interesting here is that this works great for simple workflows,
+[00:10:44.800] things that are almost kind of like self documented, or things that might be
+[00:10:48.720] a little bit more complicated that isn't already documented in your code.
+[00:10:52.360] But if you start adding complex workflows to this file,
+[00:10:55.640] you'll notice that things will start getting ignored, right?
+[00:10:58.360] Parts of your agent.
+[00:10:59.080] So MD file will not always be relevant at all times.
+[00:11:03.200] And so the more complex, the more complexity you add to this,
+[00:11:06.800] the less important each individual unit of information becomes.
+[00:11:11.600] And so this is where I'm introducing, I guess the next concept
+[00:11:15.160] that I want to talk about, which is agent skills.
+[00:11:19.000] I'm sure a bunch of who's used or heard of,
+[00:11:21.880] agent skills so far in this room.
+[00:11:24.560] Okay. Awesome.
+[00:11:25.080] So some people have, so I'll give you a rundown on what agent skills are.
+[00:11:29.760] So if normal documentation,
+[00:11:31.360] markdown files that you have in your code base explain what something is.
+[00:11:35.200] An agent skill is a way to explain how to do something step
+[00:11:39.120] by step for the agent, so you can think of them as procedural guides
+[00:11:43.760] that give you agent new capabilities
+[00:11:46.640] and so one interesting thing that is unlocked with agent skills is that
+[00:11:51.880] you also give the agent information on when to invoke that skill.
+[00:11:56.840] Right? You don't just tell it what to do.
+[00:11:58.640] You also tell it when it's applicable.
+[00:12:00.520] And the agent can then figure out when you're doing something naturally
+[00:12:04.280] that, hey, this skill is applicable to what we're doing
+[00:12:06.480] right now, I'm going to grab the context from that skill
+[00:12:09.560] so it's lazy loaded information in your agent context.
+[00:12:14.600] Some examples of interesting skills that we have.
+[00:12:17.400] You can see these on the Tessl registry.
+[00:12:19.480] You have like a, a systematic debugging skill that teaches your agent
+[00:12:23.880] how to actually approach a bug step by step.
+[00:12:26.440] You might be facing a bug that's specific to your info, right?
+[00:12:29.960] And debugging that might not be very obvious.
+[00:12:32.840] So you might give the agent a step by step workflow on which APIs
+[00:12:36.480] you need to call to figure out if there's a problem in a specific space.
+[00:12:40.400] Another one is building an MCP, so you might have a bunch of small services
+[00:12:43.680] that you might want to start repeatedly updating to have an MCP.
+[00:12:47.600] So before you can package that up into a step by step workflow that now
+[00:12:52.160] the agent can use to then extract each of those new services
+[00:12:55.520] into its own MCP server.
+[00:12:57.960] So instead of the agent improvising every single time,
+[00:13:01.520] or you having to give it information or the same prompt every single time,
+[00:13:05.600] you can just give it this repeatable playbook
+[00:13:07.880] that makes the behaviour much more reliable.
+[00:13:10.480] And it's also a feedback loop that you can control.
+[00:13:13.960] So there are two skills that I use
+[00:13:15.560] in almost every single workflow that I do every day.
+[00:13:19.400] That's a code review skill and a simplified skill.
+[00:13:21.880] So I'll quickly skim through these.
+[00:13:24.560] But the code review skill is essentially run.
+[00:13:27.600] I run it at the end of every single coding thread that I have, right?
+[00:13:30.800] I work with the agent, I do a bunch of work, I read the changes,
+[00:13:34.160] and then I run the review skill again in a fresh context window,
+[00:13:37.360] and it will run a review on your code, just like it would with
+[00:13:40.720] any other engineers that you have.
+[00:13:41.920] Where it will try to identify issues with your style,
+[00:13:44.920] it will identify architectural concerns.
+[00:13:47.280] You might identify some bugs or some code smells that you've added,
+[00:13:50.680] and it'll produce a report that you can then figure out how you want to action.
+[00:13:55.320] Right. It's not going to action it for you.
+[00:13:56.840] It's just creating a report.
+[00:13:58.240] And then you can decide whether, hey, this part of it makes sense.
+[00:14:01.600] This part doesn't. I'm going to figure out whether I want to action this or not.
+[00:14:05.560] Another one that has been
+[00:14:06.480] incredibly useful for me has been the code simplify skill, right?
+[00:14:10.320] So agents often produce a lot of code, and that code isn't always very useful.
+[00:14:15.240] Right?
+[00:14:15.560] The code might be too bloated.
+[00:14:17.160] It might have unnecessary duplication.
+[00:14:19.800] It might have more
+[00:14:22.160] ways of doing something than actually needs to be done.
+[00:14:25.080] And it also might have recreated concepts that already exist in your code base.
+[00:14:30.080] So the code simplify skill is a great way of preserving behaviour,
+[00:14:33.960] but trying to simplify and lessen the number of lines of code
+[00:14:38.120] that you've added.
+[00:14:38.600] Because remember, every line of code
+[00:14:40.080] that you add to your code base is a liability, right?
+[00:14:42.760] It's something that you're going to need to maintain.
+[00:14:44.560] It's something that you're gonna need to test and make sure that
+[00:14:47.560] either you or your coding agent have context over in the future.
+[00:14:51.720] And so if you do this, you'll get some output.
+[00:14:53.680] And it says that, hey, like, I've been able to simplify
+[00:14:56.520] a bunch of things that you did in your, in your, you know, branch, right?
+[00:14:59.840] I can clean up a lot of this stuff.
+[00:15:02.920] So I think most of the stuff that I've kind of outlined here,
+[00:15:05.080] I think some people have an idea on or is pretty intuitive,
+[00:15:08.000] but it's the next part
+[00:15:08.720] that gets really, really interesting because we have this workflow,
+[00:15:11.840] but it doesn't feel very fast, right?
+[00:15:13.440] It doesn't really explain how we went from shipping, like, you know, a few hundred
+[00:15:17.520] commits a month to 300 in a week, right?
+[00:15:21.880] So this is where the idea of Parallelisation comes in.
+[00:15:25.840] So right now a workflow is pretty serial, right?
+[00:15:28.520] We plan, we wait for the agent, we review, we wait for the agent,
+[00:15:32.680] we PR review, we wait for the agent, and then we deploy it.
+[00:15:35.800] Right. So there's a lot of waiting between steps.
+[00:15:38.480] And that's the new bottleneck.
+[00:15:40.080] Now if you can figure out that initial
+[00:15:43.360] workflow
+[00:15:44.400] then parallelising it becomes really, really powerful.
+[00:15:47.360] But what does that actually look like?
+[00:15:49.160] So let me introduce you to conductor.
+[00:15:52.120] Conductor uses git work trees to parallelise recruiting agents.
+[00:15:56.360] And so for me, I didn't actually know what work trees were until earlier last year.
+[00:16:00.600] A lecture is just another check out of the same repo,
+[00:16:03.080] sharing the same history on the same machine.
+[00:16:05.400] So it essentially means that you can create multiple branches
+[00:16:09.600] and work on those branches in parallel on the same machine.
+[00:16:13.600] And so something that's really powerful about this is that it's
+[00:16:16.880] think of it as you get cloning your repository
+[00:16:20.880] again for every feature that you work on for every branch.
+[00:16:23.880] But instead of having to do that yourself every single time, Work Trees
+[00:16:27.440] gives you a native way of doing it.
+[00:16:28.960] Git already has a built in for you,
+[00:16:32.240] so now you can have
+[00:16:33.960] agent A that's working on a plan on the first workflow, and while you're
+[00:16:38.000] waiting for it to finish its plan, you can kick off a plan for agent B,
+[00:16:42.280] and while it's working on its plan and doing its own research,
+[00:16:44.880] you can kick off a plan for agency. Right?
+[00:16:47.720] And what your work looks like now is that you're moving between each agent,
+[00:16:52.040] reviewing the plans, reviewing the diffs, the changes, and then running.
+[00:16:55.840] You simplify your review or giving it more direction on what it needs to do right.
+[00:17:01.480] If you condense all of this,
+[00:17:03.680] you're spending a lot less time waiting for things to happen
+[00:17:06.480] and spending a lot more time actually just directing
+[00:17:09.080] the different agents in your team on what they need to do.
+[00:17:12.760] So what does that look like in conductor, for example?
+[00:17:15.080] Right.
+[00:17:15.640] I can just hit new workspace.
+[00:17:16.880] It does all of this for you.
+[00:17:18.040] It handles a lot of the underlying logic for you.
+[00:17:20.640] It'll create a new workspace and then conductor will go.
+[00:17:23.440] Then make a clone of your repository.
+[00:17:25.480] And then it'll attach a creating agent to that client.
+[00:17:28.040] You end up with multiple workers
+[00:17:29.600] and they all have their own changes, their own in progress.
+[00:17:32.920] I've created a PR for that first one, so that one's in review.
+[00:17:35.680] So you can get a good overview of what's going on,
+[00:17:38.000] all the changes that you're working on.
+[00:17:40.760] And so something that comes up here now is that
+[00:17:42.800] you've got 3 or 4 different changes or issues that you're working on.
+[00:17:46.360] You need to you need to make sure that you're still verifying the yourself right.
+[00:17:50.000] You need to go to each branch.
+[00:17:52.040] You need to make sure that things are running, are working as expected.
+[00:17:55.800] And so if every time you clone a repo and you have to do
+[00:17:58.400] a bunch of steps to set up your app, this falls apart anyways.
+[00:18:01.760] This doesn't really feel like magic.
+[00:18:03.200] It doesn't feel like much because you still have to now
+[00:18:05.320] copy a bunch of things over and so you're going to get slowed down.
+[00:18:08.720] So we need a way of quickly, a way to quickly start your app
+[00:18:12.520] and verify your changes.
+[00:18:15.040] So some changes that you can make
+[00:18:16.640] is having a single script that essentially runs everything for you.
+[00:18:20.680] And just checking that into your repository.
+[00:18:22.280] Nothing needs to change.
+[00:18:23.120] You just run a single script,
+[00:18:24.680] and that script contains the things that you need to do
+[00:18:27.320] to actually set up the repo and actually then run your product.
+[00:18:31.640] So something interesting here is also a lot of what you'll notice
+[00:18:35.600] is that for a running instance of your product on your machine,
+[00:18:39.800] you might have specific ports that are assigned to it.
+[00:18:42.080] You might have specific configurations that are assigned to it.
+[00:18:45.440] So you can kind of go two ways.
+[00:18:47.520] You can make it possible to have multiple instances of your app
+[00:18:51.080] running on the same machine, or you can make it easy to store your app
+[00:18:54.320] and then automatically close any other running instances of your app.
+[00:18:58.080] It kind of depends, like whatever you whatever works best for your product.
+[00:19:01.200] For example, if you're using Next.js or Veet or whatever it is,
+[00:19:04.280] it can automatically reassign a new port for your for your web app, right?
+[00:19:07.720] So you don't have to necessarily worry about closing the old one.
+[00:19:10.280] Well, though, you probably want to clean up
+[00:19:11.800] a bunch of those, old, old ports that are running.
+[00:19:14.640] So I've gone with number two in my case because it works better
+[00:19:18.360] for our set up in our repo.
+[00:19:20.680] And so for us, we simply have to install dependencies,
+[00:19:24.280] copy over the environment
+[00:19:25.240] variables, and then run our dev script once we do all of this.
+[00:19:29.240] And so you can add all of this,
+[00:19:32.080] to conductor as well.
+[00:19:32.960] So every time you hit that new workspace
+[00:19:34.400] button, conductor can automatically go and run a script for you.
+[00:19:37.640] That sets up the things that you need to do.
+[00:19:40.640] Call it install, call the run install.
+[00:19:42.920] And I've got a little alias that just copies over my environment
+[00:19:45.360] variables from just a folder and a file that exists already in my laptop.
+[00:19:49.640] And then the other issue is that you might have existing,
+[00:19:53.640] processes running on ports already, right?
+[00:19:55.680] You can have a really simple script to close all the ports, right?
+[00:19:59.240] Find the ports that are relevant to you,
+[00:20:01.200] kill them and then restart your development environment.
+[00:20:05.160] So all of these things now
+[00:20:07.000] make it easier for you to switch between your workspaces.
+[00:20:10.760] Hit run just a single command
+[00:20:13.400] and then have your app ready to review the changes that you need.
+[00:20:16.520] You've just made.
+[00:20:18.640] Well, we can
+[00:20:19.040] take Parallelisation one step further.
+[00:20:22.040] And so I want to introduce the concept of cloud agents.
+[00:20:25.560] So the mental model here is that if your local agents are fully interactive
+[00:20:28.880] hands on work
+[00:20:30.160] where you're like tight in the loop, your cloud agents are essentially
+[00:20:33.440] for offloading background tasks and fire and forget jobs
+[00:20:36.720] that can become something that you can review later on.
+[00:20:40.080] And there's a bunch of different ways of doing this,
+[00:20:41.960] and it really does depend on either a the agent that you're using.
+[00:20:46.000] So Claude Code has something that's natively built into it
+[00:20:50.080] that uses web agents that you can configure.
+[00:20:53.200] Or you might have to build it yourself. Right.
+[00:20:55.320] It depends on the agent, depends on what you're working on.
+[00:20:58.160] But they let you run tasks asynchronously on some remote infrastructure
+[00:21:02.040] somewhere else.
+[00:21:03.080] You'll open up or spin up some container.
+[00:21:05.320] It'll pull down your repository,
+[00:21:06.920] and then it'll run cloud code just as it was on your computer.
+[00:21:10.160] Make the changes and then create a PR for you.
+[00:21:13.760] So an example of something where this becomes really powerful is
+[00:21:17.680] these can start integrating into your slack or into your messaging
+[00:21:20.400] systems and platforms and exactly into where you work.
+[00:21:23.960] Right. So
+[00:21:26.400] it's powerful because oh sorry.
+[00:21:29.040] Another example here is that someone pointed out a really small issue
+[00:21:33.280] on our registry page, where the skills are being filtered in some way,
+[00:21:36.760] and so we had a discussion about it.
+[00:21:38.440] We gathered some context,
+[00:21:40.000] and then I'm like, hey Claude, can you just look into this for me?
+[00:21:43.040] There's no extra like there's no extra fancy stuff that's happened here.
+[00:21:46.040] Claude will now go and pull down, on a repo.
+[00:21:49.360] It'll make the changes, make the fixes, and then I can go and review
+[00:21:52.880] the PR afterwards.
+[00:21:54.240] Right.
+[00:21:54.520] I don't I don't have to set up the environment locally.
+[00:21:57.160] I don't have to do anything now.
+[00:21:58.520] I can go and review those code changes later on.
+[00:22:01.800] So it's feedback loops, right?
+[00:22:02.960] The only reason that works as well as it does is that when Claude goes
+[00:22:06.520] and makes those changes, it has a way of not only limiting.
+[00:22:09.560] The code, formatting it and figuring out whether what it's done
+[00:22:14.960] goes by what you need it to do.
+[00:22:16.440] Right? And so it's run the tests.
+[00:22:18.760] It's run the other dependencies that it needs to run.
+[00:22:22.320] So we fixed up that feedback loop.
+[00:22:24.440] And so I know I've just kind of bolted a lot of information there at everyone.
+[00:22:28.280] So I'll quickly spend a bit of time to summarise.
+[00:22:32.680] I stopped doing the parts of engineering
+[00:22:35.560] that agents can do better and faster than me.
+[00:22:38.000] And so I can focus on the things that the agents can't do just yet.
+[00:22:41.400] And at the moment, that's making decisions and directing the product
+[00:22:44.720] under a set of constraints. Right.
+[00:22:46.560] That's all where we're working.
+[00:22:47.600] We're working under a set of constraints,
+[00:22:49.480] and we have to make the decisions because every decision we make ends
+[00:22:53.080] up impacting the business as a whole and the direction of the business.
+[00:22:57.080] And so it's important to not count that out.
+[00:22:59.280] And at the moment are coding.
+[00:23:00.600] Agents don't have all the context they need to be able to do that stuff.
+[00:23:05.120] And so you can offload some of the things that they can automate.
+[00:23:09.560] This is what you do.
+[00:23:11.600] So I had used a bunch of concepts.
+[00:23:12.880] Those plan mode get work trees, cloud agents, parallelisation,
+[00:23:16.760] feedback loops, agent skills, fresh context, a bunch of stuff.
+[00:23:20.720] But you notice that these things you already are familiar
+[00:23:24.200] with in isolation, right?
+[00:23:25.400] These aren't new concepts as a whole.
+[00:23:27.880] You already know that when you start a task,
+[00:23:30.680] you spend a bit of time planning on how you want to figure it out.
+[00:23:33.800] You know that you can parallelise some things that can be parallelised
+[00:23:36.800] if they're not going to be overlapping each other.
+[00:23:39.280] The feedback loops thing is really important, right?
+[00:23:41.280] Have you ever worked in an environment where it takes you a few days
+[00:23:45.760] to figure out whether what you've built is actually correct or not?
+[00:23:49.680] You know how painful that is to move quickly.
+[00:23:52.920] Right.
+[00:23:53.600] So this is stuff that we're already familiar with.
+[00:23:56.240] And as a result,
+[00:23:57.200] it actually applies really, really well to our coding agents as well.
+[00:24:01.600] So what
+[00:24:01.920] can you actually try in the next 24 to 48 hours that might help
+[00:24:05.720] you see some of the improvements that we've made here at Tessl.
+[00:24:08.960] So try the plan review and execute workflow.
+[00:24:12.600] It's very easy.
+[00:24:13.240] You already have your coding agents there for you.
+[00:24:15.600] Go into plan mode with have plan.
+[00:24:18.120] Make some changes.
+[00:24:19.480] Work on the implementation and then execute it in a fresh context
+[00:24:23.400] window, right?
+[00:24:24.240] Or you can already do that with your existing coding agents.
+[00:24:27.880] Number two you'll notice some issues with that.
+[00:24:30.680] Make your feedback loop successful and put them in your agent's timed file.
+[00:24:35.360] Right. And work on those feedback loops.
+[00:24:37.880] The better your feedback loops, the more likely
+[00:24:40.000] it is for your agent to actually produce good code.
+[00:24:42.680] And I can't overstate that enough.
+[00:24:45.560] Everything that we've been doing recently has been improving our feedback loops.
+[00:24:49.920] And so the agent can work as autonomously as possible.
+[00:24:53.320] And then use conductor. It's a free app.
+[00:24:55.040] You just download it and it'll detect your existing clawed code or codex setup.
+[00:24:59.720] And you can just run it and it works.
+[00:25:01.760] And you'll notice
+[00:25:03.160] specifically when you're using conductor and you're using work trees
+[00:25:07.320] that how difficult or how easy
+[00:25:09.560] it is to actually clone your repo and get somebody else set up on using it.
+[00:25:15.640] So another quick question
+[00:25:16.600] that I think people are going to be wondering is that we're writing more code.
+[00:25:19.760] Is it worse code?
+[00:25:20.600] Is it better code?
+[00:25:21.720] And we're also producing it a lot faster.
+[00:25:23.920] Right.
+[00:25:24.920] Well does that going to be degrading our services?
+[00:25:28.160] And I answered this question already a little bit earlier.
+[00:25:31.120] I velocity went up and I change failure rate went down.
+[00:25:34.520] And I lead times also shrink right.
+[00:25:37.600] That's because we didn't just add agents to our workflow.
+[00:25:40.760] We tightened the feedback loops
+[00:25:42.640] and we gave our agents a way to verify their own work.
+[00:25:46.240] And then we parallelised. Right.
+[00:25:48.680] We made the initial workflow as automated as possible,
+[00:25:52.360] but as high quality as possible. Right?
+[00:25:54.480] We didn't just focus on making things automated for the sake of automating them.
+[00:25:58.280] We made sure that we kept those review stages intact out of those guardrails,
+[00:26:02.600] and we made sure that the quality was consistent for that single workflow.
+[00:26:06.640] And then you parallelise it.
+[00:26:08.760] And so you noticed that even when you stop parallelising,
+[00:26:12.120] your quality will degrade a little bit, and you'll have to reconnect
+[00:26:14.960] and figure out how you can then improve that workflow even more.
+[00:26:18.160] So to keep that quality in check.
+[00:26:21.120] And so all I do all day is talk to robots.
+[00:26:25.120] I'm not sure when this happened, but,
+[00:26:28.040] yeah, hopefully that was useful for everyone.
+[00:26:30.280] Thank you very much.
+[00:26:34.280] The QR code is just, a set of links.
+[00:26:39.440] What was.
+[00:26:40.040] 50% off?
+[00:26:40.680] No, it's just a set of links from things that I mentioned in the talk.
+[00:26:43.760] So if you want to go back and refer to some things, it's just yet on my website.
+[00:26:47.360] Yeah. Oh, do we do question there?
+[00:26:49.640] Yeah.
+[00:26:53.480] Thank you very much.
+[00:26:54.840] And then we can,
+[00:26:58.040] two questions.
+[00:26:59.120] First of all, since you haven't written the code in
+[00:27:02.760] six months, you.
+[00:27:06.920] Can read it.
+[00:27:07.640] You will be grateful for 3.2,
+[00:27:11.800] a different job where you actually need to write code.
+[00:27:15.120] And the second question is,
+[00:27:18.640] what's the cause of all these together?
+[00:27:20.800] Sorry, there's only one.
+[00:27:23.960] Probably not yours.
+[00:27:26.920] Absolutely.
+[00:27:27.400] So two questions.
+[00:27:29.240] First one is if starting code how do I keep that in practice.
+[00:27:34.360] And what happens when I need
+[00:27:35.240] to move to a job that actually needs me to write code.
+[00:27:37.920] And the second one is what's the costs associated.
+[00:27:40.360] Right.
+[00:27:41.080] So the first one is a very loaded question actually, because it's a question
+[00:27:44.360] about the way the industry is moving. Right.
+[00:27:46.920] If we as an industry are recognising that the productivity benefits,
+[00:27:51.200] again, possibly are incredibly
+[00:27:54.080] outweighing the costs of using coding agents,
+[00:27:57.320] then the chance of me moving to a job and not being allowed to use
+[00:28:00.800] coding agents is probably going to be pretty slim.
+[00:28:03.240] And if that's not the case, and if things do go crashing
+[00:28:06.800] and burning, and I've got to go back to writing artisanal code, then,
+[00:28:11.600] then it's no different to going back
+[00:28:13.640] and relearning something that I need to relearn.
+[00:28:15.560] But it's a good call out because the
+[00:28:19.440] the skill of writing
+[00:28:21.880] code is different to the skill of reviewing code.
+[00:28:25.160] And that's a really important call out to make.
+[00:28:26.800] So as you spend time doing this and reviewing a bunch of code,
+[00:28:30.160] know that when you go and try to write code,
+[00:28:32.720] you will be a lot worse at it than you were
+[00:28:35.200] when you were writing it regularly. So it's a really good point.
+[00:28:37.880] And my answer to you is I have no clue, but I think I trust myself
+[00:28:42.200] to figure it out enough to, deal with it.
+[00:28:45.720] And then the second question was about costs.
+[00:28:47.880] Yes, it costs a lot.
+[00:28:49.720] But again, if we're able to demonstrate so clearly that we are shipping
+[00:28:54.600] and delivering five, six, seven times as fast as we were then,
+[00:28:58.800] even if it costs us 1 or 2 engineers a year or,
+[00:29:04.520] anything in that ballpark, it's already going to be making up.
+[00:29:07.280] It's, it's worth.
+[00:29:08.840] But yeah.
+[00:29:14.120] That's a great.
+[00:29:24.400] Connection.
+[00:29:24.920] Okay, cool. That's a great talk. Thank you very much.
+[00:29:27.200] Hopefully I will not replace this in two years.
+[00:29:31.120] But, what I wanted to ask you is that,
+[00:29:34.080] I'm trying to oldest workflows right now.
+[00:29:36.040] Yeah.
+[00:29:36.400] And, I think for simple tasks, when you have,
+[00:29:39.400] let's say, backend necessary, then when you have a bunch of small box
+[00:29:42.080] that you want to fix on the surface, you can easily paralyse them.
+[00:29:45.480] And in this case, you got to commit or anything like that.
+[00:29:47.640] You just try this.
+[00:29:49.440] If that's true, if it works well.
+[00:29:51.560] But I find it's really hard to part a little less this work
+[00:29:54.360] when you are building a new feature that changes something fundamentally,
+[00:29:57.960] and you think about abstractions and how it's going to break into the system.
+[00:30:02.040] Or like you, if you want to blend right and you need to thoroughly
+[00:30:05.800] think through all of the trade offs and stuff like that, and it's just,
+[00:30:08.880] really hard to fertilise this kind of stuff for me.
+[00:30:12.160] And also, you need to review every line of code that's produced in a way.
+[00:30:14.920] Right?
+[00:30:15.320] So, what's your experience was that do you,
+[00:30:18.480] do you say, oh, we have the same problem or do you still verbalise it?
+[00:30:22.280] Because I'm always like, asking almost.
+[00:30:24.640] Please make sure that this code makes sense and, like, doesn't violate
+[00:30:28.560] any part of the sentence or, you know, it looks at the same across the board, etc..
+[00:30:32.600] But still some people just inquire from this is what I've parallelisation
+[00:30:36.320] and break.
+[00:30:37.960] Yes, absolutely. So
+[00:30:41.200] the context switching is definitely a problem.
+[00:30:44.200] And when you're working on a complex feature
+[00:30:46.040] or you're working on a task that is quite involved,
+[00:30:49.240] your parallelisation factor is naturally going to decrease,
+[00:30:52.400] and you might not be able to do as many things at once.
+[00:30:54.760] So it really depends on, again, it's building that muscle.
+[00:30:58.320] So if you're working on
+[00:30:59.280] a really involved feature or an involved task, you might want to pick up some small
+[00:31:03.480] backlog bugs that have been sitting there for like ages collecting dust.
+[00:31:07.480] That's one way that I found to kind of tackle this problem is that,
+[00:31:10.280] like if I'm working on one involved, the task that I'm working on, like 1
+[00:31:14.240] or 2, like small UI changes or something like completely like negligible.
+[00:31:18.200] That's just a time like, oh, I just haven't had time to get around to this.
+[00:31:21.880] But if you're working on something involved and.
+[00:31:23.720] Yeah, like, I don't end up parallelising as much as I would.
+[00:31:27.560] I think what's interesting is the stage that you're at in your company
+[00:31:30.680] and in your in your team, wherever it may be, impacts this the most.
+[00:31:35.040] If you're in an early stage.
+[00:31:36.120] Start-Up, the Parallelisation factor might be actually quite high
+[00:31:40.160] because you have to build out a bunch of different things all at the same time.
+[00:31:42.840] It's not that complicated
+[00:31:44.160] or, you know, or have a clear idea of what you want to do.
+[00:31:47.080] Or if you're at a really big company and everything is incredibly
+[00:31:50.920] well defined and structured.
+[00:31:52.560] So it really depends on the stage of your team, your company, and the product.
+[00:31:55.920] But it will vary quite a bit.
+[00:31:59.440] So yeah, I do face the same problem.
+[00:32:03.040] Cool. Yeah.
+[00:32:04.640] The last question would be like the next one.
+[00:32:11.000] So quick question because you've got some pull requests.
+[00:32:14.720] So how are you planning to manage complex.
+[00:32:20.720] So surprisingly so.
+[00:32:23.600] The work that I'm working on.
+[00:32:24.800] Not as often, because I pick and choose things
+[00:32:27.200] that are probably not going to conflict with each other. Right.
+[00:32:29.160] So if I can see the two tickets or two tasks,
+[00:32:31.560] I'm probably going to be touching the same code base.
+[00:32:33.320] I want parallelism.
+[00:32:35.080] Because, yeah, having to deal with a bunch of the merge conflicts,
+[00:32:37.920] even if you're using something like, graphite or you have stacked PRS,
+[00:32:42.000] it's still a pain.
+[00:32:43.000] So I just avoid it and come back to it when I am done with that part of the code
+[00:32:47.480] base for others in the team and in the company.
+[00:32:51.800] Dealing with merge conflicts does end up slowing down this,
+[00:32:54.520] and that's something that we're looking into
+[00:32:55.880] and trying to figure out how to, improve that part of the workflow.
+[00:33:00.440] And I've seen a bunch of different things where people are creating agents
+[00:33:03.320] that are specifically focussed on just cleaning up merge conflicts,
+[00:33:06.960] come up, and then fixing those things up as like in the background.
+[00:33:11.200] So this is yeah,
+[00:33:12.080] very much open to it's an open problem and an open pain point for us.
+[00:33:16.000] So yeah.
+[00:33:18.800] Round of applause for him,
+[00:33:24.360] Thank you.

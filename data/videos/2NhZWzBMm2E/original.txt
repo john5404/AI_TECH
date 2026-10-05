@@ -1,0 +1,997 @@
+[00:00:00.000] 30 to 70 pull requests in just three months.
+[00:00:02.960] That's a big jump and a lot for developers to be in control of, let's say.
+[00:00:08.760] Initially, it looked like we were seeing a sublinear increase in outages
+[00:00:12.720] correlated with it. Right?
+[00:00:13.680] Like our change failure rate appeared initially to be going down.
+[00:00:16.800] And then it turned out over the long term
+[00:00:18.600] and averaged out so that, you know, we were shipping twice as many pull requests.
+[00:00:22.440] And we are seeing, you know, 1.5 times as many incidents.
+[00:00:25.320] And there is a limit to how many incidents you can ask a human to work.
+[00:00:29.320] Right.
+[00:00:29.560] Like your human code review attention is limited.
+[00:00:33.480] How do we enable our developers to scale up
+[00:00:37.720] not just their ability to produce code, but also their ability to review code?
+[00:00:42.560] The AI
+[00:00:43.040] Native Dev is a podcast for developers and engineering leads
+[00:00:46.120] at the cutting edge of AI and agentic coding.
+[00:00:49.200] Join your hosts, Guy Podjarny and me, Simon Maple,
+[00:00:52.200] every week as we chat with the most exciting voices in AI
+[00:00:55.920] and tackle the biggest questions facing developers today.
+[00:00:59.800] This is the AI Native Dev.
+[00:01:04.960] Yesterday you were writing code.
+[00:01:07.080] Today you're prompting agents.
+[00:01:09.160] Tomorrow you'll be running a software factory.
+[00:01:12.120] Agentic coding is moving fast enough to give anyone whiplash.
+[00:01:15.800] This June, AI DevCon London sold out. Hundreds of developers,
+[00:01:19.880] engineering leads and VP's packed in to hear speakers
+[00:01:22.920] from Anthropic, OpenAI, Netlify, and GitHub,
+[00:01:26.240] cut through the hype and get to what actually works.
+[00:01:29.400] This November, we're bringing it back to New York.
+[00:01:32.280] Bigger, bolder, and full of people actually building the agentic future.
+[00:01:36.840] Three days of real talks, real tools, real answers.
+[00:01:40.480] Whether you're directing the agents, building the loops themselves,
+[00:01:43.640] leading the teams, or setting the strategy.
+[00:01:46.800] Our early bird pricing ends on September 30th, so make sure you lock in your place before prices increase.
+[00:01:49.400] As a podcast listener, you can get 15% off your ticket using promo code POD15.
+[00:01:53.680] We have so much planned and we can't wait to have you
+[00:01:56.360] join us in New York.
+[00:02:02.200] Hello and
+[00:02:02.840] welcome to another episode of the AI Native Dev.
+[00:02:05.960] My name is Simon Maple. I'm the host for this episode.
+[00:02:08.720] And joining me is Liz Fong-Jones, Technical Fellow at Honeycomb.
+[00:02:13.040] A massive welcome to Liz.
+[00:02:15.160] Hey, how are you going?
+[00:02:16.640] How are you doing? Very well, thank you.
+[00:02:17.840] And I think this is your first time on the AI Native Dev.
+[00:02:21.120] Now, Liz.
+[00:02:21.680] You're a technical fellow at Honeycomb, but you actually started
+[00:02:24.160] more on the SRE side and then moved into DevRel,
+[00:02:27.440] a little bit into field CTO and now a technical fellow.
+[00:02:31.000] Tell us a little bit about the journey that you that you've been on.
+[00:02:35.040] Yeah, I think over the course of my career,
+[00:02:37.400] I focused on being a generalist in the field of reliability,
+[00:02:41.000] and I focused on up-leveling the teams that I work with.
+[00:02:43.920] So I started as an individual contributor, as all junior devs do.
+[00:02:48.560] And then I moved to kind of advising Google SRE teams
+[00:02:52.880] and SWE teams on what the best way was to implement reliability practices.
+[00:02:57.080] And then I took a swing at the engineer manager pendulum and managed
+[00:03:00.440] the Bigtable team at Google, about 12 people under me for a couple of years.
+[00:03:06.000] And then I realized that, you know, I could have all the impact in the world
+[00:03:09.360] working on one specific team, working with one specific set of people.
+[00:03:13.120] But I really wanted to have a broader impact
+[00:03:14.760] on the industry, because I could see so many people
+[00:03:16.840] that were struggling to implement SRE practices across their organizations.
+[00:03:20.400] And I thought, you know, there's a real role
+[00:03:22.480] to up-level the industry and to help people get more satisfaction
+[00:03:26.880] and not just have ops be this drudge thing, you know?
+[00:03:30.680] So that's really what led me down this path of DevRel and field
+[00:03:34.120] CTO work is kind of thinking about
+[00:03:36.280] how do we move the industry forward and what's the best lever to do that.
+[00:03:38.920] And sometimes the best lever to do that is not,
+[00:03:40.600] you know, managing one engineering team.
+[00:03:43.160] It's funny actually, because
+[00:03:44.080] when I also moved from developer relations into the field, CTO really enjoyed it.
+[00:03:49.160] Actually, it was at Snyk.
+[00:03:50.400] I probably talked more with CISOs and CTOs,
+[00:03:53.600] and I kind of felt like it's a little bit like a DevRel kind of role,
+[00:03:58.320] but it's just more leveled up into the into the, into the leadership space.
+[00:04:04.040] So you're doing leadership coaching, right?
+[00:04:05.840] Like, you're working peer to peer
+[00:04:07.200] with other executives who are struggling to implement changes across their org.
+[00:04:11.120] And that's actually where our similarity ends,
+[00:04:12.880] because I moved back into DevRel, because I kind of missed the developers
+[00:04:15.640] a little bit more.
+[00:04:16.320] But tell us a little bit about the the technical fellow.
+[00:04:20.200] Yeah.
+[00:04:20.680] So as a technical fellow, I get to do kind of distinguished
+[00:04:23.960] engineering work across all of our various engineering teams,
+[00:04:27.280] as well as still continuing to hold on to some of that work, to
+[00:04:31.600] evangelize and teach and to write about what we're doing.
+[00:04:34.800] Really, honestly, the kind of writing and appearing on podcasts
+[00:04:37.760] and kind of being able to be that public face of Honeycomb engineering
+[00:04:41.600] so that our engineers can primarily focus on being heads down,
+[00:04:44.720] except for like, of course, nurture the ones who want to speak publicly.
+[00:04:48.920] But. Right, like kind of being that ambassador for what are we doing?
+[00:04:51.680] What are we seeing is really, really helpful, especially given Honeycomb's
+[00:04:55.440] brand is that we are for forward-thinking engineering teams. Right.
+[00:04:58.280] So kind of helping pilot, what does that look like?
+[00:05:02.320] And being in a position to give people advice
+[00:05:04.640] where we've already seen what the path looks like.
+[00:05:07.000] And I'm very openly kind of talked about how this kind of a role,
+[00:05:10.840] it really helps technical engineers and technical folks,
+[00:05:15.680] you know, progress their careers without needing to drop into that
+[00:05:18.760] slippery, that slippery slope, a horrible slope of this management thing.
+[00:05:23.320] I remember, I remember my, my, my dad, who was an engineer, actually, engineer
+[00:05:28.120] kind of was promoted into a managerial role many, many, many years ago.
+[00:05:33.120] And that felt like his promotion.
+[00:05:34.880] He succeeded because he went into a managerial role.
+[00:05:37.840] But of course, that's not actually
+[00:05:39.360] what most engineers are particularly good at or actually want to do.
+[00:05:42.680] So I think this is a really strong way of of of leveling folks up without.
+[00:05:48.560] I agree.
+[00:05:49.160] And also I think it does make engineers better engineers
+[00:05:53.200] to take a turn at management at least once in their careers,
+[00:05:55.560] even if they don't decide to do it full time longer term.
+[00:05:59.280] I think it gives you a level of visibility into how engineering organizations
+[00:06:03.560] work, how to have impact as a senior engineer.
+[00:06:05.720] So I wouldn't say necessarily that, you know, I agree with your premise
+[00:06:10.560] that being a manager is not the promotion, but also I would say that it shouldn't
+[00:06:15.240] be something where engineers should,
+[00:06:17.240] you know, steer away from it and say, oh God, no, I'm never going to do that.
+[00:06:19.920] Right.
+[00:06:20.240] Because I think you have a lot to learn from doing it at least once. Yes.
+[00:06:23.280] Oh, that's so true. That was my experience.
+[00:06:25.200] I totally agree that actually, I think I think the, the and I think today
+[00:06:29.080] more than ever, you know, the personal skills,
+[00:06:32.720] or, you know, interaction, the communication with AI as well as other
+[00:06:36.920] people is so important to be able to, to, to vocalize, to vocalize those things.
+[00:06:41.800] Now, one of the things I love doing, Liz,
+[00:06:43.800] on, on this podcast is finding quotes from people
+[00:06:47.800] and and throwing it back at them and saying, let's chat about this.
+[00:06:51.520] Let's see if this still holds up.
+[00:06:53.280] Now, one of the things that I actually
+[00:06:54.600] completely agree with here, actually, so it's your line
+[00:06:57.800] was AI amplifies your existing practices.
+[00:07:00.880] It makes a dysfunctional org more dysfunctional
+[00:07:03.720] and a high ownership org faster.
+[00:07:06.200] Now let's I totally agree with that.
+[00:07:08.480] But let's define what is a dysfunctional org.
+[00:07:11.600] What are the traits or the things that you would see and say, yes,
+[00:07:14.880] if you add AI there, it'll actually make you get to that bad state faster.
+[00:07:18.800] What would you see as those flags?
+[00:07:21.800] Oh man,
+[00:07:22.360] I actually prefer to talk
+[00:07:24.200] about the inverse of that and talk about the traits of the functional orgs,
+[00:07:27.360] rather than talk about the traits of the dysfunctional orgs,
+[00:07:29.800] because I think there's just so many different varieties
+[00:07:32.000] of dysfunction out there that it's hard to enumerate them all.
+[00:07:35.400] But I think, you know, let's anchor on what you said about ownership, though.
+[00:07:38.640] I think ownership is really
+[00:07:39.960] that primary force that dictates whether an org is high or low functioning.
+[00:07:44.960] And it's the extent to which developers view their contributions
+[00:07:49.960] as something that they take a sense of pride in, that they want to own
+[00:07:54.520] the life cycle of end to end, that they are responsible for,
+[00:07:58.800] and that they are happy to sign their name to.
+[00:08:02.120] And I think everything else
+[00:08:03.400] kind of flows out of that, because when we talk about reliability practices,
+[00:08:07.240] an organization that has poor reliability practices likely does not have
+[00:08:11.200] a strong sense of ownership, because otherwise, why would you let
+[00:08:14.720] broken code ship to production and leave it broken in prod, right.
+[00:08:17.840] So we can talk about all the ways that you can leave broken code in prod.
+[00:08:20.160] But I think it fundamentally boils down to
+[00:08:23.520] are the developers allowed to follow it into production?
+[00:08:28.000] Can they do so right,
+[00:08:29.160] like without having to go and ask for five sets of permissions?
+[00:08:33.320] And are they actually following through.
+[00:08:35.840] Right.
+[00:08:36.160] So you know we here I think this was in the news recently.
+[00:08:41.120] Tobi Lütke, the CEO of Shopify,
+[00:08:44.440] said, you know, 12 months ago, we are now an AI first org.
+[00:08:47.720] Everyone should be using AI.
+[00:08:48.880] And then literally a week ago, he lamented slop bombs
+[00:08:51.720] being lobbed by engineers at production and at their teams.
+[00:08:55.400] I'm like, man, that was kind of a foreseeable consequence.
+[00:08:59.800] If you were telling people to move without ownership and just, you know, use
+[00:09:03.520] AI and move faster and you know, who cares about the consequences,
+[00:09:06.200] and now suddenly they're reaping the consequences, right?
+[00:09:08.800] So I think, you know, ownership of not lobbing
+[00:09:12.200] slop bombs because you are responsible and accountable for what you ship.
+[00:09:15.760] Right? Like, I think I think that's that's the important thing.
+[00:09:18.040] So, so and.
+[00:09:19.240] You say that the bearing here is more important
+[00:09:22.240] than the speed in terms of if you're you will,
+[00:09:25.520] you will actually accelerate to the destination faster.
+[00:09:28.280] And if you're doing something bad and I think the, the.
+[00:09:31.320] If and if you are not steering any particular direction, right, like,
+[00:09:34.160] you know, you add rocket, you know, rocket fuel to a rocket
+[00:09:36.920] that has no steering or guidance and just go in circles until it blows up.
+[00:09:40.160] Right?
+[00:09:40.680] Yeah, I think that's the classic example of, you know, of of acceleration
+[00:09:45.200] without direction yields just going in circles. Yes.
+[00:09:48.080] And I guess,
+[00:09:50.600] you know, my
+[00:09:51.480] takeaway there is AI is not going to fix any existing problems that you have.
+[00:09:55.440] It's going to magnify them.
+[00:09:56.560] So if you have a problem, AI won't fix it.
+[00:09:59.400] You need to fix the problem
+[00:10:00.320] and then introduce AI to to accelerate the the path that you're on.
+[00:10:04.080] Right.
+[00:10:04.280] If you're not in alignment about what you should be shipping,
+[00:10:06.440] then you're just going to ship more random acts of engineering, right?
+[00:10:09.840] Like that's not good for anyone.
+[00:10:11.440] Certainly, I know that customers have a very
+[00:10:14.720] limited patience for the amount that they allow their UI to change, right?
+[00:10:18.080] If the Riverside podcast recording software
+[00:10:20.600] looked different every time I log, every time I logged in, every single week,
+[00:10:24.160] I'd become very frustrated very quickly. Right?
+[00:10:26.000] Like, there are limits to how much you can introduce,
+[00:10:29.520] and you have to think consciously about how you're spending that churn.
+[00:10:33.040] So I really like the example
+[00:10:35.560] that you gave about ownership there, because I think
+[00:10:38.720] and I think there's almost like that willingness for employees, for developers
+[00:10:41.760] to say, actually, yeah, I want to see this through to production.
+[00:10:45.800] Beyond ownership, are there other,
+[00:10:48.520] other traits of a repo where you would look at something and say, oh, actually,
+[00:10:53.160] yeah, these people are using these folks that the developers are using autonomy.
+[00:10:56.200] Well, or,
+[00:10:57.760] you know, strong patterns.
+[00:11:00.080] And it's actually very easy to add AI in.
+[00:11:03.560] Maybe it's DevOps practices.
+[00:11:05.440] Are there other things that you can look at a repo and say this is AI ready?
+[00:11:10.440] Yeah.
+[00:11:10.800] So I think one primary thing is AI copies existing patterns
+[00:11:15.200] that exist in your code base.
+[00:11:16.760] If you have five different ways of doing something, it will become very confused
+[00:11:20.240] and it will create six ways or seven ways of doing it.
+[00:11:23.600] So I think making sure that you have alignment in your engineering
+[00:11:26.680] organization about how do you do things, what are the common patterns, as you say,
+[00:11:30.480] and then making sure to encode for AI and also for your new hires?
+[00:11:34.640] Where do you find these patterns? How do you use them?
+[00:11:37.200] And I think, you know, taking your nudge there, right.
+[00:11:39.960] Like it is important as well to have strong CI/CD patterns
+[00:11:43.880] so that you can actually validate things with five minutes of effort
+[00:11:46.880] and not 60 minutes or 3 hours of effort, making sure that you have good
+[00:11:50.360] observability, making sure you have good testability, and not just,
+[00:11:53.520] you know, empty calorie tests, but actual like real, meaningful tests, right?
+[00:11:57.520] Again, machines copy, and if they are copying bad practices,
+[00:12:01.640] then you're going to wind up creating smartphones.
+[00:12:04.280] If you are copying good practices, then you are going to have an easier
+[00:12:08.560] time testing and validating what you're producing.
+[00:12:10.960] And that starts with testing, starts with high quality comments.
+[00:12:15.600] And even in our code base, where we have relatively high quality
+[00:12:18.800] comments, we found that AI unfortunately is regressing us to the mean there.
+[00:12:22.200] We're having like lots of very low, low-value comments that AI is creating, right?
+[00:12:27.360] Like, so how are you guarding against AI making your code base worse?
+[00:12:30.960] How are you actually propagating good patterns around testing,
+[00:12:33.800] good patterns around observability, kind of making sure that we are
+[00:12:37.880] engineering things
+[00:12:38.680] in a way that it's going to be easier to roll them out to production.
+[00:12:41.800] And I think we talked about this briefly off air,
+[00:12:44.520] but the advice that we kind of like giving here
+[00:12:48.080] is actually the same advice that we would give pre
+[00:12:51.200] AI in terms of what functional looks like, what good looks like,
+[00:12:55.160] you know, good testing, good reliability, all of those things.
+[00:12:58.760] This is just.
+[00:12:59.600] Good old telling people to eat their
+[00:13:01.240] vegetables, right.
+[00:13:02.800] And and the trouble is no one wants to eat their vegetables.
+[00:13:05.280] Until they wind up with a vitamin deficiency. Right?
+[00:13:07.280] Like, yeah, except for the thing is.
+[00:13:09.400] AI has made it a lot easier to do the eat your vegetables part.
+[00:13:12.800] As long as you tell AI to do it and not just have AI, you know, slop
+[00:13:16.600] coding a bunch of new features into your codebase, right?
+[00:13:18.960] Like you have a bunch of new engineering bandwidth.
+[00:13:21.960] How you choose to spend it is up to you.
+[00:13:24.200] And because the machines never get bored,
+[00:13:27.080] it's a great thing to do to have them add telemetry to your code base, right?
+[00:13:30.600] Like to add rich wide events, to add attributes.
+[00:13:33.840] Right.
+[00:13:34.080] Like these are things that we used to have to tell developers,
+[00:13:37.400] you know, like like telling them to eat their vegetables or brush their teeth.
+[00:13:40.600] Right now, it's something that the robots are actually pretty competent at doing,
+[00:13:45.400] and they're happy to do it as long as you instruct them to. Right?
+[00:13:48.080] Like so. I think it's both. The
+[00:13:50.840] necessity of doing it is higher than ever,
+[00:13:52.920] because we're having this increased volume of code that we're trying to land,
+[00:13:56.400] and also the ease of doing it is much better as well.
+[00:13:59.160] Yeah. No. Absolutely.
+[00:14:01.320] So let's talk about a functional organization.
+[00:14:04.200] Let's talk about Honeycomb.
+[00:14:06.360] Let's talk about the Honeycomb bot Autobot.
+[00:14:08.360] Sorry.
+[00:14:09.200] That merges pull requests and creates pull requests.
+[00:14:14.240] I believe that went from 30 pull requests
+[00:14:17.600] merged per day to 70 pull requests merged per day in three months.
+[00:14:23.000] Is that. Did I get those numbers right?
+[00:14:25.160] You have the numbers, right.
+[00:14:26.160] But I think the attribution is wrong.
+[00:14:28.680] So yes, we do have a internal coding bot called Autobot.
+[00:14:33.360] However, the Autobot is producing maybe five of those pull requests per day,
+[00:14:39.720] so it's not the majority creator of the pull requests,
+[00:14:42.480] it is the 100% reviewer of those pull requests.
+[00:14:46.280] And it has gotten so good that our developers are no longer needing
+[00:14:49.920] to look for trivial bugs in changes. Right?
+[00:14:52.440] So I think, you know, when we're talking about increasing
+[00:14:55.440] your number of pull requests by a factor of two or more, right?
+[00:14:58.920] Like your human code review, attention is limited.
+[00:15:02.760] How do we enable our developers to scale up
+[00:15:07.040] not just their ability to produce code, but also their ability to review code?
+[00:15:10.000] And I think it really helps there to have
+[00:15:13.320] a helpful assistant like Autobot pointing out problems
+[00:15:17.560] so that the developer doesn't have to be a human lint or a human bug checker.
+[00:15:21.160] Right.
+[00:15:21.640] And this is really interesting because the speed at which people
+[00:15:26.240] can write code and, and trying to deliver code is not the problem here.
+[00:15:31.320] It's the problem is the speed at which us
+[00:15:34.760] as humans can validate that the code that is being generated, the pull requests
+[00:15:39.000] that are coming in are valid, are correct, are well tested.
+[00:15:43.280] And like I would argue, any real production system
+[00:15:48.400] should probably not be a dark factory, at least at this time.
+[00:15:51.960] I think there is a need for human oversight, human review,
+[00:15:54.880] human accountability. As I was talking about.
+[00:15:56.720] Right?
+[00:15:56.960] Like, you know,
+[00:15:57.360] how are we making sure that we're feeding back the lessons that we learn?
+[00:16:00.520] How are we making sure that we are maintaining our standards?
+[00:16:03.800] And I think those standards have to come from humans.
+[00:16:06.000] Right.
+[00:16:06.200] Like, I don't I don't think the robots are capable
+[00:16:07.880] of coming up with enforcing the standards in their own right.
+[00:16:10.120] Like we have to like
+[00:16:11.720] just because you have adaptive cruise control in your car
+[00:16:14.120] doesn't mean that you can fully let go of the wheel, right?
+[00:16:16.080] Like you still have to pay attention.
+[00:16:18.280] So can you tell us a little bit how the Autobot, and I love the
+[00:16:22.480] I love the name Autobot, but it does sound very Transformers-like.
+[00:16:25.600] So it feels like it feels like we've got a lot of power on our side.
+[00:16:30.360] Tell us a little bit about how that works under the covers.
+[00:16:32.720] Why is it so reliable?
+[00:16:35.240] Yeah.
+[00:16:35.720] So originally we conceived of Autobot as this mechanism
+[00:16:40.520] to automate the creation of small, kind of bite sized pull requests.
+[00:16:45.360] And, you know, we developed we invested a fair amount of time
+[00:16:49.120] in essentially doing Claude Code in a box to work on a single Linear ticket.
+[00:16:54.920] And it still does that, although we're in the process
+[00:16:56.760] of sunsetting that, because it turns out that now it's, you know, commoditized,
+[00:16:59.840] and now you can have bespoke services that do that in a box for you.
+[00:17:03.320] But I think at the time when we started this effort in April or May, this was
+[00:17:07.400] phenomenally effective in terms of, for the first time, having even developers
+[00:17:11.720] who are not super fluent in Claude Code be able to say, you know what?
+[00:17:16.400] This this ticket looks relatively simple.
+[00:17:20.240] You know, nothing ventured, nothing gained, right?
+[00:17:22.440] Like, you know,
+[00:17:22.800] let's assign that ticket to Autobot, see what pull request it produces.
+[00:17:26.240] Right.
+[00:17:27.400] So that's that's kind of how Autobot started was it was this effort
+[00:17:30.920] to kind of clear off the lower hanging fruit that doesn't require
+[00:17:34.760] a developer to supervise and tell the robot
+[00:17:37.440] consistently and steer it right, like, you know,
+[00:17:39.520] this is the kind of design direction I want this to take.
+[00:17:42.280] The theory was if you decomposed everything into a Linear ticket
+[00:17:46.160] well enough so that it would be able to, you know, complete
+[00:17:50.040] the Linear ticket on its own, that then your Autobot could take that
+[00:17:53.960] and turn it into a pull request,
+[00:17:55.320] and then you could, as a human who requested the Autobot to run,
+[00:17:58.800] you could go ahead and and review that self review first,
+[00:18:02.400] and then after that hand that to your peer reviewer to to review as well.
+[00:18:07.200] So that's how it started.
+[00:18:08.760] And then we realized that
+[00:18:12.440] there were a relatively small percentage of these smaller tickets.
+[00:18:15.600] And also that same functionality could also be used to reproduce
+[00:18:20.840] kind of in a box, the functionality that I think in April or March
+[00:18:25.720] this year, Anthropic released this Claude Code review functionality
+[00:18:30.560] and it's phenomenally expensive.
+[00:18:31.640] That's like 20 or $30 per run.
+[00:18:33.240] And it took like 10 or 20 minutes to run.
+[00:18:35.680] And we looked at it and we said, actually, we want something like this.
+[00:18:39.760] But we would prefer that it run within less than 2
+[00:18:44.000] or 3 minutes, that it costs dollars per pull request and not tens of dollars.
+[00:18:48.360] So we
+[00:18:49.520] pivoted the Autobot project towards handling reviews,
+[00:18:52.720] because we realized that our human developers were more
+[00:18:55.960] than capable of creating this mass volume pull requests anyways, Autobot or not,
+[00:19:00.680] and that we needed to focus that instead on
+[00:19:02.760] how do we make the review load for human reviewers lighter.
+[00:19:06.720] And how does so obviously,
+[00:19:09.000] you know, Claude as a, as a, as an LLM
+[00:19:12.160] or a general LLM,
+[00:19:14.720] these types of things will always be kind of like very expensive
+[00:19:17.560] and long to run in the news this week.
+[00:19:21.160] So this will tell folks when we recorded it.
+[00:19:23.320] Obviously Jev is making a lot of waves right now.
+[00:19:27.200] It's hitting the it's hitting the headlines in most places.
+[00:19:31.600] With with an M, which is very specific to kind of being able to provide,
+[00:19:37.000] you know, yes no answers or multiple choice does that.
+[00:19:40.000] How will that now impact places
+[00:19:43.520] or, you know, specific tasks like code review.
+[00:19:47.520] Yeah.
+[00:19:48.000] So I think the primary place where we're thinking about deploying Jev
+[00:19:51.040] right now is classifying pull requests into safe to merge
+[00:19:56.120] with just the automatic review versus not safe to merge requires a human review.
+[00:20:01.320] Previously, we had been relying on humans to self-identify, and we were doing this
+[00:20:05.880] experiment actually to try to have about 20% of our pull requests
+[00:20:09.600] automatically reviewed and landed without having a human review.
+[00:20:12.360] Kind of like, again,
+[00:20:13.720] focusing that human attention, because if you double
+[00:20:15.800] the number of pull requests, either you double the amount of more than double
+[00:20:18.240] the amount of time that you're spending as a human reviewing, or you have to load
+[00:20:22.480] shed, you have to figure out
+[00:20:23.360] what's less important to review and what's more important to review.
+[00:20:26.960] So previously we had been doing this experiment
+[00:20:29.320] of having humans and the reviewers labeling, you know, do I think that
+[00:20:34.160] this is a pull request that requires high effort to review or not?
+[00:20:37.800] And, you know, now I think we can have Jev do that.
+[00:20:40.160] Right.
+[00:20:40.280] Like we can have Jev be that gut check of can I trust the reviewers opinion
+[00:20:44.640] on whether or not this is safe to land, and if so, go ahead and land it
+[00:20:48.120] without human intervention. Right.
+[00:20:49.320] So there's still is the language model layer doing the code review.
+[00:20:53.760] But I think the classifier is then doing that work of
+[00:20:57.360] how complex is the code change.
+[00:20:59.320] Did the reviewer raise any significant concerns?
+[00:21:01.680] Should I should I merge or not?
+[00:21:03.480] Yeah.
+[00:21:03.760] And I think there are three kind of like key things that are hitting the news here
+[00:21:07.760] with with Jev. One is the cost.
+[00:21:10.240] One is the speed, but the other is the confidence score.
+[00:21:14.200] And I presume it's the,
+[00:21:15.600] the speed and the and the cost are probably the nice to have here.
+[00:21:19.320] But it's the confidence score I guess. Right. Exactly.
+[00:21:22.200] If I'm already.
+[00:21:23.000] Spending five minutes and ten and $10 in tokens to review
+[00:21:26.840] to review this pull request, the thing that's actually important
+[00:21:29.800] here is getting a automated confidence score on can I land this safely?
+[00:21:33.720] Right. So yeah, 100% agree. Right.
+[00:21:36.920] But for us again, this is not
+[00:21:38.800] that we're intending to spend less time doing code reviews than we did before.
+[00:21:42.560] It's to focus the time that we're spending
+[00:21:44.280] doing code reviews on the design patterns and not on trivial bugs,
+[00:21:48.200] and on the more complex PRs, and not on the more simple PRs, right?
+[00:21:52.240] If I'm twiddling a single config knob, most of the time, that's not a big deal,
+[00:21:57.520] except for some of the time it actually has the potential to bring down
+[00:22:00.720] production, right?
+[00:22:01.240] Like so I think that's that's kind of that that tradeoff there. Right.
+[00:22:04.000] Like and I as a human can of course opt out of automatic code review.
+[00:22:06.960] Right. Like entirely right. Like and say, hey, this requires special caution.
+[00:22:09.880] But honestly, right.
+[00:22:11.440] Like most developers are very conscientious.
+[00:22:14.360] Right. Like at least in a high autonomy org.
+[00:22:16.760] So we don't want to cause outages in production.
+[00:22:19.400] So by definition,
+[00:22:20.400] you know, outages happen when something happens
+[00:22:22.520] that was unexpected, that we didn't foresee, that we thought
+[00:22:24.600] it was going to be a simple change and was not right.
+[00:22:26.320] Like, so having these additional guardrails,
+[00:22:28.880] whether it be a language model, doing a review or Jev,
+[00:22:32.720] doing a sanity check of does this make sense or not to to immediately land.
+[00:22:36.760] Right.
+[00:22:36.920] Like, I think those are the levers that we need to do to really go beyond
+[00:22:41.880] beyond two x.
+[00:22:44.120] Because we've hit the...
+[00:22:45.520] Like, candidly, we have hit the ceiling of how much code we can conceive of
+[00:22:49.640] and review.
+[00:22:50.800] And this is interesting because whenever we hit the ceiling,
+[00:22:52.800] we always tend to go beyond it when in a way we kind of like least expect.
+[00:22:57.480] But, you know, 30 to 70 pull requests in just three months.
+[00:23:02.000] That's like a, that's a, that's a big jump.
+[00:23:03.880] And a lot for developers to be in control of, let's say.
+[00:23:10.440] Yes. And we.
+[00:23:11.520] Definitely initially it looked like we were seeing
+[00:23:13.920] a sublinear increase in outages correlated with it.
+[00:23:17.800] Right.
+[00:23:18.000] Like our change failure rate appeared initially to be going down.
+[00:23:21.120] And then it turned out over the long term and averaged out so that, you know,
+[00:23:24.760] we were shipping twice as many pull requests.
+[00:23:26.720] And we are seeing, you know, 1.5 times as many incidents.
+[00:23:29.640] And there is a limit to how many incidents you can ask a human to work.
+[00:23:33.640] Right. Like so.
+[00:23:34.880] Yeah. Right.
+[00:23:35.440] Like we we have to start looking at how do we de-risk the other thing,
+[00:23:39.080] these other things.
+[00:23:39.840] So where's the line, would you say between something that's been reviewed
+[00:23:43.520] and something that's been understood because it's almost like,
+[00:23:46.800] you know, when I deliver a 500 line pull request versus a, you know, ten line
+[00:23:51.920] pull request, one will definitely be scrutinized more than the other.
+[00:23:55.080] In the same way, if I was to provide you with 500 pull requests versus one,
+[00:23:59.240] there are going to be many more that just, you know, go through with
+[00:24:02.920] maybe a, you know, reduced visibility from the human.
+[00:24:06.880] How do we how do we make sure that
+[00:24:10.040] as humans, we don't just become very blasé
+[00:24:13.240] and just push pull requests along and actually understand what happens?
+[00:24:18.360] Is this, again, another... maybe it is Jev, the
+[00:24:22.400] actual review, the right place to be having that discussion?
+[00:24:26.880] Often we find that that is a better place to be talking about it at the project
+[00:24:32.400] and at the ticket level than at the pull request level by the time,
+[00:24:36.800] especially if generating the code is cheap
+[00:24:38.520] and you could do it five times over, right?
+[00:24:40.840] Why are we that attached to the way the specific code works
+[00:24:43.960] and not to the broader design pattern? Right.
+[00:24:45.600] Like that's the thing that we should be aligning on is is the direction correct.
+[00:24:49.640] And not, you know, is this implementation exactly correct?
+[00:24:52.280] Right.
+[00:24:52.480] Like language model can help you understand
+[00:24:54.560] what the individual lines of code do. Right.
+[00:24:56.120] But the broader pattern, that's something that you
+[00:24:57.600] have to hold in your head and that we as humans that are supervising
+[00:25:00.720] these systems need to have a consistent picture of
+[00:25:03.840] how is this supposed to behave at the macro level?
+[00:25:06.960] Yeah.
+[00:25:08.040] Let's let's then take it one step further.
+[00:25:10.040] Let's say, you know, there's an outage or some, some system fault.
+[00:25:13.640] We obviously need to have a look at what we need telemetry data.
+[00:25:17.920] And we need observability.
+[00:25:19.600] Now you draw quite a hard distinction here
+[00:25:21.560] between what telemetry is and what observability is, really, data
+[00:25:26.200] versus the ability to truly understand the system.
+[00:25:29.400] How does data.
+[00:25:30.240] Versus understanding 100% every day?
+[00:25:32.320] Well, what is how does.
+[00:25:33.320] AI change what understanding a system means?
+[00:25:37.600] If a human actually doesn't write that code?
+[00:25:42.040] I don't think the human has to write the code.
+[00:25:43.760] And also I don't think the human has to do the querying by themselves.
+[00:25:48.240] However, examining the outputs of the queries,
+[00:25:51.680] that's something that a human has to do
+[00:25:53.440] to really kind of internalize and understand how did this outage happen?
+[00:25:57.400] What are the other things that we should be looking at that are similar?
+[00:26:00.280] How do we prevent this outage from happening again?
+[00:26:02.120] Right.
+[00:26:02.360] Like so I think having that data,
+[00:26:05.760] having it queryable and legible both to the humans
+[00:26:08.560] and AI is helpful for them, kind of establishing that feedback loop.
+[00:26:12.800] And I don't think it's just at the moment of outage.
+[00:26:15.920] I think also in your development cycle, right.
+[00:26:18.720] You should be having your language models test the telemetry
+[00:26:21.840] that they're producing by querying a dev environment.
+[00:26:24.920] Right.
+[00:26:25.360] To make sure if I added an attribute, is that attribute present,
+[00:26:28.680] do I have the ability to detect if something backlogs.
+[00:26:32.200] Right. If something starts queuing. Right.
+[00:26:34.120] So I think I think the answer is yes and right.
+[00:26:37.600] Like I think yes we have to have telemetry.
+[00:26:39.760] Yes, we have to have the ability to analyze that telemetry.
+[00:26:42.520] And also it's not just the humans job, and it's not just the robot's job.
+[00:26:45.920] It's a joint responsibility to turn the telemetry data into understanding.
+[00:26:50.880] Yes. Yeah.
+[00:26:51.920] And I guess as someone who has a lot of history
+[00:26:55.320] in the world of SRE, you talked a little bit about,
+[00:26:59.640] how your opinion on
+[00:27:02.120] how people should be using dark factories in production,
+[00:27:05.880] how much should we be trusting AI to do with data in an incident?
+[00:27:11.120] It would be lovely to think that we can wake up in the morning
+[00:27:15.400] and kind of, you know, click a button to say, yes, I can see the
+[00:27:19.080] AI agents have identified the problem.
+[00:27:23.000] They have done all the the background root cause analysis.
+[00:27:26.560] They've suggested the issue.
+[00:27:28.440] Sorry, suggested a solution.
+[00:27:30.840] They've reviewed it.
+[00:27:31.720] I just need to review it myself and push that through.
+[00:27:35.440] How how close are we to that today?
+[00:27:37.960] And do you see a world.
+[00:27:40.200] Depends on how well you are implementing
+[00:27:43.360] the practices of the last ten years. Yes.
+[00:27:46.440] We have had feature flagging for 10 or 15 years.
+[00:27:49.440] Depends on how you know you count Netflix's early stuff, right.
+[00:27:52.720] We've had feature flags for 15 for 15 years.
+[00:27:56.280] If you were implementing feature flags, well then yes,
+[00:27:59.680] a robot with access to MCP can identify which feature flag
+[00:28:03.480] will solve your problem and can fix it, can flip the feature flag,
+[00:28:06.560] and the telemetry will be recorded both for the robot
+[00:28:09.640] who's diagnosing in real time and for you with a cup of coffee
+[00:28:12.600] or a Diet Coke in your hand the next morning. Right.
+[00:28:14.760] Like if you have that telemetry data recorded
+[00:28:18.680] and if you have the controllability, right, like remember
+[00:28:21.720] observability and controllability in control theory are duals. Right.
+[00:28:24.400] Like if you have both observability and controllability
+[00:28:27.200] you do have the ability to not have to wake up at 2 a.m.
+[00:28:30.600] because you can actually go ahead and and fix the problem
+[00:28:34.200] without necessarily even fully understanding it. Right.
+[00:28:36.840] And then to be able to examine what happened after the fact with the kind of,
+[00:28:40.080] you know, flight recorder or whatever it is. Right?
+[00:28:42.760] So I think.
+[00:28:44.680] We're pretty close if and only if you have
+[00:28:49.200] working automatic rollbacks, working feature flags,
+[00:28:53.560] working observability, if you don't have those things,
+[00:28:57.360] your agents are just guessing and throwing darts
+[00:29:00.120] at the dartboard and they might cause more chaos than they actually solve.
+[00:29:03.320] Yeah.
+[00:29:03.800] So it depends very heavily on your production maturity practices.
+[00:29:07.200] And it's not so much your trust in the AI.
+[00:29:09.520] It's your trust in the system with which the AI environment is running in.
+[00:29:14.080] Exactly right.
+[00:29:14.960] Our job is to make it so that the tools that the robots have are safe.
+[00:29:19.320] Yeah.
+[00:29:19.960] If we're having AI exercise, its judgment about whether it's okay
+[00:29:23.600] to kill these pods.
+[00:29:24.960] I think that that is a very dangerous thing to give your AI agents
+[00:29:28.840] the ability to kill random pods in production, right.
+[00:29:31.280] We should be giving them tools to abort rollouts, to revert rollouts.
+[00:29:35.360] Right? Like so.
+[00:29:35.840] I think you have to make sure that the tools are always safe to use
+[00:29:40.920] and that the robot's right,
+[00:29:42.200] rather than trusting the robots to decide whether or not to call them. Yeah.
+[00:29:44.960] Structured, structured functionality that they can that they can use.
+[00:29:47.920] And let's talk about let's talk.
+[00:29:49.960] And that's really fair.
+[00:29:51.240] This is also true about your most junior developer on your team. Yes.
+[00:29:54.680] Right.
+[00:29:54.920] Like, you know,
+[00:29:55.920] if you're making it safe for your junior developer
+[00:29:58.160] so they cannot accidentally cause production outages, right.
+[00:30:00.680] Like, I think that that's great for your for your robots too.
+[00:30:03.560] Hey everyone!
+[00:30:04.360] Hope you're enjoying the episode so far.
+[00:30:06.600] Our team is working really hard behind the scenes to bring you the best guests,
+[00:30:10.640] so we can have the most informative conversations about agentic development,
+[00:30:14.880] whether that's talking about the latest
+[00:30:16.480] tools, the most efficient workflows, or defining best practices.
+[00:30:20.320] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:30:24.160] If you're enjoying the podcast and want us to continue to bring you
+[00:30:27.280] the very best content,
+[00:30:28.520] please do us a favor and hit that subscribe button.
+[00:30:31.040] It really does make a difference and lets us continue to improve
+[00:30:34.360] the quality of our guests and build an even better product for you.
+[00:30:38.800] All right, back to the episode.
+[00:30:40.560] Let's talk about let's continue this path down trust and safeguarding.
+[00:30:45.200] You you described needing things like CLAUDE.md rules,
+[00:30:50.560] MCP-mediated access, least privilege systems,
+[00:30:53.880] or all these things which help this safeguarding.
+[00:30:58.240] What, in your opinion, have you seen that would be a really
+[00:31:02.680] good piece of advice that most teams actually don't think about.
+[00:31:05.640] Or, you know, it's great practice like least privilege
+[00:31:09.600] is something that we've known for many, many years, decades.
+[00:31:13.360] What are the things that teams can do, today
+[00:31:16.920] that is just completely non-negotiable to, to, to avoid?
+[00:31:21.920] I think the starting point is really hermetic
+[00:31:24.240] CI and CD, like to have fast and reproducible CI and CD.
+[00:31:28.760] I think that's the foundation of everything.
+[00:31:31.120] I think your mention of least privilege is great.
+[00:31:33.560] Actually.
+[00:31:34.120] I discovered that on on its own actually, Claude has started
+[00:31:37.960] when working with Amazon profiles to default to using read-only profiles
+[00:31:41.480] if it's provided the option to have both a read-only and read-write profile.
+[00:31:46.080] Even if the read-write profile's
+[00:31:47.680] technically available, it will still use read-only,
+[00:31:49.680] just to be safe, which I think is a great safety practice.
+[00:31:52.080] Right?
+[00:31:52.280] Like and you can also enforce that right to enforce, you know, hey
+[00:31:55.680] commands that use the read-only profile are automatically approved.
+[00:31:58.960] Commands that use the read-write profile must use human approval.
+[00:32:01.560] Right. Like so I think layers, defense in depth.
+[00:32:04.320] I think that those are all really, really great things.
+[00:32:07.800] And is there, you know, anything
+[00:32:10.560] you think we are over trusting these days in terms of are there
+[00:32:15.600] default settings that we should absolutely try and avoid?
+[00:32:20.480] I think the main thing that we are
+[00:32:22.760] realizing does not scale is having humans click. Yes.
+[00:32:27.440] I think that classifiers do a much better job than humans when attention is scarce.
+[00:32:34.080] And I think that, you know,
+[00:32:36.280] you do have to develop a certain number of repetitions of hitting.
+[00:32:39.760] Yes, before you start trusting auto mode.
+[00:32:42.080] And you have to have a certain number of repetitions of seeing automatic code
+[00:32:46.680] review issues that you wouldn't personally have caught before you start
+[00:32:49.880] trusting automatic code review. Right.
+[00:32:51.840] But I think eventually you do realize, yes,
+[00:32:55.080] I can trust the automated steering, but I'm still going
+[00:32:59.000] to keep my eyes on the road, right.
+[00:33:00.320] Like but that's very different than, you know, gripping the steering wheel tightly.
+[00:33:03.560] Right.
+[00:33:03.760] Like so I think, you know, we have a tendency as human beings to micromanage.
+[00:33:07.840] We have a tendency to assume that we always do a better job than the robots.
+[00:33:11.400] And I think that that is that is the mistake.
+[00:33:13.320] Right.
+[00:33:13.480] Like, I think I think the mistake is over trusting your ability
+[00:33:17.000] to make decisions under time pressure and stress.
+[00:33:20.080] And I think that's the situation where a robot that never gets tired
+[00:33:23.880] will do a better job than you. Yeah.
+[00:33:25.800] And of course, if something does go wrong,
+[00:33:28.880] is it the is it the robot's fault or is it the operator's fault?
+[00:33:32.440] Now, Honeycomb's AI values state: if your name's on it, you own it.
+[00:33:37.920] So tell us a little bit about how far that extends.
+[00:33:41.400] I don't think it's about fault.
+[00:33:43.120] I think it's about whose responsibility is to clean up
+[00:33:46.920] and to think about how do we harden the systems.
+[00:33:49.600] This doesn't happen again, right?
+[00:33:51.560] You know, if we're talking about,
+[00:33:53.760] you know, some kind of failure that leaks into production.
+[00:33:55.760] Well, number one,
+[00:33:57.000] ideally something going wrong should not bring down all of production.
+[00:34:00.680] We should focus on making the failures smaller in blast radius
+[00:34:04.760] rather than, rather than trying to prevent them from happening entirely.
+[00:34:09.320] And then I think in terms of the accountability.
+[00:34:11.240] Right.
+[00:34:11.440] Like the main thing is to is to say like, you know, not,
+[00:34:13.840] you know, the robot did it.
+[00:34:15.120] You know, it's not my fault the robot did it right, like, you know, "Claude did it"
+[00:34:17.920] is not a really great excuse for like instead you have to examine, say, okay,
+[00:34:21.960] what are my structural biases that caused me to to over trust in this output?
+[00:34:26.720] Right.
+[00:34:28.400] So actually there's a,
+[00:34:31.200] example this, this past week
+[00:34:33.520] where I, I was doing some analysis
+[00:34:37.160] of a team's that we were rolling out, and I was trying to do the analysis
+[00:34:41.520] A/B tested by which shard or which partition ID,
+[00:34:45.240] and for some reason, my AI assistant did not find the telemetry field
+[00:34:49.640] for partition ID and then it confabulated this thing about how
+[00:34:54.120] we need to construct a construct a new telemetry field for partition ID,
+[00:34:59.120] I should have rerun the query and actually typed partition.
+[00:35:02.600] I need to see whether it automatically dropped down.
+[00:35:04.240] I shouldn't have trusted the assistant
+[00:35:05.800] when it blithely asserted there was no partition ID field, right?
+[00:35:08.840] But then also my accountability.
+[00:35:11.480] I told it, okay, if you're missing the partition ID field,
+[00:35:14.760] then we need to go and create a pull request to add the partition ID field.
+[00:35:18.560] The field was there all along, like, you know, so I wasted some tokens.
+[00:35:21.520] I wasted five minutes of a principal engineers time to review the pull request.
+[00:35:24.520] That would have added a duplicate partition ID field, right?
+[00:35:27.080] Like, you know, where you know, you could you could say, you know,
+[00:35:31.400] you know, blame Claude, or you could say, right, like, you know,
+[00:35:33.720] I should have been more skeptical about this output.
+[00:35:35.680] Like, you know, surely we should have had partition ID,
+[00:35:38.040] I should have known that we of course we had partition ID in there.
+[00:35:40.640] Like, I should have run the query by myself before I trusted this robot
+[00:35:43.960] that said, you know, there's no partition ID field like we need to we,
+[00:35:47.680] you know, we need we need one. And I was like, right.
+[00:35:50.240] But I signed off on it, right?
+[00:35:51.360] Like that's that's my responsibility. Right?
+[00:35:53.920] So I think that's that's what we mean.
+[00:35:56.520] When we talk about taking ownership,
+[00:35:59.120] I think there are more mundane, things beyond beyond code, right.
+[00:36:03.600] Like for instance, don't send someone a slop bomb of,
+[00:36:06.800] you know, this is, you know, a ten page, ten page Claude artifact, right?
+[00:36:10.120] Like, I think that that's, you know, a little bit more, more self-explanatory
+[00:36:15.000] of if your name is signed to it, you should you should stand behind it.
+[00:36:17.960] And you should ideally have spent as much time reading over
+[00:36:21.160] and producing it as the reader is going to take to read it.
+[00:36:24.520] But I think the more interesting thing is, as we're talking about here, right?
+[00:36:27.520] Like, you know what happens when code that you ship is wrong
+[00:36:31.560] for whatever reason, right?
+[00:36:32.840] Like, how are we encapsulating the learning
+[00:36:34.880] so that Claude doesn't make the mistake over and over and over again, right.
+[00:36:38.600] Like it's it's us humans that have to figure out
+[00:36:40.720] how do we more effectively use these tools.
+[00:36:43.920] And as a practices, let's say,
+[00:36:47.080] rather than models get more developed so that we will get to a stage where,
+[00:36:53.320] you know, AI can fully build,
+[00:36:57.440] test, review and deploy changes,
+[00:37:01.480] potentially small, potentially non complex and maybe non-critical systems.
+[00:37:07.760] At what stage would a human who hasn't done hasn't been involved in any of that?
+[00:37:12.920] What stage would a human own that would, would it not be fair to say if at that
+[00:37:16.840] point Claude's name's on it, let's say, or Codex's name's on that, it should own it?
+[00:37:21.080] And we essentially say we are happy
+[00:37:24.240] that a, a very small percentage of these will be wrong,
+[00:37:27.880] but it's the bot that effectively owns that delivery through to production.
+[00:37:33.920] Yeah, I think at.
+[00:37:35.240] That point it's the human team that creates. The.
+[00:37:39.520] Workflow files, that guide, that loop, that are responsible
+[00:37:44.400] for the quality control and checking of that loop and the tuning
+[00:37:47.840] of it to make sure that it is as effective as it's supposed to be.
+[00:37:51.680] Okay, despite what you might be seeing in the news,
+[00:37:54.760] there is not actually fully automated recursive self-improvement, right?
+[00:37:58.880] Like there is always some degree of human guidance involved.
+[00:38:02.240] So even if robots are coming up with tickets
+[00:38:07.280] and solving the tickets and pushing them through and debugging them in production,
+[00:38:11.520] there is still a person that owns the system prompt for that.
+[00:38:14.720] There's still the person who is paying for the quota for that,
+[00:38:17.960] there is still the person that expects the results from that.
+[00:38:21.160] Right.
+[00:38:21.480] And I think that that is where the ownership lies, is to go and spot
+[00:38:25.080] check some of those pull requests every now and then to do evals to
+[00:38:28.200] to the system prompt.
+[00:38:29.920] Right.
+[00:38:30.280] Like, I don't think that we are at a point yet
+[00:38:32.840] where we can say we're just going to go fully hands off.
+[00:38:35.920] Yeah, sure.
+[00:38:36.640] If you're down to go fully hands off, hand me your checkbook, please.
+[00:38:40.440] I will I will take your checkbook. Right.
+[00:38:42.200] Like but as
+[00:38:42.840] long as humans are paying for it, humans have the right to inspect the results.
+[00:38:46.600] Yeah, I think that's what it boils down to.
+[00:38:48.160] Right, like, is there still a process owner?
+[00:38:51.040] And that process owner is accountable for the results?
+[00:38:53.280] Yeah. No. Nicely said.
+[00:38:55.400] It's, it's what are we recording on the 22nd of September today.
+[00:38:59.400] So we're kind of giving away a little bit about the behind the scenes here.
+[00:39:03.040] But on the 22nd, Hacktoberfest is right around the corner.
+[00:39:08.040] Now, of course, in years gone by,
+[00:39:10.720] there have always been some problems where you get bad human pull requests
+[00:39:15.520] which have been raised and mass created, which have annoyed maintainers.
+[00:39:21.160] Now today's problem, and of course, you know,
+[00:39:22.880] that was largely fixed by having an opt-in style of fest.
+[00:39:26.600] But today, even if you opt in, probably a bigger worry is someone's
+[00:39:31.480] just going to come up and provide some AI slop pull request.
+[00:39:36.200] Now, one of the things that was kind of partly mentioned
+[00:39:39.720] previously is that you were considering eliminating external contributions
+[00:39:44.040] to open source projects because of the kind of floods
+[00:39:47.640] of pull requests that were very slop oriented.
+[00:39:52.480] Have you made a decision
+[00:39:53.560] around that or any experiences recently in and around that space?
+[00:39:57.800] Yeah. So I do think that.
+[00:39:59.800] For security reasons and a variety of reasons
+[00:40:02.840] related to code style maintainability, I think that maintainers
+[00:40:06.920] definitely should continue accepting bug reports.
+[00:40:09.640] Whether maintainers accept pull requests is up to their discretion,
+[00:40:13.640] because it turns out with a well-equipped bug report,
+[00:40:16.520] you can have your agent write a fix for it in your preferred style, right?
+[00:40:20.160] So why should you trust someone else's agent where it might be just as much work
+[00:40:24.360] to check the work over as if you had done it yourself.
+[00:40:27.360] So I think that's kind of my first thought.
+[00:40:28.800] Bug reports are always, always valuable as long as they're well formatted
+[00:40:31.920] that say exactly, this is what I expected to happen.
+[00:40:34.240] This is what actually happened.
+[00:40:35.280] This is where I think the problem might be,
+[00:40:37.240] but not necessarily proposing a fix and leaving up to the maintainers discretion.
+[00:40:41.960] I think the other thing is not relaxing our standards.
+[00:40:44.440] Right.
+[00:40:44.640] Like we should not have lower standards for AI created
+[00:40:46.680] pull requests than human created pull requests.
+[00:40:48.960] And also, I've seen efforts both in the academic space
+[00:40:52.440] as well as in the open source
+[00:40:53.440] and commercial space, to actually require someone to complete a quiz about the work
+[00:40:58.040] that they've submitted before they actually get a chance to submit it.
+[00:41:02.080] So if you cannot answer basic questions about the pull requests that you
+[00:41:05.200] that you submitted,
+[00:41:05.880] you probably shouldn't be submitting it because you have no idea what's going on.
+[00:41:08.960] Yeah.
+[00:41:09.640] The "I am not a robot" button I suppose for a pull request.
+[00:41:13.560] "I am not a robot" button. We're actually right.
+[00:41:15.360] Like this is the funny thing. You're using slop to fight slop, right?
+[00:41:18.000] Like you can have an agent take the pull request and create
+[00:41:22.400] a quiz about it that you must pass before you can have it submitted, right?
+[00:41:26.960] Like, and I think like, you know, yes, as you say, you know.
+[00:41:30.600] Right.
+[00:41:30.840] Like you can triage them with AI, right.
+[00:41:35.920] Also a very interesting thing.
+[00:41:38.640] So my wife works on Google Chrome security, and one of the things
+[00:41:42.320] that they're starting to do is they're starting to require that
+[00:41:46.160] in order to get fast tracked for your security exploit bug,
+[00:41:49.440] you must provide a working repro, or you must provide
+[00:41:52.480] something that provides evidence that you crash a chrome process.
+[00:41:55.760] No crasher, no no triage.
+[00:41:58.200] Right?
+[00:41:58.440] Like because otherwise you would have to deal with all of these slop reports.
+[00:42:02.040] But if you have something that genuinely crashes the browser, right,
+[00:42:04.720] like that is clearly a sign that you are onto something real.
+[00:42:07.840] And we should go and invest resources in debugging it.
+[00:42:10.640] Right?
+[00:42:11.400] So, so like,
+[00:42:12.360] I think that there are heuristics that you can apply to open source contributions.
+[00:42:16.040] And you know, right, like Linus Torvalds came out in favor of using AI.
+[00:42:20.800] Right.
+[00:42:21.040] Like Linus Torvalds said, you know,
+[00:42:22.560] I think that AI agents have a valuable role to play.
+[00:42:25.880] And literally this past week, I have a dev box.
+[00:42:30.640] That's a Arm64 box that has an unconventional hardware configuration.
+[00:42:34.320] Let's let us say.
+[00:42:35.680] And that dev box has a bug
+[00:42:38.840] that prevents it from booting on Linux 6.19 and newer.
+[00:42:42.280] And I was able to with with Claude Fable's help actually
+[00:42:46.720] figure out what the bug was, figure out what a what a working patch for it was.
+[00:42:50.520] And the patch was only six lines, right?
+[00:42:52.480] It's really not that complex that patch,
+[00:42:54.040] but I was the first one to run into this situation,
+[00:42:56.640] and it solved a general problem for like a variety of classes of hardware.
+[00:43:00.320] So I submitted it upstream
+[00:43:02.520] and it went through the normal Linux vetting processes.
+[00:43:05.160] It took over two months to land, but it did eventually land right.
+[00:43:08.200] Like I think that's a sign that things are working as intended.
+[00:43:11.600] Right. Like that.
+[00:43:12.800] A genuine patch that is small enough to review,
+[00:43:15.280] that has good enough justifications can land regardless of whether it's by,
+[00:43:19.520] you know, by humans or not. Yeah.
+[00:43:21.680] If we if we're restricting open source contributions to bugs only, though,
+[00:43:25.760] versus, you know, the larger, more directional changes
+[00:43:29.720] that we might with, with full features, what does that mean for.
+[00:43:34.080] Non maintainers.
+[00:43:34.960] Should not be suggesting large directional changes
+[00:43:37.440] without discussion with the maintainers first. Right.
+[00:43:39.440] Like that is the source of the slop bombs.
+[00:43:41.840] Just because you can do something and send someone a 10,000 line pull request
+[00:43:45.800] does not mean you should. Talk to humans first and get approval.
+[00:43:51.040] And then, you know,
+[00:43:52.400] at that point you're proceeding as if you were a trusted maintainer on the inside.
+[00:43:55.480] If you've gone and sign off on your plan.
+[00:43:57.320] So so the path is issue first
+[00:44:00.800] long discussions or if it's obvious, short discussions with the maintainers.
+[00:44:04.800] And from that point, you probably have enough credibility just through those,
+[00:44:09.720] through that discussion to be able to share a pull request.
+[00:44:14.960] Because the maintainers have context on what you're trying to do.
+[00:44:17.040] Yeah. Excellent.
+[00:44:18.080] Excellent. So so open source has a bright future.
+[00:44:21.880] I think that it has some structural problems.
+[00:44:25.480] I think there is that question of
+[00:44:26.840] who is paying for all of those tokens for automatic review and triage.
+[00:44:30.800] Right.
+[00:44:31.080] So I think that there is the challenge of when you've got a million
+[00:44:34.200] developers out there who are all paying for a heavily subsidized $20 a month
+[00:44:38.600] OpenAI or Claude or Gemini subscription, right?
+[00:44:41.960] Like, you have to prevent those folks from denial-of-servicing
+[00:44:46.200] your open source maintainers.
+[00:44:48.080] And for critical projects like the Linux kernel or Kubernetes.
+[00:44:51.040] Right.
+[00:44:51.200] Like the Linux kernel has a automatic review bot called Sashiko.
+[00:44:55.200] And Sashiko is fully paid for by Google, right?
+[00:44:58.120] Which is great.
+[00:44:58.960] So I think corporate sponsorship helps, but I think that there are smaller
+[00:45:02.400] projects that received less commercial love that are really, really struggling.
+[00:45:08.080] And, you know, certainly there have been efforts to do outreach to them.
+[00:45:11.520] For instance, Anthropic has Project Glasswing, which gave access to Mythos
+[00:45:15.080] to a bunch of very security critical projects like curl and OpenSSL.
+[00:45:19.360] Right.
+[00:45:19.600] Like but I think there's kind of this broader problem of
+[00:45:23.080] who pays for these tokens, and how do we make sure
+[00:45:26.000] that open source maintainers are resourced and they don't burn out?
+[00:45:29.240] Yeah, I think that's.
+[00:45:30.640] What we're seeing from it's always been before. I just. Smell it.
+[00:45:34.560] It is it is.
+[00:45:36.000] With we're tripping over all the same problems.
+[00:45:38.040] Right. But at a faster rate is very interesting.
+[00:45:40.720] And actually, you know, executives have money to spend on it.
+[00:45:43.920] Now that is the difference, right? Like, previously, telling people,
+[00:45:46.680] Yes you should implement observability. And they're like budget.
+[00:45:49.080] What budget.
+[00:45:49.920] Now it's like
+[00:45:50.680] you need to implement observability or else your AI effort will fail.
+[00:45:53.560] Great. Here's some money.
+[00:45:56.200] Let's do you know we're a few minutes left.
+[00:45:59.000] It's been it's been a wonderful chat. Really really enjoyed it.
+[00:46:01.920] But I want to I want to end always with the easiest question, Liz,
+[00:46:05.880] which is let's talk about what's going to happen in the next 50 years.
+[00:46:09.640] Well, maybe not.
+[00:46:10.400] Maybe not 50, but.
+[00:46:11.640] 50 years. Right? 50 days. Exactly. Right.
+[00:46:14.160] So so maybe, maybe we talk about just 2 or 3 years and let's
+[00:46:17.360] talk about a role change, or maybe even a change that needs to happen
+[00:46:21.640] in the org around an observability engineer.
+[00:46:25.080] Do you feel that will still be a role, a standalone role, or a job title in future?
+[00:46:30.120] Or do you think that discipline needs to merge into into another role
+[00:46:34.520] that exists today?
+[00:46:36.880] We've already seen
+[00:46:38.760] that site reliability engineering, security engineering,
+[00:46:42.720] observability engineering these all broadly fall on the platform
+[00:46:47.440] of of platform engineering, as it were.
+[00:46:50.560] Right.
+[00:46:50.840] Because they are all cross-functional disciplines
+[00:46:53.120] that are required by all of the individual development teams,
+[00:46:56.440] and they do have their own specialized skill set.
+[00:47:00.000] But broadly speaking, our job is to produce the kind of common
+[00:47:03.400] standards and tooling that developers need to do their jobs.
+[00:47:07.200] So I think the great merger into platform engineering is already well underway
+[00:47:11.600] for like, you know, I mentioned security engineering, accessibility engineering.
+[00:47:14.960] Right. Like test engineering, right.
+[00:47:16.280] Like all of these disciplines where, you know,
+[00:47:18.440] you don't want each developer to have to
+[00:47:20.400] think about each of these things and be an expert in each of these things.
+[00:47:23.800] But it is to some extent, those developers job to ensure that their code
+[00:47:27.640] conforms to our org standards. Right.
+[00:47:30.200] So I think that's basically the, the the crux of it is observability.
+[00:47:35.520] Engineering is not necessarily going to be
+[00:47:37.240] about building out your own observability platform.
+[00:47:39.400] There are vendors out there.
+[00:47:40.480] Or if you're at a similarly large scale, sure, there might be a observability
+[00:47:44.600] tooling team or something, but I think the Outreach to developers
+[00:47:48.320] piece,
+[00:47:48.720] I think that that is something that broadly gets owned
+[00:47:50.920] by all of platform engineering and that platform engineering employees,
+[00:47:54.040] people from a variety of different specialties
+[00:47:55.600] who all collaborate to bring the expertise to the teams that need them.
+[00:47:58.720] Yeah. It's interesting.
+[00:47:59.840] And I think, yeah, even back in my days at Snyk, this was a
+[00:48:04.120] even pre AI,
+[00:48:05.560] it made sense for more and more things to be centralized, particularly around
+[00:48:09.400] security best practices providing those services.
+[00:48:12.360] And I think it makes sense.
+[00:48:13.840] Yeah. Exactly right. It's a perfect mapping. Right.
+[00:48:15.520] Like security observability.
+[00:48:17.680] Testing. Right.
+[00:48:18.400] Like all all reliability.
+[00:48:21.080] You don't want each dev to have to be an expert in service level objectives.
+[00:48:24.680] You want every dev to have service level objectives though.
+[00:48:27.360] Yeah. Amazing.
+[00:48:28.760] Liz where can we talked about a lot,
+[00:48:30.400] but where can people follow up on some of the things that
+[00:48:33.720] that you and Honeycomb have been, have been doing and talking about?
+[00:48:38.040] We definitely maintain a very active engineering blog.
+[00:48:40.120] So if you go to the Honeycomb blog, you'll find writing by
+[00:48:43.160] not just me, but also by my colleagues,
+[00:48:46.440] Charity Majors, Christine Yen and all of Honeycomb engineering.
+[00:48:50.520] And you can find me on the internet basically everywhere as Liz the Grey.
+[00:48:54.680] Wonderful. Liz.
+[00:48:56.160] It's been an absolute pleasure to chat and really and really enjoyed going
+[00:48:59.960] deep in various topics.
+[00:49:01.000] So thank you so, so much for your time
+[00:49:02.920] and it's been a pleasure having you on the AI Native Dev.
+[00:49:05.840] Thank you. Wonderful.
+[00:49:07.520] And I hope all of our listeners out there enjoyed it just as much as I did.
+[00:49:11.840] Thanks for tuning in and see you on the next session.
+[00:49:14.200] Bye for now.
+[00:49:15.760] The AI Native
+[00:49:16.560] Dev is brought to you by the package manager for skills
+[00:49:19.680] and context.
+[00:49:20.480] Your hosts are
+[00:49:21.320] Guy Podjarny and me, Simon Maple.
+[00:49:23.600] Our producer is Tom Dowler.
+[00:49:25.400] The AI Native Dev is not just a podcast, it's a community.
+[00:49:28.840] And we host monthly meetups at the Tessl offices in central London.
+[00:49:32.480] Visit tessl.io forward slash community to learn more.
+[00:49:35.960] And I hope to see you there.

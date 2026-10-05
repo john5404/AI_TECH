@@ -1,0 +1,524 @@
+[00:00:00.000] got another session coming.
+[00:00:01.480] Right now, Shachar from Baz is going to talk about
+[00:00:06.560] building verification layer for agentic coding,
+[00:00:09.120] which sounds like something I needed today.
+[00:00:11.760] So I will be listening.
+[00:00:13.840] Very attentive to this.
+[00:00:16.200] Please welcome Shachar on stage.
+[00:00:17.960] Thank you.
+[00:00:25.320] I'm going to start
+[00:00:26.120] with a question that is haunting me day by day,
+[00:00:29.320] and probably through the whole night when I didn't sleep before this talk.
+[00:00:33.520] It's 2026.
+[00:00:35.640] Why are AI code reviews and code reviews
+[00:00:38.240] are still a bottleneck in engineering teams?
+[00:00:41.440] I'll start with introducing myself.
+[00:00:43.200] My name is Shachar.
+[00:00:44.920] Quite hard to pronounce in English.
+[00:00:46.440] Sorry about that. [I'm] VP of Product at Baz, in the mission of building
+[00:00:50.360] the best and the most precise AI code review agent in the market.
+[00:00:54.120] When I'm not doing product management, I'm waving on.
+[00:00:58.560] I'm surfing on waves. So that's that's where I am.
+[00:01:01.320] I'm based in Tel Aviv, so when I'm not in the office, I'm in the sea.
+[00:01:05.280] I'm a product manager geek.
+[00:01:07.760] I really love dealing with product management.
+[00:01:10.560] I'm doing it for the last decade, and I think the last year
+[00:01:14.640] or two years are the most exciting times to be a product manager and a builder.
+[00:01:18.560] So I hope you're sharing the same passion.
+[00:01:21.680] And this is what I'm going to talk about during this conversation.
+[00:01:24.720] Right now, I'm based in Tel Aviv and I'm very grateful to be here.
+[00:01:28.160] I think a couple of weeks ago, it seems
+[00:01:31.520] that the odds to take a flight from Tel Aviv to London will be very low.
+[00:01:36.280] So thank you for hosting me here, and thank you for spending
+[00:01:38.960] your morning with me.
+[00:01:40.200] I'm planning to relocate and establish
+[00:01:43.320] a new site for our company in San Francisco.
+[00:01:46.880] So if someone is here from the Bay area and would love to connect,
+[00:01:49.920] will make my time there better and I would love to be in touch.
+[00:01:55.560] So back to the question that I started with.
+[00:01:59.720] I'm meeting dozens of engineering teams on a weekly basis
+[00:02:04.120] from all over the world than from different sizes, from startups
+[00:02:08.320] that are 5 to 10 people to enterprise teams
+[00:02:11.400] that have 1000 2000 developers.
+[00:02:14.560] And I hear the same explanation again and again.
+[00:02:17.520] That code review became a bottleneck.
+[00:02:20.680] And as a good product manager, I'm trying to understand why this is happening.
+[00:02:25.320] And those kind of discovery calls, why
+[00:02:29.320] we're using the best coding agents in the world, the most
+[00:02:34.200] costly and expensive models available.
+[00:02:37.840] We are still hitting the point where human beings need
+[00:02:40.800] to review code, where
+[00:02:44.320] engineering managers explain that they have five times or three times
+[00:02:48.960] more PRs that are waiting to be merged, but nothing is happening
+[00:02:52.040] and velocity is actually becoming slower than faster.
+[00:02:57.600] One of the main themes that repeated in
+[00:02:59.680] those conversations was the matter of trust.
+[00:03:03.600] People explained that they don't really rely
+[00:03:06.960] on the agent to close the feedback loop.
+[00:03:11.440] A lot of the users told us that the problem that they had
+[00:03:15.000] is they have specs, and they see that the coding agent multiple times
+[00:03:19.840] just ignores most of the specs part of it, or when they see in the end the feature
+[00:03:24.120] that was implemented, it's not really how they intended it to look like.
+[00:03:29.080] So as a product manager, when you hear that kind of pain, you decide,
+[00:03:32.160] okay, this is going to be my mission.
+[00:03:33.960] I hear this pain that nobody else is solving and I'm going to solve it.
+[00:03:37.760] And what you're going to see in this session is the journey that we did
+[00:03:41.920] to build the tools and the context to give coding agents the ability
+[00:03:45.520] to really verify that your feature was implemented as you asked.
+[00:03:50.720] If you don't believe this issue, I'm going to show it from an example
+[00:03:54.240] from my day to day life.
+[00:03:55.880] So I'm a product manager, I define I design skills, I
+[00:04:00.800] design features, I decide what the company is going to implement.
+[00:04:05.280] And this is an example for a ticket
+[00:04:07.320] that we were supposed to implement as part of the sprint.
+[00:04:11.080] We have as part of our product, the ability to give our customers
+[00:04:16.240] the option to integrate their ticketing system.
+[00:04:20.040] It can be JIRA linear and fiber is one of them.
+[00:04:24.160] Not a lot of people are using it and not a lot of people are familiar with it.
+[00:04:27.840] But that was one of the features that we had to complete.
+[00:04:31.360] And part of what we wanted to do
+[00:04:33.320] is to add this to the onboarding flow of the product.
+[00:04:36.560] So when a user is onboarding to bus, it will have the option to integrate
+[00:04:42.120] which of the tickets ticketing systems available that they have.
+[00:04:45.240] And because I'm reviewing every product, every feature that is being released,
+[00:04:49.800] I asked to make sure that the same bug
+[00:04:54.320] that happened when we integrated another ticketing system won't repeat again.
+[00:04:59.200] I literally added a recording from a previous time
+[00:05:03.600] when we added another integration where the continue button
+[00:05:07.400] was overlapping the new integration that was added
+[00:05:11.320] a couple of days later, the developer sent me a slack
+[00:05:14.360] message telling me, hey, I just completed that feature.
+[00:05:18.640] Here's the link to Preview Environment.
+[00:05:20.160] Please review it. Guess what?
+[00:05:24.280] The continue button is
+[00:05:25.400] exactly where I asked him not to put it.
+[00:05:29.440] Guys.
+[00:05:29.880] Like, I couldn't be more explicit than that.
+[00:05:33.040] And I'm showing this because this is a really simple example, right?
+[00:05:38.360] Like for who of you are taking part in being in an engineering team?
+[00:05:44.480] Product design.
+[00:05:45.600] This is our day to day frustration.
+[00:05:47.680] We're writing specs.
+[00:05:49.280] They are very detailed and we're very happy
+[00:05:52.480] to deliver them to the engineering teams that we're working with.
+[00:05:55.680] But unfortunately when we see the results is not as we expected.
+[00:05:59.680] And you can understand that if this is such a front end
+[00:06:03.440] simple task that gone wrong,
+[00:06:06.560] how like what would be the results if we're doing a complex task?
+[00:06:11.840] So the bottom line is that coding agents that we are using
+[00:06:16.160] are not focused on verifying features.
+[00:06:21.760] There are amazing and generating code.
+[00:06:23.920] And I think one of the themes that is repeated
+[00:06:26.080] in a lot of the talks here and in other conferences is the fact that
+[00:06:30.360] it's so easy to build right now, but the way that the coding agents are built,
+[00:06:35.680] they are focused on generating features.
+[00:06:37.440] They are not focused in fully extracting all the specs that we have, all the specs
+[00:06:42.720] that we write, and they are not focused in verifying the feature as it is.
+[00:06:47.800] And when I say verifying the feature, I'm not meaning verifying the code.
+[00:06:52.000] For those of you who are working in a team and you have like
+[00:06:56.280] your preview environment, your staging, your databases, your other features
+[00:07:00.480] that are connected to the specific feature that you're working with.
+[00:07:03.360] You understand that comparing code to code isn't the answer.
+[00:07:07.280] You need to deploy the feature
+[00:07:08.640] in your staging environment and really see how it looks like.
+[00:07:11.800] The good news is we don't need to in like create any data that nobody has.
+[00:07:16.920] We have specs.
+[00:07:18.560] Specs are there.
+[00:07:19.400] And if you're a good team and it's a really good practice,
+[00:07:21.560] you focus on writing specs.
+[00:07:25.520] So this is my dream as a product manager.
+[00:07:29.120] This is the overview of the architecture
+[00:07:31.320] that I started to create together with my CTO.
+[00:07:35.360] I'm going to create an agent that is called Spec Reviewer.
+[00:07:38.920] It's going to have access to specs.
+[00:07:41.880] Specs will be saved in a ticketing system.
+[00:07:44.320] It can be JIRA, it can be linear, it can be Monday notion,
+[00:07:48.080] it can be on GitHub.
+[00:07:49.760] It will be able to access designs.
+[00:07:52.000] That is something that is not so standard to visual assets in the designs,
+[00:07:57.760] and it will be able to access the feature that is deployed in
+[00:08:01.800] staging environment or in preview environment and verify it.
+[00:08:05.640] The way I see it is that agent is able to extract the requirements, all of them,
+[00:08:10.200] and go every through every requirement
+[00:08:13.400] that are in the specs and validate if they were really implemented or not.
+[00:08:17.440] I'm thinking about an agent
+[00:08:19.240] that is navigating through different types, impersonating
+[00:08:22.400] to different roles into the product, and just going and clicking
+[00:08:26.240] and trying different case cases in the product.
+[00:08:30.560] So as a product manager, I'm already coding, I have access to the best tools.
+[00:08:35.160] And I'm going to ask Claude,
+[00:08:37.280] what does he think about this idea and if he can implement it.
+[00:08:41.360] And the answer that I get is this.
+[00:08:44.360] And this is the moment that I'm very concerned about, right?
+[00:08:48.200] Like when my wife tells me this, I'm happy.
+[00:08:51.680] But when Claude tells me this, I'm that's the point where I need to
+[00:08:56.080] to be concerned.
+[00:08:57.000] And I click enter and I get this.
+[00:09:01.160] The reason I'm
+[00:09:01.760] getting this is because it's a very hard task to do.
+[00:09:04.760] And you can see here this error shows that the context window just exploded.
+[00:09:10.960] So what I'm going to show now is how we took this simplistic idea
+[00:09:15.480] of implementing an agent that is able to extract requirements
+[00:09:19.800] and verifying them to make it actually work.
+[00:09:24.200] So this was the first problem.
+[00:09:26.840] The problem is that one agent just can't do it.
+[00:09:30.120] One agent can take all the requirements that are in the ticket,
+[00:09:34.320] all the requirements that are in the specs,
+[00:09:36.200] all the design aspects that were introduced in
+[00:09:38.600] this are the specific feature.
+[00:09:39.960] And also go and verify them.
+[00:09:42.080] It just explodes the agent.
+[00:09:44.000] And by the way,
+[00:09:44.960] that's probably one of the reasons that your coding agents don't do it.
+[00:09:49.960] So what was
+[00:09:50.840] our solution to deal with the crashing sessions?
+[00:09:53.960] The idea was to to divide the task between two different agents.
+[00:09:59.840] It's also it's another best practice you can use for other agent tasks.
+[00:10:05.560] It's dividing it between planning.
+[00:10:07.400] So we're going to have one agent that is the planner.
+[00:10:10.040] The planners role is to extract the requirements
+[00:10:13.600] from the spec and understand what are going to be the failure cases
+[00:10:17.840] that I'm going to verify through the verification process.
+[00:10:22.440] Only one task to extract requirements.
+[00:10:25.640] The second agent is going to be the verification agent.
+[00:10:28.240] The verification agent is going to navigate through different files,
+[00:10:32.120] through the UI, through the design, and understand if the specific specs
+[00:10:36.960] that were provided by the planner were were met in this feature.
+[00:10:44.520] Okay, good news sessions are running.
+[00:10:47.000] We're not crashing anymore,
+[00:10:48.320] but unfortunately, the results that we're getting are horrible.
+[00:10:52.720] What we understood is that the agents started
+[00:10:59.120] skipping some of the requirements.
+[00:11:01.040] We had tickets that included 10 or 12 requirements.
+[00:11:05.000] Sometimes we had the process that included 20 requirements
+[00:11:09.160] and the agent just consistently skipped some of them.
+[00:11:14.400] The second thing that happened
+[00:11:15.880] was that we noticed that the quality of the verification
+[00:11:19.640] and the quality of the requirements that were extracted was inconsistent.
+[00:11:24.480] And we understood that even though we divided the task between
+[00:11:28.240] two different agents, we understood that it's
+[00:11:31.360] still too much context for one agent.
+[00:11:34.400] So this is going to be the only graph that I'm going
+[00:11:37.680] to show in this presentation, and I promise.
+[00:11:40.880] This is an illustration of the context problem that we're having in this task.
+[00:11:45.920] So how the verification agent works, it gets the list from the planner
+[00:11:51.040] of what is going to be the potential failure scenarios
+[00:11:54.480] that I'm going to review, and starts with the first requirement from the spec
+[00:12:00.840] going into specific files, navigating through them, testing the UI, checking
+[00:12:05.560] if the requirement that is supposed to check was implemented or not, defines
+[00:12:11.200] what would be the verdict, and proceeds to the next one
+[00:12:13.560] and the next one, and the next one.
+[00:12:14.960] You can understand that at this point, when I'm getting to the fifth or the sixth
+[00:12:18.400] requirement, I'm having loads of contexts that are irrelevant
+[00:12:21.920] for that specific task, and that makes the agent just dumber.
+[00:12:28.400] The way to solve it
+[00:12:29.440] would be to delegate the task between multiple subvariants.
+[00:12:33.480] It's understanding that I can verify each of the sub
+[00:12:37.200] requirements in the spec by different agents.
+[00:12:40.680] So instead of one agent that is checking ten or 12 or 15 requirements
+[00:12:46.320] sequentially, I'm going to have 15 or 12 agents that are running in parallel.
+[00:12:51.560] Each of them is reaching to a specific verdict.
+[00:12:54.000] And in the end, there's an orchestrator that collects all the verdicts
+[00:12:57.760] at the end of the process.
+[00:13:01.560] Great.
+[00:13:02.040] We're having sessions that are running.
+[00:13:03.760] We have all the requirements that are extracted and validated.
+[00:13:07.040] Now we started to notice another problem that is related
+[00:13:10.320] to the quality of the context.
+[00:13:13.400] We notice that the agent is starting to make up
+[00:13:18.320] requirements that nobody asked him to do.
+[00:13:21.480] This is like an example from one of the first reports of our spec reviewer.
+[00:13:27.200] You can see it on GitHub here.
+[00:13:28.520] For example, you can see here the agent decided that we need to introduce
+[00:13:32.520] a new responder command like nobody asked that.
+[00:13:36.240] The second example is maintaining backward compatibility.
+[00:13:40.080] This is again like something that the product manager,
+[00:13:44.000] the CTO that designed the specific
+[00:13:45.880] task, like nobody really had that specific requirement.
+[00:13:49.840] The reason we understood what's happening here is the fact that we gave the agent
+[00:13:54.920] only the specs.
+[00:13:56.840] And what's really interesting here, and I added this git from inception,
+[00:14:01.720] is the fact that when we gave the the agent the tickets,
+[00:14:05.480] it only understood the specs and the design.
+[00:14:07.800] It only understood what's going to be the goal.
+[00:14:12.200] Like what is the intent in that specific moment.
+[00:14:15.640] But without to be grounded with the code, it's just not connected to reality.
+[00:14:21.080] The specs are a snapshot and what we're trying to achieve
+[00:14:25.840] in this coding task, but the code is
+[00:14:29.240] how we ground that agent to reality.
+[00:14:32.560] Two interesting takeaways in that area.
+[00:14:35.600] One, we understood that if we give the agent the base branch
+[00:14:40.120] and the base code and not the diff, we're getting better results. Why?
+[00:14:44.600] This was a really interesting case.
+[00:14:46.120] We understood that if we're giving it the diff, that it's biased
+[00:14:49.880] to the specific solution that the engineer choose to implement.
+[00:14:53.600] But if we give it the base branch before the change, the agent is open
+[00:14:57.400] minded to different kinds of approach
+[00:14:59.120] and is more critical about the solution that was was chosen.
+[00:15:03.720] The second way to improve that kind of results was to scope
+[00:15:08.040] the agent to understand what it's reviewing right now.
+[00:15:11.720] So, for example, if I'm reviewing a front end feature,
+[00:15:15.240] there's no reason to
+[00:15:16.240] be concerned about backend issues because I'm just going to create noise
+[00:15:20.480] that are irrelevant for this specific feature.
+[00:15:24.640] So the good news
+[00:15:25.640] is we have sessions that are running, we have requirements
+[00:15:28.760] that are extracted perfectly and we're verifying them amazingly.
+[00:15:32.640] Now we're getting to a point that is the really exciting point
+[00:15:35.640] of sharing it with our customers that are waiting for this specific feature.
+[00:15:39.560] And we get to the point where we're starting to plan
+[00:15:42.560] how the launch of this feature is going to look like,
+[00:15:45.080] and we get to the point where we're saying, okay,
+[00:15:47.080] now we need to integrate, we need to let our customers
+[00:15:50.080] integrate buzz into their preview environment.
+[00:15:54.320] So that means that buzz needs to access multiple URLs, unknown ones.
+[00:16:00.200] It can be teams that are just giving us access to this URL.
+[00:16:03.440] And you can understand that that's that's not a good idea right?
+[00:16:06.120] Like clicking on unknown URLs.
+[00:16:08.680] It's just like clicking on phishing link that I'm getting on an SMS on an email,
+[00:16:12.440] and I'm going to do it 100 times a month.
+[00:16:16.560] My agent is sitting on our S3 bucket.
+[00:16:20.640] Where our code is is where our data is.
+[00:16:23.840] It's where our customers data is.
+[00:16:25.440] It's where our OpenAI Cardinals are.
+[00:16:28.400] That's not a good idea to run arbitrary code on on my on my agent.
+[00:16:33.880] So the way we decided to solve that and again,
+[00:16:37.400] this is our personal approach, but I'm going to talk
+[00:16:39.520] about how you can do it differently.
+[00:16:41.520] It's using a third party tool.
+[00:16:44.600] There's a lot of nonsense people are doing there with coding agents.
+[00:16:48.800] People are just vibe coding a lot of a lot of software right now.
+[00:16:52.680] And if you're entering an area that you think is a dangerous area
+[00:16:56.520] related to cybersecurity abilities, prefer using a third party tool
+[00:17:01.360] instead of developing yourself, there are this.
+[00:17:05.200] This specific solution didn't really impact the results that we generated.
+[00:17:10.160] It just helped us deal with things that we didn't want to deal with
+[00:17:13.640] as as a dev tools company, in this case, what we implemented
+[00:17:17.480] and we used together with AWS Agent Core, is the ability to run
+[00:17:21.840] an ephemeral sandbox for every requirement that is being validated.
+[00:17:26.520] That means that when the agent needs to validate a specific requirement,
+[00:17:30.760] there will be a sandbox that would be running
+[00:17:34.280] for that specific requirement with a browser session,
+[00:17:37.280] checking the specific feature through the preview environment,
+[00:17:41.560] sending back the verdict to the agent that is in our cloud,
+[00:17:44.560] and then the agent can understand
+[00:17:46.160] what's what was that specific requirement if it was implemented or not.
+[00:17:51.840] And this is the dream become true.
+[00:17:54.280] This is the moment where Spec reviewer is running on our code.
+[00:17:58.680] I waited for this moment for close to six months,
+[00:18:02.440] and you can see here multiple sessions that are not human sessions,
+[00:18:06.080] but agent sessions that are navigating through our UI.
+[00:18:09.320] You can see here cases where the agent is navigating
+[00:18:13.360] through dashboards, checking if data data integrity.
+[00:18:17.000] When we added different features to the dashboard,
+[00:18:20.240] you can see cases where the agent is looking for different integrations
+[00:18:24.400] and trying to integrate and activate a specific integration.
+[00:18:27.840] You can see the agent trying to subscribe through stripe that sometimes breaks,
+[00:18:33.960] and that's probably the most frustrating point for you as a product manager.
+[00:18:37.120] When someone tries to pay and the product isn't working, and also
+[00:18:40.560] trying to subscribe to onboard with a Google account or with so
+[00:18:45.920] and this is running multiple times, like dozens of times in every PR
+[00:18:51.200] that we're doing to validate every feature, to ensure regression tests,
+[00:18:55.120] and to ensure that the features are really implemented as we describe them.
+[00:19:02.840] The last slide, the key takeaways.
+[00:19:05.680] Or if you want to take this dream and build it by yourself,
+[00:19:09.840] first of all, it's 2026
+[00:19:14.000] and context engineering is still a hard problem.
+[00:19:17.160] There's a feeling that when you look at what's going on
+[00:19:21.000] today, this is something it's so easy to do, right?
+[00:19:24.360] Like context windows are so big and I have so many tokens.
+[00:19:27.360] It's just so easy to do it.
+[00:19:28.760] But the truth is, it's not complex.
+[00:19:31.600] Tasks that are not out of the box from coding agents
+[00:19:35.160] require a lot of context engineering, and two tips that I can give
+[00:19:38.840] here was one dividing between planning and execution,
+[00:19:44.160] and the other one would be delegating identity task between multiple subjects.
+[00:19:50.440] The second.
+[00:19:51.200] The second takeaway here is the fact that you have your specs
+[00:19:54.240] and you have your code, and you don't need other resources except them.
+[00:19:59.040] And if you combine them together, it's really a gold mine.
+[00:20:01.720] So you don't need to create more resources to ensure that your agent
+[00:20:05.360] is running smoothly.
+[00:20:06.600] And the third takeaway is the one that I talked about earlier.
+[00:20:09.800] If you identify high area, high risk areas
+[00:20:13.800] that you think that can be vulnerable in part of your SDLC
+[00:20:17.880] or part of your architecture, prefer using third party
+[00:20:21.640] proven tools that you can use instead of exposing yourself
+[00:20:24.640] to security issues.
+[00:20:27.800] The last step of way is a personal one.
+[00:20:30.080] For someone that is a builder and a product manager
+[00:20:32.800] and is part of the startup life these days can be very frustrating.
+[00:20:37.200] I think for someone that is looking at what's happening on Twitter
+[00:20:41.280] or news can think that there's no way to beat the big companies every day.
+[00:20:47.200] Anthropic or cursor or codex release a feature
+[00:20:50.840] that you're saying like, oh damn, this is this is what I'm thinking about.
+[00:20:53.880] This is going to be the big feature that I was planning to do on next quarter.
+[00:20:57.720] But the idea is that these
+[00:21:01.480] big companies are overlooking a lot of cracks
+[00:21:06.480] that real teams are looking for products to solve them.
+[00:21:10.880] Spec reviewer is one of those examples
+[00:21:13.120] that for me as a product manager, it was mainly to tune in
+[00:21:17.400] to the pains that I felt in our customers and trying to find the place
+[00:21:21.600] where coding agents don't really solve it, and finding a way to build it.
+[00:21:26.560] And I think like this would be the best
+[00:21:28.280] tip that I can give you from this conversation.
+[00:21:30.600] Look for the gaps that the big coding agents are not able to to fill
+[00:21:34.480] and build your product there.
+[00:21:35.760] That will probably be the best way for you to beat them.
+[00:21:38.680] That's it.
+[00:21:40.160] Thank you very much for your time.
+[00:21:42.720] Thank you so much.
+[00:21:45.760] We have we have plenty of time for some questions.
+[00:21:48.840] So we'll spread out and three hands in the air like you just don't care.
+[00:21:53.720] Or if you have a question.
+[00:22:01.720] Did you say you run regression.
+[00:22:04.880] Sorry, sorry.
+[00:22:08.440] Regression tests every time you implement a new feature.
+[00:22:11.720] Yeah.
+[00:22:12.400] So you test everything that's already there.
+[00:22:14.880] That's right.
+[00:22:15.480] So what spec reviewer does that was the
+[00:22:20.120] the next part of it.
+[00:22:21.080] So the first one, the first version of it
+[00:22:24.560] was to ensure that everything that was in the spec was really implemented.
+[00:22:29.560] So for example, the colors are correct, the resolution is right that everything
+[00:22:34.720] that the product manager or the designer and all the states were implemented.
+[00:22:37.760] But then what customers started asking was, okay, this agent is able
+[00:22:42.920] to navigate through the UI and ensure that everything is working as expected.
+[00:22:48.160] Let's also give it like a set of critical flows
+[00:22:52.040] that I want to ensure that nothing of them is breaking.
+[00:22:54.800] So, for example, when I give this example to every engineer
+[00:22:58.320] that is coming, I said, like, you can do a lot of things,
+[00:23:00.720] like if there's something I'm not like, I'm going to be like, I'm going to remind,
+[00:23:05.520] like I won't forget forever is if you're going to break subscription.
+[00:23:10.240] Because if I'm like, one time I just looked at a customer on a,
+[00:23:14.440] like a screen recording,
+[00:23:15.720] trying to subscribe with like 100 seats and just didn't do it.
+[00:23:20.360] It was unsuccessful and just like ditched the product.
+[00:23:22.960] And I said, like, okay, I just missed a customer
+[00:23:25.880] and this would be something that I would check in every PR
+[00:23:28.880] from now on, like ensure that is happening and you can think about your product
+[00:23:33.360] and your critical flows and ensure that they are all the time intact
+[00:23:37.520] and nothing is happening to them, even though you're introducing new features.
+[00:23:41.920] Thank you.
+[00:23:43.680] Go ahead.
+[00:23:44.400] Thank you for the talk.
+[00:23:45.880] My question is about the verification.
+[00:23:49.920] Like it could be.
+[00:23:51.080] It could be executed in two ways.
+[00:23:54.520] You can either run the genetic session, point it at a specification,
+[00:24:00.280] and from there, with help of playwright MCP, for example,
+[00:24:04.480] let the agent to go through the application and verify it.
+[00:24:07.960] Or you can build a description of the test scenario
+[00:24:12.440] and then make the agent code this test, and then just run this test
+[00:24:17.960] code like a script and then probably committed to the code base.
+[00:24:22.840] So what's your take on the ratio when you resort to one approach.
+[00:24:27.480] When to another. Yeah.
+[00:24:30.640] How how you make these decisions.
+[00:24:32.920] Okay. So it's a good question.
+[00:24:37.080] The problem that I have with tests
+[00:24:38.880] is that they test things that nobody really
+[00:24:43.560] like.
+[00:24:44.120] They're not testing real life.
+[00:24:46.400] Like teams are sitting and thinking about these imaginary scenarios
+[00:24:50.160] that are not going to be not going to happen any time in your product.
+[00:24:53.840] And there are plenty of AI code coding tools that generate tests
+[00:24:58.920] like here, take like 100, 200, 500 unit tests.
+[00:25:03.560] And in the end of the day, there is one scenario that you're not thinking about.
+[00:25:07.800] The idea we chose this specific approach is
+[00:25:11.080] we wanted to leverage data that is already there.
+[00:25:14.560] Like, I don't want someone to think about scenarios
+[00:25:18.680] that that should that might happen or might not.
+[00:25:22.440] And let's use the specs to do that.
+[00:25:24.880] By the way, the byproduct of this process, and I didn't talk about it,
+[00:25:29.080] but I heard about it from a lot of our customers,
+[00:25:32.240] is the fact that when they knew that the specs are
+[00:25:35.840] used to be for the to the agents to verify the feature,
+[00:25:41.640] it encouraged them to write better specs.
+[00:25:45.560] So it's like renewable energy, right?
+[00:25:48.120] Like, I'm bringing a new tool that improves best practices and improves
+[00:25:53.720] and encourages product managers and designers
+[00:25:56.040] to be more specific in the way they write specs.
+[00:25:58.760] And I think that, like if testing
+[00:26:01.760] was the answer, there wasn't room for this.
+[00:26:06.880] Thank you.
+[00:26:09.960] Hello.
+[00:26:10.960] Thank you for the talk.
+[00:26:12.360] Thank you. Really great to small questions.
+[00:26:15.760] First you mentioned the the sub agent.
+[00:26:18.360] So simplifying and splitting in different,
+[00:26:23.360] different acceptance criteria to check rather than
+[00:26:26.200] and give that to different sub agents.
+[00:26:28.360] Have you used lighter models for those given
+[00:26:32.120] that those are faster and, and tokens are becoming more and more expensive.
+[00:26:37.240] So I wanted to understand if you have evaluated that.
+[00:26:41.480] And the second one is you mentioned
+[00:26:43.600] regression testing, which we kind of do also with end to end testing.
+[00:26:47.400] But what about exploratory testing after a release?
+[00:26:52.480] So I'll address the first question first.
+[00:26:55.120] We are using different models where specifically using all of them.
+[00:27:00.480] We're using OpenAI
+[00:27:01.640] and anthropic ones for different tasks for extracting verification.
+[00:27:06.440] We're using the requirements.
+[00:27:07.920] We're using a heavy model because it's a big task.
+[00:27:12.840] The fact that human beings aren't consistent
+[00:27:15.520] about how they're writing specs.
+[00:27:16.760] So there will be people that will say, this is something we talked about
+[00:27:19.720] on breakfast. Here's the print screen. Good luck.
+[00:27:22.440] And the other one would write like a really big spec.
+[00:27:25.000] So you need a model with a big brain that is enabled to understand
+[00:27:29.440] what was there and grounded to what really the requirements are,
+[00:27:34.200] while the verification ones we use like small agents
+[00:27:38.680] that just needed to navigate through the product,
+[00:27:41.840] get to the right section in the product and say like the color is the color,
+[00:27:45.680] the resolution is the resolution, or the click is working or not.
+[00:27:50.680] Can you repeat the second question?
+[00:27:53.280] I just want to make sure that I'm addressing it correctly.
+[00:27:56.240] For exploratory testing.
+[00:27:57.960] So regression testing we have we have those core journeys
+[00:28:02.160] that we want to make them.
+[00:28:03.840] We will
+[00:28:05.360] we want to make sure that we are not regressing on those core functionalities.
+[00:28:09.200] But what about exploratory testing?
+[00:28:11.680] Because as we know, every time we do a change, maybe something unrelated
+[00:28:15.760] will break that might not be in that core journey.
+[00:28:19.160] So what would be the example of what would you like to test?
+[00:28:23.560] Exploratory testing is just generally the QA.
+[00:28:26.920] So if you do if you do it manually, you QA is just navigate the the product
+[00:28:32.600] and in certain functionalities to understand if, if things are working.
+[00:28:37.840] Yeah.
+[00:28:38.200] So so we focus there on where matters and not like all the app.
+[00:28:44.000] So there will be things that like
+[00:28:48.240] I will not go and test everything in the product.
+[00:28:50.480] In the end of the day, it's dividing like putting an agent into work
+[00:28:54.840] and using tokens and, and like agentic workflows to do that
+[00:28:59.640] would be focusing on the 1 or 5% in the product that matters
+[00:29:03.440] most and not going into every part in the product and doing that for that.
+[00:29:07.640] Like you can have static testing, testing your code to do that.
+[00:29:11.960] It's mainly focusing on where matters most and putting the agent there.
+[00:29:16.520] Like, I wouldn't like to cost
+[00:29:19.000] tens of thousands of dollars for verifying every part in the product
+[00:29:22.760] and only focusing where I really am needed.
+[00:29:26.920] Thank you.
+[00:29:27.520] And one short one at the front.
+[00:29:29.560] The question, not the person. Yeah, sorry.
+[00:29:31.560] I'm sorry.
+[00:29:32.640] I'm sorry. Thanks.
+[00:29:34.360] Thanks for the presentation. Thank you.
+[00:29:37.080] I know he said a short one, but how did you make sure that the spec
+[00:29:41.000] that you gave
+[00:29:41.840] the agents were actually implemented the way the spec has been written?
+[00:29:46.440] And because you said it was dropping out at points, right.
+[00:29:49.520] Yeah. The other bit.
+[00:29:50.320] Is that a very important one?
+[00:29:51.400] You said specs plus core is gold mine.
+[00:29:53.400] And there's an argument here that a lot of us don't care about the code
+[00:29:56.840] that's being generated.
+[00:29:57.720] I think that's a bit a bit of a mistake, because if you create
+[00:30:00.920] if the agents have created spaghetti code, the next time you go and try to either
+[00:30:05.560] create a new feature or fix a bug, I think you're going to go into this
+[00:30:09.000] negative spiral, infinite loop and then end up creating more bugs.
+[00:30:13.280] So how do you address both of these?
+[00:30:16.360] So I have three seconds. Can I.
+[00:30:20.720] Slightly can take it offline.
+[00:30:22.120] Okay okay. Sure. Thank you very much.

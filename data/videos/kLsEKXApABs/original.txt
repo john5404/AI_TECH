@@ -1,0 +1,1349 @@
+[00:00:00.000] One of the quotes that came out of
+[00:00:01.840] Anthropic was MCP is like the USB-C for
+[00:00:05.040] AI.
+[00:00:05.640] >> I love the analogy. If anybody has a
+[00:00:07.480] USB-C, it can be used for a variety of
+[00:00:10.400] different devices, and the same is true
+[00:00:12.960] for MCP. As soon as an MCP server is
+[00:00:15.640] implemented for a particular data set,
+[00:00:18.120] API, or service, that same MCP server
+[00:00:20.720] can be used in any client, whether it be
+[00:00:23.160] ChatGPT or Anthropic or an AI agent that
+[00:00:26.240] is created in a kind of bespoke manner
+[00:00:28.320] to do a variety of different tasks.
+[00:00:30.000] >> So, as a plug-in person, when I saw MCP
+[00:00:33.160] announced, this was very clear to me
+[00:00:34.800] that this was the plug-in system for all
+[00:00:37.120] AI software. And if we can accept the
+[00:00:39.080] fact that all software is going to
+[00:00:40.600] become AI software, then this MCP is the
+[00:00:44.040] kind of plug-in system that matters.
+[00:00:45.960] >> How far are we from people being able to
+[00:00:49.560] truly trust MCP servers? And what, in
+[00:00:52.520] your experience, is that level of trust
+[00:00:54.640] in the industry?
+[00:00:55.800] >> really trust any just off-the-shelf MCP
+[00:00:58.840] server because
+[00:01:08.160] >> Before we jump into this episode, I
+[00:01:09.680] wanted to let you know that this podcast
+[00:01:11.360] is for developers building with AI at
+[00:01:14.000] the core. So, whether that's exploring
+[00:01:16.160] the latest tools, the workflows, or the
+[00:01:18.800] best practices, this podcast is for you.
+[00:01:21.280] A really quick ask, 90% of people who
+[00:01:23.560] are listening to this haven't yet
+[00:01:24.960] subscribed. So, if this content has
+[00:01:26.720] helped you build smarter, hit that
+[00:01:28.560] subscribe button and maybe a like. All
+[00:01:30.800] right, back to the episode.
+[00:01:32.880] >> Hello and welcome to another episode of
+[00:01:35.200] the AI Native Dev. We've got a fun
+[00:01:37.440] discussion here today talking about all
+[00:01:39.880] things MCP. We're going to go into the
+[00:01:42.360] depths of what MCP is, the various
+[00:01:44.800] architectural pieces of MCP, talk a
+[00:01:47.720] little bit about something called MCP
+[00:01:49.520] Run, which is a super interesting tool
+[00:01:51.840] that allows you to use other people's
+[00:01:54.760] MCP servers. It's a hosted environment
+[00:01:56.960] that allows you to also to run tasks
+[00:01:58.960] against various MCP services. We'll take
+[00:02:00.880] a a bit of a deep dive into that. We'll
+[00:02:03.360] also talk a little bit about what's new
+[00:02:05.760] in the in the world of Anthropic with
+[00:02:07.280] the new MCP registry and talk about what
+[00:02:09.920] MCP looks like for the future as well
+[00:02:12.560] for for developers and industry. And
+[00:02:15.320] joining me on this journey is Steve
+[00:02:17.880] Manuel and Steve is the founder and CEO
+[00:02:21.400] of Dilipso. Steve, welcome. How are you?
+[00:02:24.680] >> Very well. Thanks for having me Simon.
+[00:02:26.360] >> Oh, absolute pleasure. And where abouts
+[00:02:27.600] you calling from today, Steve?
+[00:02:29.120] >> I'm in the San Francisco Bay Area.
+[00:02:30.720] >> Oh, nice. The heart of AI in the US,
+[00:02:33.160] right?
+[00:02:33.920] >> Exactly. We're all locked in here.
+[00:02:35.800] >> Yeah, and so let me guess you go to a
+[00:02:37.840] you go to a an AI meetup every what?
+[00:02:40.440] About three times an evening? Is that is
+[00:02:42.000] that about right?
+[00:02:43.000] >> Exactly, yeah.
+[00:02:45.080] >> Awesome. So Steve, tell us a little bit
+[00:02:46.880] about yourself, a little bit about your
+[00:02:48.200] journey with with through MCP actually
+[00:02:50.840] as well cuz obviously it's not it's not
+[00:02:52.959] MCP's not been out for a huge amount of
+[00:02:55.080] time but there's been so much
+[00:02:56.240] innovation. I'd love to hear a little
+[00:02:57.840] bit about kind of like you know how you
+[00:02:59.600] how you started with MCP and how you you
+[00:03:02.200] know built things like MCP run and
+[00:03:04.440] things like that going forward.
+[00:03:05.800] >> Sure. Totally. So yeah,
+[00:03:08.120] I
+[00:03:09.959] I kind of got started on the MCP journey
+[00:03:12.480] by accident largely.
+[00:03:14.920] The company Dilipso
+[00:03:17.080] since its inception has been working on
+[00:03:19.239] computer isolation technology through
+[00:03:22.200] WebAssembly for the purpose of plugin
+[00:03:24.160] systems. Largely for making apps
+[00:03:26.680] extensible beyond their original design
+[00:03:28.840] and functionality.
+[00:03:30.360] Enabling an end user to kind of
+[00:03:31.800] customize the application experience by
+[00:03:33.560] actually injecting new code into that
+[00:03:36.000] application
+[00:03:37.519] through the security of model security
+[00:03:39.959] model of the
+[00:03:41.680] WebAssembly runtimes and code execution
+[00:03:44.560] environments. This actually is kind of a
+[00:03:46.560] practical safe way to extend
+[00:03:49.160] third-party software. And so as a plugin
+[00:03:52.760] person when I saw MCP announced now in
+[00:03:55.920] November of 2024 like 10 years ago it
+[00:03:59.400] feels like
+[00:04:01.360] this was very clear to me that this was
+[00:04:03.040] the plug-in system for all AI software
+[00:04:06.160] and if we could accept the fact that all
+[00:04:07.600] software is going to become AI software
+[00:04:09.840] then this MCP is the kind of plug-in
+[00:04:12.959] system that matters. So we we very
+[00:04:15.240] quickly were early to adopt MCP and
+[00:04:18.600] implement the protocol on top of our
+[00:04:20.760] isolation wasm stack
+[00:04:23.640] and that since has you know become
+[00:04:26.400] a whole whole kind of interesting
+[00:04:28.360] dynamic for the company and has
+[00:04:30.360] presented new opportunities for us to
+[00:04:32.080] firstly bring our extensibility
+[00:04:33.600] technology into a new space but also
+[00:04:36.600] just explore how else we can bring
+[00:04:39.000] useful features and functionality into
+[00:04:41.760] applications through the virtue of MCP
+[00:04:44.160] as kind of the connector layer between
+[00:04:46.200] systems and
+[00:04:47.760] AI large language models.
+[00:04:49.760] >> Very interesting. One of the one of the
+[00:04:52.120] I probably overused quotes that came out
+[00:04:54.720] of Anthropic was how MCP is like the
+[00:04:57.720] USBC for AI and that makes a ton of
+[00:05:01.400] sense but one of the things that makes
+[00:05:03.400] USBC super interesting and valuable is
+[00:05:06.760] the fact that it uses the same the same
+[00:05:09.160] API I guess
+[00:05:11.280] and and that API obviously connects
+[00:05:13.640] everywhere. People know how to use it.
+[00:05:16.520] What is it that MCP solves that existing
+[00:05:19.080] API patterns don't?
+[00:05:20.600] >> I love the analogy
+[00:05:23.080] and I think it makes you know perfect
+[00:05:24.840] sense to explain it this way because if
+[00:05:26.560] you think about USBC as more of a
+[00:05:29.840] connection port as like a you know a way
+[00:05:32.640] to interconnect different things
+[00:05:35.720] be it a phone or a computer or a camera
+[00:05:39.760] the cable that connects those two
+[00:05:41.800] devices
+[00:05:43.480] is standardized and so if anybody has a
+[00:05:45.600] USBC
+[00:05:48.240] just laying around, it can be used for
+[00:05:50.960] a variety of different devices. And the
+[00:05:53.800] same is true for MCP. As soon as an MCP
+[00:05:56.360] server is implemented for a particular
+[00:05:59.240] data set, API, or service,
+[00:06:02.400] that same MCP server can be used in any
+[00:06:05.840] endpoint, any client, whether it be
+[00:06:07.800] ChatGPT or Anthropic or an AI agent
+[00:06:11.640] that is is, you know, created, you know,
+[00:06:13.120] in a kind of bespoke manner
+[00:06:15.240] to do a variety of different tasks. It
+[00:06:17.560] really is this kind of now like write
+[00:06:19.800] once, run anywhere
+[00:06:21.680] eventuality. And I'm mentioning this I
+[00:06:23.760] think particularly because you're
+[00:06:24.720] wearing this Java shirt.
+[00:06:27.880] And allows, you know, any system to
+[00:06:30.160] communicate with another over this
+[00:06:32.520] standard.
+[00:06:33.840] The problem really that at its core that
+[00:06:36.320] I think pushed the Anthropic team to
+[00:06:40.200] firstly, you know, devise the standard
+[00:06:42.120] and then open source it and release it.
+[00:06:44.040] You know, and I'm I'm sure many of the
+[00:06:45.560] people on the core team will be angry
+[00:06:47.440] that I
+[00:06:48.480] specifically narrow the problem down to
+[00:06:50.240] tools.
+[00:06:51.720] But function calling, tool calling, tool
+[00:06:53.840] use in agents and models is not a new
+[00:06:58.040] capability. However,
+[00:07:00.040] every single model and library and
+[00:07:02.320] framework had a different way of
+[00:07:04.680] describing how tools should be used, how
+[00:07:06.880] the parameters are provided, how the
+[00:07:08.640] values are returned, and a different
+[00:07:10.600] format for kind of laying out what that
+[00:07:13.240] tool looked like. So, what is the
+[00:07:14.280] signature of the name? Is it a JSON
+[00:07:16.400] file? Is it described through, you know,
+[00:07:18.480] just free-form text? And
+[00:07:21.480] it meant that everybody had to basically
+[00:07:23.040] rewrite their tools or at least the tool
+[00:07:25.400] interface between different
+[00:07:28.320] models or agent frameworks. And it just
+[00:07:31.720] was very cumbersome to do that. I think
+[00:07:34.000] Anthropic, you know, rightly was uh
+[00:07:37.520] you know, realized that they could do
+[00:07:38.760] something here to improve that and make
+[00:07:41.440] it easier for people to share and reuse
+[00:07:43.520] these implementations The across a
+[00:07:45.840] variety of different
+[00:07:48.040] tools and services.
+[00:07:49.480] >> And it's funny cuz when they released
+[00:07:50.680] that yeah, like you said, a couple of
+[00:07:52.560] decades ago in November of 2024,
+[00:07:55.680] um
+[00:07:56.480] it was it was almost quite a
+[00:07:58.640] quiet launch. It was like there was
+[00:08:01.160] nothing huge made out of it. But I think
+[00:08:04.280] we looked at it and we you see the raw
+[00:08:07.280] potential that this could potentially
+[00:08:08.760] you know, that this could have on on
+[00:08:10.920] LLMs and and how how powerful how this
+[00:08:13.560] empowers them really
+[00:08:15.960] to to to to kind of like make those
+[00:08:17.720] decisions. And exactly like you say,
+[00:08:19.040] it's that in that standardized way that
+[00:08:20.960] really unlocks it across models. I guess
+[00:08:23.040] you mentioned a few terms there. Let's
+[00:08:24.280] let's let's kind of go in and demystify
+[00:08:26.800] a few of those terms. So, there's
+[00:08:28.200] obviously the protocol. Let's talk a
+[00:08:29.480] little bit about the protocol as well.
+[00:08:30.800] You've got the protocol that kind of
+[00:08:31.960] like works between
+[00:08:33.640] client and server and then you have
+[00:08:34.840] obviously the MCP client, the MCP
+[00:08:36.640] server. Talk us through the the
+[00:08:38.520] architectural pieces here of of where
+[00:08:40.760] things sit, what we develop, why we
+[00:08:43.280] would use one over the other.
+[00:08:44.600] >> Sure. So,
+[00:08:46.640] firstly, the protocol is kind of split
+[00:08:49.000] in two
+[00:08:50.320] segments like like many protocols are,
+[00:08:53.160] especially the client-server variety,
+[00:08:54.800] just like HTTP.
+[00:08:56.760] MCP is broken into a a server
+[00:09:00.320] and a client. And a server is basically
+[00:09:03.000] the way you communicate with some
+[00:09:06.640] upstream data source or service. You
+[00:09:09.240] know, how do I get access to do the
+[00:09:11.120] action or to read the email or to
+[00:09:14.760] call some system that provides some
+[00:09:17.839] additional context to a model. And the
+[00:09:20.640] client is kind of this interceptor
+[00:09:23.040] between the server and the model
+[00:09:25.520] that is actually communicating over the
+[00:09:27.040] protocol to get that data or call that
+[00:09:29.440] tool or manage some resource.
+[00:09:32.200] And the client is
+[00:09:34.320] right next to the
+[00:09:36.800] uh, model. Um,
+[00:09:38.720] usually they're they're contained inside
+[00:09:40.040] what the spec defines as a host. And
+[00:09:42.760] um, so that could be chat GPT or cloud
+[00:09:44.720] desktop or it could be an AI agent um,
+[00:09:47.680] that's running that has access to tools.
+[00:09:49.920] An MCP client is the side of the
+[00:09:52.360] implementation that knows how to
+[00:09:54.680] discover and connect to an MCP server
+[00:09:57.840] and then also to call the various um,
+[00:10:00.400] spec functionalities like listing tools
+[00:10:03.440] or calling tools or finding resources.
+[00:10:06.160] >> That that that's all I could see there.
+[00:10:08.560] >> General high-level overview.
+[00:10:10.440] >> Yeah, yeah, absolutely. So So when we
+[00:10:11.960] think about the the, you know, the
+[00:10:14.160] clients obviously we, you know, we
+[00:10:15.480] install these clients onto our onto
+[00:10:17.200] cloud desktop or onto cloud code or or
+[00:10:19.440] however we whatever we want to we were
+[00:10:21.000] wherever we want to use, you know, MCP
+[00:10:22.800] servers.
+[00:10:23.720] Um, the servers though,
+[00:10:25.680] one of the one of the big challenges is
+[00:10:27.280] really identifying which servers we want
+[00:10:28.920] to use, that discoverability of servers.
+[00:10:31.480] Um, and of course this is kind of like
+[00:10:32.960] where a ton of all these registries and
+[00:10:34.600] things like that sit. Um, want to you
+[00:10:36.360] give us an intro into into uh, mcp.run.
+[00:10:40.640] It's super cool how I guess
+[00:10:43.080] um,
+[00:10:43.760] you know, there's this a number of
+[00:10:45.240] registries out there that kind of like,
+[00:10:46.960] you know, perform these collations of of
+[00:10:49.400] servers that you can use.
+[00:10:51.240] The mcp.run, which we'll talk about in a
+[00:10:52.880] in a little sec, goes that step further
+[00:10:55.360] and allows you to actually, you know,
+[00:10:57.040] perform activities or tasks on top of
+[00:11:00.040] these servers that exist. But but talk
+[00:11:02.560] us a little bit through, you know, what
+[00:11:04.160] a registry is, how we use a registry and
+[00:11:06.360] and a little bit about mcp.run.
+[00:11:09.360] >> Sure.
+[00:11:10.320] So first um, everybody should be aware
+[00:11:12.600] that Anthropic as well as the community
+[00:11:14.880] group that works on the protocol um,
+[00:11:17.120] have established an official registry,
+[00:11:18.839] which is really exciting,
+[00:11:20.480] uh, that supports um, kind of a
+[00:11:23.320] the collection and discovery of MCP
+[00:11:25.680] servers implemented across the
+[00:11:27.680] ecosystem. And the goal, and I don't I
+[00:11:30.600] don't want to speak for for them uh, but
+[00:11:32.760] I'm just going to regurgitate a little
+[00:11:33.840] bit of what, you know, is is already
+[00:11:35.960] published is to provide a
+[00:11:39.160] kind of universal and discoverable layer
+[00:11:42.840] of infrastructure that provides, you
+[00:11:44.640] know, pointers and, you know, listings
+[00:11:47.120] of MCP servers that are hosted even on
+[00:11:48.800] other registries or out on GitHub or
+[00:11:50.960] anywhere else. Um and the the goal is to
+[00:11:54.440] serve the community to also be able to
+[00:11:56.000] build sub-registries on top of this
+[00:11:57.880] registry. So, perhaps, you know, there
+[00:11:59.720] is a vertical focused registry that's
+[00:12:02.440] adjusted for marketing tools or just for
+[00:12:04.800] developer tools or just for, you know,
+[00:12:06.760] financial services. The goal is to be
+[00:12:08.960] able to support, you know, more focused
+[00:12:11.760] sub-registries that can all pull from
+[00:12:13.960] this this registry. So, just a shout out
+[00:12:15.760] to the teams
+[00:12:17.120] um largely from Block, um Pulse MCP, and
+[00:12:20.160] Throped and more um who've been putting
+[00:12:22.160] in the hours uh to to get this this up
+[00:12:25.000] stood up. Um
+[00:12:26.560] It it's a really neat uh implementation
+[00:12:28.720] uh and it's all open source. Um so, go
+[00:12:30.600] check that out. Yeah, yeah, discovery is
+[00:12:32.480] challenging. I think when when MCP was
+[00:12:34.120] first announced, there was this sprawl
+[00:12:35.960] of, you know, software engineers who,
+[00:12:38.200] you know,
+[00:12:39.320] were basically like hooking up kind of
+[00:12:41.160] CLI apps, you know, local executables uh
+[00:12:44.800] into these chat applications and um your
+[00:12:48.640] best bet was to kind of just like look
+[00:12:50.200] through GitHub to try to find, you know,
+[00:12:52.520] someone's NPM library that presented as
+[00:12:56.000] an MCP server. Um and you know, it was
+[00:12:59.000] it was smart to kind of figure we need
+[00:13:00.680] some place to make it easy to find
+[00:13:02.320] high-quality MCP servers, but also to
+[00:13:04.760] secure uh the ecosystem through
+[00:13:07.280] identity. Make sure that whoever's
+[00:13:08.839] publishing MCP servers can prove uh that
+[00:13:11.560] they're publishing something um that
+[00:13:14.200] they own that that is, you know,
+[00:13:15.960] trustable. Uh there's still a lot of
+[00:13:17.640] work to do on kind of the trust and
+[00:13:19.040] quality management perspective, but um
+[00:13:21.920] at least it's a step in the right
+[00:13:23.000] direction to have, you know, a large
+[00:13:24.839] global um
+[00:13:26.600] you know, universal registry to to
+[00:13:29.480] manage MCP servers. Um, before Entropic,
+[00:13:33.160] um, and the organizing group around the
+[00:13:35.840] spec did the work to create an official
+[00:13:38.120] registry, um, many other companies or
+[00:13:41.720] organizations or teams worked on
+[00:13:43.680] registries, uh, so that we could fill
+[00:13:46.080] the gap until there was something
+[00:13:47.800] official.
+[00:13:48.880] And, um, so ourselves,
+[00:13:51.320] um, and many other companies, uh, have
+[00:13:54.040] put some work in to hosting registries.
+[00:13:57.160] Um,
+[00:13:57.800] ours is a little bit different in that,
+[00:13:59.840] uh, mcp.run,
+[00:14:01.480] um, hosts user code, uh, that that is
+[00:14:04.920] implemented implements MCP servers from
+[00:14:07.080] WebAssembly modules. And, um,
+[00:14:10.000] this allows us to execute their code in,
+[00:14:13.240] you know, a very
+[00:14:14.840] isolated environment, um,
+[00:14:17.320] and and brings a level of security that
+[00:14:19.040] just kind of can't be matched with other
+[00:14:21.080] technology for the same efficiency and
+[00:14:23.520] cost and performance trade-offs. So,
+[00:14:25.600] instead of running Docker images or, uh,
+[00:14:28.640] you know, a whole virtual machine, um,
+[00:14:30.920] we can just run a little function inside
+[00:14:32.960] of WebAssembly module, uh, that
+[00:14:34.480] implements the tool calls.
+[00:14:36.640] Um, not a super critical detail, um,
+[00:14:39.640] but the the goal has always been to kind
+[00:14:42.760] of provide the most secure, uh,
+[00:14:45.120] environment for,
+[00:14:47.080] you know, third-party code to execute on
+[00:14:49.160] our platform. Um,
+[00:14:51.000] but we're also seeing largely that many
+[00:14:52.680] MCP servers are moving to their own
+[00:14:56.480] remote hosts. So, PayPal, GitHub, um,
+[00:15:00.600] many other companies are realizing we
+[00:15:02.520] should just publish an endpoint like we
+[00:15:04.280] do in HTTP API, uh, that allows a more
+[00:15:07.480] kind of agent-oriented,
+[00:15:09.640] uh, client to access and use our
+[00:15:12.040] service. So, we're we're excited by, I
+[00:15:14.120] think, this move to official MCP servers
+[00:15:17.880] hosted by their first-party provider
+[00:15:20.080] kind of being the,
+[00:15:21.800] uh eventuality.
+[00:15:23.840] >> It's It's It's really interesting, isn't
+[00:15:25.880] it, when you see and, you know, just
+[00:15:28.200] then when you kind of when you kind of
+[00:15:29.960] talk through that, my me and my uh
+[00:15:32.800] background as Sneak, I kind of I kind of
+[00:15:34.760] shudder every time I hear certain things
+[00:15:36.560] like, you know, with my background in
+[00:15:38.120] the open source, third-party libraries
+[00:15:40.040] with certain vulnerabilities and and
+[00:15:41.800] malicious libraries and things like
+[00:15:43.320] that, the potential for something quite
+[00:15:46.120] damaging is is is you know, pretty
+[00:15:49.200] pretty pretty damaging. It's pretty big.
+[00:15:51.240] >> Yeah.
+[00:15:51.480] >> But um it's it's all about how do we
+[00:15:53.480] actually how do we actually put the um
+[00:15:56.680] put the precautions in place so that we
+[00:15:59.640] we limit the the potential blast radius.
+[00:16:02.160] What you're talking about here where
+[00:16:03.920] it's like it's more containerized, it's
+[00:16:05.720] running in isolation, those kind of
+[00:16:07.120] things really really really really good.
+[00:16:09.120] The idea of and I've used MCP servers
+[00:16:11.560] before, I've looked at other people's,
+[00:16:13.400] you know, GitHub repos and I'm like, "Oh
+[00:16:15.000] gosh, now I've got to do a full code
+[00:16:16.440] review of this cuz I want to I want to
+[00:16:18.000] understand, you know, is this is this
+[00:16:20.120] actually legit or is this, you know,
+[00:16:22.280] looking a bit dodgy?" Um the idea of,
+[00:16:24.960] you know, third parties running MCP
+[00:16:26.640] servers kind of like scares me a bit,
+[00:16:28.080] but then, you know, when you know it's a
+[00:16:29.320] validated MCP server from a trusted
+[00:16:31.280] source, okay, then it's just, you know,
+[00:16:33.400] it's a potentially just another service
+[00:16:34.880] that they're offering on the on the
+[00:16:36.440] interwebs. How far are we from people
+[00:16:40.240] being able to truly trust
+[00:16:43.160] uh you know, what they see from MCP
+[00:16:45.080] servers? And and what in your experience
+[00:16:48.360] is that level of trust in the industry?
+[00:16:50.280] So, you know, are you seeing this pick
+[00:16:52.320] up from startups, from from mid-size
+[00:16:55.040] companies, from enterprises that are
+[00:16:57.200] that are actually, you know, fully using
+[00:16:58.480] MCP servers in production today?
+[00:17:00.200] >> Yeah, definitely. I mean, it was
+[00:17:01.720] surprising when MCP was first announced
+[00:17:04.600] that there was, you know, a relative
+[00:17:06.160] lull around the excitement and interest.
+[00:17:09.600] Um
+[00:17:10.199] and I think that
+[00:17:12.199] initially, it was kind of too oriented
+[00:17:14.600] for developers. And developers quickly
+[00:17:17.520] saw that there was potential here, there
+[00:17:19.120] was something exciting here. And, you
+[00:17:21.360] know, we saw this explosive growth then
+[00:17:23.199] in kind of the earlier half of 2025.
+[00:17:26.360] Now, we're seeing that um
+[00:17:29.440] the technology and the protocol have
+[00:17:31.800] been implemented enough in a variety of
+[00:17:34.040] different clients uh
+[00:17:35.720] that they're
+[00:17:36.920] visible to a non-technical audience. And
+[00:17:39.880] so, what we see um is absolutely at
+[00:17:42.360] every level of, you know, company size,
+[00:17:44.200] from startup all the way up to very
+[00:17:46.000] large, you know,
+[00:17:47.480] even even regulated industry like banks
+[00:17:50.200] and financial services uh are starting
+[00:17:52.520] to realize that if they're going to give
+[00:17:54.840] their employees access to AI for
+[00:17:56.520] productivity, the the logical next step
+[00:17:59.160] is to also have that AI be connected to
+[00:18:02.000] some of their internal workplace
+[00:18:04.520] applications and services. So, um we see
+[00:18:07.080] people connecting this into Salesforce
+[00:18:09.240] or HubSpot or CRMs to do prospecting and
+[00:18:13.720] lead enhancement and and and um
+[00:18:17.160] content generation like, you know,
+[00:18:19.680] writing emails for you, responding to
+[00:18:21.560] emails, customer service is big. You
+[00:18:23.760] know, there's a company called Intercom
+[00:18:25.320] who has a an agent named Finn.
+[00:18:28.080] And Finn implemented MCP so that
+[00:18:30.760] customer service teams can attach
+[00:18:32.960] services um and tools to Finn, and Finn
+[00:18:36.080] can do more, you know, proactive data
+[00:18:38.760] lookups or actions against, you know,
+[00:18:41.760] the customer support queries it's it's
+[00:18:43.560] handling.
+[00:18:44.880] Um
+[00:18:45.960] So, I think like it's it's definitely
+[00:18:47.720] escaped the kind of developer chambers
+[00:18:49.920] and is now in um the the real world. Uh
+[00:18:53.640] and to go back to your question on
+[00:18:55.720] trust, like this poses a huge problem um
+[00:18:58.760] because you can't really trust
+[00:19:01.120] any just off-the-shelf MCP server you
+[00:19:03.720] find. And this is coming from somebody
+[00:19:05.200] who runs an MCP service, who I would of
+[00:19:07.320] course love everybody to trust us, but
+[00:19:09.080] it's just you can't trust anything um
+[00:19:12.760] because you don't know what exactly is
+[00:19:14.640] happening behind the scenes. What's What
+[00:19:16.880] actually happens when you call that tool
+[00:19:19.520] um
+[00:19:20.320] with whatever data the model has decided
+[00:19:22.160] to extract from your prompt and send off
+[00:19:24.280] to that MCP server.
+[00:19:26.240] So there there is a substantial
+[00:19:27.840] challenge so to
+[00:19:30.400] you know, figure out with regard to
+[00:19:31.720] trust. But I think that the first step
+[00:19:33.520] is actually just using the MCP servers
+[00:19:35.560] that are from the providers themselves.
+[00:19:37.680] Just like you would trust any normal uh
+[00:19:40.360] HTTP API that you interface with to you
+[00:19:43.600] know, a service like Spotify or PayPal
+[00:19:46.160] or Google.
+[00:19:47.720] Um
+[00:19:48.480] they should and hopefully will at some
+[00:19:51.920] point provide a you know, first-party
+[00:19:54.720] MCP server
+[00:19:56.240] because that that that does alleviate
+[00:19:58.160] some of the you know, trust concerns.
+[00:20:00.320] >> Yeah, absolutely. I think it I think
+[00:20:01.480] it's when there isn't a a provider's own
+[00:20:04.640] MCP server that it starts, you know,
+[00:20:06.640] bringing questions up. I mean, I know,
+[00:20:08.960] you know, we had a that's a a good
+[00:20:11.000] session with
+[00:20:12.640] with someone off air actually where they
+[00:20:14.000] were talking about how they can how
+[00:20:15.760] they've almost like built up their own
+[00:20:18.800] their own almost like, you know,
+[00:20:21.240] assistant where it consumes all of their
+[00:20:23.840] calendar information, all of their email
+[00:20:26.680] information, all of their notion and
+[00:20:28.160] linear data and they have they have
+[00:20:31.280] stacks of information that that can kind
+[00:20:33.360] of
+[00:20:34.680] you know, give the LLM information about
+[00:20:37.520] who they are, what they're what what
+[00:20:39.480] they like doing, what what what are the
+[00:20:41.160] what are the things that they that they
+[00:20:42.600] care about in their career that they
+[00:20:43.840] want to absolutely nail. And then it
+[00:20:45.720] uses these MCPs to pull all that data.
+[00:20:47.880] And of course, there are so many there
+[00:20:50.040] are so few MCP servers that are from the
+[00:20:53.280] originating company that you know, the
+[00:20:54.640] actual provider company, you're you're
+[00:20:56.680] relying on these third-party
+[00:20:59.000] open-source tools to handle your most
+[00:21:02.080] sensitive data. And it can cause huge
+[00:21:05.160] product productivity gains if if you get
+[00:21:07.760] this right, but you are you are opening
+[00:21:10.320] yourself up a little bit. I think
+[00:21:11.720] there's I'd love to talk about the
+[00:21:13.480] difference between almost managed versus
+[00:21:15.960] self-hosted
+[00:21:18.560] MCP servers here. If I'm if I'm
+[00:21:20.920] self-hosting myself, I'm running this
+[00:21:22.880] maybe even locally, for example, the
+[00:21:25.000] risk is much much lower, but I have to
+[00:21:26.920] trust the the the MCP server is is, you
+[00:21:30.000] know, doing the right things with the
+[00:21:31.600] data I'm passing it and and and handling
+[00:21:33.840] that correctly. Um but managed servers,
+[00:21:37.120] managed MCP servers, there's there's
+[00:21:39.280] there's, you know, a bunch of other, uh,
+[00:21:41.760] you know, valid things that that that
+[00:21:44.160] will offer us as well that our laptops
+[00:21:45.960] and and local machines
+[00:21:47.840] just can't do at scale. Talk us through
+[00:21:50.040] what that, you know, when a developer
+[00:21:51.920] thinks, "Okay, should I go to that
+[00:21:53.480] remote or should I host this locally or
+[00:21:55.800] do it on my machine and STD
+[00:21:58.360] you know,
+[00:21:59.520] STDIO kind of,
+[00:22:01.360] um,
+[00:22:02.480] spin off of an MCP server?" What is What
+[00:22:05.520] is the right choice when?
+[00:22:08.360] >> I'm more and more convinced that
+[00:22:10.000] standard IO MCP servers are never the
+[00:22:12.080] right choice. Well, unless you're
+[00:22:13.440] writing it yourself, the risk is
+[00:22:15.640] substantial and the risks are now, um,
+[00:22:20.960] at the level of your machine with the
+[00:22:23.360] same privileges that you as the user of
+[00:22:25.600] your machine have.
+[00:22:27.880] And so if if if that MCP server is just
+[00:22:30.360] running on your laptop, it has the
+[00:22:32.640] ability to read your environment
+[00:22:34.080] variables, it has the ability to call
+[00:22:36.040] the network in any fashion it likes
+[00:22:38.160] using any protocol and any tools it
+[00:22:39.880] likes.
+[00:22:40.800] It has the ability to read and write to
+[00:22:42.200] your file system and this is like kind
+[00:22:44.920] of the, you know, red alert, highest
+[00:22:47.280] severity problem, uh, that a user of an
+[00:22:51.480] MCP server will face. So, the movement
+[00:22:54.360] of these MCP servers up to managed
+[00:22:57.360] endpoints remotely or in the cloud, um,
+[00:23:00.560] removes a whole layer of security risk
+[00:23:03.120] that is down at the endpoint down at the
+[00:23:05.680] client computer, the user's machine.
+[00:23:07.840] However, there are definitely times
+[00:23:09.280] where you kind of need to have a
+[00:23:11.480] standard IO MCP server if you're largely
+[00:23:14.000] working with developer tools and then
+[00:23:15.520] you need to call a CLI that's on your
+[00:23:17.640] machine or if your code project is only
+[00:23:20.880] local to your machine and an MCP server
+[00:23:23.440] is operating on diagnostics from your
+[00:23:26.040] IDE or something like that. You can't
+[00:23:28.640] get that up in the cloud unless you're
+[00:23:30.080] using some, you know, kind of managed
+[00:23:31.560] cloud code generating platform. I think
+[00:23:34.280] you guys probably know a couple good
+[00:23:35.320] ones there. So, I I I think largely, you
+[00:23:38.200] know, the remote MCP servers are the
+[00:23:41.280] more secure ones, um,
+[00:23:43.400] but you also need to trust that the
+[00:23:45.480] endpoint is authentic and you need to be
+[00:23:47.120] able to connect to it and authenticate
+[00:23:48.840] to it.
+[00:23:49.840] Um,
+[00:23:50.560] so I don't think there's a a, you know,
+[00:23:52.520] hard and fast rule as to like which is
+[00:23:54.880] the better,
+[00:23:57.080] you know, transport to use for an MCP
+[00:23:59.280] server, whether be standard IO or
+[00:24:00.760] remote. I think it's very situationally
+[00:24:03.120] relevant to say, "Okay, well, what what
+[00:24:04.760] kind of data am I using? Where does the
+[00:24:06.000] data live? What is the authentication,
+[00:24:08.480] you know, what is the security risk?"
+[00:24:10.560] And, you know,
+[00:24:12.000] the reason all these transports exist is
+[00:24:13.640] because they have, you know, their own
+[00:24:16.280] time and place to use them.
+[00:24:18.120] Um, but I think we're moving away from a
+[00:24:20.920] local standard IO based MCP server that
+[00:24:24.200] executes on the user's machine, um,
+[00:24:26.800] just because there there's there are
+[00:24:28.080] more implementations of MCP servers
+[00:24:30.040] remotely, um,
+[00:24:31.840] and I think those are far easier to
+[00:24:33.400] trust. Um, now,
+[00:24:36.000] running an MCP server remotely
+[00:24:38.920] in your own infrastructure versus
+[00:24:40.960] just connecting to a remote URL that is
+[00:24:43.400] provided over the internet, uh, are also
+[00:24:45.360] two different things. You can implement
+[00:24:46.880] an MCP server that wraps an API because
+[00:24:50.160] the API provider themselves don't
+[00:24:51.720] provide an MCP server and absolutely run
+[00:24:54.560] that yourself, um, host it in your own
+[00:24:57.000] network, and connect to it through, um,
+[00:25:00.160] you know, your
+[00:25:01.640] infrastructure.
+[00:25:02.960] Um,
+[00:25:03.840] we we see many many companies deciding
+[00:25:05.800] to move in that direction just for the
+[00:25:07.080] control and the transparency over what
+[00:25:10.440] tools are, you know, being connected to
+[00:25:12.840] by MCP clients that their teams are
+[00:25:14.840] using.
+[00:25:15.960] Um, and to plug a product, we do
+[00:25:17.600] actually have kind of a self-hosted MCP
+[00:25:19.400] platform, um,
+[00:25:21.120] that provides this level of
+[00:25:22.760] transparency, auditability, security, go
+[00:25:25.560] to Turbo MCP.
+[00:25:27.040] Um, and this was largely a learning, um,
+[00:25:30.080] from providing mcp.run. Um, large
+[00:25:32.600] organizations and folks who are more
+[00:25:34.520] concerned about security aren't going to
+[00:25:37.080] trust a public proxy to take this MCP
+[00:25:39.920] traffic from an MCP client and
+[00:25:43.480] transmit, you know, whatever sensitive
+[00:25:45.280] information from a database or a SaaS
+[00:25:48.120] product through a public proxy up to its
+[00:25:51.560] upstream service.
+[00:25:53.240] Um, and so, in order to kind of satisfy
+[00:25:55.480] that need of controlling that proxy and
+[00:25:57.840] owning that traffic, um, you know, we
+[00:25:59.920] did build a self-hosted version of
+[00:26:01.680] mcp.run, but it's a little more kind of
+[00:26:03.840] a larger, kind of more security-oriented
+[00:26:06.280] enterprise customer. For individuals,
+[00:26:09.360] you know, using public proxies is still
+[00:26:10.920] fine. Um, but you're but you're
+[00:26:12.960] definitely taking on a little bit of
+[00:26:14.080] risk just to trust that entity that
+[00:26:16.720] you're not going to
+[00:26:18.400] send off my Notion page data or my
+[00:26:20.680] calendar data up to some, you know,
+[00:26:22.560] advertising service or, um, if you get
+[00:26:25.520] hacked, then, well, you have all my auth
+[00:26:27.920] tokens and all of the, you know, plain
+[00:26:30.280] text data that was extracted from,
+[00:26:33.480] you know, my email, uh, that's maybe
+[00:26:35.520] sitting inside your database somewhere.
+[00:26:37.600] >> Mhm. So, mcp.run is fully managed then
+[00:26:39.880] by yourselves and and and Turbo MCP is
+[00:26:42.520] is self-hosted that I can just come
+[00:26:43.960] along and stand up an instance in my
+[00:26:45.760] organization and and then start running
+[00:26:48.440] straight away against that.
+[00:26:49.840] >> Correct.
+[00:26:50.640] >> There are two types of things that you
+[00:26:52.080] can host on there. One is MCP servers,
+[00:26:54.160] the other is uh, servlets. And I kind of
+[00:26:56.240] like when I saw that I thought, "Wow, I
+[00:26:58.040] I haven't heard or read the word servlet
+[00:27:00.160] in many, many years." And I thought,
+[00:27:01.760] "Wow, have we come that far that
+[00:27:04.160] actually we can we can we can override
+[00:27:06.600] the term servlet and there's not there's
+[00:27:08.760] not enough contention still on our I I
+[00:27:10.800] shed a tear for for that moment. Um but
+[00:27:13.360] tell us what what's the difference in a
+[00:27:14.720] servlet and a full MCP server?
+[00:27:16.600] >> Yeah, a servlet has literally nothing to
+[00:27:18.960] do with the spec or MCP at all. It's a
+[00:27:21.640] term that we chose very, very early on
+[00:27:24.080] and
+[00:27:25.120] if we could rewind the clock, maybe we
+[00:27:27.120] wouldn't have used this term. But it's
+[00:27:29.560] it's just too perfect of a term to not
+[00:27:31.640] have used. In the Java world, a servlet
+[00:27:34.760] is basically an implementation of a
+[00:27:37.440] subset of HTTP so that you can reprogram
+[00:27:41.040] a HTTP server
+[00:27:43.320] that runs in Java with what they call
+[00:27:46.200] the servlet that allows you to basically
+[00:27:48.000] intercept an HTTP request, run some
+[00:27:50.240] code, and then return an HTTP response
+[00:27:52.880] back up to the host application. And
+[00:27:55.720] what an MCP.run servlet is is a subset
+[00:27:59.840] of MCP that allows you to just handle
+[00:28:03.840] intercept a tool call
+[00:28:05.600] and implement the tool call and respond
+[00:28:07.720] with a tool call uh result. And so it
+[00:28:11.640] allowed us to basically simplify the
+[00:28:13.240] implementation of MCP so that a
+[00:28:15.680] developer only had to worry about
+[00:28:17.760] implementing the tool call functions
+[00:28:19.520] that they wanted to support as opposed
+[00:28:21.800] to standing up an entire MCP server in
+[00:28:24.520] which you need to pick a transport, you
+[00:28:26.080] need to figure out authentication
+[00:28:27.280] scheme, you need to figure out um many,
+[00:28:29.600] many things that are just like not the
+[00:28:31.480] core business of
+[00:28:33.360] implementing a tool. So yeah, a servlet
+[00:28:35.680] is kind of our our our toy term for the
+[00:28:40.560] simplification of MCP on MCP.run and the
+[00:28:44.080] ability to kind of like
+[00:28:45.960] go serverless, do no infrastructure,
+[00:28:48.680] just ship a little function that
+[00:28:50.120] implements the tool just like a Java
+[00:28:52.760] servlet allowed you just to ship a
+[00:28:54.200] little bit of code inside the, you know,
+[00:28:56.560] wrapper of a HTTP service.
+[00:28:59.040] >> Love it. Love it. And And what are
+[00:29:01.120] You're not going to release applets as
+[00:29:02.400] well, are you?
+[00:29:03.880] >> No, we're going to save the world all
+[00:29:05.360] that trouble.
+[00:29:05.880] >> Yeah, it's a Talking of security
+[00:29:07.080] problems.
+[00:29:08.120] Um No, that makes sense. That makes
+[00:29:09.680] sense. And And so, from as a developer,
+[00:29:12.680] um if I wanted to build on top of
+[00:29:14.800] mcp.run or rather,
+[00:29:17.200] um if I if I wanted to to to to submit,
+[00:29:20.200] I guess, and deploy a tool on mcp.run,
+[00:29:23.880] um what is the What What is my
+[00:29:25.400] development life cycle here look like in
+[00:29:27.000] terms of how I do that?
+[00:29:28.360] >> So, yeah, mcp.run is actually powered by
+[00:29:30.640] another
+[00:29:31.840] uh service that our company builds
+[00:29:33.680] called XTP,
+[00:29:35.520] uh which is largely a plugin system as a
+[00:29:39.200] service. So, if you wanted to add a
+[00:29:41.040] plugin system to your application, XTP
+[00:29:43.640] makes it very easy to integrate other
+[00:29:46.080] third-party code that's from your
+[00:29:47.640] customers or users and execute that code
+[00:29:50.040] inside of your application.
+[00:29:51.840] And
+[00:29:53.440] um mcp.run, you know, builds on top of
+[00:29:56.200] this, you know, code execution uh
+[00:29:59.000] technology. And so, you are basically as
+[00:30:01.920] a as a developer who wants to publish to
+[00:30:03.920] mcp.run are interfacing with kind of the
+[00:30:07.360] service behind the scenes, XTP. And so,
+[00:30:09.320] there's some tool reuse. You download a
+[00:30:10.960] CLI, and this CLI allows you to
+[00:30:13.600] bootstrap into a MCP servlet project.
+[00:30:17.520] So, you can pick a language you want to
+[00:30:18.800] implement it in, whether that be
+[00:30:20.520] JavaScript, Zig, Rust, Go, Python, C#,
+[00:30:24.960] C++, and we drop you into kind of a
+[00:30:28.160] boilerplate project. And that project
+[00:30:30.360] basically has two functions. One
+[00:30:32.880] function to be implemented is the tool
+[00:30:34.800] call handler, and the other is the
+[00:30:36.760] description of the tools. And as the
+[00:30:40.320] developer, you fill in the
+[00:30:41.560] implementations. Here's a tool called,
+[00:30:43.520] you know, get email, and it actually
+[00:30:45.240] then it goes and connects to the Gmail
+[00:30:47.640] API or whatever, and does a search based
+[00:30:50.520] on input parameters that you defined in
+[00:30:52.400] the description, and then returns back a
+[00:30:55.800] tool call result. The goal is, you know,
+[00:30:57.840] we drop everybody in these kind of very
+[00:30:59.320] well-typed boilerplate functions,
+[00:31:02.240] um so that you have, you know, rich
+[00:31:03.840] types that help auto complete and, you
+[00:31:05.920] know, make the developer experience
+[00:31:07.280] rather nice.
+[00:31:08.640] Um
+[00:31:09.400] There is a caveat here that all of these
+[00:31:11.440] implementations compile to WebAssembly
+[00:31:13.920] modules, and so there there are
+[00:31:16.160] limitations that come inherently with
+[00:31:18.160] that, uh but they limitations are
+[00:31:20.320] purposeful so that you don't run into
+[00:31:22.520] these kinds of security problems that
+[00:31:25.200] any other form of implementing an MCP
+[00:31:27.600] server would have, in the sense that if
+[00:31:30.200] I'm running an untrusted MCP server,
+[00:31:33.280] and I authenticate to my Gmail through
+[00:31:35.680] it, that MCP server has my token, my
+[00:31:39.880] access credential to that upstream
+[00:31:41.520] service,
+[00:31:42.600] but it also has the ability to send my
+[00:31:44.600] data to some other server, because once
+[00:31:47.520] the data enters the MCP server, it's
+[00:31:50.280] somebody else's code working inside of
+[00:31:52.440] that, and they could choose to just
+[00:31:54.920] write your email list to disk, or they
+[00:31:57.480] could send it off to some third-party
+[00:31:58.960] server, and you wouldn't know the
+[00:32:00.640] better. So, one of the features of
+[00:32:02.200] WebAssembly and our particular
+[00:32:04.040] implementation is that we require, when
+[00:32:06.920] an MCP server is registered by the
+[00:32:08.560] developer who wants to publish it, that
+[00:32:10.440] they include a allow list of domains
+[00:32:13.680] that that that the code will potentially
+[00:32:16.080] reach out to, allow list a set of
+[00:32:19.080] environment variables that uh that code
+[00:32:21.600] will need at runtime, and allow list,
+[00:32:24.360] you know, if they need file system,
+[00:32:26.760] which paths that or directories ahead of
+[00:32:29.720] time that that code wants access to to
+[00:32:31.840] be approved. And then when the user of
+[00:32:33.960] that MCP server installs it on mcp.run,
+[00:32:38.000] they allow that those domains,
+[00:32:40.880] environment variables,
+[00:32:42.720] and file paths are are made available to
+[00:32:46.280] the code. So, you're very aware as the
+[00:32:48.120] end user that this Gmail MCP servlet is
+[00:32:51.520] actually only ever talking to
+[00:32:53.400] api.google.com,
+[00:32:55.320] never to any nefarious third-party
+[00:32:58.120] server that the developer may have
+[00:33:00.160] access to or is leaking information to.
+[00:33:02.640] So, you're sure that your data is
+[00:33:03.960] staying where you expect it to stay, uh
+[00:33:06.360] which is
+[00:33:07.280] at least a helpful starting point to
+[00:33:09.560] reduce some of the the risk here.
+[00:33:11.680] >> Yeah, absolutely. Absolutely. And I
+[00:33:13.160] think it follows a lot of the best
+[00:33:14.240] practices there. Very similar to kind of
+[00:33:16.240] like apps on a marketplace, what they
+[00:33:17.640] have access to, those types of things.
+[00:33:19.320] Absolutely. And And we've talked a lot
+[00:33:21.040] about the security, I guess, of how uh
+[00:33:24.680] I, as a consumer of an MCP service, want
+[00:33:27.760] to make sure that that MCP server is is
+[00:33:31.520] um you know, legitimate, doing the right
+[00:33:33.640] things, those types of things. If we
+[00:33:35.440] consider now, okay, that's a that's an
+[00:33:37.120] absolutely legitimate uh MCP server
+[00:33:39.240] that's running somewhere,
+[00:33:41.000] um somewhere hosted, and how do I make
+[00:33:43.920] sure uh that the security of now the
+[00:33:46.720] person who's actually going to be using
+[00:33:48.080] that is actually authorized uh to to be
+[00:33:51.520] able to access the data they say they
+[00:33:53.640] can. What What are the um
+[00:33:55.960] How do we What's the security model
+[00:33:57.640] behind that handling of authorization,
+[00:34:00.480] authentication, those types of things?
+[00:34:02.040] >> Yeah, absolutely. This was um
+[00:34:05.080] This was kind of one of the larger
+[00:34:06.560] problems the protocol faced in the
+[00:34:08.480] earliest days just because there really
+[00:34:10.159] was no
+[00:34:11.879] standard or recommendation on how to do
+[00:34:13.679] this. So, everybody was kind of
+[00:34:15.200] implementing, you know, hacks in many
+[00:34:18.320] ways to get authorization uh or to get
+[00:34:21.200] kind of authentication data into this um
+[00:34:25.320] into the transport in order to send a
+[00:34:27.520] token or a key or whatever off to the a
+[00:34:30.360] service.
+[00:34:31.440] Um now, uh the protocol has adopted um
+[00:34:35.720] OAuth
+[00:34:36.840] 2 a particular subset of OAuth uh called
+[00:34:39.879] dynamic client registration
+[00:34:42.080] so that you can integrate your MCP
+[00:34:44.600] server um against, you know, otherwise
+[00:34:47.960] already standardized implementations of
+[00:34:50.320] auth flows. Uh and this makes it much
+[00:34:52.600] easier for a user of the MCP server to
+[00:34:55.840] effectively like delegate access to an
+[00:34:58.920] AI agent or application
+[00:35:02.000] to use their
+[00:35:04.560] upstream service like Slack or
+[00:35:07.560] Salesforce or whatever um through
+[00:35:11.040] a very simple like way to authenticate.
+[00:35:13.600] It's a kind of a one-click. I get just
+[00:35:15.160] get to chew I get to click the sign-in
+[00:35:17.040] button um and the authentication flow
+[00:35:20.120] handles the rest. I'm not copying and
+[00:35:21.960] pasting API keys from some dashboard
+[00:35:25.680] into a JSON configuration file on my
+[00:35:28.560] machine or in some client. Um
+[00:35:32.600] It just smooths out kind of that use
+[00:35:35.000] case for the non-technical user. Um
+[00:35:38.280] It's not perfect. It's still a challenge
+[00:35:41.280] to implement dynamic client registration
+[00:35:43.760] um and there are a bunch of now services
+[00:35:45.800] that help um make make that easier.
+[00:35:49.040] Um but one of the things that we know
+[00:35:51.360] we've done with Turbo MCP is decidedly
+[00:35:54.760] implemented dynamic client registration
+[00:35:57.360] for developers so that it doesn't matter
+[00:35:59.880] how their MCP server implements auth,
+[00:36:02.520] the client can still authenticate the
+[00:36:04.000] user against their single sign-on IDP or
+[00:36:07.480] Okta or Keycloak or whatever.
+[00:36:09.720] Um and dynamic client registration only
+[00:36:12.440] has to be implemented by us and then MCP
+[00:36:15.360] server can connect to whatever upstream
+[00:36:18.160] uh
+[00:36:18.880] using other authentication schemes and
+[00:36:22.440] it reduces the amount of like complexity
+[00:36:24.520] and sprawl for the developer who's
+[00:36:26.880] trying to stand up an MCP server and
+[00:36:28.720] deploy it into their cloud
+[00:36:30.720] to not have to implement, you know, the
+[00:36:32.640] entire
+[00:36:34.520] you know, end-to-end OAuth flow.
+[00:36:37.080] Instead, they're able to just get a
+[00:36:38.320] token from our authorization server and
+[00:36:41.080] then I'll get off the races.
+[00:36:42.880] >> Nice. Nice. So that that allows them to
+[00:36:44.880] kind of go make that transition from
+[00:36:47.200] development to production much much much
+[00:36:49.120] much easier. Are there any other kind of
+[00:36:51.520] any other advice you'd give for
+[00:36:53.080] developers who are building MCP clients
+[00:36:55.360] and they want to take it to that next
+[00:36:57.520] step of okay, how do I actually how do I
+[00:36:59.200] actually push this so that people will
+[00:37:00.400] use it or host it for people? What what
+[00:37:02.360] would you say is kind of like the
+[00:37:03.440] biggest gotchas from from making that
+[00:37:05.760] transition to I want to make this work
+[00:37:07.520] to this needs to be a production level
+[00:37:10.120] grade
+[00:37:11.560] MCP server?
+[00:37:12.600] >> The spectrum of production is very wide
+[00:37:14.760] in my opinion. You've got, you know,
+[00:37:16.960] open source. You want to support, you
+[00:37:19.520] know, end users who can just freely
+[00:37:22.360] install and use an MCP server.
+[00:37:24.840] That still needs to be production ready
+[00:37:26.760] cuz, you know, they could be using it in
+[00:37:28.400] a bunch of different contexts.
+[00:37:30.320] And so, you know, just making sure
+[00:37:32.080] you're transparent with what the
+[00:37:34.640] implementation is doing, how it's
+[00:37:36.520] communicating to third parties, what
+[00:37:38.680] data is, you know,
+[00:37:40.720] requested of the upstream service to
+[00:37:43.040] provide back out of the client.
+[00:37:45.000] These are a little more for trust and
+[00:37:46.200] transparency. For enterprise setting,
+[00:37:49.200] I think you always have to be
+[00:37:50.600] considerate of the user being
+[00:37:53.240] non-technical. And so, if you're if
+[00:37:56.080] you're asking a, you know, person who
+[00:37:58.800] works in the marketing department to
+[00:38:01.200] generate an API key and, you know,
+[00:38:03.760] understand scopes,
+[00:38:05.840] it might be a little bit too much. And
+[00:38:08.600] so, I think thinking about how does this
+[00:38:10.520] user from an enterprise setting leverage
+[00:38:14.920] an easy path through an IDP or single
+[00:38:17.720] sign-on and how do I actually implement
+[00:38:19.880] that and how do I,
+[00:38:21.360] you know, integrate into their workflow
+[00:38:23.920] is is is really important. Otherwise,
+[00:38:26.280] you know, the friction is still a little
+[00:38:27.960] bit too high for for a number of users.
+[00:38:30.520] >> Yeah, no, absolutely. Let's talk about a
+[00:38:32.520] couple of things that kind of like build
+[00:38:33.800] on top of MCP servers. And one of the
+[00:38:35.640] things that I I really liked
+[00:38:38.120] and I I saw the demo
+[00:38:40.080] on on mcp.run was
+[00:38:42.800] was tasks. The ability to to set out a
+[00:38:46.720] task that actually goes you know, goes
+[00:38:48.600] behind in the background and
+[00:38:50.680] and performs an action typically through
+[00:38:52.920] a set of MCP servers that it has access
+[00:38:55.720] to. I love the fact that there's like
+[00:38:57.880] web hook support as well in there.
+[00:39:00.760] Um
+[00:39:01.360] What do we see as kind of like, you
+[00:39:03.000] know, next steps of people building on
+[00:39:05.280] top of these types of things? I'd love
+[00:39:07.080] to kind of like hear your take on tasks
+[00:39:09.000] about how people are how people are
+[00:39:10.880] using that today. And potentially even
+[00:39:13.240] touching on, you know, whether right now
+[00:39:15.560] we're very heavily using MCP servers for
+[00:39:17.760] for for text, but you know, can we go
+[00:39:20.080] beyond text for these types of
+[00:39:22.000] interactions? What are your thoughts on,
+[00:39:24.240] I guess, the evolving way which we use
+[00:39:26.320] MCP?
+[00:39:27.240] >> When we when we first started mcp.run,
+[00:39:29.600] you know, largely people were thinking
+[00:39:30.880] about okay, how do I just use this one
+[00:39:32.280] MCP server to automate a, you know,
+[00:39:35.920] action inside of this software. I really
+[00:39:38.360] want to to do a quick search. Even at
+[00:39:40.920] the time, you know, there was no web
+[00:39:42.600] searching inside these AI chat apps and
+[00:39:45.320] clients. So, an MCP server should enable
+[00:39:47.800] the model to go and search the web was
+[00:39:49.320] kind of a big deal.
+[00:39:51.120] Then it was clear that like the
+[00:39:52.800] multi-turn chat where
+[00:39:55.800] the user would supply a large prompt
+[00:39:58.280] and the AI would pick apart that prompt
+[00:40:02.000] and effectively create like a to-do
+[00:40:03.560] list, multiple steps that it would carry
+[00:40:05.600] out on its own. And each of those steps
+[00:40:08.080] could individually connect to server
+[00:40:11.880] that was different from step to step.
+[00:40:13.600] So, one step could be initial read from
+[00:40:15.840] Notion to try to find some data about a
+[00:40:17.960] project. And the second step was then go
+[00:40:19.720] and cross-reference a term from notion
+[00:40:21.920] in
+[00:40:23.120] a linear issue to look up some concrete
+[00:40:25.320] work that needed to be done. And then
+[00:40:26.560] the next step was to, you know, um
+[00:40:29.640] open up the code project on the on the
+[00:40:33.160] the laptop and start implementing that
+[00:40:35.080] feature. And then once the feature was
+[00:40:36.800] implemented, the next step would be to
+[00:40:38.200] update the ticket in linear to move it
+[00:40:40.200] from in progress to done.
+[00:40:42.200] And all in one prompt, the model was
+[00:40:45.240] able to discern which tools to call at
+[00:40:47.520] which time across its available MCP
+[00:40:49.960] servers.
+[00:40:51.280] Um and that was a real like lightbulb
+[00:40:53.560] moment that like
+[00:40:54.920] these are agents.
+[00:40:56.880] And all it was is a prompt with tools
+[00:40:59.160] attached. It's not a standalone,
+[00:41:02.680] you know, artifact. It's not a new code
+[00:41:05.160] base. It's just a prompt with tools. So,
+[00:41:08.520] what if we could create an environment,
+[00:41:09.960] a runtime, that would host a prompt and
+[00:41:13.160] allow you to attach tools to it and then
+[00:41:15.040] trigger it, um either through schedules
+[00:41:18.040] or through manual uh action or through a
+[00:41:21.480] webhook, uh that would basically say,
+[00:41:23.640] "Okay, you have an endpoint that allows
+[00:41:26.240] you to run a prompt and have it act get
+[00:41:29.120] access to tools." And that was where
+[00:41:31.240] tasks was born. Um it was basically kind
+[00:41:33.320] of like this
+[00:41:34.840] um non-directed graph, like a workflow
+[00:41:38.320] builder, that was just a prompt and
+[00:41:40.680] tools. And um so yeah, it kind of
+[00:41:43.400] competes with, you know, Zapier or
+[00:41:45.320] Integromat from kind of a workflow
+[00:41:47.240] automation perspective. Um but it is a
+[00:41:51.320] dramatic simplification of how to create
+[00:41:53.680] a workflow, which is just write a nice
+[00:41:55.280] prompt and give it tools and watch kind
+[00:41:58.440] of the magic happen behind the scenes.
+[00:42:00.400] >> Yeah, and I recommend I recommend to our
+[00:42:02.120] viewers to check it out because it's
+[00:42:04.600] it's such a slick
+[00:42:06.360] process. Uh and like he's like he say,
+[00:42:08.680] like, you know, Zapier that you know,
+[00:42:10.000] there's an amount you there's an amount
+[00:42:11.320] you have to do, obviously, to to to to
+[00:42:13.800] plug things together and manually wire
+[00:42:16.280] things together. But, this is, you know,
+[00:42:18.320] the the the task that you create here is
+[00:42:20.040] very free free-flowing.
+[00:42:22.280] And, you know, there's a lot of
+[00:42:23.320] decision-making that kind of like
+[00:42:24.680] happens in the background,
+[00:42:26.440] which is which is super cool to see.
+[00:42:28.040] >> Well, thank you. Yeah, I think um
+[00:42:30.240] many other options are still very much
+[00:42:32.920] in this kind of arrows and boxes era,
+[00:42:36.040] you know, create a component, drag an
+[00:42:38.360] arrow to the next thing, if this
+[00:42:40.080] happens, go to the next box, to the next
+[00:42:42.080] arrow.
+[00:42:43.120] And, the models are so good now um that
+[00:42:45.480] these decision-making steps or, you
+[00:42:48.560] know,
+[00:42:49.360] uh figuring out how to handle different
+[00:42:51.320] scenarios based on the return values of
+[00:42:54.080] a tool call
+[00:42:55.360] um are just kind of inherently part of
+[00:42:57.240] the models' capability and knowledge.
+[00:42:59.680] And, you don't need even like huge
+[00:43:01.760] foundation models to get this kind of
+[00:43:03.600] multi-tool call uh workflow. Even we're
+[00:43:06.440] seeing small language models work really
+[00:43:08.320] really well, knowing how to use tools
+[00:43:10.560] and sequence them uh in in the right
+[00:43:13.120] order to to actually
+[00:43:15.200] conduct a workflow accurately. Your
+[00:43:17.440] question about different modalities and
+[00:43:19.160] text kind of being the current I think
+[00:43:20.920] there's a lot of room to improve this um
+[00:43:24.160] and and largely it comes down to MCP
+[00:43:26.760] client kind of support and the
+[00:43:29.400] inconsistency across lots of different
+[00:43:31.120] MCP clients on how they present
+[00:43:34.040] um
+[00:43:35.240] other forms of media besides text. Uh
+[00:43:37.920] the protocol requires that multi- media
+[00:43:40.400] is encoded to base 64 strings. So, right
+[00:43:43.480] out of the gates, you know, you have
+[00:43:45.680] a additional step for a client to encode
+[00:43:49.040] multimedia and then ship it up to a
+[00:43:51.520] server for it then be decoded and used
+[00:43:53.760] in some way. There are
+[00:43:56.360] ways to get around that, but largely you
+[00:43:59.720] still have to encode the image or video
+[00:44:02.480] or GIF to some text to be sent over, you
+[00:44:06.000] know, the the the transport.
+[00:44:08.240] Um but I think there's some really
+[00:44:09.440] interesting use cases that could be
+[00:44:10.680] unlocked um if more clients were to
+[00:44:14.840] implement support for uh multimedia
+[00:44:17.360] handling both on the submission side
+[00:44:19.800] from the client to the server, uh but
+[00:44:21.880] also from the rendering side to take an
+[00:44:23.960] image back from an MCP server and show
+[00:44:26.760] it off um in the client. There's another
+[00:44:29.240] project that's unrelated to multimedia
+[00:44:31.360] necessarily, but uh is called MCPUI, um
+[00:44:35.240] which allows a client to interpret
+[00:44:37.440] signals from the MCP server as
+[00:44:40.240] render some novel interface inside of
+[00:44:43.800] the chat app or whatever the client is
+[00:44:45.960] hosted in.
+[00:44:47.200] So, the user could have more interesting
+[00:44:48.760] interactivity besides chat. So, instead
+[00:44:51.080] of just sending a message and getting a
+[00:44:52.560] message back, they'll be able to click a
+[00:44:54.400] button and get back a list of products.
+[00:44:57.640] And the list of products is rendered
+[00:44:59.360] just like it would be on an e-commerce
+[00:45:00.880] site uh with descriptions and prices and
+[00:45:03.760] purchase buttons. And, you know, an MCP
+[00:45:06.320] server could implement a full
+[00:45:07.640] application um that is entirely
+[00:45:10.960] implement rendered uh via MCPUI inside
+[00:45:15.480] of these various different clients. Um
+[00:45:17.800] so, I think there's again lots of room
+[00:45:19.440] for improvement and innovation um with
+[00:45:22.240] richer media types, but also as we
+[00:45:24.440] explore how to render UI um dynamically
+[00:45:28.280] um inside these clients, you'll see
+[00:45:30.040] really, really cool use cases emerge
+[00:45:31.880] that we just kind of can't even imagine
+[00:45:33.920] right now.
+[00:45:35.200] >> Very, very I guess that kind of like
+[00:45:36.920] leads me onto the I guess let's say the
+[00:45:39.320] final question.
+[00:45:40.920] What are we talking about? 11 months now
+[00:45:43.000] since MCP has been released by the time
+[00:45:46.000] this episode goes out. Um
+[00:45:49.080] wow, not even a year and the amount of
+[00:45:51.280] innovation
+[00:45:52.600] that and and and
+[00:45:54.160] you know, creation that's happened
+[00:45:55.360] around the MCP protocol
+[00:45:57.520] uh with, you know, the servers that have
+[00:45:59.400] been built and and and the work that's
+[00:46:01.040] gone around it has been has been has
+[00:46:02.920] been amazing. The the the pickup of that
+[00:46:04.480] has been incredible. What on earth are
+[00:46:06.560] we can we expect in an in another year?
+[00:46:08.880] What do you think what what do you What
+[00:46:10.720] do you What do you see the growth of
+[00:46:12.040] this
+[00:46:13.000] happening in the AI space? And I guess,
+[00:46:15.280] you know, will it be still such a big
+[00:46:16.880] thing in in a in a year's time or will
+[00:46:19.640] the next big thing
+[00:46:21.280] take all our attention away from from
+[00:46:23.200] MCPs?
+[00:46:24.560] >> Yeah, I'm not even going to try to
+[00:46:25.640] predict what the
+[00:46:27.560] future outside of MCP looks like and I
+[00:46:29.080] think there's still, you know,
+[00:46:31.120] so much adoption to be made that we've
+[00:46:34.200] only kind of seen the very tip of the
+[00:46:35.800] iceberg when it comes to how MCP
+[00:46:38.120] impacts, you know, the world.
+[00:46:41.240] A missing piece is to actually have more
+[00:46:43.640] services and data sources and things
+[00:46:46.080] that don't necessarily need
+[00:46:47.240] authentication like browsing the web.
+[00:46:50.160] You don't browse the web with an
+[00:46:51.960] identity all the time. You're going to
+[00:46:53.840] read articles or, you know, get updates
+[00:46:56.400] about some topic or read someone's blog.
+[00:46:59.280] Um
+[00:47:00.480] that you're not signed into a service
+[00:47:02.200] for necessarily. And MCP clients are
+[00:47:05.840] currently like over configured. You have
+[00:47:08.440] to be very, very explicit with which MCP
+[00:47:10.840] server are you using and how does it
+[00:47:12.440] get, you know, instantiated and what are
+[00:47:14.840] the tools available in it and and want
+[00:47:16.360] to approve this and that and have lots
+[00:47:17.840] of control and transparency over it. And
+[00:47:19.360] that's good. Um but I think there's just
+[00:47:21.680] lots of really, really interesting
+[00:47:24.080] autonomous capabilities and interactions
+[00:47:27.240] that we will see once people decide,
+[00:47:29.800] "I'm actually going to implement my
+[00:47:30.880] little app or my blog or my site as an
+[00:47:34.440] MCP server first and then MCP clients
+[00:47:38.280] can start to elect to
+[00:47:40.600] connect via MCP without this kind of
+[00:47:43.560] preemptive motion of the user adding an
+[00:47:47.240] MCP server to their client. Instead,
+[00:47:49.600] just like you browse the web today, you
+[00:47:51.880] render a web page and you click a link.
+[00:47:54.160] That link is really like what could be
+[00:47:56.000] an MCP server in a more free-form MCP
+[00:47:58.360] client. So now as you're just navigating
+[00:48:00.720] the content that comes back from MCP
+[00:48:02.760] servers, there could perhaps be an
+[00:48:05.160] embedded MCP server URL inside that
+[00:48:08.000] result, and the model could say, "Hey
+[00:48:10.200] client, connect to that server without
+[00:48:13.000] the user knowing, and automatically
+[00:48:15.760] start calling the tools and getting more
+[00:48:17.640] context, and you know, navigate through
+[00:48:20.400] a new web that is based upon MCP
+[00:48:23.400] entirely."
+[00:48:24.120] >> And you've got your own you base you've
+[00:48:25.440] essentially got your own curated web in
+[00:48:28.120] your new browser. What would be your new
+[00:48:30.400] gateway into
+[00:48:31.480] >> Yeah, well what would the browser for
+[00:48:32.840] MCP look like? What else needs to be
+[00:48:35.160] done on the client side to
+[00:48:37.080] you create that experience?
+[00:48:38.560] >> Well, one thing's for sure. I I agree
+[00:48:40.360] with you. It's it I've given up
+[00:48:42.160] predicting now. It's like what's the
+[00:48:43.560] point? What's the point of predicting,
+[00:48:44.880] right? But it's it's it's so curious to
+[00:48:47.480] to to have that have that think about
+[00:48:49.480] what what could be, and I'd love to I'd
+[00:48:52.040] love to invite you back in a year's
+[00:48:53.560] time, and we'll see how close we were.
+[00:48:55.480] >> Let's do it. In fact, lots of stuff has
+[00:48:57.240] probably already changed just in the
+[00:48:58.320] time we've been recording the podcast. I
+[00:48:59.880] got to I got to figure out what we
+[00:49:01.120] missed in just the hour or so.
+[00:49:03.560] >> I took a I took a 10-day vacation only
+[00:49:06.120] about a month and a half ago, and oh
+[00:49:07.680] gosh, never again. It's
+[00:49:09.440] it's just too hard. It's too hard to
+[00:49:10.960] catch to catch up.
+[00:49:12.240] >> It's it's crazy.
+[00:49:13.200] >> Yeah, yeah. Amazing, Steve. This has
+[00:49:15.040] been super insightful. Really really
+[00:49:16.560] appreciate your your your you know, your
+[00:49:18.880] your expertise in and around this space.
+[00:49:21.080] I'd very much recommend folks go and
+[00:49:23.080] have a look at run.dot uh run. It's
+[00:49:25.920] mcp.run, and and turbo mcp. Super super
+[00:49:29.200] interesting technologies.
+[00:49:31.120] Um where can people learn more about
+[00:49:32.840] that? I just presume they just go
+[00:49:33.960] straight to mcp.run?
+[00:49:35.640] >> You can go to mcp.run or delipso.ai and
+[00:49:38.920] get more information about both of these
+[00:49:40.200] products, or reach out to me on Twitter
+[00:49:43.160] and at nilslices,
+[00:49:45.600] or send us an email and just
+[00:49:47.960] hello@delipso.ai.
+[00:49:49.840] >> Sounds amazing. So absolutely do that. I
+[00:49:51.520] think it's a super interesting
+[00:49:52.720] technology. And uh thanks again, Steve.
+[00:49:54.560] Really, really appreciate the time.
+[00:49:56.080] >> Absolutely, Simon. Thanks for having me.
+[00:49:57.520] >> No worries. I hope you all enjoyed that.
+[00:49:58.960] And thanks for listening. And uh tune in
+[00:50:00.480] next time. Bye for now.

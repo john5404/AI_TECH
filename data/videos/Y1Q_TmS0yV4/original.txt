@@ -1,0 +1,1067 @@
+[00:00:18.920] Welcome to the talk on automatic code
+[00:00:21.240] performance with AI.
+[00:00:22.800] So, we all love our code to run really
+[00:00:24.480] fast, but it usually seems like we are
+[00:00:26.720] always under pressure to uh make the
+[00:00:29.360] feature work and just ship it quickly.
+[00:00:31.800] We just never really get the time to
+[00:00:33.520] optimize our code fully. So, today I I
+[00:00:36.160] am going to talk about how we can think
+[00:00:38.440] of the first version uh the first
+[00:00:40.640] working version as the spec itself, and
+[00:00:43.040] then how AI can help us make our code
+[00:00:46.160] run faster with AI.
+[00:00:47.760] Um
+[00:00:48.800] and while preserving correctness and
+[00:00:50.720] then making it all automated.
+[00:00:53.120] So, uh I can start by introducing
+[00:00:55.280] myself. So, I'm Saurabh, the founder and
+[00:00:57.320] CEO of Code Flash.
+[00:00:58.880] So, um I grew up in India, but currently
+[00:01:02.000] live in San Francisco. So, I have around
+[00:01:03.920] 8 years of experience in software
+[00:01:05.519] engineering and machine learning. And I
+[00:01:07.280] have built performance tools at Nvidia
+[00:01:09.480] where chip architects would use it to
+[00:01:11.600] figure out how they could optimize the
+[00:01:13.200] GPUs themselves.
+[00:01:14.840] And I have um led ML at Cresta, built ML
+[00:01:18.600] models and gen AI models at Meta.
+[00:01:21.680] So, all this while I've been really uh
+[00:01:23.920] passionate about writing performant code
+[00:01:26.200] and optimizing them.
+[00:01:28.160] So, um I wanted to start with talking
+[00:01:31.440] about how higher-level dynamic languages
+[00:01:34.480] have taken over the world.
+[00:01:36.280] Um in particular, Python, JavaScript,
+[00:01:39.080] TypeScript are the top languages right
+[00:01:40.720] now.
+[00:01:41.800] And I think that's because it's most
+[00:01:43.280] loved by developers and it's the easiest
+[00:01:45.920] to develop new software in. So, you can
+[00:01:48.200] quickly ship new software with these
+[00:01:50.000] languages.
+[00:01:51.360] But then, let's focus on the number one
+[00:01:53.560] language over here. And let me be
+[00:01:55.680] slightly controversial and say that
+[00:01:56.880] Python has won.
+[00:01:58.280] So, Python uh is leading the AI
+[00:02:00.480] revolution right now. And uh so, this
+[00:02:03.600] talk will give some love to Python and
+[00:02:06.680] then talk about performance optimization
+[00:02:08.800] with Python as an example language. But
+[00:02:11.120] the general concepts we are going to
+[00:02:12.280] talk about in this presentation will
+[00:02:14.120] apply to all the other languages as
+[00:02:15.360] well.
+[00:02:16.840] So, so why We all know Python is
+[00:02:19.360] awesome, but why do developers like it?
+[00:02:22.000] It's very readable code. Um Python has
+[00:02:25.400] English
+[00:02:26.560] uh keywords. It has like line breaks for
+[00:02:29.040] visually distinct code. It makes it easy
+[00:02:31.480] to read. It's very portable. You can
+[00:02:33.040] write one Python code somewhere and then
+[00:02:35.680] like be uh make Python makes it really
+[00:02:38.040] easy that it can can write once and make
+[00:02:40.360] it run everywhere.
+[00:02:42.040] And then, it also has a large number of
+[00:02:44.320] libraries. So, you can literally
+[00:02:46.800] if you start uh solving a standard
+[00:02:48.560] problem, there's probably a library that
+[00:02:50.720] has already solved it for you. So, you
+[00:02:52.000] can directly just go and use it.
+[00:02:54.080] It's also default language for data
+[00:02:55.520] science and ML. There's tons of
+[00:02:57.240] libraries available like Pandas, NumPy,
+[00:03:00.120] PyTorch, TensorFlow that use uh
+[00:03:03.440] Python to do the work.
+[00:03:05.440] And then, most importantly, like it
+[00:03:07.520] leads to higher developer productivity.
+[00:03:10.280] So, developers love it because it allows
+[00:03:13.520] developers to do a lot more with very
+[00:03:15.480] few lines of code. And that's what makes
+[00:03:17.800] them highly productive.
+[00:03:19.520] But when I think about this from a
+[00:03:21.120] performance standpoint, like these
+[00:03:23.160] awesome features can also make Python
+[00:03:25.800] really slow.
+[00:03:27.280] Um
+[00:03:28.520] readability means that interpreter has
+[00:03:32.320] to convert all that human-readable code
+[00:03:35.120] into machine instructions. And in
+[00:03:36.960] Python, it happens during runtime, which
+[00:03:38.640] can make it really slow.
+[00:03:40.520] Um
+[00:03:41.640] Also, it's portable, but when I think
+[00:03:43.960] about it, I think that, "Hey, you know
+[00:03:45.120] what? Python may not be using all the
+[00:03:46.760] available machine instructions fully.
+[00:03:48.320] So, it might get slower."
+[00:03:50.240] Um it has a large number of libraries.
+[00:03:52.600] So, we might not actually know what
+[00:03:54.880] their performance might be because there
+[00:03:56.520] are so many of them, right? So, it's
+[00:03:58.120] hard to make decisions on performance
+[00:03:59.640] with respect to that.
+[00:04:01.280] So, most of the data science and ML
+[00:04:03.960] libraries are actually compiled code.
+[00:04:06.280] But then still, because we are using
+[00:04:07.520] Python, like Python itself can become
+[00:04:09.280] the bottleneck with performance.
+[00:04:11.640] And then, high developer productivity,
+[00:04:14.240] what that leads to is this culture of
+[00:04:16.000] shipping quickly, making sure that um
+[00:04:18.840] things work. And once they work, you
+[00:04:20.959] just test it and then just ship it to
+[00:04:22.720] production and move on.
+[00:04:24.360] The problem over here is that uh
+[00:04:26.400] developers may not prioritize
+[00:04:29.200] uh performance enough.
+[00:04:32.720] Because the way Python, the language
+[00:04:34.320] itself is, it can hard to understand
+[00:04:36.280] what might be performant in Python
+[00:04:38.240] versus what's not.
+[00:04:39.760] So, let's just like think about this for
+[00:04:41.360] a bit. And then, I have this
+[00:04:44.440] question for all of you. Like which
+[00:04:46.040] statement amongst the two would run
+[00:04:48.520] faster in Python?
+[00:04:50.120] So, the first one um is initializing two
+[00:04:52.800] variables like X and Y with two integers
+[00:04:55.040] in Python.
+[00:04:56.360] Uh and you're doing a sum operation on
+[00:04:57.880] that. And the second one, there's a two
+[00:05:00.720] floating points in Python and these are
+[00:05:02.880] double precision in Python. And you
+[00:05:04.880] again like do a sum on them. So, for the
+[00:05:07.040] sum operation,
+[00:05:08.520] uh which one do you think is faster?
+[00:05:12.080] And I can't access the chat, but
+[00:05:14.200] So, I'll I'll I'll jump in. I'll jump
+[00:05:16.040] in. I think there's a slight there's a
+[00:05:17.480] slight delay on the chat of around 10
+[00:05:19.520] seconds. So, while people while people
+[00:05:21.120] are adding that, I'm going to have to
+[00:05:22.560] say the faster one has to be the integer
+[00:05:24.240] one. Cuz I mean, I know floating points
+[00:05:26.120] take that much longer to do anything
+[00:05:28.200] with. So, I'd go I'd go integer.
+[00:05:30.760] I mean, that's what I thought as well.
+[00:05:33.360] But then, the problem is that
+[00:05:35.600] performance uh in Python turns out
+[00:05:37.680] actually the floating point, the double
+[00:05:39.400] precision is faster in Python than
+[00:05:41.200] integer addition.
+[00:05:42.760] And that uh just like drives the point
+[00:05:45.480] across that performance can get slightly
+[00:05:47.520] hard to reason about in Python.
+[00:05:49.520] Because like the reason over here is
+[00:05:50.960] that integers are not actually really
+[00:05:53.280] 32-bit or 40 uh 64-bit integers in
+[00:05:55.640] Python. These are Python objects and
+[00:05:58.440] integers in Python can be of any length
+[00:06:00.520] essentially. So, there is some overhead
+[00:06:02.560] involved in like handling all of that.
+[00:06:04.440] So, that just makes like integer
+[00:06:05.800] addition slower than even like floating
+[00:06:08.080] point addition in Python.
+[00:06:09.920] So, so there's there's like complexity
+[00:06:11.960] with uh performance in Python.
+[00:06:14.480] But then, with this being said,
+[00:06:17.320] performance today is mostly a neglected
+[00:06:19.720] endeavor
+[00:06:20.920] that developers only get to when things
+[00:06:23.720] get really slow.
+[00:06:25.160] Um so, one of the key reasons why uh
+[00:06:28.400] performance usually get neglected today
+[00:06:30.520] is because just developers don't have
+[00:06:32.160] sufficient time to make sure that all
+[00:06:34.480] the applications are fast.
+[00:06:36.240] So, most of them are under pressure to
+[00:06:37.600] ship new features like and then go to
+[00:06:39.640] all the backlog they have.
+[00:06:41.440] So, they just like make sure that it
+[00:06:42.920] works and they ship it quickly without
+[00:06:45.960] giving much thought about whether it can
+[00:06:48.400] be optimized. And that leads to slower
+[00:06:50.600] applications.
+[00:06:52.160] Um
+[00:06:53.320] And I think that's also true because it
+[00:06:55.360] just takes time to optimize, right? So,
+[00:06:57.640] and also, moreover, performance
+[00:06:59.480] optimizations require experience and
+[00:07:02.080] usually deep domain expertise to really
+[00:07:03.840] understand how everything is working
+[00:07:06.400] and uh make it all performant. It
+[00:07:09.680] requires going deep into like this the
+[00:07:12.000] the the system itself, like the
+[00:07:13.520] algorithms, like how things may be
+[00:07:15.200] interacting with each other.
+[00:07:17.000] And yeah, and then then finding a new
+[00:07:19.200] more efficient way of doing the same
+[00:07:20.560] thing.
+[00:07:21.480] Um it requires a ton of skill sometimes.
+[00:07:24.360] And then, the whole process is like
+[00:07:26.520] manual, tedious, and time-consuming.
+[00:07:29.400] Um
+[00:07:30.600] So, when you have deadline to hit, uh
+[00:07:32.920] you need to do to If you wanted to do
+[00:07:34.680] performance optimization, you need to
+[00:07:36.080] create a benchmark. So, figure out some
+[00:07:37.720] like end-to-end workflow that you want
+[00:07:39.080] to speed up.
+[00:07:40.360] And then profile it to find some
+[00:07:41.680] hotspots. And then basically after that,
+[00:07:43.640] it becomes like a
+[00:07:45.200] game of creativity of the developer. The
+[00:07:47.640] developer then has to figure out, "Hey,
+[00:07:49.600] could this same thing be done in a
+[00:07:51.160] better manner?" And it goes into like a
+[00:07:53.920] a deep research at this moment. And then
+[00:07:56.440] the programmer comes up with few ideas
+[00:07:58.000] and then
+[00:07:58.920] applies those ideas and sees, "Hey, is
+[00:08:01.120] this Did this actually break the code or
+[00:08:03.000] is this even faster?"
+[00:08:04.520] And this has happened with me when you
+[00:08:05.840] like have deep into some optimizations
+[00:08:08.440] uh after
+[00:08:09.920] hours or days and then the optimized
+[00:08:11.640] code just runs slower
+[00:08:13.200] than the original one.
+[00:08:14.720] Uh and this uh sometimes makes me give
+[00:08:17.120] up on optimization, but carry on.
+[00:08:19.600] Um so, this is just to say that
+[00:08:21.440] performance optimization is like can be
+[00:08:24.800] problematic in practice to do
+[00:08:27.680] because there's like other things to do
+[00:08:29.040] as well.
+[00:08:30.120] So,
+[00:08:31.400] this leads to the world we are today
+[00:08:33.000] where software can be a lot slower than
+[00:08:36.080] the highest possible efficient version
+[00:08:38.680] of it.
+[00:08:39.760] And then like we have users complaining,
+[00:08:41.440] the costs go up, all of those problems.
+[00:08:44.720] So,
+[00:08:45.960] let's think about how we can solve this.
+[00:08:49.240] So, I think this is like how the future
+[00:08:51.440] of software development will evolve.
+[00:08:53.600] So, so developers will be responsible
+[00:08:55.720] for the behavioral specification of the
+[00:08:57.440] software.
+[00:08:58.400] I think the week also covered this in
+[00:08:59.800] like
+[00:09:00.600] the keynote today where um
+[00:09:03.920] uh guy was talking about specs,
+[00:09:06.280] spec-driven development. But like the
+[00:09:08.680] way I think about specs right now is
+[00:09:10.720] think of the first implementation you
+[00:09:12.480] have where things work as the spec
+[00:09:14.600] itself.
+[00:09:15.800] Um
+[00:09:17.080] And so, developers will be responsible
+[00:09:19.360] for the spec of the of the program.
+[00:09:23.000] Um
+[00:09:24.600] So, and AI will help with the first
+[00:09:27.440] implementation. So, in a co-pilot style
+[00:09:30.320] fashion as we have today,
+[00:09:32.440] uh AI will make sure that we can get to
+[00:09:35.000] the first working version quickly.
+[00:09:36.920] But then, moreover, AI will now
+[00:09:39.800] automatically handle the non-functional
+[00:09:41.560] requirements for us. Things like
+[00:09:43.280] security,
+[00:09:44.560] uh knowing if there are bugs, fixing it,
+[00:09:46.440] deployment, like making sure it's
+[00:09:47.960] deployed automatically,
+[00:09:49.880] reducing the cost of the application,
+[00:09:51.920] and even performance over here.
+[00:09:53.880] So, so now I I we will focus on how
+[00:09:56.400] performance can be automated
+[00:09:59.080] since developers
+[00:10:01.280] in practice don't or can't spend so much
+[00:10:04.040] time on performance. It would be great
+[00:10:06.280] if AI could automate this thing.
+[00:10:08.800] So, I'm here to tell you that this will
+[00:10:11.560] not just happen in the future, but is
+[00:10:13.120] reality today.
+[00:10:14.720] So, yeah, let me show you how CodeFlash
+[00:10:17.960] actually works and how we can actually
+[00:10:19.760] automate any new code we're going to
+[00:10:21.640] write.
+[00:10:22.800] So, this is a live demo, so I'm just
+[00:10:25.360] like going to pull request over here.
+[00:10:28.080] And right before the presentation, I
+[00:10:29.400] just like pushed some changes.
+[00:10:31.560] I'm going to choose the right base
+[00:10:32.880] branch and then just create a new pull
+[00:10:35.240] request.
+[00:10:36.960] So,
+[00:10:38.600] so here's the code I just pushed.
+[00:10:40.720] I had like this
+[00:10:42.200] uh this code in here, simple code, just
+[00:10:44.600] like finds common tags between the list
+[00:10:46.440] of articles.
+[00:10:47.920] And uh there's this like tag thing. And
+[00:10:51.320] then basically loops through all the
+[00:10:52.400] other articles and like basically does
+[00:10:53.880] an intersection between all of them. So,
+[00:10:55.640] it figures out if the new common tags
+[00:10:57.400] are the same as previous common tags and
+[00:10:58.720] updates it. And basically returns a set
+[00:11:00.600] of common tags.
+[00:11:02.040] Seems simple enough. And because I'm
+[00:11:03.720] good good programmer, I also like to
+[00:11:05.560] write tests.
+[00:11:06.800] I just wrote these two test cases. So,
+[00:11:08.920] here's how the input looks like. It has
+[00:11:10.720] a title, has some tags.
+[00:11:12.960] And then between these three, Python and
+[00:11:15.240] AI are the common tags. This is like
+[00:11:17.000] what I assert.
+[00:11:18.240] Basically I do test cases for it.
+[00:11:21.040] That's all that. So, in my code base, I
+[00:11:24.040] actually have CodeFlash installed here
+[00:11:25.680] already.
+[00:11:26.839] So, CodeFlash will now read this code
+[00:11:29.280] and then will try to optimize it.
+[00:11:31.800] Let's see what happens. So, the way
+[00:11:34.080] CodeFlash works is it sets up your
+[00:11:35.440] Python environment, it installs all the
+[00:11:37.400] pip dependencies, like just the way you
+[00:11:39.240] would install your project. And then
+[00:11:41.320] CodeFlash starts executing.
+[00:11:43.720] So, the way CodeFlash works is it like
+[00:11:45.960] finds this like one function to optimize
+[00:11:48.240] in the current git diff. And then
+[00:11:50.160] discovers all the existing unit tests
+[00:11:51.720] you may have in your uh in your repo.
+[00:11:54.240] So, it discovered 361 existing unit
+[00:11:55.880] tests.
+[00:11:56.920] Um and then it found this function to
+[00:11:58.440] optimize.
+[00:12:00.040] All fair and well.
+[00:12:01.360] And then after that, uh wait a second.
+[00:12:04.000] Um it starts it discovered this one test
+[00:12:06.800] file we just committed. And then starts
+[00:12:08.880] generating new tests for it and new
+[00:12:10.839] optimizations for it.
+[00:12:12.520] It generated two test files for it and
+[00:12:14.480] generated four optimizations for it.
+[00:12:16.800] And here are here are how the tests look
+[00:12:18.960] like.
+[00:12:20.360] And then basically what happens is we
+[00:12:23.320] now started running the original code to
+[00:12:25.520] figure out what the what is the behavior
+[00:12:27.400] for it.
+[00:12:28.480] So, we run all the tests. So, the two
+[00:12:30.280] test cases we wrote passed. 31 new
+[00:12:32.960] generated tests passed.
+[00:12:34.920] And the original code runtime was 774
+[00:12:37.800] milliseconds. That's what we
+[00:12:39.240] benchmarked.
+[00:12:40.360] And here's the first candidate, first
+[00:12:42.560] optimization. So, we don't really know
+[00:12:44.480] if it's correct or not, so we run all
+[00:12:45.880] the tests again and then all of the same
+[00:12:48.360] cases passed, which is great. So, all
+[00:12:50.680] the test results passed and it this is
+[00:12:53.040] like 90x faster because it runs in 8.4
+[00:12:55.680] milliseconds.
+[00:12:57.480] Um the second one, this is the this is
+[00:12:59.720] how it looks like. This is also correct,
+[00:13:01.839] but it's 90x faster, sort of very
+[00:13:04.000] similar.
+[00:13:05.200] The third one, um this is 90x faster,
+[00:13:08.240] like again very similar.
+[00:13:09.960] Um the fourth one is 34x faster and the
+[00:13:12.720] test results passed. So, we figured out
+[00:13:15.320] the fastest one, which is still correct,
+[00:13:17.040] generate explanations and everything.
+[00:13:18.960] And go back and create the suggestion
+[00:13:21.440] back in the PR.
+[00:13:22.800] So, here's how CodeFlash suggested it.
+[00:13:24.800] It says, "You know what? If you were to
+[00:13:26.240] instead of using all this, you can use
+[00:13:28.040] initialize it as a set
+[00:13:29.600] and use this dot intersection update
+[00:13:31.120] function over sets.
+[00:13:32.640] That takes in a list and quickly updates
+[00:13:34.400] it.
+[00:13:35.160] And yeah, if if you don't have any
+[00:13:36.880] common tags, you can just break early."
+[00:13:39.080] Cool. So, it like says, "You know what?
+[00:13:40.800] This made it 90x faster. Runtime went
+[00:13:43.080] from 774 milliseconds to 8.4
+[00:13:44.960] milliseconds." Explains why is this
+[00:13:46.920] faster.
+[00:13:48.040] It shows you here, "You know what? All
+[00:13:49.560] the tests passed, all the generated
+[00:13:50.880] tests passed." And so, it did like its
+[00:13:52.839] best to figure out the behavior is same.
+[00:13:55.440] And now
+[00:13:56.480] I feel it's good, I just go and commit
+[00:13:57.960] the changes.
+[00:13:59.400] So, yeah, it basically shows you that it
+[00:14:03.360] like does all the work in the
+[00:14:04.480] background. Like you can ship all the
+[00:14:06.480] changes you have and then let CodeFlash
+[00:14:08.640] run as a CI check.
+[00:14:10.120] And then it can automatically optimize
+[00:14:11.760] all the code it can optimize.
+[00:14:13.560] So, yeah. Um
+[00:14:14.920] So, that was the demo.
+[00:14:16.760] But then going back,
+[00:14:18.600] so the question may be that, "Hey, you
+[00:14:20.000] know what?
+[00:14:21.280] That code seemed simple. Like what is it
+[00:14:23.959] really practical? Like what type of
+[00:14:25.400] optimizations can CodeFlash automate?"
+[00:14:28.600] Um
+[00:14:30.440] Yeah, so
+[00:14:32.280] it can actually help you find and
+[00:14:34.200] discover better algorithms for your
+[00:14:35.400] code. So,
+[00:14:38.200] over here, like this is like a LangChain
+[00:14:39.600] example we merged.
+[00:14:41.560] So, the function was cosine similarity
+[00:14:43.959] top K.
+[00:14:45.400] And basically the the way it works is
+[00:14:47.400] you have two matrices, X and Y.
+[00:14:49.720] And you do row-wise
+[00:14:52.480] cosine similarity between the two
+[00:14:54.160] matrices.
+[00:14:55.320] Something like Cartesian product.
+[00:14:57.200] And then you figure out the top K
+[00:15:00.440] the indices with the top K
+[00:15:02.600] cosine similarity numbers, so like
+[00:15:04.480] highest ones.
+[00:15:05.680] The original implementation was like do
+[00:15:07.480] a sort over all of them. And then find
+[00:15:09.680] the top K and then like do some indexing
+[00:15:11.320] over here.
+[00:15:12.360] So,
+[00:15:13.400] with like big matrices, like if you have
+[00:15:15.240] 1,000,
+[00:15:16.440] uh the number of the array can be 1,000
+[00:15:18.640] squared, which is like large numbers, n
+[00:15:20.440] squared type of a behavior. So, what
+[00:15:22.280] CodeFlash said, "Hey, you know what?
+[00:15:23.400] Instead of that, you can use this
+[00:15:24.480] argpartition function in NumPy."
+[00:15:27.000] So, argpartition is like the quicksort
+[00:15:29.560] pivot
+[00:15:30.640] uh operation where you can like get all
+[00:15:33.280] the top K elements before and all the
+[00:15:35.560] smaller ones later.
+[00:15:37.079] And then you can only sort the top K
+[00:15:39.160] ones. That's all. That makes it like
+[00:15:41.560] much faster. You don't have to do extra
+[00:15:42.959] work. And then this got merged into
+[00:15:44.720] LangChain, uh sped it up by 148%.
+[00:15:48.520] Another example, it can it CodeFlash can
+[00:15:50.560] actually suggest better libraries to
+[00:15:52.760] use.
+[00:15:53.880] So, I mean we all use JSON in Python,
+[00:15:56.720] but turns out there's a better library
+[00:15:58.040] called ORJSON in Python.
+[00:16:00.800] And this optimization sped up this code
+[00:16:03.720] for 70%
+[00:16:05.520] uh by by 70% for Airbyte.
+[00:16:08.280] So, and this was automatically uh
+[00:16:10.200] discovered.
+[00:16:11.400] It can simplify compute for you. So,
+[00:16:14.560] so this is like some operations over
+[00:16:16.880] data frame.
+[00:16:18.200] So, if the data So, basically figuring
+[00:16:20.200] out if is there any nulls in the data
+[00:16:21.720] frame and this was originally
+[00:16:23.600] implemented as this.
+[00:16:25.320] So, you're doing two sums across two
+[00:16:26.959] axes. Uh it's like expensive operation.
+[00:16:29.839] So, if this can be simplified as this.
+[00:16:32.120] Just access all the values and use a dot
+[00:16:33.880] any operation in here. So, this like
+[00:16:35.720] sped this up by 433%.
+[00:16:38.720] And it can actually also find more um
+[00:16:41.560] exotic types of optimizations. So,
+[00:16:44.079] um recursion can get really expensive
+[00:16:46.200] sometimes if you're going really deep
+[00:16:47.520] recursions uh because recursion you have
+[00:16:50.040] to create the whole call stack and
+[00:16:51.720] everything and this can get specially
+[00:16:53.640] expensive in Python.
+[00:16:55.520] So, it said, "Hey, you know what?
+[00:16:56.440] Instead of doing this deep recursion
+[00:16:57.839] like here, you can use a stack yourself
+[00:17:00.800] and then like
+[00:17:02.280] append items to it and then pop from
+[00:17:04.000] it." And basically do this like in a
+[00:17:05.560] loop over here.
+[00:17:06.800] So, this does not need any function
+[00:17:08.160] calls. And this sped up Pydantic by
+[00:17:10.520] about 34% for like JSON ref parser.
+[00:17:14.199] Other than that, I mean what I've seen
+[00:17:15.839] is like it actually fixes a bunch of
+[00:17:17.240] performance mistakes we make. This is
+[00:17:19.280] actually my code I wrote like last week
+[00:17:21.760] where um
+[00:17:23.400] So, think of it as like adding to some
+[00:17:26.120] dictionary type of a data structure.
+[00:17:28.240] And what I wanted to figure out is that,
+[00:17:29.560] "Hey,
+[00:17:30.400] is does it is is this key already
+[00:17:32.600] present in that? And if it's present,
+[00:17:34.360] then like throw a warning. Should not
+[00:17:36.160] happen. But if it's not present, then
+[00:17:37.720] create a new key and then like give this
+[00:17:40.640] uh value."
+[00:17:42.080] But then the problem I made was that I
+[00:17:43.440] called this function twice.
+[00:17:45.480] Simple mistake. So, simple optimization
+[00:17:47.720] over here was that, "Hey, you know what?
+[00:17:48.800] Just call it once, save it in variable
+[00:17:50.760] and use it everywhere."
+[00:17:52.720] So, this was in a inner loop for
+[00:17:53.840] CodeFlash, like sped CodeFlash up by 40%
+[00:17:56.240] for this operation.
+[00:17:57.960] Um
+[00:17:59.040] Also, one of the other mistakes people
+[00:18:01.000] make is you don't So, this was another
+[00:18:03.320] code in Pydantic where if each name
+[00:18:05.640] validators was false,
+[00:18:07.960] you the original code would still like
+[00:18:09.640] do a lot of processing and then it
+[00:18:11.160] eventually return schema. So, it figured
+[00:18:13.760] out that, "Hey, you know what? If you or
+[00:18:15.440] actually early exit, you can make it
+[00:18:17.480] much faster in this case." And that
+[00:18:19.040] actually led to a 100% speed up for
+[00:18:21.400] Pydantic.
+[00:18:22.840] It's quite cool.
+[00:18:23.920] So, so CodeFlash um can still find a lot
+[00:18:27.640] of other types of optimizations, but
+[00:18:30.000] it still can't find many of the types
+[00:18:31.919] yet and we're always optimi- uh
+[00:18:33.400] improving it, but the good thing is that
+[00:18:35.560] it's like a general purpose optimizer
+[00:18:37.080] now. Like whatever Python code you throw
+[00:18:38.640] to it, it can usually do a really good
+[00:18:40.480] job at figuring out the figuring out the
+[00:18:42.000] best version of it.
+[00:18:43.440] And it uh does not just optimize it, it
+[00:18:45.400] also ensures correctness and does
+[00:18:47.440] everything. Like the whole
+[00:18:50.200] the whole process that an engineer would
+[00:18:51.480] do is like what CodeFlash does
+[00:18:52.919] automatically.
+[00:18:54.240] So, the best thing about CodeFlash is
+[00:18:55.960] that we can do this at scale.
+[00:18:58.600] Um so, since CodeFlash is essentially
+[00:19:01.880] just a software,
+[00:19:03.560] it does not require human attention to
+[00:19:05.360] figure out, "Hey, could this be made
+[00:19:07.120] faster?" Doing the whole thing about
+[00:19:09.360] performance optimization.
+[00:19:11.400] Um we can now start to optimize any
+[00:19:13.440] Python code base. And it this is like
+[00:19:14.919] what we do quite frequently. We just
+[00:19:16.679] like download a package, run CodeFlash
+[00:19:18.560] on it, usually finds a bunch of
+[00:19:19.760] optimizations we like contribute to open
+[00:19:21.880] source right now with this. By the way,
+[00:19:23.560] you can try this as well.
+[00:19:25.320] So, yeah, I mean so with this, we can't
+[00:19:28.640] we can optimize all existing code, but
+[00:19:31.320] also any new code we are writing. So, we
+[00:19:33.600] install CodeFlash as a uh GitHub
+[00:19:36.480] optimizer as you saw.
+[00:19:38.280] And then we can implement continuous
+[00:19:40.080] optimization on our code bases to make
+[00:19:42.280] sure like all the future code we write
+[00:19:43.760] is fast as well.
+[00:19:46.000] So, I think with that, I think I'm going
+[00:19:47.760] to uh talk a bit about like how
+[00:19:49.880] CodeFlash works and like how the
+[00:19:52.200] principles behind like AI-based
+[00:19:54.040] performance optimization.
+[00:19:56.120] So, this like basically breaks down to
+[00:19:58.480] three problems. Like first is generating
+[00:20:01.760] optimization candidates, like basically
+[00:20:04.160] generating the optimizations themselves.
+[00:20:06.240] Second one is correctness testing,
+[00:20:08.320] knowing if this new code we generated,
+[00:20:10.960] is that even correct? And then
+[00:20:12.480] benchmarking the performance, like
+[00:20:13.840] knowing is this even faster or is this
+[00:20:15.880] just a use?
+[00:20:17.600] So, so So, for generating optimization,
+[00:20:22.240] what we usually do is we understand the
+[00:20:24.760] whole repository, we know where the
+[00:20:26.120] tests are, where all the functions are,
+[00:20:27.760] all the linkages everywhere.
+[00:20:29.520] And then we figure out the code context
+[00:20:32.120] for a particular code we're optimizing,
+[00:20:35.560] fetch it all from everywhere, and put it
+[00:20:37.720] to a LLM-based optimization model.
+[00:20:40.640] And the optimization model says, "Hey,
+[00:20:42.200] you know what? Maybe this is a way to
+[00:20:43.640] speed it up. Maybe that is a way to
+[00:20:45.200] speed it up." It tries a bunch of ideas.
+[00:20:47.720] Some may be good, some may not be, so
+[00:20:49.080] it's it cannot be certain about it, but
+[00:20:50.800] it tries its best.
+[00:20:52.560] Um so, after that, what we do is we
+[00:20:57.160] the other important problem we solve is
+[00:21:00.320] correctness uh verification.
+[00:21:03.120] So, we don't want to like merge in a
+[00:21:04.440] code that breaks our code, right?
+[00:21:06.560] So, so we want the new code to behave
+[00:21:09.280] exactly the same way as the original
+[00:21:10.600] code.
+[00:21:11.520] So, if we were to swap the original code
+[00:21:13.720] out with the new code in, it should
+[00:21:15.200] behave exactly the same way, right?
+[00:21:17.040] So, it's a hard problem, but the way we
+[00:21:19.400] solve it is by
+[00:21:21.560] generating a bunch of inputs to the uh
+[00:21:24.560] to the original function,
+[00:21:26.320] and then um executing the both the
+[00:21:30.120] original and the
+[00:21:31.480] optimized code with both of them,
+[00:21:33.560] and then seeing, "Hey, how did it
+[00:21:34.800] behave?"
+[00:21:35.840] Uh so, for example, for for a given
+[00:21:38.240] input, like what was the output in terms
+[00:21:40.400] of like all the all the behavioral
+[00:21:42.400] specs.
+[00:21:43.400] And then make sure that the behavior for
+[00:21:45.520] both the versions are exactly equal.
+[00:21:48.400] So, that's that. Um and the way we
+[00:21:51.280] generate inputs is by variety of
+[00:21:53.040] techniques.
+[00:21:54.280] We discover all the existing unit tests
+[00:21:55.880] you may have. We generate a bunch of new
+[00:21:57.880] LLM-generated tests.
+[00:21:59.640] Um we can trace ex-
+[00:22:02.000] workflows end to end and figure out,
+[00:22:03.920] "Hey, what were the inputs to specific
+[00:22:06.080] parts of the program?" And generate
+[00:22:07.760] replay tests.
+[00:22:09.200] We have some more like exotic concolic
+[00:22:10.679] tests as well.
+[00:22:12.160] So, with this, like we can run tens or
+[00:22:14.600] hundreds of inputs,
+[00:22:16.640] and then um
+[00:22:18.920] to ensure that the two functions we have
+[00:22:20.840] are actually equivalent.
+[00:22:22.679] So, we can't definitely prove that they
+[00:22:24.320] are equivalent, but practically we can
+[00:22:26.000] come very close to knowing that these
+[00:22:28.720] are actually equivalent.
+[00:22:31.280] So, um
+[00:22:32.880] and the last step is actually just
+[00:22:34.120] benchmarking performance. This can also
+[00:22:35.920] get quite tricky with general-purpose
+[00:22:37.760] code.
+[00:22:39.040] And the way this usually works is by
+[00:22:40.560] generating a diverse performance
+[00:22:41.920] benchmark. So, knowing that, "Hey, you
+[00:22:43.480] know what? Um
+[00:22:45.320] for all these different inputs, here's
+[00:22:47.600] how the performance behaves, and the the
+[00:22:49.560] runtime behaves."
+[00:22:51.320] And we auto-instrument code to measure
+[00:22:53.080] runtimes, and then we also implement
+[00:22:55.880] some of the best practices in in
+[00:22:58.040] benchmarking itself by looping the code
+[00:23:00.520] many times to find stable runtimes. Um
+[00:23:03.120] we denoise the measured runtime,
+[00:23:06.160] and all of that.
+[00:23:07.400] Um so, yeah, I mean, with this we know
+[00:23:11.000] with a very high confidence if the new
+[00:23:12.520] code is indeed faster.
+[00:23:14.560] So, that's like the basics. So, I mean,
+[00:23:16.280] with this you now know the basics of
+[00:23:18.120] automated performance optimizers with
+[00:23:19.679] AI.
+[00:23:21.040] Yeah, I think that's basically all I
+[00:23:23.040] had. So, just wanted to say that I think
+[00:23:25.120] you should adopt automated code
+[00:23:26.960] optimization
+[00:23:28.600] in your software engineering workflow.
+[00:23:30.720] So, this helps you always write fast and
+[00:23:32.880] expert-level code.
+[00:23:34.520] And we have seen like our users, when
+[00:23:36.679] they adopt Codeflash, uh
+[00:23:38.679] see significant speedups in the in the
+[00:23:41.080] software they build.
+[00:23:42.400] And this also makes them change the way
+[00:23:43.840] they write the code. So, uh with this,
+[00:23:46.679] like you don't really have to think
+[00:23:48.040] about, "Hey, is this the best way you
+[00:23:49.280] could have written something?"
+[00:23:50.760] You you can just focus on, "Is this
+[00:23:52.280] working? Is this correct?" And then like
+[00:23:54.520] basically offload the optimization to
+[00:23:56.240] AI. So, this way we have seen like our
+[00:23:57.920] users be more productive.
+[00:23:59.840] So, yeah, I mean, that's all about
+[00:24:01.800] Codeflash. Like it's quite simple to
+[00:24:03.440] install right now. You can use it today
+[00:24:04.679] on your Python projects with this like
+[00:24:06.040] pip install Codeflash.
+[00:24:07.920] Um we have a Discord channel. Like join
+[00:24:10.080] us if you're interested in this field,
+[00:24:12.080] and then you want to try it out. Uh it's
+[00:24:13.760] also free, by the way. You can try it
+[00:24:15.560] out as much as you want right now.
+[00:24:17.720] Um yeah.
+[00:24:19.440] And then feel free to follow me. I'm
+[00:24:21.440] happy to uh
+[00:24:23.800] speak more about like principles behind
+[00:24:25.720] it. And also, by the way, we are hiring.
+[00:24:27.480] So, if you're interested in like
+[00:24:28.760] building this with us, I I will happy to
+[00:24:30.679] talk to you. Yeah, that's all.
+[00:24:33.600] Um amazing. Thank you, Saurabh. Um and
+[00:24:36.360] I'll leave I'll leave this slide on just
+[00:24:37.920] cuz there's a number of a number of
+[00:24:39.440] links there as well. We have some
+[00:24:40.840] questions that are popping into the
+[00:24:42.160] chat. Thank you very much. Um I think I
+[00:24:44.679] think your talk really resonated with
+[00:24:46.080] people. It was definitely the right
+[00:24:46.960] level because uh there's a lot of
+[00:24:48.320] interesting comments that are appearing
+[00:24:49.880] in the chat. Um why don't we go ahead
+[00:24:52.440] and let's have a look. Why don't we
+[00:24:53.720] start this one from this this this this
+[00:24:55.200] person called Guy Pajani. I'm not I'm
+[00:24:57.280] not sure if that's how I if that's how I
+[00:24:58.760] if I said it right, Guy, or not. He says
+[00:25:01.400] he loves the AI optimization use case,
+[00:25:03.560] but how good are the LLMs at these
+[00:25:05.080] optimizations compared to new code gen?
+[00:25:07.760] Any opinions on specific models, which
+[00:25:10.120] is another interesting part of that
+[00:25:11.360] question cuz of course
+[00:25:12.920] people are people are finding that
+[00:25:14.040] certain models are better at different
+[00:25:15.720] tasks.
+[00:25:17.320] Yeah, I think
+[00:25:18.720] this was like the interesting the the
+[00:25:20.440] aha moment for me was like when GPT-4
+[00:25:22.280] came out, and I realized that, "Holy
+[00:25:24.000] it's really good at optimization."
+[00:25:26.360] And it's only getting better. So, what I
+[00:25:28.160] can say is that like for current LLM
+[00:25:30.880] models are really good at optimization.
+[00:25:33.280] But what we have seen is like
+[00:25:35.520] it can only generate optimization
+[00:25:37.320] candidates, as I like to say it. Um it
+[00:25:39.960] can it can say, "Hey, this is might
+[00:25:41.840] Maybe this is fast. Hey, maybe that is
+[00:25:43.200] fast." And that's the problem where you
+[00:25:45.040] may not really know if it's Is it
+[00:25:47.000] actually correct or did it just break
+[00:25:48.880] the code? Or is it actually fast or is
+[00:25:50.920] it actually even faster? So, you need to
+[00:25:52.480] have to do this whole benchmarking and
+[00:25:53.679] everything. I think that's like the
+[00:25:55.120] crucial piece over here. And I think
+[00:25:57.720] there's like levels to it as well. So,
+[00:26:00.000] um you can increase the complexity and
+[00:26:01.760] difficulty of how much you want to
+[00:26:03.080] optimize.
+[00:26:04.120] At At the limiting case, you can think
+[00:26:05.320] of like throwing a whole code base, and
+[00:26:07.360] it like re-architects everything, makes
+[00:26:09.560] everything fast. I don't think we are
+[00:26:11.000] there yet. Maybe one day, or maybe
+[00:26:12.679] there's like some things we can do.
+[00:26:14.800] But I think what I was would say that
+[00:26:17.320] models are like pretty good at
+[00:26:18.520] optimization right now. The good thing
+[00:26:20.400] is that
+[00:26:21.560] I think like from a
+[00:26:23.600] perspective or like theoretical
+[00:26:25.040] perspective, I think it's easier problem
+[00:26:26.440] for code uh LLM to optimize it because
+[00:26:29.000] if you think about like
+[00:26:30.880] the information you give to an LLM in a
+[00:26:32.880] prompt, it's just a "Hey, build me a
+[00:26:34.480] tic-tac-toe" or something, right? That's
+[00:26:35.560] like very ill-defined problem. Like with
+[00:26:38.280] optimization, you give an original first
+[00:26:41.720] working version code as prompt, right?
+[00:26:44.200] And that's very well specified, very
+[00:26:45.960] well defined. You can run it, you can do
+[00:26:47.560] all sorts of all sorts of things like
+[00:26:48.920] over there, right? So, what I would say
+[00:26:50.520] is from a difficulty level, it's
+[00:26:51.800] probably easier.
+[00:26:53.320] As an op- uh optimization isn't probably
+[00:26:55.320] an easier problem for LLMs than
+[00:26:57.440] uh just like zero-shot uh application
+[00:26:59.360] generation.
+[00:27:01.280] Yeah, awesome. A couple of other
+[00:27:02.760] questions actually based on that. In
+[00:27:04.080] fact, what do we jump to um Orry first,
+[00:27:07.040] and then we'll um and maybe Macy after
+[00:27:08.760] that, and then we'll jump back to Kevin.
+[00:27:10.520] Um Orry asks, "Adding to Guy's question,
+[00:27:12.760] what's the rate of false positives or
+[00:27:15.000] false negatives uh on that as well?"
+[00:27:18.400] That's a good question. So, that's like
+[00:27:19.480] something we focus on quite a lot. So,
+[00:27:21.760] false positives um usually what what
+[00:27:24.600] they mean is that something like
+[00:27:26.679] Codeflash finds an optimization where
+[00:27:28.760] it's actually not an optimization. Mhm.
+[00:27:30.840] So, that's something we like work on
+[00:27:33.160] quite a lot to make sure it's very low.
+[00:27:35.440] And we have gotten really really good
+[00:27:36.520] right now, by the way. So, it usually
+[00:27:39.360] boils down to testing a lot of cases,
+[00:27:43.040] making sure that um and like real-world
+[00:27:45.600] code can get really complex.
+[00:27:47.440] So, it means um
+[00:27:50.080] um
+[00:27:52.160] covering a lot more of the input space,
+[00:27:54.400] and then like doing coverage analysis.
+[00:27:57.000] Um and like that's why we have like four
+[00:27:58.240] five types of testing. We going to add
+[00:27:59.840] one more to one more type of testing
+[00:28:01.320] soon.
+[00:28:02.280] And then um
+[00:28:04.320] also benchmarking very effectively.
+[00:28:06.840] So, knowing making sure that, "Hey, you
+[00:28:08.440] know what? Are we actually really
+[00:28:10.280] faster, or was it just like system
+[00:28:11.640] noise?"
+[00:28:12.640] And real-world programs can have side
+[00:28:14.960] effects. They can do network calls. They
+[00:28:16.800] can do database queries. That makes
+[00:28:18.760] things harder. So, what I would say is
+[00:28:21.440] that I think like this question
+[00:28:23.280] basically brings down to just boils down
+[00:28:25.120] to just testing it more thoroughly. And
+[00:28:27.080] I think like with this empirical
+[00:28:28.360] testing, you can't in a from a
+[00:28:30.120] theoretical perspective, you can't get
+[00:28:31.320] to 100%
+[00:28:33.000] uh correctness. And that's just like
+[00:28:35.200] open question computer sciences, but you
+[00:28:36.960] can get really really close.
+[00:28:38.480] The more you test.
+[00:28:40.159] Awesome.
+[00:28:41.040] Uh and then I'll I'll
+[00:28:42.919] follow up with Macy's question, and then
+[00:28:44.640] we'll go back to Kevin's, as I
+[00:28:45.640] mentioned. Uh Macy asks, "What is the
+[00:28:47.440] hardest part of making this work? Is it
+[00:28:50.240] figuring out what the optimization is?
+[00:28:51.919] Is it figuring out if it actually is
+[00:28:53.679] faster? Um making sure it's not going to
+[00:28:56.679] regress anything? Or is it And you've
+[00:28:58.840] got a cop out here. Is it all of the
+[00:29:00.440] above?"
+[00:29:01.880] I mean, true. I think so.
+[00:29:03.360] Like I think the like the way I like to
+[00:29:05.159] talk talk to new candidates is like this
+[00:29:06.480] is the hardest problem I've solved.
+[00:29:08.440] Uh it's super hard. It's uh
+[00:29:11.520] quite exciting as well, by the way.
+[00:29:13.480] What I would say actually is like the
+[00:29:14.880] optimization is the easier part,
+[00:29:17.360] mhm uh
+[00:29:18.560] funnily enough. So, you can throw like
+[00:29:20.760] even today, you can like throw some
+[00:29:21.919] random code to ChatGPT, it will like do
+[00:29:23.440] a good job at it.
+[00:29:25.000] But like automating it requires
+[00:29:27.840] elevating it to a whole new standard.
+[00:29:30.480] Right. And that's where I think like the
+[00:29:32.280] hardest part right now is like
+[00:29:34.480] verification of correctness.
+[00:29:36.640] That's super hard. Like even like
+[00:29:38.240] practically speaking, benchmarking was
+[00:29:39.600] super hard because like you run on a VM,
+[00:29:42.040] even system noise is pretty hard. Like
+[00:29:43.679] we have had a lot of false positives
+[00:29:44.840] that way, and we have now gotten really
+[00:29:46.159] really good. So, now we like loop
+[00:29:47.720] hundreds of thousands of times and then
+[00:29:49.480] figure out like stable run time from
+[00:29:51.400] that. So, that
+[00:29:53.440] is is cool. I mean,
+[00:29:55.400] uh it's quite hard, but now it works.
+[00:29:57.200] So, I'm happy.
+[00:29:58.520] Yeah.
+[00:29:59.640] Um
+[00:30:00.640] following that, let's get let's jump to
+[00:30:01.760] Kevin uh Kevin's question now. Um you
+[00:30:04.480] said that it optimized Pedantic by 100%.
+[00:30:08.440] Um does that mean that CodeFlash is
+[00:30:10.440] opening PRs that are being accepted in
+[00:30:13.160] real-world projects?
+[00:30:15.120] Yeah, I mean 100%. So, we already have
+[00:30:17.960] like
+[00:30:18.920] people using us in their production
+[00:30:20.600] workflows. So,
+[00:30:22.440] I think you can actually scan like a So,
+[00:30:24.800] like the the way we optimize Pedantic is
+[00:30:26.680] like just download Pedantic, set up
+[00:30:28.960] CodeFlash and run this CodeFlash {dash}
+[00:30:30.760] {dash} all command. Mhm. So, basically
+[00:30:32.680] it like scans the whole repository and
+[00:30:34.280] tries to optimize every part of code
+[00:30:36.440] over there. And it like usually creates
+[00:30:37.880] like tens of PRs that way. Yeah.
+[00:30:39.760] So, yeah. I mean, that way we just like
+[00:30:41.960] Pedantic wanted to improve improve
+[00:30:43.760] improve the performance. So, we just
+[00:30:44.960] like did that, merged I think 12 or 12
+[00:30:47.640] PRs into them. So, yeah. They are being
+[00:30:49.440] accepted. Yeah, what
+[00:30:51.480] on top of that, how do you find cuz
+[00:30:52.880] obviously my previous roles at Snyk, um
+[00:30:55.600] so we obviously used to raise a a ton of
+[00:30:57.680] PRs where needed against security
+[00:30:59.720] components and things like that. How did
+[00:31:01.360] you find um when PRs were being created,
+[00:31:04.640] how did you find that developer almost
+[00:31:06.920] um
+[00:31:08.160] that that willingness to accept those
+[00:31:11.160] PRs when there's always a cost of you
+[00:31:14.880] know, doing work on any PR that gets
+[00:31:16.480] created. Do do you find that you know,
+[00:31:18.480] developers are are happy to take that on
+[00:31:20.440] because they see a value in that
+[00:31:22.360] improvement of performance or are they
+[00:31:23.720] more hesitant?
+[00:31:25.720] I think I would say
+[00:31:27.240] developers are generally
+[00:31:29.760] in hesitant, uh especially from like
+[00:31:31.960] AI-written code.
+[00:31:33.280] Um especially when it claims to be like,
+[00:31:35.280] you know what, I have solved this
+[00:31:36.360] problem. They're like, "Hey, are you
+[00:31:37.880] really sure?" So, that happens, but that
+[00:31:40.240] basically just means that the standards
+[00:31:41.520] are higher over here. Yes. So, I think
+[00:31:43.320] the way we try to uh solve that is by
+[00:31:46.240] doing a lot more work than what a
+[00:31:47.600] developer might have done himself.
+[00:31:49.080] Mhm.
+[00:31:49.720] So, we generate like tens or hundreds of
+[00:31:51.560] test cases and a developer might just
+[00:31:53.360] write three or five cases.
+[00:31:55.240] And then we do a lot of benchmarking
+[00:31:56.679] very rigorously. We like do a lot more
+[00:31:58.720] analysis to make make sure that we are
+[00:32:00.480] testing is testing it correctly and it
+[00:32:02.800] does not break the code and do a lot of
+[00:32:04.280] things. So, I think that just means that
+[00:32:05.960] the bar for accepting and is higher.
+[00:32:08.600] Yeah, that I think that's what it's like
+[00:32:10.080] that cost of change, isn't it? And it's
+[00:32:11.600] like that ability to have that trust in
+[00:32:13.440] the PR is huge to accept and try. Um we
+[00:32:16.040] have a couple more couple more minutes
+[00:32:17.160] or minute. Let's try and let's go We've
+[00:32:18.440] got two two more questions left. So,
+[00:32:19.880] hopefully there won't be any more. If
+[00:32:21.400] there is, uh please please go to the
+[00:32:23.320] Discord uh chat and we can continue our
+[00:32:25.280] conversation there well beyond the
+[00:32:26.560] conference. Uh Sarthak asks, is it
+[00:32:29.160] handling um optimization of
+[00:32:31.360] non-deterministic behavior of codebases
+[00:32:33.920] as well?
+[00:32:35.360] Wow, I love these questions. I would say
+[00:32:37.679] probably
+[00:32:39.320] not, but it depends. So, okay. So, if if
+[00:32:42.920] if
+[00:32:43.720] someone asks CodeFlash to optimize a
+[00:32:45.920] random number generator,
+[00:32:47.840] I don't think we can optimize it because
+[00:32:49.360] like function is truly random. You can't
+[00:32:50.960] know if the function behavior is still
+[00:32:52.480] the same. So, I would say no and for
+[00:32:54.320] that, but for a lot of other things, you
+[00:32:56.960] can actually
+[00:32:58.560] make non-deterministic functions
+[00:33:00.000] deterministic. So, for example, you have
+[00:33:01.960] like a datetime.now function.
+[00:33:04.440] Um you can literally like patch the
+[00:33:06.520] library to always return a constant now
+[00:33:09.200] string, for example. That way you can
+[00:33:10.840] make it deterministic. And then like you
+[00:33:12.960] can have a random number generator a
+[00:33:15.640] random integer generator and you can
+[00:33:16.840] like seed that before this. So, we can
+[00:33:19.200] like handle some of the non-determinism,
+[00:33:21.440] but in the limiting case, we can't
+[00:33:22.560] handle all of it.
+[00:33:23.920] Got it. Okay. And to the last question,
+[00:33:26.560] uh Farhat asks, does CodeFlash have
+[00:33:28.960] access to the web for the latest
+[00:33:31.160] libraries? For example, if a new library
+[00:33:33.800] um that was five times faster
+[00:33:36.440] uh oh, sorry. I I accidentally clicked
+[00:33:37.880] something there. There we go. That was
+[00:33:39.120] five times faster than alternatives came
+[00:33:40.760] out tomorrow, do you have to manually
+[00:33:43.040] add it? And I always troll the
+[00:33:44.520] JavaScript community. So, let's assume
+[00:33:46.440] this is in this is similar to the
+[00:33:48.160] JavaScript community where a new library
+[00:33:50.360] comes out every 10 to 20 seconds. Um can
+[00:33:53.600] CodeFlash uh access all those latest and
+[00:33:56.120] greatest?
+[00:33:58.080] I mean, I think so like we solve the
+[00:33:59.560] problem by not solving it sol- solving
+[00:34:01.840] it in a way. We empirically validate the
+[00:34:04.160] performance. So, imagine that like
+[00:34:06.840] you're working on some library version
+[00:34:08.280] two, library version three comes out.
+[00:34:10.280] Um we literally test the performance
+[00:34:12.159] with that. And we see, "Hey, is it
+[00:34:14.240] actually faster or not?" So, we don't
+[00:34:16.000] make any assumptions because performance
+[00:34:17.760] is very dependent on the context on your
+[00:34:19.359] workload. So, we literally run your
+[00:34:20.879] workload and see is it actually faster?
+[00:34:22.840] And if it is faster, then we create the
+[00:34:24.080] PR.
+[00:34:25.679] Right. Do you do you automatically pick
+[00:34:27.560] up that that third version is available
+[00:34:29.399] and try and and and make that assumption
+[00:34:31.640] that it is or is there work manually
+[00:34:33.120] that you have to do within CodeFlash to
+[00:34:35.280] kind of like work that out?
+[00:34:37.520] So, right now I think we don't directly
+[00:34:40.560] upgrade the library version because that
+[00:34:42.159] would mess up the Python environment
+[00:34:43.399] itself. And I think it's probably future
+[00:34:45.320] work for us. But I think we can like do,
+[00:34:47.359] hey, use uh instead of Python lists, for
+[00:34:49.600] example, use NumPy. Yeah. Those type of
+[00:34:52.000] optimizations we can make, um but
+[00:34:55.080] uh installing new libraries can get
+[00:34:56.960] slightly hard because you're messing up
+[00:34:59.080] with the whole environment. But that's
+[00:35:00.359] definitely possible.
+[00:35:02.240] Awesome.
+[00:35:03.520] Saurabh, thank you very, very much for
+[00:35:05.520] for the session. It was very insightful
+[00:35:07.000] and you can tell by the number of
+[00:35:08.080] questions it really resonated with our
+[00:35:09.600] audience. So, very, very much appreciate
+[00:35:11.160] you supporting our conference and thank
+[00:35:12.880] you for the session uh that you gave.
+[00:35:14.800] Thank you very much.

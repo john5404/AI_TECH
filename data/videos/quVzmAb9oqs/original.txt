@@ -1,0 +1,1246 @@
+[00:00:00.000] I mean, cheap or not, it's the nature of the factory.
+[00:00:01.960] If it produces rubbish, you throw it away, right?
+[00:00:04.080] I do understand.
+[00:00:05.080] Of course, that human review is a bottleneck.
+[00:00:07.480] When you're creating a factory,
+[00:00:08.920] you know, a lot of the work is on the quality gates.
+[00:00:10.880] You know, there's just no point creating a pull request for the human to review.
+[00:00:14.760] When that thing is low quality.
+[00:00:16.760] My job as a factory creator is to deliver
+[00:00:22.320] high quality pull requests where the reviewer is equipped.
+[00:00:26.400] I love that word equipped.
+[00:00:27.840] My job is to equip the reviewer with all the information they need
+[00:00:33.560] The AI Native Dev is a podcast for developers and engineering
+[00:00:36.840] leads at the cutting edge of AI and agentic coding.
+[00:00:40.160] Join your hosts, Guy Podjarny and me, Simon Maple,
+[00:00:43.160] every week as we chat with the most exciting voices in
+[00:00:46.360] AI and tackle the biggest questions facing developers today.
+[00:00:50.760] This is the AI Native Dev.
+[00:00:56.080] Yesterday you were writing code.
+[00:00:58.080] Today you're prompting agents.
+[00:01:00.160] Tomorrow you'll be running a software factory.
+[00:01:03.160] Agentic coding is moving fast enough to give anyone whiplash.
+[00:01:06.800] This June, AI DevCon London sold out. Hundreds of developers,
+[00:01:10.880] engineering leads and VP's packed in
+[00:01:13.000] to hear speakers from Anthropic, OpenAI, Netlify, and GitHub,
+[00:01:17.240] cut through the hype and get to what actually works.
+[00:01:20.440] This November, we're bringing it back to New York.
+[00:01:23.360] Bigger, bolder, and full of people actually building the agentic future.
+[00:01:27.840] Three days of real talks, real tools, real answers.
+[00:01:31.440] Whether you're directing the agents, building the loops themselves,
+[00:01:34.640] leading the teams, or setting the strategy.
+[00:01:37.920] Our early bird pricing ends on September 30th,
+[00:01:40.400] so make sure you lock in your place before prices increase.
+[00:01:43.760] As a podcast listener, you can get 15% off your ticket using promo code POD15.
+[00:01:50.640] We have so much planned and we can't wait to have you
+[00:01:53.280] join us in New York.
+[00:01:59.360] Hello, everyone.
+[00:02:00.120] Welcome back to the AI Native Dev.
+[00:02:02.600] Today we're going to talk about continuous AI.
+[00:02:05.400] And we talk about repos.
+[00:02:07.320] And what is the sort of the container for factories or whatever we call them
+[00:02:11.400] on that front.
+[00:02:12.520] And to dig into all of that we have with us, Don Syme, who is a long
+[00:02:16.960] term kind of industry contributor when it comes to programming languages
+[00:02:21.440] and how we develop big open source contributor worked a lot on F#,
+[00:02:25.600] on various other projects you would have known.
+[00:02:27.680] And today a principal researcher at GitHub working on many things the development,
+[00:02:32.800] but specifically also kind of continuous AI and agent workflows,
+[00:02:36.880] which we'll cover more. So.
+[00:02:38.280] Thanks for coming onto the show.
+[00:02:39.920] I should also point out you've given an amazing talk at our latest
+[00:02:43.840] AI Native DevCon, and you're a big part here of the London community of,
+[00:02:48.280] of of development as a whole, but also specifically now as we transform into AI.
+[00:02:53.320] So love having you as part of the community Guy.
+[00:02:56.040] It's a pleasure to be here, and it's been a pleasure to get to know
+[00:02:59.400] you over the last couple of years as you've created Tessl, and
+[00:03:02.680] what a wonderful community here in London and also worldwide
+[00:03:06.480] AI Native Dev community. I've used your resources a lot.
+[00:03:09.040] I've learned a lot from what you've done.
+[00:03:12.080] And, you know, really kudos to to kind of create that,
+[00:03:17.040] to take that community ethos that was so strong in the developer world
+[00:03:21.360] and continue it through the really big shifts
+[00:03:23.960] that have been happening in the developer world.
+[00:03:25.880] And yeah, I love what you're doing.
+[00:03:28.480] Cool. Appreciate that.
+[00:03:29.840] And, you know, it's all about gathering brilliant people and giving them a stage
+[00:03:33.760] to share their learnings.
+[00:03:34.680] So precisely what we're doing here.
+[00:03:37.200] So, we're going to talk a lot about, you know, how do you sort of systemize,
+[00:03:41.320] if you will, software development in the sort of new era and
+[00:03:45.120] you use the term you kind of individually and also at GitHub,
+[00:03:48.240] use the term continuous AI when you think about that type of development.
+[00:03:52.600] So maybe for starters just define for us a little bit what is continuous AI.
+[00:03:57.400] Yeah.
+[00:03:57.880] So the thinking is that there's been a bit of a blind spot in the,
+[00:04:03.080] in the AI industry, a really big focus on the kind of the use of AI
+[00:04:06.960] basically coming from the chat modality, the individual productivity modality.
+[00:04:11.080] Of course, we see that with ChatGPT
+[00:04:15.080] just exploding in its initial and then all the kind of
+[00:04:19.760] productivity enhancements that come around the chat modality.
+[00:04:23.080] But we think there's kind of a missing point of view,
+[00:04:26.960] which is about collaboration and which is about automation
+[00:04:30.720] and which is about situated automation.
+[00:04:33.920] And we were thinking about this a lot last year at GitHub,
+[00:04:38.120] and we did some kind of thinking about, I think you wrote about it
+[00:04:41.040] and we kind of looked well, you know, we already do a lot of situated automation.
+[00:04:44.840] And in CI/CD we have continuous integration,
+[00:04:48.320] we have continuous deployment.
+[00:04:49.880] And then there's this whole range of activities
+[00:04:52.360] that people want to do in this continuous modality.
+[00:04:56.000] And the continuous modality is just so central
+[00:05:01.000] to how we work in the, in the software industry.
+[00:05:05.160] That change is happening in this kind of context,
+[00:05:07.840] usually the repository,
+[00:05:08.840] but there could be other kind of context, the organization or multi repo.
+[00:05:12.520] And that means continuous means you're kind of continually folding
+[00:05:17.080] in that kind of sense of change and eventing
+[00:05:19.760] and difference and sort of incrementally that's kind of happening.
+[00:05:23.600] And always reestablishing these crucial invariants like the software
+[00:05:28.400] actually works, you know, kind of continuous integration
+[00:05:30.960] or the software is correctly deployed in continuous deployment.
+[00:05:34.320] And a lot of these things are very they're central
+[00:05:39.560] to how we how software collaboration and deployment works.
+[00:05:44.560] But equally we want something new, which is also
+[00:05:48.400] these subjective activities like continuous documentation.
+[00:05:52.320] Writing documentation is a kind of is a subjective activity.
+[00:05:56.760] It's not the sort of thing
+[00:05:57.560] where the CI/CD kind of concerns are about, like determinism.
+[00:06:01.480] We want everything to be exactly right and double check absolutely everything.
+[00:06:04.920] Repetition, then sort of insistence that it always happens, like a lack of.
+[00:06:08.280] Yeah, and.
+[00:06:09.480] Creativity and more consistency. Yeah. That's right.
+[00:06:12.200] And but now we have this whole new bucket of things
+[00:06:15.160] like we want to continuously improve the performance of our software.
+[00:06:18.960] We want to continuously fix bugs.
+[00:06:22.200] You know, we want to continually triage bugs
+[00:06:24.800] or have every issue labeled correctly within some kind of schema.
+[00:06:28.960] We want to continuously look for duplicates in our in our in our bugs.
+[00:06:33.560] And of course, you can kind of do this as these things, each as a one off.
+[00:06:38.040] But in the end, you're going to have to put them on
+[00:06:41.000] some kind of operational, permanent kind of basis in the context of change.
+[00:06:45.160] It's so easy for people to kind of blank on that and kind of say,
+[00:06:48.360] oh, look, I can I can find the duplicate bugs in my, in my repo.
+[00:06:51.800] But you got to make that continuous, right.
+[00:06:54.600] You've got to you've got to get that on an operational, permanently
+[00:06:57.760] running kind of basis for that to really be a sustained activity.
+[00:07:01.720] So we looked at this kind
+[00:07:02.680] of collection of things and we said, well, what what really characterizes this is
+[00:07:06.080] they're different to CI, different to CD, but they're also similar okay.
+[00:07:10.400] And it's that, that, that and that said, well let's partner that CI/CD
+[00:07:15.680] and continuous AI and the key things is continuous,
+[00:07:19.280] but also kind of subjective and implemented with kind of AI.
+[00:07:22.520] And and that's where we landed with that term when we put that out there.
+[00:07:25.960] And it kind of seemed to
+[00:07:26.720] resonate with people, we kind of captured something
+[00:07:28.720] that other people weren't talking about.
+[00:07:30.440] And that's that's our. Super interesting.
+[00:07:33.400] It's sort of like kind of echo back
+[00:07:35.800] a little bit and the things that resonate with me.
+[00:07:37.440] So it starts from the sort of the single player to multiplayer move on it.
+[00:07:41.200] And then I guess naturally over there weaves into into automation.
+[00:07:45.840] Right. Because one extend like we talk about continuous.
+[00:07:48.520] But I think what happens with AI
+[00:07:49.840] is that it has this jagged edge and sometimes it works amazing.
+[00:07:52.960] It sometimes not.
+[00:07:53.800] And we have this kind of a hard to determine points in time
+[00:07:59.480] in which we want a human to intervene
+[00:08:01.760] and apply their judgment, which is clearly a blocker for scaling.
+[00:08:05.720] And in that sense, it's similar to continuous integration,
+[00:08:08.880] because before continuous integration was non continuous integration, like,
+[00:08:12.720] you know, someone manually running it and sort of running the.
+[00:08:16.600] System, there was a lot of homebrew continuous automation as well
+[00:08:20.880] sort of gauntlet systems or something like your, your PR would run the gauntlet
+[00:08:25.160] of your organization and that kind of all came together
+[00:08:28.560] into things like GitHub actions and other CI/CD kind of systems.
+[00:08:32.160] And we see plenty of homebrew for people,
+[00:08:34.920] kind of automating parts of AI kind of workflows as well.
+[00:08:38.600] And it's just like, yeah, you know, we we should consolidate that into,
+[00:08:42.800] into systematic ways of thinking about it and systematic ways of actually kind of
+[00:08:47.040] doing it in.
+[00:08:47.800] Practice, performing
+[00:08:49.160] so, so, so it has these maybe like two different routes, one one
+[00:08:53.800] going from single player to multiplayer and the collaboration element to it.
+[00:08:56.920] The other is the automation and sort of do this repeatedly,
+[00:09:01.160] maybe starts with sort of homebrew automation and
+[00:09:04.120] and doing it and then consolidating those into the sort of infrastructure
+[00:09:08.600] that is CI/CD usage style,
+[00:09:12.880] but extended and expanded into
+[00:09:16.160] the type of actions that AI can now do that's exactly that are,
+[00:09:21.360] naturally less deterministic in, in nature.
+[00:09:26.440] And so that really leans into not just the automation,
+[00:09:29.640] but also the definition of how would you track this activity?
+[00:09:32.720] What is a failed build versus a successful one.
+[00:09:36.480] How do you continue with that.
+[00:09:37.600] Does that.
+[00:09:38.080] So all of those kind of bundled into that term of continuous AI.
+[00:09:41.880] Yeah. Yeah, absolutely.
+[00:09:42.800] And there's another key aspect here which is about bounding the context.
+[00:09:45.840] So then we're going to kind of talk about in the context of automation
+[00:09:49.040] and bounding the possibilities of what happens in the automation people
+[00:09:53.600] conversations about some kind of automated AI often go off the rails,
+[00:09:57.640] unless you're actually situated inside, actually some bounded kind of context.
+[00:10:01.320] But we're going to do this in the repository with these particular outcomes.
+[00:10:05.280] Like it can create a single pull request, it can create a single issue.
+[00:10:08.960] Whatever the job of the automation is on each run,
+[00:10:12.920] it gets these particular kinds of inputs and doesn't get anything else.
+[00:10:16.080] It has a firewall around it and so on.
+[00:10:17.840] So to have these kind of bounded, easy
+[00:10:20.960] to understand, simple, kind of simplified view
+[00:10:25.200] of what are we, what automation are we actually doing here?
+[00:10:28.280] And because people are already really familiar with CI/CD automation,
+[00:10:32.000] a lot of people use GitHub actions or some other kind of CI/CD systems.
+[00:10:35.080] All sorts of people can successfully kind of use those.
+[00:10:39.040] It's really a natural starting point for, for saying, hey, let's automate.
+[00:10:44.480] Let's like, let's do this together in because we're all doing it already.
+[00:10:50.000] And now let's kind of automate some AI
+[00:10:53.440] driven, subjective kind of elements of this as well.
+[00:10:56.760] And so yeah, situating it there does make a lot of sense.
+[00:11:00.200] It's also counterintuitive to a lot of people.
+[00:11:02.160] I've got to say, a lot of people listening on this might say, CI/CD.
+[00:11:06.280] I don't want AI anywhere near that.
+[00:11:08.680] Right? Yeah.
+[00:11:09.320] That's like that's my determinism.
+[00:11:10.840] And there's a reason for that. Which is it? Yeah.
+[00:11:13.400] One of my friends kind of says it's the place where the grown ups are, right.
+[00:11:17.040] You know,
+[00:11:17.280] it's the place that really establishes that your system actually works as it is.
+[00:11:21.600] And a lot of people have plenty of problems with CI/CD systems.
+[00:11:24.160] It's not like it's
+[00:11:27.000] so important
+[00:11:28.400] that it's a major focus for team activity is just kind of get
+[00:11:31.880] these invariants established there, get get the green ticks
+[00:11:35.640] and get everything kind of checked there.
+[00:11:37.240] They use it for everything because it's so useful.
+[00:11:39.520] And the thought of adding kind of more subjective activities into that, like
+[00:11:44.120] labeling or issue triage or bug fixing, that can be disturbing for people.
+[00:11:48.520] And it's one reason that we don't say we're putting AI into your CI.
+[00:11:52.120] No no no no no no, we don't do that at all.
+[00:11:54.960] It's CI/CD.
+[00:11:56.080] They stay as they are.
+[00:11:57.400] Yeah. And continuous AI is a separate bucket of things.
+[00:12:00.000] You can do none of it if you like.
+[00:12:01.600] You can do a lot of it if you like.
+[00:12:03.080] You can dial that as you like.
+[00:12:04.680] And that's really, really important that we're not marketing with a core
+[00:12:08.360] ethos of what CI/CD does and how crucial that is in the industry.
+[00:12:13.400] We want people to double down on that because that's
+[00:12:15.760] where we really establish software quality, quality in the in the.
+[00:12:19.920] Industry, I think so.
+[00:12:21.520] So I relate to that.
+[00:12:22.720] I think like on the context of, of context,
+[00:12:26.280] you know, of like defining context and defining it.
+[00:12:29.200] I, I do think that there's a lot of analogies to the world of CI/CD in
+[00:12:34.280] that environments are actually a core element of CI/CD as well.
+[00:12:38.280] Right?
+[00:12:38.480] They move up from works on my machine to something that is defined.
+[00:12:42.880] Continuous deployment is about the environment of the production.
+[00:12:45.840] And so defining the context is just
+[00:12:50.640] just as probably I'm saying it in quotes because it might it's,
+[00:12:54.880] it might actually get fairly complex,
+[00:12:57.960] just a new type of environment variable for it.
+[00:13:01.800] But it's a good it's
+[00:13:03.120] a good though to a question I had, which is you use the term continuous AI.
+[00:13:07.800] I feel like there's a lot of analogies in the continuous AI narrative
+[00:13:12.120] to the world of sort of factories and factory lines in my,
+[00:13:16.320] in my own kind of and con talk, I talked about sort of the software stack.
+[00:13:22.720] And in one of those paths I was a little bit stuck with saying,
+[00:13:25.520] okay, you have models, on top of which you have tools on
+[00:13:28.560] top of which you have skills on top of which you have harnesses.
+[00:13:31.280] They all kind of compose down.
+[00:13:32.760] And then the harness.
+[00:13:33.840] It was hard to know what's above a harness.
+[00:13:36.640] And I wrote their factory line.
+[00:13:39.560] The term loop became popular
+[00:13:41.080] like the next week or something, so maybe that's the term on it.
+[00:13:44.440] Now you have this continuous AI, but I guess I guess, do you feel those are
+[00:13:48.320] just different words or is like a system harness or a factory line or even a loop?
+[00:13:53.320] A loop has a little bit of that optimization
+[00:13:55.000] piece to it, the same as continuous AI, I guess.
+[00:13:59.160] How much,
+[00:14:00.000] how much is just the different lens to arrive at the same destination versus
+[00:14:03.120] you're defining something different. I think.
+[00:14:06.720] I some of those
+[00:14:07.960] conversations like are orthogonal
+[00:14:10.960] because the shift
+[00:14:11.600] that I'm most interested in is this one from the kind of individual productivity
+[00:14:15.680] point of view to something which is more continuous and kind of team
+[00:14:19.040] and kind of integrated into some particular kind of context.
+[00:14:22.640] And so a lot of the things that are kind of getting developed,
+[00:14:27.680] like the notion of
+[00:14:28.400] kind of loop engineering, you can apply that all in that kind of
+[00:14:30.920] continuous AI setting.
+[00:14:32.080] The ledger of record might be different because we typically use the repository
+[00:14:36.000] and the issues and pull requests is the actual kind of ledger of record of
+[00:14:40.240] what happens and maybe some augmenting kind of things as part of that.
+[00:14:44.240] Whereas maybe if you're kind of loop engineering on your local dev machine
+[00:14:48.520] or something like that, you might be using a different kind of ledger and so on.
+[00:14:53.280] But the concepts can actually flow very freely between the two.
+[00:14:57.840] And I really like that.
+[00:14:59.360] It's like it's, you know,
+[00:15:01.640] there's a lot of
+[00:15:02.680] conceptual kind of competition in that kind of like what comes next
+[00:15:06.760] kind of space in the individual productivity space.
+[00:15:08.800] And I kind of like saying, hey, that's not what we're doing.
+[00:15:11.040] We're over here.
+[00:15:11.920] And yeah, do all of that
+[00:15:12.880] to bring it over, like bring over all the good ideas and, and rethink them,
+[00:15:16.880] how they kind of work in the like, how what, what the loops kind of mean.
+[00:15:21.480] It might be in lots of steps of a loop, like you get to see you,
+[00:15:26.160] you set the continuous AI set up
+[00:15:30.440] like we have goal traces, for example, continuous goal traces, which once
+[00:15:34.200] a day try and make progress towards some particular defined goal.
+[00:15:37.360] And each day you get a pull request towards that goal
+[00:15:39.640] and you kind of integrate those, but maybe it won't work
+[00:15:41.960] on the next pull request until you've done the previous one.
+[00:15:44.080] So it's kind of it's not really a is that a loop or is it not a loop.
+[00:15:47.480] It's kind of a loop because it's kind of, you know, repeating those pull requests
+[00:15:51.560] towards the goal, but it's a cooperative loop
+[00:15:54.840] that's actually quite slow in its kind of action.
+[00:15:57.280] That might be what an enterprise exactly wants to kind of
+[00:16:01.240] to kind of chip away at the kind of all the big backlog of accessibility
+[00:16:05.520] bugs or something like that, that, that a product has,
+[00:16:07.880] you know, that those kind of loops actually really satisfying for, for teams
+[00:16:11.880] where they have like this cadence of like daily improvement
+[00:16:15.640] towards some kind of goal that is measurable.
+[00:16:18.760] You can see you're making progress
+[00:16:20.200] and managers can kind of understand what's kind of going on.
+[00:16:23.360] Whereas, you know,
+[00:16:24.120] if it's in the kind of loop engineering world
+[00:16:25.720] where the individual developer is like,
+[00:16:27.200] yeah, I fixed a thousand kind of accessibility bugs, and here's a thousand
+[00:16:30.760] pull requests for the team to review, lets you all have to spend all drop
+[00:16:34.480] everything you're doing and kind of review those, you know, that that's kind
+[00:16:37.760] of a little bit like a little bit disruptive to how teams work together.
+[00:16:42.400] So we kind of get to shape things a bit differently in when you
+[00:16:45.880] when slow things down a bit, can move in a different kind of pace.
+[00:16:50.080] I feel like I
+[00:16:53.000] relate
+[00:16:53.800] to the the distinction between the single player and the multiplayer.
+[00:16:57.240] I think that is very important.
+[00:16:58.960] There are still sort of two things here.
+[00:17:01.400] One is the, the, the pipeline.
+[00:17:05.160] So the continuous AI element of the pipeline, this is a,
+[00:17:09.920] an aspiration to get to a point in which you can get a recurring
+[00:17:14.360] or like a repeatable motion of getting a type of input
+[00:17:18.200] to come into the pipeline and process it and get a certain caliber
+[00:17:22.440] output out of it in a repeatable fashion from the.
+[00:17:28.400] Maybe it's even two other aspects of what I would what I would say is a loop,
+[00:17:32.320] which is more look at how that was done again and again for it and improve it.
+[00:17:38.480] So so a self improving pipeline.
+[00:17:40.720] So because you can apply a loop to CI/CD I mean in fact we do it you know
+[00:17:45.080] and we do it for ourselves.
+[00:17:46.200] We do it with the test agent for others which is fix flaky tests.
+[00:17:50.440] So flaky tests are an example of, of something that isn't necessarily
+[00:17:53.920] a pipeline its own. Right.
+[00:17:54.880] Maybe it is, but it is about identifying failures in the CI/CD and fixing them.
+[00:18:00.200] But I think that's the loop.
+[00:18:01.600] And then I think debatable a little bit on the term factory
+[00:18:06.200] where there is proactive initiation
+[00:18:09.680] of, of, of a thing, of, of something
+[00:18:13.480] that is like an event driven, you know, a bug was reported.
+[00:18:17.720] That's probably not its own term.
+[00:18:18.920] It's probably like either we're talking about two things,
+[00:18:20.960] the pipeline and the loop is actually the initiator
+[00:18:24.520] So do you, do you agree with that sort of separation?
+[00:18:27.480] We have the pipeline and the and maybe the loop and the initiation of it.
+[00:18:34.560] And how does that relate to the GitHub agent workflows,
+[00:18:38.040] like the sort of the core capability that is from GitHub?
+[00:18:41.160] I mean, what is the scope of that product?
+[00:18:42.800] Is it both of them? Is it more? Is it others?
+[00:18:44.880] Maybe tell us a little bit about the kind of the product side, you know.
+[00:18:48.520] Yeah, yeah.
+[00:18:49.200] Because we've talked about kind of continuous AI and I'm very excited
+[00:18:53.400] to say the GitHub Agentic Workflows, which is our
+[00:18:57.400] of our kind of continuous AI system for,
+[00:19:00.240] for, for GitHub actions, is now in public preview.
+[00:19:03.520] And, you know, it's going to be part of it is part of the GitHub product line up.
+[00:19:07.240] And so, you know, get up there and kind of use that.
+[00:19:09.640] So what is GitHub Agentic Workflows.
+[00:19:11.240] We think of it as sort of intelligent automation for GitHub at the at the
+[00:19:15.520] at the high level.
+[00:19:16.640] And that concretely that means you're running
+[00:19:21.440] the coding agents, you know, and love the ones you're very familiar with.
+[00:19:24.880] You know, your Claude Codes
+[00:19:25.920] or your Copilot CLIs or your Gemini CLIs and the like,
+[00:19:29.880] and you're running those with strong
+[00:19:33.480] guardrails in GitHub actions on.
+[00:19:37.400] So that's on an automated kind of basis.
+[00:19:40.480] And all of those elements are kind of crucial to us.
+[00:19:43.640] First of all,
+[00:19:44.120] it is intelligent automation, continuous AI like we've kind of been talking about.
+[00:19:48.400] You get a choice of coding agent.
+[00:19:49.840] We're not tying you into kind of Copilot though.
+[00:19:52.960] Absolutely. That's kind of a difficult one.
+[00:19:54.520] It's a wonderful, wonderful coding agent.
+[00:19:56.280] And you get the choices of models
+[00:19:58.120] and you bring your own key and lots of kinds of things about that.
+[00:20:01.160] It's all kind of open source as well.
+[00:20:02.760] You can kind of look at it, look at, look at it all.
+[00:20:04.960] How it works and with strong guardrails is absolutely key.
+[00:20:08.840] And I'm kind of we're going to be talking
+[00:20:10.200] more about security and guardrails later on I think.
+[00:20:12.840] But you know the better the guardrails are the faster you can run with automation.
+[00:20:17.720] It's like train tracks,
+[00:20:18.760] you know, the stronger the train tracks, the faster you can run.
+[00:20:22.360] This is so crucial.
+[00:20:23.920] And so many people are kind of missing this in that in the automated modality,
+[00:20:29.080] in the continuous AI modality, you've got to be able to sleep at night.
+[00:20:32.920] You've got
+[00:20:33.200] to be able to have those things running when you're not there and responding to
+[00:20:36.960] things and trusting those kind of things and making sure the that,
+[00:20:40.960] making sure all the kind of integrity and information flows
+[00:20:44.080] are kind of right and reviewable to check your not kind of leaking information.
+[00:20:47.880] So we had Ori from Sierra on the podcast here.
+[00:20:51.160] And he pointed out, so like if you
+[00:20:52.840] if you allow the agent to do something and you run it enough times,
+[00:20:55.640] it's almost inevitable that it would eventually do that thing.
+[00:20:58.600] So yeah, that's right.
+[00:20:59.640] You need to you got to set the guardrails.
+[00:21:01.560] You got to set the constraints really strongly.
+[00:21:03.800] And information flow integrity. And
+[00:21:08.400] You do need to think about what you're doing.
+[00:21:10.560] You shouldn't make your private repositories
+[00:21:12.760] kind of accessible to agents running in public repositories.
+[00:21:16.080] That's you know, that's just asking for trouble.
+[00:21:18.680] You've got to know your basics of agentic security.
+[00:21:21.360] And the agentic kind of information flow that people bring in issues.
+[00:21:25.880] If you're going to triage, raise issues, you've got to think twice
+[00:21:28.280] about about triaging issues from from third parties.
+[00:21:31.640] And and we do that mostly through forcing you to opt in
+[00:21:35.480] when you do certain actions, like the default
+[00:21:37.640] is to kind of ignore issues coming from untrusted contributors.
+[00:21:40.560] For example, you've got to opt in if you're an agentic workflow
+[00:21:43.680] that's going to process that kind of information.
+[00:21:46.280] So that's what GitHub Agentic Workflows are.
+[00:21:48.920] Intelligent automation for GitHub are running the coding agents
+[00:21:52.320] you know and love with strong guardrails in GitHub actions.
+[00:21:56.640] And it's a starting point.
+[00:21:57.560] We're going to see a lot of different implementations of continuous AI.
+[00:22:00.720] We're going to see we have a thing called GitHub automations as well from
+[00:22:05.600] which are more for individual automation automations for individual productivity.
+[00:22:09.280] There's going to be a lot of different kind of automated kind of systems.
+[00:22:12.240] There's a whole spectrum of kind of things.
+[00:22:14.360] You know, this is how we're cracking open the space to say, hey,
+[00:22:19.400] you know, that DevOps mentality of CI/CD, bring it along to the party.
+[00:22:24.800] And it sounds like, GitHub Agentic Workflows are,
+[00:22:29.200] in my analogy, before maybe more of the pipeline than the loop.
+[00:22:32.480] So they are the means of interacting it.
+[00:22:35.560] They are an event driven system.
+[00:22:37.320] An issue comes along or something.
+[00:22:39.200] You might trigger that, but they they are not.
+[00:22:43.040] They don't.
+[00:22:43.560] It doesn't implicitly drive you to create the loop or not.
+[00:22:47.280] It's sort of your choice.
+[00:22:48.120] Now you can create another
+[00:22:49.760] time driven schedule that will now do this on a daily basis.
+[00:22:54.040] And so you can do that with the programable sort of system on it.
+[00:22:58.080] But it is about an agent pipeline. Yeah.
+[00:23:00.160] And you kind of think of it as one step of the loop as well,
+[00:23:02.840] like taking the issue and creating the pull request.
+[00:23:06.280] Now taking the goal and doing one step of that, taking the backlog
+[00:23:09.920] and doing a small part of that and implementing one, five, ten
+[00:23:13.840] kind of fixes in one five, ten.
+[00:23:16.080] It doesn't have to be one issue to one pull request a single run my create
+[00:23:19.600] multiple pull request. It might process multiple issues.
+[00:23:22.160] It might do other kinds of work.
+[00:23:23.520] It might work off backlog as a source of input.
+[00:23:27.080] It might also be a planning step.
+[00:23:30.600] It might sort of decompose that kind of it might be a research step.
+[00:23:34.440] That's actually a very common way.
+[00:23:35.640] It says, hey, here, every day we're going to do some research on
+[00:23:39.400] how we can improve performance in this repository.
+[00:23:41.800] We're not going to do the work, going to do a lot of investigation of that.
+[00:23:44.880] We're going to write a report on like,
+[00:23:46.240] what are your top five opportunities for improving performance?
+[00:23:48.960] And then the the human,
+[00:23:52.480] the maintainer or the contributors can say,
+[00:23:56.480] let's break that down and actually take that to the next step and actually
+[00:23:59.000] go and implement those, each of those kind of opportunities.
+[00:24:02.880] There, actually just do numbers one and three.
+[00:24:04.640] So there's kind of like it's a it allows you to create a lot of different
+[00:24:08.280] interesting kind of back and forth assistive kind of flows fairly.
+[00:24:12.880] They're not they're not super fast kind of flows.
+[00:24:16.840] It's like CI/CD, you know, because you're you
+[00:24:20.040] really are doing depth research that may involve building the product.
+[00:24:23.360] Right.
+[00:24:23.640] That may involve taking screenshots and doing research on the product.
+[00:24:27.080] And that's where these things are, can be very different
+[00:24:30.720] to sort of other kinds of automation you see floating around the industry.
+[00:24:34.360] Because we do have the expectation that a lot of a lot
+[00:24:37.880] of the time these steps can do real software engineering.
+[00:24:41.040] They can build the product, they can run, they can. Take.
+[00:24:43.360] They can be working off production telemetry data, for example.
+[00:24:46.920] They can be kind of getting the latest
+[00:24:48.360] like ten failures off your site and then say, let's prioritize
+[00:24:51.680] those and write your research report on how's your site reliability going.
+[00:24:55.320] You know, surfacing all this kind of subjective information
+[00:24:59.760] into useful and useful reports and actionable kind of work to take.
+[00:25:04.240] Things forward. So what?
+[00:25:05.680] So that makes a lot of sense to me.
+[00:25:07.480] And agents are amazingly powerful and you can run them.
+[00:25:09.640] And cloud agents have also become much more sort of useful
+[00:25:14.280] as we sort of run those. Right.
+[00:25:15.600] So this is sort of situated cloud agents.
+[00:25:17.720] And so so that's a that's kind of where I wanted.
+[00:25:19.760] So I wanted to
+[00:25:20.600] maybe shift and talk a little bit about the sort of the repo as the unit.
+[00:25:23.280] So as I think about GitHub workflows, which granted is a
+[00:25:26.880] fairly new product on it, I'm sure it'll expand many things.
+[00:25:30.000] But one of the things that I feel if I were to explain why is it different?
+[00:25:34.960] How is it different than any other cloud agent?
+[00:25:37.200] You know,
+[00:25:38.120] it feels like a lot of the core of it is just that sort of repo centricity.
+[00:25:43.680] And, you know, one of the one of the sentences
+[00:25:47.360] kind of in the, in the, in the web pages there talks about turning every repo
+[00:25:51.520] into a software factory.
+[00:25:53.040] And so I guess it feels to me like GitHub Agentic Workflows are effectively
+[00:25:58.400] cloud agents that are kind of repo native.
+[00:26:02.360] So they're they get defined in the repo.
+[00:26:05.160] They execute with an expectation that all of their activity
+[00:26:09.720] and all of that which other agents can potentially also do.
+[00:26:13.600] But but it's just like a core element to is that is that right?
+[00:26:17.640] Is there is there something. Else that's.
+[00:26:19.760] Fundamentally different?
+[00:26:20.760] That's right. And that's absolutely
+[00:26:23.720] a key
+[00:26:24.880] core design decision about where we started with the CI
+[00:26:27.800] CD kind of analogies, which are also highly repo centricity, eccentric
+[00:26:31.720] kind of flows and automations.
+[00:26:35.600] And now and there's a reason
+[00:26:40.600] why in that it, there's just so much becomes
+[00:26:45.960] simpler when you answer that question of what is the bound of operation?
+[00:26:50.440] Where is this running? Where is the definition?
+[00:26:52.800] Let's pair that kind of definition.
+[00:26:54.360] There are pros and cons to that.
+[00:26:55.960] And in the DevOps community, of course, that went back and forth
+[00:26:59.760] for kind of many years.
+[00:27:01.080] Do the definitions of the automation sit sit with the in the repo or not?
+[00:27:06.640] Right. Yeah. There's a whole world of GitOps and.
+[00:27:08.720] And on the, on the terminology like the repo as a, as a factory
+[00:27:11.720] actually kind of prefer to kind of think of repo as a site of production,
+[00:27:16.200] a site where things happen, a site where value is kind of produced
+[00:27:21.200] and that might turn out to be a factory, but we produce value in all sorts
+[00:27:24.480] of other kinds of ways.
+[00:27:25.400] You know, film studio is not a is not a factory,
+[00:27:27.920] but it's also a place where value is hopefully kind of produced as well.
+[00:27:31.520] So they're all and the the factory analogy is kind of most useful
+[00:27:35.480] when there's kind of repeating tasks that are the same,
+[00:27:39.200] that are on the pipelines kind of coming through.
+[00:27:42.280] But I think we should think quite broadly about since AI has such incredible
+[00:27:46.680] breadth of use, we should look for other analogies
+[00:27:49.840] and other kind of inspiration that use a factory.
+[00:27:53.080] Sometimes that's great, but also use, you know, people.
+[00:27:56.640] You do use words like studios or productions or workbenches
+[00:27:59.360] and all sorts of other kinds of things that, that, that kind of make most sense.
+[00:28:04.240] So there's another crucial dynamic
+[00:28:07.680] that in the context of the repo and the context of CI/CD.
+[00:28:12.880] And I want to kind of bring this out, which is that
+[00:28:16.440] when an organization adopts CI/CD
+[00:28:20.640] and gives adopts GitHub or some other similar platform,
+[00:28:25.840] what they're really doing is saying to the developers in that organization,
+[00:28:30.560] here's a place called the repo, where we, as the organization,
+[00:28:35.760] give you the permission to automate within that bound.
+[00:28:40.000] Okay, you,
+[00:28:40.760] the developers, know best what automation you need for your repositories.
+[00:28:44.800] You know best what CI/CD you need.
+[00:28:48.120] Therefore, we're going to give you the permission to.
+[00:28:51.280] And you can create these things for workflows
+[00:28:53.160] which claim some of those capabilities and the ability to create.
+[00:28:57.360] Security boundary in a in a decision authority boundary.
+[00:29:00.200] Yeah. And but we give it to you. Go for it.
+[00:29:03.480] Do what you need to do okay okay.
+[00:29:05.320] Maybe we have some organizational guidelines.
+[00:29:07.040] Maybe they're reusable actions and so on.
+[00:29:08.640] We've got a team that a little bit to make sure
+[00:29:10.160] we've kind of keeping a platform centricity in our organization.
+[00:29:13.280] But this is an incredibly powerful decision because suddenly
+[00:29:17.440] developers have access to a limited form of cloud resource.
+[00:29:21.200] They have access to compute, they have access to network,
+[00:29:23.880] and they have access to limited
+[00:29:25.160] kinds of storage for kind of caching and whatever else goes on.
+[00:29:28.920] And that allows developers to be incredibly productive.
+[00:29:32.760] And this is why CI/CD is so successful. Okay.
+[00:29:35.560] Because there is a bounded context where they can developers
+[00:29:38.440] are empowered to claim resources.
+[00:29:40.240] They do not have to go and ask the the cloud team in the company
+[00:29:44.520] for a new machine.
+[00:29:45.800] They do not have to go ask for a budget.
+[00:29:48.360] The budget is somehow I'll be measured.
+[00:29:50.800] But this is absolutely crucial organizational dynamic.
+[00:29:55.200] For why CI/CD is so powerful and so successful.
+[00:29:58.640] And we believe that continuous AI
+[00:30:01.000] or that AI automation in in contexts will go the same way.
+[00:30:05.080] There will be a cost center where this stuff does cost money,
+[00:30:07.600] of course, like CI/CD, right?
+[00:30:09.280] There will be a cost center where that kind of flows up to there
+[00:30:11.480] can be accounting controls because visibility of of where this goes.
+[00:30:14.880] There's an authorization context that within that context
+[00:30:17.840] we let you use AI according to we still have guidelines and
+[00:30:23.720] policies and so on.
+[00:30:24.560] But that allows incredibly creative aspects.
+[00:30:28.760] And I think this really matters to me in terms of the kind of the jobs
+[00:30:32.040] discussion in the industry, because there's evidence that
+[00:30:35.400] if you empower people close to the coalface, in a sense
+[00:30:40.320] to use AI not though, of course, not an actual coalface.
+[00:30:43.440] Metaphorical coalface a little bit more. Yeah.
+[00:30:45.880] Because I, I want to.
+[00:30:46.760] Hear them.
+[00:30:47.880] On real cold faces, I get that, yeah.
+[00:30:49.960] But, then they find amazing
+[00:30:54.360] productive uses for that for, for these technologies.
+[00:30:58.760] And so I'm, I love GitHub workflows because it is an empowering technology
+[00:31:04.840] that allows the maintainers of the repos of the people closer up
+[00:31:08.640] close to the software to work out how best to use AI.
+[00:31:12.480] And you can have incredible conversations about this with people as you start
+[00:31:15.680] to unlock, you know, talking to someone working on software for children.
+[00:31:19.680] And they say, look, the thing I struggle with is,
+[00:31:22.560] is, is that my the language used is getting by, by
+[00:31:27.560] is getting written for 15 year olds, but I need it.
+[00:31:30.240] I need it suitable for for ten year olds.
+[00:31:34.280] And of course AI can make those kind of judgments, right?
+[00:31:37.000] AI can read all your documentation strings and all your texts and kind of simplify
+[00:31:41.160] the language down and just automate that and do that continuously day in, day out.
+[00:31:45.040] It's just like incredibly productive.
+[00:31:47.320] I think.
+[00:31:48.080] So I agree, but I want to challenge it on sort of the two sides of it.
+[00:31:52.360] So I think what we're describing here
+[00:31:53.680] is we're saying a repo is a highly convenient unit.
+[00:31:58.360] You know, it is it is a space, you know, a production site
+[00:32:03.480] in which you can say, I consolidate a lot of my data on the repo.
+[00:32:08.080] And because of that, I can define my automation over here.
+[00:32:10.720] My code itself sits over there or my kind of other assets potentially
+[00:32:14.440] context can sit over there and such, and I think there's a lot of merit to it.
+[00:32:18.360] I think also the rise of GitHub actions, which functionally have a lot in common
+[00:32:22.400] with other sort of CI systems, which are successful in their own right.
+[00:32:26.280] But the sort of the rise of GitHub actions is probably because of that sort of
+[00:32:29.400] convenience of sort of being being built into the repo.
+[00:32:32.440] So a lot of value there.
+[00:32:33.720] However, there are sort of two, two other counter facts to it.
+[00:32:38.000] One is the actions that happen cross repos.
+[00:32:41.400] So we talk about CI/CD
+[00:32:42.840] as though it's one thing, but actually CD oftentimes is not just sort of one repo.
+[00:32:47.320] And so sometimes those things become a little bit tricky
+[00:32:51.120] and they become another repo.
+[00:32:52.640] So suddenly you have those, those paths and maybe even more.
+[00:32:56.840] That one is maybe more of a site comment.
+[00:32:59.720] And we can get back to it after when we talk about factories as a whole.
+[00:33:03.680] The other one, though, is that in the world of AI, there's
+[00:33:06.760] there's been kind of this resurgence of the monorepo.
+[00:33:10.200] It never went away.
+[00:33:11.120] But I think it's it's fairly clear now that a lot of the agents,
+[00:33:14.720] a lot of the models have been trained to work in the context of a single repo,
+[00:33:19.240] but oftentimes they need information that comes from these other repos.
+[00:33:23.160] And so the easiest solution to that
+[00:33:26.440] is to consolidate everything into the single repo.
+[00:33:30.320] But that starts breaking this
+[00:33:32.560] kind of clarity of it's in the same spot because the modern repos can be beastly.
+[00:33:36.320] I mean, they can be enormous and they're no longer one thing.
+[00:33:39.800] So using a repo now as a unit of access, a unit of security,
+[00:33:44.160] a unit of empowerment, of who's allowed
+[00:33:47.160] to do what starts really kind of fraying at the edges, especially,
+[00:33:52.720] you know, what we're seeing, like we're doing it here at Tessl, which is
+[00:33:56.720] fields teams have access to sort of repos and do that because again, it's
+[00:34:01.360] so convenient in terms of agent access to pull them in.
+[00:34:06.880] But you're kind of losing a lot of that identity of a repo as a project.
+[00:34:11.440] Yeah, I think there are.
+[00:34:12.840] You've hit the nail on the head.
+[00:34:13.920] They're absolutely real tangency.
+[00:34:15.920] There's kind of a sweet spot
+[00:34:17.000] somewhere in the middle where I like for some kinds of projects,
+[00:34:19.960] which is everything works really, really well. And an individual repo.
+[00:34:22.800] And we kind of recognize that when we walk up to a repo that's
+[00:34:25.920] just the right size and it's perfectly set up for deployment
+[00:34:29.440] and everything is working really, really smoothly.
+[00:34:31.800] And then there are these other tensions
+[00:34:33.440] that are pulling things in various directions.
+[00:34:34.960] I think at a GitHub, we have work to do on allowing
+[00:34:40.200] making sure that the repo is not the only notion of context
+[00:34:44.000] that actually kind of works effectively, that you could have
+[00:34:48.280] a collection of repos as a kind of collaborative context,
+[00:34:51.920] a friend repos, or whatever kind of features.
+[00:34:54.400] You might kind of add to that.
+[00:34:55.800] And I, I would, I, you know,
+[00:34:59.560] that's one of the things that get discussed at GitHub for sure.
+[00:35:03.280] And then there's the question of the organization
+[00:35:06.560] as a kind of context as a whole that you could.
+[00:35:09.520] But of course, organizations can be absolutely enormous.
+[00:35:13.480] And thousands and thousands of repos. And
+[00:35:17.400] it's a huge question to kind of scale there.
+[00:35:19.360] And even then, some you have enterprises which have multiple organizations
+[00:35:22.840] and so on which which adds a new kind of question.
+[00:35:26.800] And there are all kind of questions in all of this kind of work.
+[00:35:33.320] And you write the coalescing effect into the mono repo.
+[00:35:36.200] That was a trend that was before AI.
+[00:35:39.040] It is it.
+[00:35:40.680] We see it in some projects I'm working on.
+[00:35:42.800] I'm saying, hey, look, we should really consolidate these.
+[00:35:45.320] It's going to work a lot better if we if we.
+[00:35:47.840] Bring it together.
+[00:35:48.480] Bring it together.
+[00:35:49.120] Like it's just no point having these separate.
+[00:35:51.560] So yeah, the tensions you say are absolutely real.
+[00:35:56.440] And you always see dynamics where people pull things apart
+[00:35:59.480] and then they pull them back together and they pull things apart.
+[00:36:01.560] And I, I don't have a lot to kind of.
+[00:36:05.000] I think it's absolutely work we can do at GitHub to, to tackle,
+[00:36:10.760] to give more effective solutions, to stop you being sort of
+[00:36:14.880] forced to bring everything into one repo, at least give you more kind
+[00:36:17.920] of choice and control about where that's how that works.
+[00:36:21.200] And, there would also be the question
+[00:36:24.360] of like auth within kind of monorepo.
+[00:36:28.760] I'm not really an expert on that kind of thing. I'm.
+[00:36:31.520] Yeah. But I get I get that.
+[00:36:32.960] Within. Those control.
+[00:36:34.200] Hey everyone!
+[00:36:35.000] Hope you're enjoying the episode so far.
+[00:36:37.280] Our team is working really hard behind the scenes to bring you the best guests,
+[00:36:41.160] so we can have the most informative conversations about agentic development,
+[00:36:45.480] whether that's talking about the latest
+[00:36:47.120] tools, the most efficient workflows, or defining best practices.
+[00:36:50.920] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:36:54.840] If you're enjoying the podcast and want us to continue to bring you
+[00:36:57.880] the very best content,
+[00:36:59.160] please do us a favor and hit that subscribe button.
+[00:37:01.640] It really does make a difference and lets us continue to improve
+[00:37:05.000] the quality of our guests and build an even better product for you.
+[00:37:09.440] All right, back to the episode.
+[00:37:11.600] So I guess maybe concretely when we talk about the agentic workflows,
+[00:37:14.720] what type of automations would you say are sort of suitable
+[00:37:18.920] to run within the context of a repo versus which ones are outside?
+[00:37:22.280] And when you give, for instance, the example of a repo pulling
+[00:37:25.240] in production data and running in it, clearly
+[00:37:29.040] the production data is not naturally in the repo.
+[00:37:32.560] You know, for, for I think many good reasons.
+[00:37:34.760] And that system is elsewhere.
+[00:37:38.360] Like you know, that's sort of so that's one example is like,
+[00:37:40.600] should that really be a repo level automation
+[00:37:42.640] versus something that's outside, like
+[00:37:43.920] how would you how would you suggest people start thinking about
+[00:37:47.800] what what automation should be done in repo versus which automations?
+[00:37:52.520] I guess maybe you technically can do them in the repo, but the there's no.
+[00:37:58.160] Even shouldn't.
+[00:37:59.000] I, I mean, we, we, we have on the GitHub
+[00:38:04.120] workflows sites and really interesting design patterns in this kind of space.
+[00:38:08.000] And it's one of the things
+[00:38:09.440] I think the team are doing really well is kind of exploring the design patterns.
+[00:38:14.120] So there are absolutely cases
+[00:38:16.000] where we kind of run a whole zoo of agents in a single repo,
+[00:38:20.440] and we've written that up as Peli's Agent Factory, Peli's Agent Zoo.
+[00:38:24.560] And like we've got, we've documented like 20, 30, 40 agents there
+[00:38:29.520] that are just really, really interesting kind of repeated things that you want
+[00:38:34.280] kind of happening in repositories, some really very unexpected ones.
+[00:38:38.320] A lot of them are about code improvement.
+[00:38:40.520] A lot of them are about like performance.
+[00:38:43.640] There are ones about styling, for example, things
+[00:38:46.520] that are maybe a bit really subjective and a really bit unexpected,
+[00:38:49.720] like, GitHub workflows includes a
+[00:38:55.320] GitHub CLI extension, GA
+[00:38:58.160] and it has terminal output and we want that well styled.
+[00:39:00.920] And it kind of so the workflow runs in the, in the, in the repository.
+[00:39:04.440] In this case it kind of runs the the output and checks
+[00:39:08.680] runs the tool and checks its outputs and say, hey,
+[00:39:10.840] you could kind of make this look better, organize it better.
+[00:39:13.640] And that's actually really, really nice.
+[00:39:15.920] And a lot of them have got like 70, 80% kind of PR merge rates.
+[00:39:20.840] You can start to kind of track the causality of like of the repeating
+[00:39:24.520] kind of action and gets kind of statistics.
+[00:39:26.280] On like, can I pause on that a second on it. So, so I love those.
+[00:39:29.040] And you know, there are many and I highly recommend
+[00:39:30.880] people go check out their very, very useful automations on it.
+[00:39:33.720] But that's a good example
+[00:39:34.600] like the styling one, which is, you know, the definition of that style.
+[00:39:40.240] I mean, it could very well
+[00:39:41.920] be something that you want to apply to multiple repos, is it not?
+[00:39:45.920] Oh yeah. Absolutely.
+[00:39:47.280] So yeah, the pattern.
+[00:39:49.640] So of.
+[00:39:49.880] Course sort of think about it for like where would you then store.
+[00:39:52.960] Is that just a reusable action or.
+[00:39:55.040] Reusable skills I mean absolutely.
+[00:39:57.040] So you import skill libraries right.
+[00:39:58.840] So of course
+[00:39:59.480] that's again where we a lot of the things
+[00:40:01.280] that are kind of emerging in the individual productivity
+[00:40:03.560] kind of world, like libraries of skills and Tessl's kind of done work on these.
+[00:40:07.800] And yeah, bring them in to your workflows and you can do that directly
+[00:40:12.760] and just reference markdown files and or check the skills into the repo.
+[00:40:17.240] Is is another thing. If you want to go down.
+[00:40:19.360] That's an interesting boundary there of.
+[00:40:21.520] So the execution might be defined in it and the skill that you sort of pull in.
+[00:40:25.960] But if you want to create, for instance, shared access to system or such,
+[00:40:29.640] you might do that through skills.
+[00:40:31.000] The skills might sort of span repos. Yeah.
+[00:40:33.400] And then there are I guess MCP kind of serve as a similar type of shared access.
+[00:40:39.160] So if you want to access the sort of gets managed in different ways.
+[00:40:42.080] So I guess all of those, the tools, the context. Of all this.
+[00:40:44.680] So to bring in production to me, yeah.
+[00:40:47.720] So they're all a part of the continuous AI narrative.
+[00:40:51.000] They're just not because the continuous AI is broader than the agentic workflows.
+[00:40:56.800] Yeah. Yeah, that's right.
+[00:40:59.200] The GitHub workflows can bring in MCP,
+[00:41:03.040] of course, and a lot of those kind of things are full of flow.
+[00:41:06.840] Flow across.
+[00:41:07.800] And you were asking
+[00:41:12.080] like when you run things in repo went to run things out.
+[00:41:16.160] I mean, GitHub is a very open platform.
+[00:41:18.640] You can obviously kind of run automations outside thing outside as well.
+[00:41:23.680] A lot of tools integrate with GitHub and that's absolutely great.
+[00:41:28.880] I mean, I think our point of view
+[00:41:32.040] is to give, you know, there are there are, for instance, data
+[00:41:35.880] integrity retention kind of policy kind of reasons why you might not.
+[00:41:40.040] Sort of.
+[00:41:41.160] Copy them repo outside the GitHub platform.
+[00:41:44.160] You've already dealt with, maybe already approved it within your Or.
+[00:41:47.120] Yeah, there may be legal or whatever reasons for privacy reasons,
+[00:41:51.320] whatever you can and can't kind of take all that issue and pull request metadata
+[00:41:54.920] and kind of take it out and then put it back in.
+[00:41:56.840] And so it's it's obviously a kind of
+[00:42:00.200] we want a credible, powerful default
+[00:42:03.880] kind of option to have in GitHub for these kind of workloads.
+[00:42:08.080] We do, of course, recognize, you know, lots of kind of depth specialty
+[00:42:12.320] security agents or penetration testing or all sorts of other kind of things
+[00:42:17.160] that people do that that will have an
+[00:42:19.840] happen outside.
+[00:42:20.840] Yeah, absolutely.
+[00:42:22.200] We do see some people kind of doing a mix where their actual focus
+[00:42:27.400] an Israeli startup called HUD is one.
+[00:42:31.080] My was talking at
+[00:42:34.360] AI Native DevCon, where their focus is on
+[00:42:38.360] producing production information, and they kind of need a way to kind of
+[00:42:42.200] surface reports about what they're finding about bugs and problems
+[00:42:45.960] in product performance results in through production probes.
+[00:42:49.120] And for them, GitHub Agentic Workflows is just a really easy way
+[00:42:53.840] to do that kind of reporting, kind of regular reporting into the repository
+[00:42:58.320] kind of context.
+[00:42:59.120] And so in that kind of sense, the main intelligence, the main,
+[00:43:04.080] you know, the real kind of systems value add
+[00:43:07.680] is actually over in the production probing that kind of gets done.
+[00:43:10.960] And maybe some AI processing that happens there and GitHub workflows
+[00:43:14.800] just kind of just a secondary role where it's kind of about surface
+[00:43:17.720] using some intelligence to kind of surface information that's there.
+[00:43:20.560] I think we'll see a lot of that kind of thing.
+[00:43:23.240] Using it as a kind of auxiliary utility in other kind of flows
+[00:43:26.920] to actually get that information regularly delivered into the repository.
+[00:43:30.800] Yeah, it sounds like there's sort of three tiers
+[00:43:32.640] over there that you've got information that specifically relates
+[00:43:35.640] to the code or other content that your repo holds.
+[00:43:40.000] So those are the sweet spot, like finding the automated you kind of
+[00:43:43.480] you bring the compute to the data if you will.
+[00:43:45.720] Yeah.
+[00:43:46.160] Where it is, you have another sort of pair of things in
+[00:43:49.160] which a repo might be a convenient way for you to run recurrence on it.
+[00:43:53.040] And so the repo is, is just sort of. Yeah.
+[00:43:56.400] And you see that pattern often, which is you create another repo
+[00:43:58.840] like the whole world of GitOps and things like that are worlds in which the repo is
+[00:44:02.680] basically just it's purely a, it's an automation kind of.
+[00:44:05.840] That's right on it. Yeah.
+[00:44:07.560] That's kind of side repo pattern where you have an automation
+[00:44:10.520] running in the side repo, and the target repo is actually some kind.
+[00:44:13.280] Of something else.
+[00:44:14.360] And in that case, you use that and you get the benefit of
+[00:44:18.200] the kind of enterprise, whatever legals and security
+[00:44:21.520] and such approvals, if you're already a GitHub user, it's kind of convenient.
+[00:44:25.120] Then you might have a third bucket, which are cases in which you need
+[00:44:29.800] other sort of optimizations and specializations,
+[00:44:32.440] whatever, bursting to a lot of compute or things like that
+[00:44:34.920] in which you might want sort of slightly different.
+[00:44:36.520] Systems might be applying some proprietary AI knowledge tools.
+[00:44:40.000] To do the into into your repository.
+[00:44:41.840] And that's kind of going to live off to the side.
+[00:44:44.440] The side repo one is actually really useful for controlling
+[00:44:47.440] the authorization about about changing the automation as well.
+[00:44:51.600] Like who can write
+[00:44:53.080] the automation, who can run it, who's the factory runner, in a sense.
+[00:44:56.840] And so to have that side repo
+[00:45:01.480] targeting a kind of control, a mono repo is a pretty effective pattern.
+[00:45:07.120] So should people.
+[00:45:08.240] I want to talk a little bit about doing it right
+[00:45:10.440] and maybe get into philosophy, but maybe one more tactical question.
+[00:45:16.160] When people do the automation, there are sort of these to, again,
+[00:45:19.320] kind of push almost like sort of small repo style debate, which is
+[00:45:23.200] should you have one workflow that does
+[00:45:26.720] multiple things in it, because there's still a bunch of things
+[00:45:31.120] you need to configure per workflow and all that.
+[00:45:32.680] There's a bunch of convenience to it, to it, or should you have,
+[00:45:36.480] I think I guess that's how I interpret the Agent Zoo to be, which is, you know,
+[00:45:40.840] I've got 100 different agent workflows that are sort of running on it, I guess.
+[00:45:46.360] What's your what's your sort of bias over there?
+[00:45:48.200] What's your guidance around.
+[00:45:49.560] My, my particular bias is more towards one
+[00:45:52.680] workflow which kind of can do multiple kind of things.
+[00:45:55.800] One point of cost control, like if you have a
+[00:46:00.640] one of
+[00:46:01.520] I'm sorry I should say my collaborator's bias, Peli's, is
+[00:46:06.040] he is more to have lots, an agent zoo, that's why we call it
+[00:46:09.600] Peli's Agent Zoo. And part of that's just exploring the space, like, regularly.
+[00:46:12.920] You know, Peli's an amazing guy and we don't want to kind of
+[00:46:16.640] constrain what he does.
+[00:46:17.760] And you know, we just like just go for it as create as many workflows and and let's
+[00:46:21.760] let's see what we let's see what comes out.
+[00:46:23.440] Let's learn learn learn.
+[00:46:24.760] That's our part part of what we've been doing here.
+[00:46:27.280] And but when it comes to actually putting automation, say, into
+[00:46:33.880] a repository maintainer for open source
+[00:46:37.000] technologies and I don't,
+[00:46:41.480] you know, you can create an agent zoo, but that's also a maintenance burden, right?
+[00:46:46.480] You know that you've got to maintain those.
+[00:46:48.120] You've got to attend to that.
+[00:46:49.720] And my attention like span is limited right?
+[00:46:52.320] I don't want this to be sucking on my my time.
+[00:46:55.440] So I prefer to have kind of one point of attention, one point of kind.
+[00:47:00.040] And I also I maintain multiple repositories.
+[00:47:03.960] So I'm going to have to look at that across multiple repositories.
+[00:47:06.160] Actually, I made myself a little IDE to kind of help with that,
+[00:47:08.600] to kind of attend to multiple automations running across.
+[00:47:12.640] So not across multiple,
+[00:47:14.920] but in multiple automations in different repositories.
+[00:47:18.080] And so I
+[00:47:20.960] so one example is a workflow I've put together called Repo Assist,
+[00:47:24.480] which is kind of a sort of broad spectrum kind of repository assistant.
+[00:47:29.240] It like it labels issues for you.
+[00:47:32.040] It does first response to issues.
+[00:47:33.920] So it sort of researchers issues and responds to them.
+[00:47:36.880] It can choose to implement a PR to kind of fix those issues.
+[00:47:41.160] It won't merge the PR.
+[00:47:42.520] So my regular daily working with Repo Assist is to kind of look, well,
+[00:47:46.560] what did it create last night. You know, let's take a look at that.
+[00:47:49.400] But why do you what do you prefer that for instance like for instance,
+[00:47:52.640] you named there like labeling, researching and an opening a PR
+[00:47:57.880] you could have just as well had three different workflows.
+[00:48:01.000] Yeah.
+[00:48:01.200] So this is in sort.
+[00:48:02.080] Of a trigger. Off sort of supervisor orchestrator pattern.
+[00:48:04.680] And you can have workflows which, you know, it's a super
+[00:48:09.160] choose to delegate up to more powerful models
+[00:48:12.480] is an interesting kind of pattern or weaker models for kind of things.
+[00:48:16.320] That's important for cost control.
+[00:48:18.000] So why do I prefer it?
+[00:48:19.880] I think just conceptual simplicity just.
+[00:48:24.320] I just it makes my life simpler.
+[00:48:28.160] And think about the one entity.
+[00:48:30.320] That you just just just to have that
+[00:48:33.160] cost control really does matter in this kind of thing.
+[00:48:36.240] Complex overall complexity.
+[00:48:37.640] I just find having five workflows
+[00:48:39.280] considerably more complex than kind of having one.
+[00:48:43.480] And how does how does it cost manifest here or.
+[00:48:46.600] Oh, so these workflows are very often done in a scheduled kind of way.
+[00:48:51.360] So the you may not with issue triage, you have a choice.
+[00:48:56.200] You treat each issue as it kind of comes in and do depth research.
+[00:49:01.800] All you can do it in batch.
+[00:49:03.400] Or you can say each day
+[00:49:04.400] we're going to see what new issues will come in and we're going to kind of
+[00:49:07.800] catch up in a batch and actually maybe do kind of a batch of them in a single run,
+[00:49:12.200] which can actually kind of give interesting kind of results,
+[00:49:14.200] as well as it kind of collects information across.
+[00:49:17.000] There are things in between that you could imagine having workflows
+[00:49:21.920] which kind of have a service policy, which it says,
+[00:49:24.840] you know, we're going to triage all issues within half an hour
+[00:49:27.960] and, and do three search on, on them within half an hour.
+[00:49:32.200] That's kind of a policy.
+[00:49:34.400] So then that sort of dictates when how things kind of match.
+[00:49:39.560] Yeah.
+[00:49:39.880] So now if you Repo Assist is a scheduled workflow.
+[00:49:45.160] So you choose the cadence that it kind of is triggered at.
+[00:49:49.120] And you hardwire that into the workflow and you have to go and modify the workflow
+[00:49:52.120] to change that.
+[00:49:52.720] As things currently stand, it's and that's important because you dial up,
+[00:49:59.640] you can dial the automation up, you can dial it back down if you're,
+[00:50:05.320] if activity is very high in the repo, you can't attend to dial it up.
+[00:50:09.160] And if nothing is happening, well, probably you dial it down.
+[00:50:13.560] The software is being maintained
+[00:50:14.720] and there aren't many issues that are remaining fixed.
+[00:50:17.760] Each of those cases, I can roughly estimate how much it's going to cost
+[00:50:21.360] like we have now.
+[00:50:22.160] You can see in the histories the average cost per kind of run.
+[00:50:26.360] It might be in the cents, it might be in a dollar or something,
+[00:50:31.080] depending on the models you're using.
+[00:50:32.640] And so, you know, you've got a bound, a pretty good bound there and there.
+[00:50:36.880] I should add,
+[00:50:37.560] there are actually very strong cost control features in GitHub workflows.
+[00:50:40.960] I think it's absolutely essential.
+[00:50:42.440] It's the thing it's missing from the harness discussion.
+[00:50:44.720] I think harnesses should have cost controls and kind of budgeting.
+[00:50:47.520] It's absolutely crucial kind of thing.
+[00:50:49.160] And again, it's the kind of thing that becomes natural in the automation world.
+[00:50:51.880] But it's a little bit unnatural.
+[00:50:54.240] Individual additive world. Yeah.
+[00:50:56.000] It's also hard to know, when you do the action again and again,
+[00:50:59.600] then you can kind of absolutely an assessment and eval
+[00:51:02.960] of whether you can run it from condiment metric.
+[00:51:05.720] You can. Absolutely.
+[00:51:06.680] You can.
+[00:51:07.160] We've we've added features that it will do exactly
+[00:51:10.600] the same work at exactly the same time with multiple models.
+[00:51:13.920] It'll only choose the it will choose, say, the first one as its result.
+[00:51:18.320] But you can use turn that on for a day to get like sort of examination.
+[00:51:23.480] Testing is what I call it, where you kind of exactly you're doing the models.
+[00:51:28.520] A room full of models is doing exactly the same work at exactly the same time,
+[00:51:32.480] setting them in exam.
+[00:51:33.400] And that really matters when you're using a shared ledger,
+[00:51:36.160] because if you write anything to that ledger that hints at the answer
+[00:51:39.560] to that, like a closed issue or something like that,
+[00:51:41.760] those models will go find it saying, oh, look, I saw another model kind of
+[00:51:45.080] did it using this closed pull request or something like that.
+[00:51:47.320] Now you've got to test those models at exactly the same time.
+[00:51:49.880] So we've got a feature for exactly that, which you can kind of turn on for a day.
+[00:51:53.760] And then you kind of get results about like, hey, which models kind of work.
+[00:51:57.440] Better. On the in the exams? Yeah. So
+[00:52:01.320] maybe let me veer us.
+[00:52:02.360] We started talking about costs,
+[00:52:03.480] which I would sort of qualify a little bit as like doing it.
+[00:52:06.080] Right.
+[00:52:06.480] You're sort of running it and maybe I want to touch on, on two other topics.
+[00:52:10.360] One is maybe more around autonomy and sort of the risk of regressions.
+[00:52:15.480] And as you, as you rely
+[00:52:17.240] more and more on these sort of continuous A's and improvement.
+[00:52:21.080] And then the second is, is, is safety.
+[00:52:24.200] Safety and autonomy are related a little bit
+[00:52:28.160] like what is it that it's allowed to do.
+[00:52:29.720] So I guess I'll ask the sort of the broader question is, as I, as I lean in,
+[00:52:33.440] this is sort of like beyond product, right?
+[00:52:35.720] But as one leans into continuous AI and makes changes to the dogs to,
+[00:52:41.160] you know, production deployments, fixes,
+[00:52:44.960] how how do you know, especially when you think about loops
+[00:52:49.080] and you think about systems that improve themselves over time, right.
+[00:52:52.680] Gets better and better on it.
+[00:52:54.200] How do you how do you sort of see or what do you see
+[00:52:58.160] as a best practice for avoiding regressions here?
+[00:53:01.200] Do you do you expect every one of these workflows
+[00:53:04.640] to generally default to wants to have any value?
+[00:53:07.080] If not, like, when should they sort of have evals to sort of know that they're
+[00:53:10.840] they're not changing, you know, when do you even define what.
+[00:53:13.760] Correct.
+[00:53:14.240] And how do you even define beyond vibes.
+[00:53:17.600] So what's correct behavior.
+[00:53:19.080] Is just to clarify
+[00:53:19.960] we're talking correctness for the software or correctness for the agentic
+[00:53:23.680] kind of automation. So let me kind of refresh.
+[00:53:25.760] So we're talking about automation.
+[00:53:26.960] We talked a lot about
+[00:53:28.000] how do you sort of systemize the the automation of an AI workflow.
+[00:53:32.440] But what we didn't talk about that much is around
+[00:53:36.000] the fact that those workflows are non-deterministic.
+[00:53:39.640] And so you run them enough times and they might make mistakes,
+[00:53:44.080] they might kind of cause problems.
+[00:53:45.960] And so I guess what I'm asking around regressions is when we think about CI,
+[00:53:50.600] we have some indications.
+[00:53:51.600] We know that,
+[00:53:53.040] you know, tests will sort of run the test eventually could become kind of useless.
+[00:53:56.480] But if they fail, we see it.
+[00:53:58.040] We sort of start optimizing them.
+[00:53:59.840] And again, it's also like humans have created them.
+[00:54:02.680] I think in the world of AI, you give much more sort of vague instructions.
+[00:54:05.560] There's a lot, many more degrees of freedom.
+[00:54:07.680] And especially if you have a self
+[00:54:09.080] optimizing workflow that modifies itself and and improves.
+[00:54:13.680] How do you how do you know or like what should you have in place. To.
+[00:54:17.680] Keep it from.
+[00:54:19.320] To be?
+[00:54:20.280] To be clear, in this world, the human is always in the loop.
+[00:54:23.840] Okay?
+[00:54:24.400] At the at the point of the pull request in particular or the issue.
+[00:54:28.200] So an issue gets created or a request gets created
+[00:54:31.400] and no pull request gets merged without the human actually approving that.
+[00:54:37.080] And that will
+[00:54:41.160] and it's also the case that there are limitations on what pull requests
+[00:54:46.360] can sort of self modify the the automation.
+[00:54:50.600] Okay.
+[00:54:51.000] That GitHub actions has some built in kind of limitations about actions
+[00:54:55.640] creating pull requests which themselves modify the actions.
+[00:54:59.360] And those limitations are in there for good reasons.
+[00:55:02.960] For you don't want sort of malicious actors
+[00:55:07.560] or somehow kind of mucking with you or kind of CI/CD kind of pipelines.
+[00:55:11.640] And some of that thinking does carry over.
+[00:55:13.920] And so you can have self-improvement kind of loops.
+[00:55:17.920] You can have like them,
+[00:55:18.720] they can write new skills or they can update new skills
+[00:55:21.160] and so on, which are kind of separate to that kind of system.
+[00:55:23.080] But I do want to kind of say that there are
+[00:55:24.480] some important kind of controls about how much of that thinking
+[00:55:28.520] we kind of bring into this world,
+[00:55:29.880] and some of that is inherited from GitHub actions.
+[00:55:32.600] But if you just want to dive a little bit, like no pull request
+[00:55:37.120] gets merged automatically, but that's not a sort of
+[00:55:40.040] that's an untenable sort of destination, right.
+[00:55:42.000] Like as you sort of produce and you make more changes,
+[00:55:44.840] can humans really review like is there a is there a path
+[00:55:47.680] for scaling this that doesn't require pull requests to be automated?
+[00:55:51.360] So, that is in some ways a separate discussion.
+[00:55:56.840] I mean, in the sense
+[00:55:58.000] that for GitHub Agentic Workflows, we have a point of view on that
+[00:56:01.760] which is at the human is in the loop, okay.
+[00:56:03.840] And the human in the loop, definitely at the point
+[00:56:06.960] of the modification of the ledger, not the full ledger.
+[00:56:10.120] The some of the ledger can be modified, the issues can be written,
+[00:56:13.480] but the actual code and it's always been that distinction.
+[00:56:16.280] The code is kind of a kind of golden truth of, of of what's going on.
+[00:56:22.480] And we
+[00:56:25.560] I do understand.
+[00:56:26.560] Of course, that human review is a bottleneck.
+[00:56:28.680] So of course you can have agentic workflows and other kinds of AI
+[00:56:33.440] automation and all sorts of other algorithmic automation
+[00:56:37.200] which do review, review, review.
+[00:56:40.240] And when you're when you're creating a factory,
+[00:56:43.120] you know, a lot of the work is on the quality gates.
+[00:56:45.080] You know, there's just no point disturbing creating a pull request for the human
+[00:56:49.120] to review. When that thing is low quality.
+[00:56:51.640] You've just got to create as many high quality or quality gates
+[00:56:57.480] as possible and automate those to
+[00:57:00.880] to reduce the amount of attention you're sucking from the humans involved.
+[00:57:06.400] Ultimately, I think you do need, you know, on a, I mean, some products
+[00:57:10.400] you could almost like auto merge kind of things.
+[00:57:13.720] You can of course use kind of stacked pull requests,
+[00:57:15.960] or you could just take one long running pull request.
+[00:57:17.960] You can push to a request branch.
+[00:57:20.800] Yeah, in an automated way to kind of create
+[00:57:24.280] a larger and larger and larger feature so that that is okay.
+[00:57:27.320] And that is how some loops kind of work.
+[00:57:29.040] And of course we have workflows which get the CI green, for example.
+[00:57:33.480] So look at all the pull requests.
+[00:57:35.200] Find the ones that are red, work out what's going wrong.
+[00:57:38.360] Make the extra approaches. No, not propose.
+[00:57:40.920] Actually make the extra push onto the branch
+[00:57:43.520] because you're only pushing to a branch.
+[00:57:44.720] So we do allow automated pushes to pull request branches for.
+[00:57:50.000] And you can usually constrain that down to be pull requests that have been created
+[00:57:53.640] by the automation itself. Okay.
+[00:57:55.200] So you're really kind of carving down right to a to a subset.
+[00:57:59.040] So where the industry and different projects will land,
+[00:58:04.920] I mean, there's no one answer to that, but I do get that it is
+[00:58:08.160] there is more and more pressure towards sort of kind of automated
+[00:58:12.800] kind of full construction of software and automated absolutely everything.
+[00:58:16.840] And we don't go in that direction. Where do they.
+[00:58:19.760] Wait, wait, wait.
+[00:58:20.480] We're being responsible, you know. Yeah. There.
+[00:58:22.880] You know, they're guidelines about how
+[00:58:24.120] and and absolutely human in the loop is absolutely a core guideline
+[00:58:27.880] of what we're doing. Here over the path.
+[00:58:29.200] I mean, I think I absolutely understand
+[00:58:32.480] the sort of the driver for it and it's safer.
+[00:58:35.520] But I'm also very conscious of the fact that I guess when I think about a factory,
+[00:58:39.520] I think about a higher level of control plane and really everything
+[00:58:43.520] that is in the current control plane that is includes
+[00:58:46.040] sort of the modifications of the code should sort of
+[00:58:48.600] we should aspire to make it agentic.
+[00:58:50.600] And so maybe it is the next batch of questions around saying, okay,
+[00:58:54.800] you have kind of continuous actions that are sort
+[00:58:58.360] of being done in a collaborative fashion on this sort of shared ledger.
+[00:59:01.520] That is the repo. Yeah. And,
+[00:59:05.120] and you, you propose those.
+[00:59:06.560] And so you've created the, the automation of,
+[00:59:10.920] of these activities at some point.
+[00:59:14.040] And I think at that point for many organizations is now
+[00:59:17.120] there, there are the points in which they already have more changes.
+[00:59:20.960] They can accept it at Snyk oftentimes actually
+[00:59:24.280] very much so today it's like, hey, the problem is not finding issues.
+[00:59:27.320] Like, I have a whole world of issues that I already know a vulnerability is
+[00:59:31.040] the problem is fixing it.
+[00:59:32.160] Hence the sort of the, you know, kind of, focus from inception
+[00:59:36.000] on, on fixing them similarly over here is like the, the, the
+[00:59:40.000] if you, if you just got it to the finish line,
+[00:59:42.240] but you're not able to get it over the finish line and merged, then
+[00:59:47.240] then you just sort of create a review fatigue and, you know, to be, to be blunt,
+[00:59:50.760] like people are not necessarily well equipped anyway at that point
+[00:59:54.840] in time they haven't written.
+[00:59:55.840] No, that's and this and that's.
+[00:59:58.320] They're not really able.
+[00:59:59.360] That's exactly right.
+[01:00:01.360] So some of my work is applying GitHub workflows
+[01:00:05.360] to factories inside GitHub okay.
+[01:00:09.560] So we have for example a factory for CI performance improvement okay.
+[01:00:14.240] Now GitHub is a big product and we and CI takes quite a while to run.
+[01:00:18.160] And we want to improve that.
+[01:00:21.120] The the CI times okay.
+[01:00:22.960] We want to make incremental steady sort of improvement
+[01:00:26.320] by finding the long running tests and kind of working out.
+[01:00:28.840] Maybe the matrix is a bit big or kind of set up.
+[01:00:31.560] It can be become a fixture or whatever.
+[01:00:33.960] And that, that,
+[01:00:39.120] my job as a factory creator
+[01:00:43.240] is to deliver high quality
+[01:00:47.160] pull requests where the reviewer is equipped.
+[01:00:50.640] And I love that word equipped.
+[01:00:52.560] My job is to equip the reviewer with all the information they need
+[01:00:57.120] to understand why this is being done.
+[01:01:00.000] What are the risks involved?
+[01:01:01.680] What are the trade offs involved?
+[01:01:03.800] Is this a minimal thing as many quality gate checks on this thing as possible?
+[01:01:08.400] Of course, in this context you get the CI/CD quality gates
+[01:01:11.720] kind of as a as a number one thing.
+[01:01:15.240] Now in this in this particular example, we're trying to improve CI perf.
+[01:01:19.720] And actually in this setting you've got the evidence right there in front of you.
+[01:01:22.440] You've got a run that was done with zero changes
+[01:01:25.320] or the latest run on master or whatever on main,
+[01:01:28.520] and then you've got the run that's done here.
+[01:01:30.120] And you see, look, the test took 120 seconds there and it took 15 seconds there.
+[01:01:34.360] We can bank that kind of improvement. We've got the evidence.
+[01:01:36.680] So you, you, you give the evidence
+[01:01:39.800] to the to the reviewer, you say, you know, I found it.
+[01:01:43.280] And maybe you didn't find the evidence to say
+[01:01:44.800] this thing should be closed or auto kind of closed.
+[01:01:46.760] This kind of get rid of the trash
+[01:01:48.360] off the off the production line because this was the dodgy one.
+[01:01:51.560] Throw it away.
+[01:01:52.280] It's a lot of throwing stuff away in this kind of world.
+[01:01:54.760] Much more than before.
+[01:01:55.640] Yeah, you get, you get, you get.
+[01:01:57.960] The work has been cheap.
+[01:01:58.840] It's easier to throw it away because it was just a guy
+[01:02:01.120] that sort of ran along cheap in relative.
+[01:02:03.320] Yeah. Or it's just in the night.
+[01:02:04.720] I mean, cheap or not, it's the nature of the factory.
+[01:02:06.680] If it produces rubbish, you throw it away, right?
+[01:02:08.800] You know, the car has got a scratch on it.
+[01:02:10.920] You know, throw it away on our next offsite for our our team. I'm.
+[01:02:16.720] I want to go visit some real factories with some real maybe.
+[01:02:20.800] Maybe film studios or something like that.
+[01:02:22.240] How do you how do people actually make stuff?
+[01:02:23.800] How do they organize this? How do they tell what's good and what's not?
+[01:02:26.480] How do they you know, how many you know?
+[01:02:29.240] Yeah.
+[01:02:29.760] Let's let's let's let's think about this differently.
+[01:02:32.680] Yeah.
+[01:02:33.760] I think I have a whole world more of questions on it,
+[01:02:36.320] but I, I'm afraid we're sort of like a little bit, a little bit.
+[01:02:39.800] Dig into some more things.
+[01:02:41.320] Yeah. Yeah, a little bit out of time over here on it.
+[01:02:44.080] So, I love first of all, Don, thanks for coming on.
+[01:02:48.000] I love the I really, really relate to the sort of the term continuous AI.
+[01:02:51.840] And I think, you know, there's, there's
+[01:02:54.360] there's kind of a world to define around it.
+[01:02:56.360] There's still very much around definitions and.
+[01:02:59.320] Nice and nice and world.
+[01:03:00.640] I love that.
+[01:03:01.440] It's always been my, my, my joy of working in the, in the tech industry.
+[01:03:05.440] So it's so super fun, very much like, you know, powerful
+[01:03:08.640] kind of new repo centered kind of cloud, cloud agent
+[01:03:13.320] sort of platform in the workflows and sounds like a lot over there
+[01:03:17.160] that we didn't even sort of scratch the surface over here
+[01:03:19.520] and then some sort of forward looking questions on the agentic.
+[01:03:23.000] Workflows will kind of get you to the PR what happens beyond
+[01:03:26.120] how does it relate to the loops?
+[01:03:27.360] And, you know, lots and lots to still explore.
+[01:03:30.400] Exciting times.
+[01:03:31.240] And yeah, we call it the agent repository automation revolution.
+[01:03:36.040] It's I think, the title I use for the talk, and I do think it's
+[01:03:39.040] going to be at the center of a lot of what practical teams are doing,
+[01:03:43.240] and especially in the enterprise, but also open source contexts.
+[01:03:45.720] And, you know, it's great time to be a GitHub.
+[01:03:47.720] And indeed it's kind of work.
+[01:03:49.600] So having me on. Yeah.
+[01:03:51.080] Thanks for joining us. Thanks everybody for listening in.
+[01:03:53.320] I do very much encourage you to go watch Don's talk,
+[01:03:56.720] which is on on our YouTube channel, the AI Native Dev channel.
+[01:04:01.080] We'll put it in the show notes.
+[01:04:02.480] It's a really excellent talk.
+[01:04:04.400] It actually has a lot more content than what we discussed over here.
+[01:04:08.000] It's very practical advice, and I hope you tune in for the next one.
+[01:04:12.200] The AI Native Dev is brought to you by Tessl, the package manager
+[01:04:15.720] for skills and context.
+[01:04:17.040] Your hosts are Guy Podjarny and me, Simon Maple.
+[01:04:20.160] Our producer is Tom Dowler.
+[01:04:21.960] The AI Native Dev is not just a podcast, it's a community.
+[01:04:25.280] And we host monthly meetups at the Tessl offices in central London.
+[01:04:29.000] Visit ainativedev.io/community to learn more and I hope to see you there.

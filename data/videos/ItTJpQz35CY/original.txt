@@ -1,0 +1,627 @@
+[00:00:00.280] Kicking off our talks, we have the wonderful
+[00:00:04.600] Dana Lawson who is the CTO of Netlify and of course Netlify for many, many years
+[00:00:10.400] have been have been building wonderful software for a world that is agent less.
+[00:00:15.120] And now we have agents.
+[00:00:17.000] So Dana is going to tell us how we adapt for that.
+[00:00:20.280] So please welcome on stage Dana Lawson.
+[00:00:22.960] Have a great session.
+[00:00:27.560] Oh man.
+[00:00:28.360] How do y'all. Good morning.
+[00:00:30.480] I'm a little jet
+[00:00:31.720] lagged and a little caffeinated, so hopefully I don't talk to darn fast.
+[00:00:35.880] But I'll tell you what.
+[00:00:36.920] Coming into the city yesterday, I was I became an Arsenal fan.
+[00:00:40.600] Y'all are crazy.
+[00:00:42.040] I was like, what the hell is going on here?
+[00:00:44.520] Somebody should have warned me, but y'all sure do you know how to party?
+[00:00:47.960] So I was down, but I didn't clown last night.
+[00:00:50.520] I had had to be serious for this.
+[00:00:52.240] All right, so as you heard, I'm Dana Lawson, CTO of Netlify.
+[00:00:55.400] Netlify is, as we all are, a web application platform.
+[00:01:00.760] We help anybody build, deploy and create experiences.
+[00:01:05.040] And now in an agent world, guess what?
+[00:01:07.280] Anybody can do it.
+[00:01:08.280] And so our world is changing so rapidly that this talk
+[00:01:11.720] might be out of date, but maybe not.
+[00:01:14.760] Depends on how far you are in your journey.
+[00:01:16.920] So let's get going. So
+[00:01:20.560] before we get into the
+[00:01:21.880] architecture, I need to say something that might feel uncomfortable.
+[00:01:25.360] How many of you here identify as a developer?
+[00:01:30.080] Oh man, we ain't precious no more, y'all.
+[00:01:32.240] The builder persona has changed.
+[00:01:35.520] The person our platforms were built for are no longer just developers.
+[00:01:39.760] We're still builders, don't get me wrong, but we're not the only ones.
+[00:01:44.280] Now, with agents, anybody can participate.
+[00:01:46.880] In fact, the IDC predicts that more than 500
+[00:01:50.320] million new applications will be built by 2028.
+[00:01:53.880] And in fact, I create one a day.
+[00:01:55.440] So I'm a I'm a part of that damn problem more than the previous 40 years combined.
+[00:02:01.480] Think about it for a minute now,
+[00:02:03.640] 40 years have been compressed into three, just like this room.
+[00:02:07.480] That's not because the number of engineers is expanding.
+[00:02:10.080] It's because agents have turned intent into a programming language.
+[00:02:13.840] In fact, the strongest programming language that will happen now
+[00:02:16.960] and into the future is guess what, English.
+[00:02:19.520] So I hope you go and study that in school.
+[00:02:21.440] Kids, if you're watching you better, you better learn how to talk to somebody.
+[00:02:25.840] Claude.
+[00:02:26.920] Code, Cursor.
+[00:02:28.800] Bolt, Lovable, Netlify.
+[00:02:30.520] These tools let anyone with an idea create working software through conversations.
+[00:02:36.000] No longer is it just developers.
+[00:02:37.440] It's therapists, teachers, small business owners, students,
+[00:02:40.440] people in line at the store building experiences on their phone.
+[00:02:44.280] Thank you.
+[00:02:44.600] Lovable and becoming software
+[00:02:48.080] creators at Netlify, we build for all of these builders.
+[00:02:51.960] And here's the thing.
+[00:02:53.120] When we designed our platform to work better for agents
+[00:02:56.440] serving these new builders, it got better for developers too.
+[00:03:00.720] And that's the paradox.
+[00:03:04.200] So let me tell you a little story.
+[00:03:05.880] Let me introduce you to my best friend, my home girl, Toria.
+[00:03:09.320] This is her. She is a licensed massage therapist.
+[00:03:12.160] She's a vibrant drummer, a delightful, authentic, woo woo Burning Man hippie.
+[00:03:16.440] So I can't even believe she hangs out with an AI overlord.
+[00:03:19.280] But she does.
+[00:03:20.160] And she just radiates incredible energy.
+[00:03:22.440] She has a dream.
+[00:03:23.840] She came to me and she said, girl, I want to build
+[00:03:26.080] an all inclusive experience, not just a website.
+[00:03:28.920] I ain't going on to Wix.
+[00:03:30.200] I want to build an app for my Barbados massage retreat, where I can build
+[00:03:34.760] community and I can take payments and I can can deliver content.
+[00:03:39.320] These aren't just static website dreams.
+[00:03:41.080] These are full blown application dreams.
+[00:03:43.200] She doesn't write the code.
+[00:03:44.720] She really just writes intentions.
+[00:03:46.480] And she decided she was going to build this website.
+[00:03:48.920] So she went on to her favorite chat application, ChatGPT,
+[00:03:54.000] and described her vision and she started building.
+[00:03:58.480] She prompted an agent to build the website, but every assumption
+[00:04:02.160] we have baked in to the tooling turned out to be a human assumption.
+[00:04:06.080] As we originally had built Netlify,
+[00:04:08.120] it was for front end developers, and now we realized with agents
+[00:04:11.440] we were lowering that gatekeeping in that barrier.
+[00:04:14.800] First it was about git.
+[00:04:16.320] She had no idea what git was.
+[00:04:18.280] I worked at GitHub. Some other GitHub people are here.
+[00:04:21.080] I was like, man, you don't need to know what git is.
+[00:04:24.000] Trust me on this. But she was stuck.
+[00:04:26.480] This is the reality for millions of new builders right now.
+[00:04:30.440] Agents still speak fluent developer, but the humans they're serving don't.
+[00:04:34.920] They don't know.
+[00:04:35.800] They don't know posts.
+[00:04:36.600] They don't know anything.
+[00:04:38.440] First, this was.
+[00:04:40.240] She had no idea what she's doing.
+[00:04:42.680] The tools assumed
+[00:04:43.920] a level of technical literacy that most of the world just does not have.
+[00:04:48.440] And this is the thing that really surprises Netlify.
+[00:04:51.240] As we were redesigning for agents, fixing this for Toria
+[00:04:55.200] also fixed it for our experienced developers
+[00:04:57.600] that have to write with spec, intent, context, all the things that Guy said
+[00:05:01.640] with the new software delivery lifecycle, those are the things that we have
+[00:05:05.160] to just make work out of the box, because the new builder has no idea.
+[00:05:09.680] When we made the agent's error messages clear and structured
+[00:05:12.720] the build output for machine, and removed unnecessary friction.
+[00:05:16.080] Our developers also benefited from this.
+[00:05:19.640] Every human assumption we remove made the platform better for everyone.
+[00:05:24.240] This is the gap of what we call agent experience.
+[00:05:29.360] So as I said, she called me.
+[00:05:31.240] I was like, girl, you don't need to worry about git.
+[00:05:32.760] You don't have to worry about deploy. You need to just go.
+[00:05:35.080] You just need to go prompt your vision into the world.
+[00:05:37.040] And I got you.
+[00:05:38.680] But this got me thinking about what this means.
+[00:05:41.760] After years, I've been a software developer.
+[00:05:44.480] Builder QA.
+[00:05:45.520] I've done it all, man. I've been doing this since the 90s.
+[00:05:48.160] Maybe decades of building guardrails to prevent humans from breaking production.
+[00:05:52.440] We're now removing those guardrails and saying, hey, come play with us.
+[00:05:55.240] Come, come create, go build the next experiences for the world. Why?
+[00:06:00.720] Because the interfaces have changed.
+[00:06:03.080] The agent now handles git.
+[00:06:04.840] It handles deployment, it handles DNS.
+[00:06:07.040] The builder focuses on the vision.
+[00:06:08.800] And and this is really what agent experience in practice looks like.
+[00:06:13.400] Agents have full access to our platform primitives.
+[00:06:16.160] They deploy configure iterate so the human never touches anything.
+[00:06:19.520] It's pretty scary right.
+[00:06:20.560] So under the hood
+[00:06:21.200] you're going to have all the things that you need to make it frictionless
+[00:06:24.440] so that builders in this new breed of developers can get those ideas out.
+[00:06:28.240] AX captures the humanity in this story.
+[00:06:31.360] It removes that technical friction.
+[00:06:33.720] So again, people like Toria or anybody else with a good idea
+[00:06:37.280] that wants to change humanity for the better, they can now do it.
+[00:06:40.640] But here's the key insight.
+[00:06:42.600] Again, we didn't just make this as a separate dumbed down platform.
+[00:06:46.480] If you go on to Netlify
+[00:06:47.600] is still as powerful as it was ten years ago as it is today.
+[00:06:50.600] But we had to think about how
+[00:06:52.440] that intersection of developers and builders are coming together.
+[00:06:56.600] So what do we do?
+[00:06:57.480] We just built a better platform for everyone.
+[00:06:59.720] The same structure signals that help that agent deploy to a site.
+[00:07:03.320] Also helped our engineers to bug and build faster build systems, understand where
+[00:07:08.120] we have errors under the hood, really help us create that magical experience.
+[00:07:12.000] And so what we learned was designing for agents,
+[00:07:15.560] actually was designing for humans all along.
+[00:07:19.360] And so this shift brings me to my core thesis.
+[00:07:22.480] You've all heard user experience we heard in 2012.
+[00:07:25.720] Jeremiah at Spotify coined developer experience in my boss Matt Billman
+[00:07:30.240] last year said, you know what the new paradigm is?
+[00:07:33.280] AX, DX, and UX are collapsing into a single discipline.
+[00:07:38.040] And here's why.
+[00:07:39.120] Again, that builder persona is no longer you.
+[00:07:42.400] The agents are doing the heavy lifting.
+[00:07:44.120] So when you're thinking about how that end user interacts, it's also an agent.
+[00:07:47.760] When you're thinking about how that developer
+[00:07:49.280] goes and programs on your platform.
+[00:07:51.200] It's not a developer, it's an agent.
+[00:07:52.360] But on the other end is a human that just speaks plain English
+[00:07:55.400] and expects it to just work.
+[00:07:59.000] And again, agent experience isn't about making machines happy.
+[00:08:02.840] It's about removing that friction every step of the way
+[00:08:05.840] so that you can get from idea into reality in a few simple prompts.
+[00:08:10.400] Now, I know that's again scary for all of us as software developers, but
+[00:08:14.240] haven't we always just built so that we can explore, collaborate,
+[00:08:17.960] and share our ideas?
+[00:08:19.240] And some of us actually change humanity?
+[00:08:21.680] I hope for the better.
+[00:08:24.720] Deploy so structured errors and agents can parse.
+[00:08:28.000] Engineers can stand them faster to
+[00:08:29.920] and then deploy previews that give agents clear pass fail signals.
+[00:08:33.840] These all give us human clarity, and a lot of this stuff is often skated.
+[00:08:37.720] We don't need the end user to think about it anymore.
+[00:08:40.280] And now the end user is anybody.
+[00:08:42.560] Because we are building a development platform, we have to just make it work.
+[00:08:46.560] So as you heard in Guy's talk, really Agent Experience is thinking
+[00:08:50.280] about all that new system content and intent in the SDLC.
+[00:08:54.960] It is the practice of designing where humans and agents collaborate seamlessly.
+[00:08:59.480] And it isn't just about making API API calls agent friendly.
+[00:09:04.440] You really do have to rethink the entire stack along the way from how
+[00:09:08.480] we express the intent to how systems communicate and so that we can trust.
+[00:09:14.200] So let's look at the landscape.
+[00:09:16.040] You already heard a little bit from Guy of what's changing.
+[00:09:18.080] And like I said,
+[00:09:19.200] some of this is probably out of date as I open my mouth in just two years.
+[00:09:22.840] That's right.
+[00:09:23.280] And only two years
+[00:09:24.160] we've seen an explosion of these AI powered development tools or harnesses.
+[00:09:28.960] I mean, call them what you will.
+[00:09:30.440] I'm sure the name is going to change many, many times.
+[00:09:32.560] I was sitting here thinking, man, Netlify is a harness on a harness on a harness.
+[00:09:36.200] That's so damn meta. How many harnesses do you need?
+[00:09:38.440] So I hope somebody comes out with the second hard
+[00:09:40.400] human problem, which is naming things.
+[00:09:46.600] Claude Code from Anthropic is an agent
+[00:09:49.320] CLI that writes, tests, and commits. Cursor and Windsurf AI
+[00:09:53.800] pair program with you. v0,
+[00:09:55.800] Netlify, Bolt
+[00:09:57.000] from StackBlitz, Lovable, all turn natural language into applications.
+[00:10:00.800] GitHub Copilot now has agent modes that autonomously works on
+[00:10:05.880] issues and submits PRs — the idea of a software factory.
+[00:10:09.880] It's been instilled for years.
+[00:10:11.240] This is not a new concept that we're determining here,
+[00:10:13.480] but now with agents, we can actually go and implement
+[00:10:16.080] those software factories to go and just run.
+[00:10:18.920] All of these again, share a common pattern intent
+[00:10:22.240] as input working software is output.
+[00:10:25.240] But there's the thing they all need infrastructure that understands
+[00:10:28.880] the patterns, the deploy target targets, the C pipelines, the edge networks.
+[00:10:33.320] They all have to be designed for agents.
+[00:10:35.280] And that's what we've been building at Netlify.
+[00:10:38.480] So what actually is changing?
+[00:10:40.240] Again, you've heard it.
+[00:10:41.160] It's gone from the SDLC.
+[00:10:43.080] The big shift is we're moving from
+[00:10:45.760] to intent.
+[00:10:46.680] Specs still matter.
+[00:10:47.640] And when you have large scale technical
+[00:10:50.240] platforms like myself, believe me, you're still using specs.
+[00:10:53.440] But for your average user, because I hate to break it to you,
+[00:10:55.680] the internet is just a bunch of apps and websites.
+[00:10:57.720] It's not that hard if you're a tech company.
+[00:10:59.880] It's hard if you're an end user that's building an experience.
+[00:11:02.200] Not that hard anymore.
+[00:11:03.320] Traditional development workflows typically would begin
+[00:11:06.600] with a PRD that passes to a ticket or a linear ticket.
+[00:11:10.360] Spec docs written for humans AI native workflows
+[00:11:13.640] begin with prompts, problem descriptions, sketches, and references.
+[00:11:17.600] The input is the intent.
+[00:11:20.160] I want a wellness retreat with booking, not a 50 page requirement doc.
+[00:11:24.480] This is where we have to think about how can we take that intent in those ideas
+[00:11:28.640] and turn them into reality by creating the software factories beneath them?
+[00:11:33.160] And at Netlify, we've been dog food.
+[00:11:34.800] In this we have a tool called Agent Runners.
+[00:11:37.440] An agent now or a harness takes the intent, generates the code.
+[00:11:41.000] The output moves immediately into real engineering workflows.
+[00:11:44.840] Preview deploys automated tests, production pipelines.
+[00:11:48.520] What used to take millions of minutes
+[00:11:53.400] now takes seconds, which is pretty darn incredible.
+[00:11:57.640] And so the second shift that we're seeing in the software
+[00:12:00.120] development lifecycle, with the rise of agent coding and the builder persona
+[00:12:04.080] becoming the every person is, we're moving from those sequential handoffs to
+[00:12:07.960] shared creation pipelines.
+[00:12:09.520] Now for Netlify,
+[00:12:10.800] yes, we have a sophisticated software development team and all people do
+[00:12:14.360] participate.
+[00:12:15.200] And historically, it was that relay relay race
+[00:12:18.240] that we all knew: PMs write the specs
+[00:12:21.320] hands to design, design creates the mockups, hands it to engineering.
+[00:12:25.480] Engineering builds it.
+[00:12:26.520] If you have QA, probably not. It's just a bot.
+[00:12:29.000] It validates it and it hands it to the DevOps
+[00:12:31.120] for deployment because nobody trusts anybody to go and hit that button.
+[00:12:35.000] But let me tell you, that takes weeks.
+[00:12:36.840] And some crazy billionaire bald tech overlords
+[00:12:41.000] said there ain't no doors you can't walk through.
+[00:12:42.600] You can't walk the other way back through.
+[00:12:44.640] So having that mindset of shipping
+[00:12:47.720] rapidly is now more so a reality than ever before.
+[00:12:51.200] So now instead of having these handoffs, this collaborative
+[00:12:54.760] product teams are generating working prototypes with agents.
+[00:12:57.800] Designers are redefining the experience directly in code.
+[00:13:00.920] They're not participating outside the lifecycle.
+[00:13:03.640] Engineers are now spending their time validating the architecture, and again,
+[00:13:07.520] spending time writing those precious guardrails
+[00:13:09.800] that didn't exist the way they need to exist now,
+[00:13:12.120] whether it's contact specs, recipes, etc.
+[00:13:16.520] we'll call it skills for ease of use as well.
+[00:13:20.640] Agents handled the testing and deployment and now everybody participates.
+[00:13:24.440] The cycle time compresses again from weeks to hours.
+[00:13:29.880] Third, what was the other change that we
+[00:13:32.200] this is the software factory layer that you heard in the previous talk.
+[00:13:35.360] Third, we move from passive CI pipelines to development loops.
+[00:13:39.040] That is one thing that I always brought to developers was like, hey,
+[00:13:42.000] you don't have to go and create your own CI/CD.
+[00:13:44.600] You can come to Netlify, we'll set it up and we'll get it configured for you.
+[00:13:48.120] But that has gone even crazier now with autonomous development loops.
+[00:13:52.760] Agents don't just write the code, they're participating
+[00:13:54.960] in the entire infrastructure lifecycle.
+[00:13:57.120] They're generating the test,
+[00:13:58.400] detecting fall failing previews, analyzing build logs, proposing fixes.
+[00:14:02.560] And so CI/CD just becomes a continuous feedback loop.
+[00:14:07.040] And some of you may not be at that level of sophistication, but
+[00:14:10.560] this is where you need to start thinking about how you're reinventing those needs.
+[00:14:14.600] And Netlify's deploy, preview and build infrastructure.
+[00:14:17.320] Again, like I said, already provides the actionable signals agents need.
+[00:14:21.640] When a build fails, an agent can read the logs because we went and updated them,
+[00:14:25.480] diagnose the root cause, and submit a fix all without a human in the loop.
+[00:14:30.240] And this isn't some future.
+[00:14:31.920] This is happening every day and this will happen in your workforces as well.
+[00:14:36.520] There will be a demand that comes in and says there's your common path
+[00:14:39.840] to turn it into a software factory. Make it go
+[00:14:43.880] our agent.
+[00:14:44.440] Runners are protected.
+[00:14:46.800] We give agents sandbox environments with full platform access.
+[00:14:49.960] They deploy, configure, iterate without humans deploy from agents
+[00:14:53.840] mean every change gets a unique URL preview URL.
+[00:14:57.400] This is where we bring the human back into it.
+[00:14:59.800] The human gets to visually look
+[00:15:01.440] at the output and continue to iterate, because when you're flowing and vibing,
+[00:15:05.440] if you vibe code, you know all it is is about that preview, preview, preview.
+[00:15:09.320] And here's a specific example of a redesigned surface.
+[00:15:12.480] As I mentioned, our build logs used to be human readable narratives.
+[00:15:15.680] Great for scanning, great for DevOps, great for debugging.
+[00:15:18.920] Terrible, terrible for agents.
+[00:15:20.720] It had no idea what we're talking about.
+[00:15:22.520] It wasn't leet speak, it was log speak, which is even worse.
+[00:15:25.600] We restructured them into a structured format with machine-readable error codes.
+[00:15:29.200] Alongside that, human text and agent can now parse
+[00:15:32.200] a build failure, identify missing dependency, and fix it automatically.
+[00:15:36.240] But again, here's the thing.
+[00:15:38.480] That same structured output made our dashboard clear
+[00:15:42.920] for human engineers too, because we took it and really put emphasis
+[00:15:46.720] on how an agent would utilize our logs to make decisions.
+[00:15:52.000] That also meant that our developers could bug quicker
+[00:15:54.480] if the agent didn't know what was going on.
+[00:15:56.040] Because I don't know about your.
+[00:15:57.160] But I still don't trust agents 100%.
+[00:16:00.040] Especially not my Claude bot. It kind of hates me.
+[00:16:03.680] Error categorization at a glance.
+[00:16:05.760] Failure reasons.
+[00:16:06.720] And what we learned again
+[00:16:07.840] was this part of the agent experience really did improve the human experience.
+[00:16:12.320] It made us quicker to debug any of those problems,
+[00:16:14.920] because we were thinking about how an agent would read it to.
+[00:16:19.200] But I'm sure most of you all live in the world that I live in.
+[00:16:22.000] If only we had greenfield technology and architecture.
+[00:16:26.040] That was simple.
+[00:16:27.160] This would not be a problem at all.
+[00:16:28.840] In fact, you would probably be building
+[00:16:30.480] the next 500,000 tech startups because you can do that.
+[00:16:34.280] But the problem that most of us face is we're introducing agents
+[00:16:37.800] into fragmented systems that have been existing.
+[00:16:40.840] Even if you're building net new, I implore you to think
+[00:16:44.600] about your agent experience before you start hands on keyboard.
+[00:16:49.000] A lot of these systems are collections of APIs, microservices, CI pipelines
+[00:16:52.880] that, again, were designed for human operators.
+[00:16:54.920] There was an intent that a human would be a part of that loop,
+[00:16:58.080] even if stuff was sent to work continuously.
+[00:17:01.480] Agents struggled with this.
+[00:17:03.080] They can't see across service boundaries.
+[00:17:05.520] Every API speaks a different dialect.
+[00:17:07.680] Critical workflows live in tribal knowledge and in someone's head.
+[00:17:11.200] In a slack thread from 2022, in an undocumented Terraform module,
+[00:17:16.160] when agents can't observe the system, they can't act intelligently.
+[00:17:19.720] No longer can you rely on tribal knowledge or the person that down the hall on
+[00:17:23.760] slack to be like, yo, what did this do? I have no idea.
+[00:17:26.560] You're expected
+[00:17:27.360] to make it work for your agents because your agent should just work.
+[00:17:30.920] This is the fundamental change.
+[00:17:32.440] We just can't bolt agents into existing legacy architectures.
+[00:17:36.560] The architecture itself must evolve.
+[00:17:39.560] The first architectural shift is from APIs to capabilities.
+[00:17:43.520] Traditional systems expose rest in points. Post to this.
+[00:17:46.360] You'll put to that one.
+[00:17:47.560] Get this resource.
+[00:17:48.600] An agent looking at a 200 endpoint API surface has to figure out the right
+[00:17:52.840] context, the right sequence, the right parameters in the right order.
+[00:17:57.440] And I know we're making jokes about context windows.
+[00:17:59.480] Believe me, you will run out of time
+[00:18:01.080] if you don't specify what agents are supposed to do in your systems.
+[00:18:05.320] Agent native systems expose these intent level operations.
+[00:18:09.040] Create a site.
+[00:18:10.360] Look again.
+[00:18:11.000] Plain English deploy repository provision edge compute.
+[00:18:14.840] These are capability agents can reason about.
+[00:18:17.600] They express what you want to accomplish, not the mechanical steps to get there.
+[00:18:21.200] And at Netlify again
+[00:18:22.280] we've evolved our API service to support both modes traditional Rest
+[00:18:26.040] for existing integrations and capability based interfaces for agent interactions.
+[00:18:31.960] This also extended to our CLI.
+[00:18:34.000] When you use a CLI, commonly you have a developer that has to hit yes no.
+[00:18:39.320] Next parameter that does not work when you have an agent.
+[00:18:41.960] We had to go rethink about how our CLI will be utilized.
+[00:18:45.680] The second shift is from request response.
+[00:18:49.200] Oh man, I'm going to go faster — to event-driven architecture.
+[00:18:54.720] Traditional APIs are pull-based.
+[00:18:56.240] You send a request, you get a response.
+[00:18:57.920] Agents have to poll, guess, and retry. AI-native systems push events. Again,
+[00:19:03.560] deploy started PR created agents, subscribe to these events and act.
+[00:19:08.360] So if you're still doing stuff asynchronously, you need to think about
+[00:19:11.720] updating your systems to event base.
+[00:19:13.400] I know we all love Kafka, and so you can use any kind of streaming that you love,
+[00:19:17.520] but that's just one way to get there.
+[00:19:19.200] This was already how we built the Netlify build system.
+[00:19:22.240] Every deploy emits events, and so now the structure, logs
+[00:19:26.120] and infrastructure was designed for observable
+[00:19:29.960] agents
+[00:19:30.360] are the ones observing versus the humans.
+[00:19:33.360] The third shift, and probably the most important,
+[00:19:36.080] is making architecture legible to agents.
+[00:19:39.120] Again, a lot of these distributed systems run on tribal knowledge.
+[00:19:42.680] Somebody that knows this service may not know service B. Agents
+[00:19:47.360] don't have that knowledge.
+[00:19:48.280] This is why we created our system of record called blueprints.
+[00:19:51.160] Yes, this is skills, context and recipes.
+[00:19:54.120] Think of it as the CLAUDE.md files, AGENTS.md,
+[00:19:57.520] the architecture decision records and design
+[00:20:00.480] so coding agents understand the system for they make the changes.
+[00:20:04.000] The goal isn't better documentation, it's ensuring agents can operate
+[00:20:07.360] safely in complex systems.
+[00:20:10.800] Putting it all together, we have removed.
+[00:20:12.960] We have moved from static tool change to agent orchestrated systems.
+[00:20:16.560] This development cycle becomes a continuous human agent loop.
+[00:20:20.480] So no longer is it a handoff, it is everybody participating at the same time.
+[00:20:25.120] And the human stays in the loop by providing judgment, taste, direction.
+[00:20:29.560] But the move, the loop moves at machine speed.
+[00:20:32.800] This isn't replacing engineers.
+[00:20:34.440] It's amplifying everybody's ability to be a builder.
+[00:20:38.720] Now, with all this power, you heard it.
+[00:20:40.680] Here comes with serious responsibility, where agents can deploy
+[00:20:43.920] code, provision infrastructure and modify production systems.
+[00:20:47.120] Trust has to be default and is not optional.
+[00:20:49.760] We have three principles we follow at Netlify.
+[00:20:53.480] First, sandbox execution.
+[00:20:55.480] They can't.
+[00:20:56.320] Agents can't escape their sandbox and access resources.
+[00:20:59.560] They're not granted.
+[00:21:00.800] Second human in the loop by default.
+[00:21:02.840] I know you say like you heard me say software factory.
+[00:21:05.040] You don't need one.
+[00:21:05.840] But guess what?
+[00:21:06.920] I still don't trust stuff 100%.
+[00:21:08.880] But we want to make the human in the loop the meaningful part of the job.
+[00:21:11.960] The agent builds, the human approves, and third audit and roll back.
+[00:21:15.320] Every agent action —
+[00:21:17.040] every action is logged.
+[00:21:18.560] This is where events become so incredibly important
+[00:21:21.080] knowing the changes in the system, because today
+[00:21:23.320] a lot of code is not being stored in git, which is absolutely bonkers.
+[00:21:27.600] But we still have to have a system of record to roll it back.
+[00:21:30.160] Trust is built on this transparency.
+[00:21:32.240] If you can't explain what the agent did, why would you trust it in production?
+[00:21:37.560] The organizational impact is profound.
+[00:21:39.360] When we
+[00:21:39.960] when agents lower the barrier to building, now the entire company participates.
+[00:21:44.400] Everybody's making prototypes.
+[00:21:46.440] We're testing hypotheses, coming up with ideas,
+[00:21:49.160] supports creating internal tools, custom solutions for customers.
+[00:21:52.600] No longer are you bound by the engineering software development lifecycle.
+[00:21:56.800] You now have the ability to go let everybody get out of your hair
+[00:22:00.080] and just go right and build their own code.
+[00:22:02.120] As a DevOps professional,
+[00:22:03.320] this has been my dream for over 20 years is build it yourself.
+[00:22:06.880] Let me work on the hard problems and now that's what we get to do.
+[00:22:10.240] Engineering evolves into implementing from implementing every feature
+[00:22:14.000] to really ensuring that the systems have the guardrails.
+[00:22:16.520] The architecture is tight and solid.
+[00:22:18.520] The skills, recipe and context just work.
+[00:22:21.320] This is where AX is critical.
+[00:22:23.240] It's a discipline that ensures that democratization happens safely.
+[00:22:28.080] Because I don't know about you, I still believe in an open web.
+[00:22:31.840] So let me summarize the takeaways
+[00:22:34.960] and I want you to take this home first.
+[00:22:37.960] I hate to break it to you. We ain't precious no more.
+[00:22:40.400] The builder persona has expanded your platforms.
+[00:22:42.960] Don't just serve professional developers anymore.
+[00:22:45.680] Agents are enabling therapist, teachers,
+[00:22:48.440] students, and anybody that has a dream to build and design.
+[00:22:51.680] So design for them.
+[00:22:53.240] Second, legacy legacy systems must evolve.
+[00:22:56.720] APIs need to become capabilities that agents can reason about again,
+[00:23:00.560] intent level operations.
+[00:23:02.400] Third, safety and trust are foundational.
+[00:23:05.200] Sandboxing human and loop reviews. Full audit trails.
+[00:23:08.120] These aren't nice to haves.
+[00:23:09.520] When agents can deploy to productions, they are have to haves and forth.
+[00:23:13.640] This is what you can start shipping well tomorrow.
+[00:23:16.440] Go fix your structured errors.
+[00:23:18.160] Go create event driven signals and legible architecture.
+[00:23:21.480] There's an expert spa I heard.
+[00:23:23.160] Go sign up now if you haven't done it before,
+[00:23:25.280] go learn how to write your dang skills because your job depends on it.
+[00:23:29.120] Would have to say that, but I do.
+[00:23:31.880] So our biggest takeaway here is designing for agents
+[00:23:35.480] didn't just make our systems better, it made it better for humans.
+[00:23:39.920] And that was really the surprise of it all.
+[00:23:41.840] This wasn't a trade off for a developer experience or the user experience.
+[00:23:45.880] It was a multiplier.
+[00:23:47.320] And so why does all this matter?
+[00:23:49.320] Because, as Matt says, when anybody can generate
+[00:23:52.680] software, code is no longer the scarce, scarce resource.
+[00:23:56.440] For decades, the bottleneck has been writing code,
+[00:23:58.680] finding engineers, shipping features.
+[00:24:00.280] The bottleneck is dissolving.
+[00:24:01.840] Now the scarce resource becomes taste.
+[00:24:04.320] Know what's worth building, judgment,
+[00:24:06.320] knowing when to ship in architecture, designing systems at scale.
+[00:24:10.360] And this is where we come full circle.
+[00:24:12.640] Full circle.
+[00:24:14.000] Ax didn't just help agents
+[00:24:15.800] work with our platform, it forced us to clarify our architecture,
+[00:24:19.920] our structure, and our signals, in fact, made us all better developers.
+[00:24:24.920] So the judgment to build systems agents can work with
+[00:24:28.840] that is the engineering skill of the future.
+[00:24:32.080] An agent experience ensures
+[00:24:33.880] agents amplify human creativity rather than replacing it.
+[00:24:37.640] And so this brings us back to Toria.
+[00:24:40.120] After hitting the wall of git in a million problems.
+[00:24:43.280] She didn't give up.
+[00:24:44.560] With an ecosystem designed for agents designed for her,
+[00:24:47.520] she bypassed all of those roadblocks.
+[00:24:50.680] She was able to drag and drop her intentions into Netlify.
+[00:24:53.600] And it just worked.
+[00:24:54.520] No git, no CLI, no deployment configurations, no worries.
+[00:24:58.240] Trust.
+[00:24:58.720] By default, the agent handled all of it.
+[00:25:02.240] She called me that day and I remember it.
+[00:25:04.120] And I'll censor it since it's a stream.
+[00:25:05.840] She called me and she said, girl.
+[00:25:07.960] I am a developer.
+[00:25:09.360] And I was like, oh man. But she's right.
+[00:25:12.480] That's the most incredible part. I didn't build this site.
+[00:25:15.120] She did.
+[00:25:15.960] Here's her vision.
+[00:25:16.760] I hope you all go to the Barbados with us.
+[00:25:19.320] Here's her vision. Live for the world to see.
+[00:25:21.120] This is AX in action — we designed for agents, and doing so,
+[00:25:24.880] we made building possible
+[00:25:26.040] for a massage therapist in Barbados who writes intentions and not code.
+[00:25:30.600] That's not just agent experience, that's actually human experience.
+[00:25:34.200] And that's what agent experience is for.
+[00:25:37.640] Thank you for your time.
+[00:25:38.720] And if you want to participate, we have some resources available.
+[00:25:41.920] Turns out redesigning for everyone is the agent experience.
+[00:25:46.320] Experience not designing for agents.
+[00:25:48.080] So don't get stuck in the trap.
+[00:25:49.600] Remember who you serve and if you want to learn more, you can visit Netlify.
+[00:25:54.640] Thanks.
+[00:25:59.520] Thank you very much, Dana for a wonderful session.
+[00:26:02.320] We have four minutes for questions, so if you have questions,
+[00:26:06.480] please do raise your hand and someone will run at you with a mic.
+[00:26:12.400] Any questions for Dana at all?
+[00:26:14.000] They're blown away.
+[00:26:14.720] It's blown away. Yeah.
+[00:26:18.320] One question from.
+[00:26:24.960] You said
+[00:26:25.440] 500,000 apps could be built, or we're going to build so much ever.
+[00:26:29.680] When do we we're learning these context.
+[00:26:33.360] Now, when do we talk about what not to build and how do you stop,
+[00:26:37.760] like the environmental impacts, the impact on complexity of code, etc.?
+[00:26:42.520] I think that's the challenge that we have right now is
+[00:26:45.240] the bitter truth is you're going to be stuck building a whole bunch of stuff
+[00:26:48.560] that's going to be obsolete probably in months, not years.
+[00:26:52.080] And so finding the right paths and putting intent in the right areas
+[00:26:55.440] is what's going to be the keeper.
+[00:26:57.360] I mean, hopefully we all continue to think environmentally and conscious
+[00:27:01.520] about the world, because building AI
+[00:27:03.840] for not anybody on the planet, what's the point?
+[00:27:07.760] But there is a bunch of slop right now,
+[00:27:09.240] and a bunch of these applications are going to be a drain on our resources.
+[00:27:12.360] But this is where development and engineering practices are core to this,
+[00:27:15.840] because now anybody in the world can build and literally anybody can.
+[00:27:19.760] We have to burden that responsibility on our shoulders to make sure
+[00:27:23.880] that we are implementing compaction, that we are thinking about compression,
+[00:27:28.120] that we are building the right resources to make the internet continue
+[00:27:32.200] to be open and democratized for everybody, but also being environmentally friendly.
+[00:27:36.440] And those are the things that these builders won't understand.
+[00:27:38.760] So when I talk to people and say, oh, you know, you're getting in development,
+[00:27:41.720] I had to be like, well, I don't know if I'd be like a builder.
+[00:27:44.840] I would probably focus on the internals and take that background in computer
+[00:27:48.800] science and really apply that,
+[00:27:50.200] because there's still a lot that we we can do as developers.
+[00:27:53.960] But but that that shift is changing for some of these experiences
+[00:27:58.000] that we all have. Anybody can do them now.
+[00:27:59.840] And so not getting stuck in that trap is is incredibly important.
+[00:28:04.920] We have one just to the right.
+[00:28:06.840] Oh yeah.
+[00:28:07.040] We got a question over here.
+[00:28:09.280] Hi. It was a really insightful talk.
+[00:28:11.840] Thank you for that.
+[00:28:12.840] I wanted to ask about accountability.
+[00:28:15.880] So how is your company approaching accountability
+[00:28:19.240] where if you're creating useful abstractions and people
+[00:28:22.240] building, it doesn't don't understand what's below the abstraction.
+[00:28:26.120] Where does accountability sit in that?
+[00:28:29.600] Are you planning to, like, flip the accountability and say, we will
+[00:28:33.960] give you exposure to what's underneath if you need if you have an IT team?
+[00:28:37.880] If not, we will take the accountability.
+[00:28:39.400] How are you thinking about that?
+[00:28:41.160] I mean, you know, it's it's a it's a push and pull.
+[00:28:44.120] I mean, again, it's
+[00:28:45.120] like what do I want to build right now that's going to be commoditized.
+[00:28:48.880] You know, there used to be a lot of systems
+[00:28:50.760] that were super simple, super complex to use that.
+[00:28:53.840] Now you just plug and play.
+[00:28:55.160] And I think we're in a world where nothing is
+[00:28:58.280] really set on, on what will be developed next.
+[00:29:01.360] And so again, it's finding the right balance in two parts.
+[00:29:05.960] A lot of our users at Netlify come in and want to build websites and applications.
+[00:29:09.760] So we are going to put
+[00:29:10.680] all the accountability and context in the trust in the system.
+[00:29:14.000] So under the hood where you saw on guys talk, that's all Netlify.
+[00:29:17.960] We do every bit of that build, deploy, you know, QA, etc.
+[00:29:21.920] but in large scale organizations, because Netlify is still built
+[00:29:25.400] for developers, we still have this context of a control plane.
+[00:29:28.640] We're working on things like policy engines, control panels, really for,
+[00:29:33.280] you know, whether it's the CSO or production, R&D,
+[00:29:37.360] whoever's doing the guardrails, be able to have that control panel.
+[00:29:41.840] But a lot of it, what we're building is often skated, because what we found
+[00:29:45.640] is, again, the internet is just a collection of apps and websites.
+[00:29:48.960] They're not that complex. I hate to break it to you.
+[00:29:51.120] It's usually some JavaScript and maybe a database.
+[00:29:53.360] Not a lot of serverless functions in between.
+[00:29:57.000] People don't describe building like that anymore.
+[00:29:59.760] They say, build me a website that can be shown in Portugal.
+[00:30:02.080] That's a serverless function that's doing locality.
+[00:30:04.840] They're not going to go in there and write that function.
+[00:30:06.800] I'm going to do that for them.
+[00:30:07.640] They're just going to come and tell me I want this in Portugal.
+[00:30:10.160] And so we are trying to balance where developer
+[00:30:14.400] needs to put their attention and where they don't.
+[00:30:16.240] And so really utilizing what's important to that system
+[00:30:19.400] and more of it is governance policy and identity.
+[00:30:23.000] That's what
+[00:30:23.880] a lot of large scale enterprises and professional systems care about.
+[00:30:26.880] As far as accountability
+[00:30:28.440] and more of the hobbyists or solopreneurs, they just want it to work.
+[00:30:32.400] I don't care.
+[00:30:35.840] We actually don't have any more time for extra questions,
+[00:30:38.120] but please do grab Dana in the hallway track.
+[00:30:41.200] Once again, thanks very much, Dana.

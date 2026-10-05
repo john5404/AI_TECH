@@ -1,0 +1,564 @@
+[00:00:00.000] Well, welcome back to the tool call.
+[00:00:03.560] This room today and tomorrow is all about practical stuff.
+[00:00:07.040] This is where I want to be.
+[00:00:08.320] It's no like Sea Level.
+[00:00:10.880] Heady takes about what AI is and isn't.
+[00:00:13.560] It's like, what can we actually use today and tomorrow?
+[00:00:16.880] So my Walter is here.
+[00:00:20.320] She is the co-founder of hood, and she's going to be talking
+[00:00:24.080] about the difference, the chasm, if you will, between
+[00:00:27.920] what agents think they do well and what they actually do well.
+[00:00:32.160] So can we give her a round of applause, please?
+[00:00:39.840] All right.
+[00:00:40.440] So welcome everyone.
+[00:00:42.280] Thank you for for taking the time and and joining after lunch.
+[00:00:46.600] Hopefully it will.
+[00:00:47.800] I have added some points in which, you know, you might wake up
+[00:00:51.360] a little bit and might might be funny.
+[00:00:54.880] We'll see.
+[00:00:55.680] So I wanted to start with the situation that kind of led us to
+[00:00:59.760] this actual use case, which is a situation you might know.
+[00:01:03.920] There's this PM saying, oh my God, this page is so slow.
+[00:01:08.000] We have to do something about them, about it.
+[00:01:10.640] And then they text the engineering managers like, so can we optimize it?
+[00:01:13.880] And then Ben would say probably, but I'd have to dig in to find out.
+[00:01:18.920] And then they say, oh, never mind then, right.
+[00:01:22.200] Because they're busy, they're doing things right.
+[00:01:25.440] And then a few weeks later she would say, no, no, no, no, no, no, no.
+[00:01:28.840] But this is actually too slow.
+[00:01:30.760] Now we're going to have to do something about it.
+[00:01:34.120] How long will it take what he says?
+[00:01:36.320] Well, I don't know. Right.
+[00:01:38.480] Somewhere between an hour and a week, I.
+[00:01:41.600] I'll have to look, Okay. And.
+[00:01:45.720] And who can even take this?
+[00:01:47.880] The answer is only Dave.
+[00:01:49.440] He is the only one that has any idea what's going on in that code base.
+[00:01:54.160] The rest are not in the company for like five years. So.
+[00:01:58.800] So just Dave and our one of our customers
+[00:02:03.640] started with this situation where they were constantly in this.
+[00:02:07.800] We have to fix this.
+[00:02:08.800] We have no idea how, but we can't prioritize it phase.
+[00:02:12.800] And then we said, well, maybe we can do something about it.
+[00:02:16.520] So mine co-founder and CEO
+[00:02:19.720] had we're building a runtime intelligence layer for coding agent.
+[00:02:23.040] So it's basically a sensor that runs with your app in production
+[00:02:27.520] and captures what coding agents need to reason overproduction.
+[00:02:31.000] So like for every function, how often it runs, how long it takes,
+[00:02:34.960] whether it's failing and when something goes wrong, it
+[00:02:37.600] proactively captures deep forensic context about why that happened.
+[00:02:41.440] So that when you ask why is this slow or why is this failing,
+[00:02:44.640] you can actually get an answer. And.
+[00:02:50.440] The big problem is that, you know,
+[00:02:52.600] it got easier to build and to generate code.
+[00:02:56.840] And then you kind of have this like, yeah, it looks good to me.
+[00:03:00.080] And a bunch of pull requests.
+[00:03:01.760] That looks good.
+[00:03:03.600] You have one agent that build them.
+[00:03:05.840] You have another agent that says, yeah, that looks great.
+[00:03:08.440] This is a great idea.
+[00:03:09.800] And then the question that you ask yourself is,
+[00:03:14.760] why is this broken like
+[00:03:17.720] but but but why it like all the tests were passing and everything was fine
+[00:03:22.280] and and code still finds creative ways to fail in production.
+[00:03:25.960] And we still do that, like with the best tools
+[00:03:29.360] and the best engineers and the best days of the universe.
+[00:03:33.840] And the coding agents have no idea how that actually behaves.
+[00:03:37.320] And we are basically obsessing about how come
+[00:03:42.200] this can live alongside this at scale.
+[00:03:47.840] So maybe
+[00:03:48.560] there's an agent we can build for that.
+[00:03:51.760] And basically I'm going to go over the journey that we had from there.
+[00:03:56.720] Why was that even important for them, how they did it from a how
+[00:04:01.800] we did it from a tech perspective and most importantly,
+[00:04:04.920] how we thought we would do it and it didn't work.
+[00:04:07.120] And what we did about that, and also how it worked from a process
+[00:04:10.960] perspective, which I think is also very important today to understand
+[00:04:15.240] how to connect all these dots from it kind of works from a technical
+[00:04:19.040] perspective to people are actually using it and summarize
+[00:04:23.400] what we can take out of this so that leaks faster than we bail.
+[00:04:28.360] And I think that was true for humans as well.
+[00:04:31.240] We kind of ignore the issue and then it degrades and then it becomes a crisis.
+[00:04:36.360] And now we have to prioritize it.
+[00:04:38.760] So we we fix it.
+[00:04:41.640] I don't know.
+[00:04:42.320] Does anyone relate or is it just us?
+[00:04:45.160] Okay, okay. We're good.
+[00:04:46.240] We're good. So you're okay.
+[00:04:48.680] It just so happens that everyone is doing this,
+[00:04:51.680] and it's not because we're stupid, and it's not because we don't care.
+[00:04:54.880] It's because we're very busy building features, which is what we are here to do.
+[00:04:58.800] We're ingenious.
+[00:04:59.440] We're builders.
+[00:05:00.440] So we try to ignore things because they might not be as important.
+[00:05:05.360] And then once they get to that crisis mode,
+[00:05:07.560] we want to fix them as soon as possible so that we can go back to building.
+[00:05:12.720] That is a leaky bucket by definition.
+[00:05:15.720] So the research phase is a big problem there, because if I knew
+[00:05:21.080] that I can fix it in a day, I would probably prioritize that.
+[00:05:24.800] But what I have to do is to pay just to find out.
+[00:05:28.200] It's kind of like taking something from the grocery store and then going
+[00:05:32.080] all the way to the cashier just to know how much it costs
+[00:05:34.920] so that you understand if you want it or not.
+[00:05:36.760] And that's what we've been doing for years.
+[00:05:39.480] We were like, okay, let's invest a few hours
+[00:05:41.960] and then we can understand what can be done.
+[00:05:43.600] And magically there's always something we can do, right?
+[00:05:46.640] But we weren't aware of it.
+[00:05:48.200] And then when we know that something could take an hour to three weeks,
+[00:05:52.480] we don't want to prioritize it because we don't know
+[00:05:55.440] what we're going to get out of it.
+[00:05:56.680] We don't know how much optimization we're going to get.
+[00:05:59.440] So you don't know how much it costs.
+[00:06:01.040] You don't know what impact it has, and you're expected to just prioritize
+[00:06:05.440] that in your day to day life, comparing to features
+[00:06:08.840] that give value to the customer.
+[00:06:12.000] So that doesn't really add up.
+[00:06:16.000] So our thought was to automate the investigation part.
+[00:06:19.640] It wasn't even about fixing it.
+[00:06:21.560] It was just about knowing what can be done automatically
+[00:06:26.040] and then being able to streamline the fix.
+[00:06:29.800] So what if we just run on a weekly basis or biweekly,
+[00:06:33.560] depending on your sprint planning sequences, and just know
+[00:06:37.640] about real sweet spot with high ROI opportunities
+[00:06:42.040] that are scored so we can just run it every week, and that performance sprint
+[00:06:46.400] that we've been trying to get to for months can just happen regularly.
+[00:06:51.920] Sounds pretty good, except that it was pretty hard.
+[00:06:54.920] So let's talk about what we did there and what was helpful.
+[00:06:59.360] All right.
+[00:07:00.560] Did I convince you about why this is needed?
+[00:07:04.520] Great. That's good.
+[00:07:06.640] That's a good start.
+[00:07:07.440] I think a lot of times when you're talking about agenda
+[00:07:09.920] workflows, the first question is like, does it really need to be built?
+[00:07:14.240] And it gets so much easier to build stuff that we just stumble on building things
+[00:07:19.440] because they're fun and, you know, auto triage and all these things are like
+[00:07:22.880] very good examples of that.
+[00:07:24.640] I think what was interesting about this case is that we were trying to automate
+[00:07:28.560] something that is not a part of our day to day lives.
+[00:07:31.560] In the same way.
+[00:07:33.400] This is built for how agents work, which is kind of like this automatic thing.
+[00:07:37.600] You won't stop every week and ask an engineer
+[00:07:40.680] to kind of go over and find some interesting performance optimizations.
+[00:07:44.120] But if you knew that they exist
+[00:07:45.600] and that engineer would just like slack, their team lead saying, hey,
+[00:07:49.480] I just found this thing, like in two hours we can get this down 30%.
+[00:07:53.320] They would say, wow, that's amazing, right?
+[00:07:55.560] So maybe that's sort of the first wedge to change that behavior.
+[00:08:01.080] So let's talk about how that works.
+[00:08:04.560] First of
+[00:08:05.000] all, we needed to ask the question of where can this run.
+[00:08:08.320] Because agentic workflows don't.
+[00:08:10.640] We don't want them to run on our computers.
+[00:08:12.960] We want something to run in the cloud.
+[00:08:14.840] And it just so happens that not every customer
+[00:08:19.120] we work with even has their own setup for that.
+[00:08:22.600] And we have players like cursor and others
+[00:08:25.680] that are building their automations so that it's very, very easy to install.
+[00:08:29.720] But at the same time, you're
+[00:08:31.400] now locked to that specific vendor, which does not make sense at scale.
+[00:08:35.520] So we wanted something that's vendor neutral,
+[00:08:37.640] both in terms of the compute as in where it runs in terms of the harness,
+[00:08:42.120] as in which coding agent is and which model we choose.
+[00:08:45.680] We don't know.
+[00:08:47.000] No one knows what's the best.
+[00:08:49.480] There are seasons.
+[00:08:50.480] And then what we wanted to do is to make it easy to switch.
+[00:08:54.720] We wanted it to be secure.
+[00:08:56.040] Of course, in terms of the permissions the tool calls, the authentication,
+[00:08:59.600] we don't want to build something for scratch.
+[00:09:01.280] We want to use something that we can trust.
+[00:09:04.200] We want a set of triggers
+[00:09:05.600] that could be webhooks like, hey, this is slow, let's investigate it.
+[00:09:10.000] And also on schedules that are per deployment
+[00:09:14.320] or on a weekly basis or whatever that they different teams would want.
+[00:09:20.000] And we wanted it to be easy to maintain and update, which is what I think
+[00:09:23.600] people get most most wrong about agentic workflows
+[00:09:28.360] is you don't just ship them, they are like code.
+[00:09:32.200] You ship them and then you find out something and you just want to change
+[00:09:35.560] and tweak that little thing so that it will be easier to work with.
+[00:09:39.120] And then if it's hard to do that, then people just won't.
+[00:09:42.600] And in our case, the biggest question was what matters?
+[00:09:46.360] And that's something that is live and changes with your business and products.
+[00:09:50.400] So it was very important for us.
+[00:09:52.400] Specifically, we chose GitHub Agentic Workflows.
+[00:09:55.280] I don't know if you're familiar with that, but there's actually a guy that built it
+[00:09:59.000] in the audience. You can talk to him later.
+[00:10:01.000] And the idea was that
+[00:10:04.280] people already have GitHub Actions or those similar.
+[00:10:07.760] Not everyone, but many of them.
+[00:10:09.440] So we can just start with something that they already know,
+[00:10:12.120] that they already trust, that has these parameters in place.
+[00:10:16.440] Again, it's not the only solution, but it was something feasible.
+[00:10:21.680] We don't want to innovate.
+[00:10:22.640] We don't want to build this new agent
+[00:10:24.400] infrastructure for whatever and prioritizes with the platform team.
+[00:10:28.320] We have GitHub actions.
+[00:10:29.680] So now we can have those in a way that works.
+[00:10:32.120] And again it's about reducing friction and finding that path
+[00:10:35.480] of least resistance to just trying something out and see if it works.
+[00:10:39.240] So that's kind of how it looks like.
+[00:10:42.320] And if we go over it a bit more thoroughly,
+[00:10:46.960] is it big enough we can do this.
+[00:10:49.680] The first thing is you actually choose the engine, as in
+[00:10:54.320] where do you want to run it?
+[00:10:55.520] And is it cloud or codex or whatever, which permissions you have, the network,
+[00:11:00.280] the tools and so on.
+[00:11:01.480] The MCP servers — in this case, Hud's MCP server.
+[00:11:05.080] And then you just start talking. So
+[00:11:10.240] the task is basically a prompt
+[00:11:12.920] that runs every once in a while or triggered and does that.
+[00:11:17.000] And if I go back to here, you can see that
+[00:11:21.400] it's basically a weekly report of an AI performance and reliability
+[00:11:25.960] engineer for the repo that generates this deep insights
+[00:11:29.720] and context about the repo and what it does.
+[00:11:34.040] And this was actually we started with the repository.
+[00:11:37.400] And then we even like
+[00:11:38.720] did it more ingrained because a lot of people are still using monolith.
+[00:11:42.080] And the idea is not this report
+[00:11:43.880] about all the cool things that we can theoretically do.
+[00:11:46.280] It's about the thing that the tech lead for that specific service cares about.
+[00:11:50.280] So they are getting designated report only on the parts that they care about.
+[00:11:55.400] So basically we have a coding agent could be cloud or anything else.
+[00:11:58.600] Specifically we use Claude.
+[00:12:00.360] And the runtime intelligence runs weekly
+[00:12:03.120] on GitHub actions and sends the report to slack.
+[00:12:06.800] And again this I'm not saying this is the only way to make it work.
+[00:12:10.760] What I'm actually saying is find a way that matches your stack
+[00:12:14.560] and your tools so that it would be as easy as possible.
+[00:12:17.680] They were using Claude Code, GitHub and slack.
+[00:12:20.640] So that's why it made a lot of sense for us to kind of latch onto that.
+[00:12:26.880] But let's talk about what it does.
+[00:12:28.480] Right.
+[00:12:29.720] What we basically want is to start with the production context,
+[00:12:33.400] have the agent analyze it to find anti-pattern and opportunities.
+[00:12:37.960] Then we want to score and flag them, because not everything that can be done
+[00:12:42.320] should be done.
+[00:12:43.720] And that's because we still have to review that code and merge it to production.
+[00:12:47.680] It's because we want to make sure that it actually has an impact, and we
+[00:12:51.440] don't want to take a risk on a deployment if it's not going to be that impactful.
+[00:12:55.560] And again, I hope no one relates to that.
+[00:12:58.720] But a lot of times what happens in performance
+[00:13:00.720] is you start with a thesis and then you fix it, then you deploy,
+[00:13:04.240] and it's not exactly as impactful as you expected it to be.
+[00:13:07.880] It was really great in staging, but in production
+[00:13:10.720] the problem isn't really that.
+[00:13:12.400] So we tried to avoid that and to sort of convince something that's worth doing
+[00:13:17.360] and then go over the diff and merge the PR
+[00:13:21.160] with a human review, and that sort of closes the loop.
+[00:13:26.440] And then it
+[00:13:27.040] didn't work right, because that's how it is.
+[00:13:30.120] First of all, some of these offers were plausible
+[00:13:33.680] but unverified, which is kind of like what we do when we go over the code.
+[00:13:37.680] It's like, well, we can probably optimize this,
+[00:13:39.920] but we don't know if that's really the bottleneck.
+[00:13:42.240] If something is taking 20s or five
+[00:13:45.280] seconds, I'm not sure exactly where that time is spent.
+[00:13:48.520] So things that sound right are not necessarily
+[00:13:51.240] the ones that are going to move the needle.
+[00:13:53.160] Second was specifically for queries.
+[00:13:55.680] So queries can be very complex.
+[00:13:58.720] And also they are very dependent on how the code actually runs
+[00:14:02.680] and where the data is.
+[00:14:03.720] If you have that customer with like 10,000 rows returning
+[00:14:08.160] from the database, it's not a big surprise that it's going to take longer.
+[00:14:11.160] It's just that you have no idea how that looks like.
+[00:14:13.920] And of course, the biggest, biggest problem is what we call the lazy fix,
+[00:14:19.360] which means, oh, there's an exception, let's catch it.
+[00:14:23.440] This is great, but it's not helpful at all.
+[00:14:27.040] And a lot of time, what happens is that if you try to optimize
+[00:14:31.880] for the syntax error or the long running query,
+[00:14:34.880] then the question and the answer will be local.
+[00:14:37.960] And we actually want to look at it from a broader perspective.
+[00:14:41.560] So those are like things that I guess it's fine that they will start that way.
+[00:14:47.440] But in time, we understood that.
+[00:14:49.320] We want to explain what a fix does look like
+[00:14:52.080] and what what am I interested in, kind of like a staff engineer
+[00:14:55.440] would explain to someone who just joined the team.
+[00:14:58.920] And all you need is context, right?
+[00:15:01.600] And there are only two problems with context.
+[00:15:05.640] One is you might have too much of it, and then it's really hard to understand
+[00:15:09.800] what matters.
+[00:15:10.480] And the other is you might not have enough and then it won't matter
+[00:15:15.000] because the agent would just assume what's going on there.
+[00:15:19.320] Or what I would do as an engineer is I would probably add more logs or metrics,
+[00:15:24.680] deploy a version, gather context, understand
+[00:15:27.680] where the bottleneck is, and then go and fix it.
+[00:15:31.200] What the agent will do is to say, okay, this is what I have.
+[00:15:34.200] Let's find the shortest path.
+[00:15:35.720] Let's let's assume, take some assumptions and see where that goes.
+[00:15:39.560] We can't do that to scale, especially if we want to interrupt engineers flow.
+[00:15:44.240] Right. That's like the most important.
+[00:15:45.720] We love that.
+[00:15:46.440] So if I am going to flag an opportunity, I can't risk
+[00:15:51.720] just saying something that won't really make sense
+[00:15:54.720] because then they will read my report, they will open a pull request,
+[00:15:58.240] they will review it and then deploy it
+[00:15:59.960] and then find out that it didn't change anything.
+[00:16:02.120] And then I just wasted their time.
+[00:16:05.400] So it was really important for us to make sure
+[00:16:07.720] that we have just enough context so that we can understand
+[00:16:11.040] and have confidence in the fact that it's actually going to do something.
+[00:16:13.800] But that's actually hard to do because they don't speak the same language.
+[00:16:18.040] You know, the production context is usually in service level
+[00:16:21.040] or endpoint level.
+[00:16:22.000] This endpoint takes five seconds and the P99 is six
+[00:16:27.160] six seconds, and the P 100 is 17 seconds.
+[00:16:30.960] And then the agent the agent reasons overcoat right.
+[00:16:34.600] The local functions and the files and the class methods.
+[00:16:37.400] It can kind of deduct the connection between the two,
+[00:16:41.360] but they don't speak the same language.
+[00:16:44.640] And that's where most of the of the problem is when you ask
+[00:16:49.760] why is it long.
+[00:16:50.800] It could go over the code and it might get it right.
+[00:16:53.360] Don't get me wrong, some of the issues can be found in static
+[00:16:57.280] analysis, but when we want to make that transition between
+[00:17:00.400] human lead to an agent workflow, we have to be quite certain
+[00:17:04.760] in our confidence so that we can truly automate it.
+[00:17:07.880] If something works 90% of the time.
+[00:17:09.720] It's not an automation, it's streamlining humans.
+[00:17:14.560] And that's
+[00:17:16.480] why we built what we call prod to code, which is basically a mapping
+[00:17:20.280] of what's going on in production to the function level.
+[00:17:23.640] So you have like the endpoint or the service
+[00:17:26.840] and the endpoints or event consumers and the job cron jobs that it runs,
+[00:17:30.640] and then the mapping of the functions that are involved within it.
+[00:17:34.520] So one thing that we got from this is the ability to ask this is slow why.
+[00:17:40.120] But it also opened a huge window
+[00:17:43.040] of opportunity to ask the inverse question of I'm going to touch this.
+[00:17:47.160] What does that impact?
+[00:17:48.920] And should I care about it?
+[00:17:50.720] Is it going to touch my payments and my authorization or not?
+[00:17:55.880] So basically
+[00:17:59.680] what the sensor is doing in
+[00:18:02.000] that aspect is complete function level context in a way
+[00:18:06.080] that's connected to the endpoint and deep forensic context only when it needed.
+[00:18:09.960] And the assumption here is that we can't just go through like
+[00:18:13.240] gigabytes of logs and spans and traces to be able to do that.
+[00:18:17.120] But if we have for each of these functions, the ability to connect them to
+[00:18:21.720] how often it runs, which business flows, does it impact, how long it takes,
+[00:18:27.000] and whether it's failing, then we can start going over
+[00:18:31.560] the deeper context, whether that's logs or traces or whatever,
+[00:18:34.520] when we kind of have the area of where we are trying to to tap into,
+[00:18:40.240] and that's the same level at which the coding agents reason.
+[00:18:46.520] So we have the
+[00:18:47.760] basic query language layer we specifically use ClickHouse for that.
+[00:18:51.760] But of course every team has their own.
+[00:18:55.000] And on top of that we can build a set of skills
+[00:18:57.840] because it's not just enough to connect the skills
+[00:19:00.960] to connect the data and kind of ask the agent to see what happens there.
+[00:19:04.920] I saw like five different talks about why that fails.
+[00:19:08.720] So we have the skills of how to approach an HTTP 500,
+[00:19:13.760] how to approach a memory leak, how to approach a performance degradation.
+[00:19:18.400] And all of a sudden it's not just Dave that can tap into that knowledge
+[00:19:22.800] and expand it.
+[00:19:24.120] And on top of that, or the level of the automations.
+[00:19:27.760] So auto fix or dead code removal, a building on top of those skills
+[00:19:32.640] that are building on top of the query language.
+[00:19:34.480] And I think it was really important in terms of what we learned to allow
+[00:19:38.280] all of these layers.
+[00:19:39.600] The coding agent might need something
+[00:19:41.560] that I cannot express in words, and that's why tools are not enough.
+[00:19:45.480] But at the same time, I don't want to waste my tokens
+[00:19:49.720] and my chain of thought on things that I know.
+[00:19:53.640] I do know how to tackle a memory leak.
+[00:19:56.640] I want to look at the pod that's had that memory leak.
+[00:19:59.560] I want to look at a different one that didn't,
+[00:20:01.800] and I want to see what happened there.
+[00:20:03.360] That didn't happen there. Right?
+[00:20:04.800] I when I look at the performance degradation,
+[00:20:07.240] I want to understand where the time is being spent.
+[00:20:09.560] So that small level of involvement
+[00:20:14.240] and ownership on the methodology was very impactful for us.
+[00:20:18.760] And then we can say something like, look for artificial
+[00:20:21.800] delays like sleeps and timeouts,
+[00:20:24.920] look for n plus one queries, look for missing indexes or synchronous
+[00:20:28.640] blocking or sequential awaits all of these things.
+[00:20:31.840] And when you think of a code base that exists in their case
+[00:20:34.800] for 15 years, obviously these things are there.
+[00:20:38.200] It's just that we need to kind of dig them out and know that they exist.
+[00:20:42.280] And then you have these moments
+[00:20:43.400] we're like, oh my God, this was like this for six years.
+[00:20:47.360] Are you serious?
+[00:20:48.760] But if we look at it from a positive perspective, there's like
+[00:20:52.840] so much we can do.
+[00:20:54.080] And I think in that aspect that gave us that
+[00:20:59.560] balance between
+[00:21:01.400] kind of letting it run free and having that full,
+[00:21:05.000] full freedom, but also kind of guiding it to how we know
+[00:21:09.720] that engineering practices and skills work.
+[00:21:13.800] And then we can ask something like, why are my endpoints taking so long,
+[00:21:17.840] like my product manager asks, and get an answer of, oh, there's actually this thing
+[00:21:23.200] with an N plus one query that exists in the code base for like six years.
+[00:21:26.400] Maybe we can do something about this.
+[00:21:28.280] And we were very happy and pleased about the results.
+[00:21:32.360] So we said, okay, maybe
+[00:21:33.640] we can just like add open pull requests for all of these high impact, low
+[00:21:38.440] risk changes that don't require migrations or anything super scary.
+[00:21:42.320] And we can just open a pull request.
+[00:21:47.360] No no no no no,
+[00:21:49.560] we don't want any pull requests that no one's going to go over
+[00:21:53.040] and we don't want to go over those 80 progress even though they exist.
+[00:21:57.480] And I think that's like if I if you can take one thing out of
+[00:22:00.800] this is like after you get it working and you want to automate it,
+[00:22:04.000] think about the scale and think about the humans that are still in the loop.
+[00:22:08.600] We're not in the point where no one just cares about it.
+[00:22:11.360] And if you open a pull requests, it's kind of like opening your Datadog
+[00:22:14.880] and Sentry with those like 700 issues that all they say is like, well,
+[00:22:20.400] I'm not going to be able to fix this, so I'm not even going to try.
+[00:22:24.240] So we of course, we started with automated pull requests.
+[00:22:27.560] We realized no one cares about that.
+[00:22:29.920] And if it's not prioritized, then they're not going to do something about it.
+[00:22:34.320] And again, I am not complaining.
+[00:22:36.480] I'm not judging.
+[00:22:38.640] We're builders, right?
+[00:22:39.720] We have prioritization and it exists for a reason.
+[00:22:43.400] No one has time to just go over a bunch of four requests built by the agent
+[00:22:47.360] that are statistically huge, and try to understand what happens.
+[00:22:51.680] We don't want to own that.
+[00:22:52.800] We don't want to go into it.
+[00:22:54.920] So we actually need to convince the human that it's worth the attention.
+[00:22:59.920] Instead of convincing the agent
+[00:23:01.760] that it's worth the tokens, he will always think that they are.
+[00:23:05.200] So we map the hot paths that endpoints
+[00:23:08.280] that are invoked often the business impact of that.
+[00:23:11.320] So is this impacting payments or authentication
+[00:23:15.280] or the set of things that you already know that you care about for your business?
+[00:23:18.640] And also the risk?
+[00:23:21.320] We are not looking for the best optimizations.
+[00:23:24.960] We are looking for the highest impact, lowest risk changes that can be done
+[00:23:30.720] so that we can go to the developer or the PM and say, hey, listen,
+[00:23:34.640] it's like that small and it's going to do like 30% improvement.
+[00:23:38.920] So we should do that and we want to make that humanly readable.
+[00:23:44.680] So if a human gets something like hey, this endpoint is like
+[00:23:49.520] the P90 is around 100 milliseconds, except it kind of takes 45 seconds
+[00:23:54.000] every once in a while, and we have no idea why, theoretically speaking.
+[00:23:57.760] And then it would be, oh, this is happening
+[00:24:00.560] because you always use the Mongols distinct function.
+[00:24:04.480] If you switch it to a search, then that should slow you down
+[00:24:09.560] like improve like 30, 40%.
+[00:24:12.800] And this is something that we can actually prioritize.
+[00:24:15.680] And once we started talking about these quick wins,
+[00:24:19.800] you can see that they can either open it to to dive deeper,
+[00:24:24.080] they can create a ticket or create a PR because again,
+[00:24:26.520] I don't want to be opinionated on exactly how advanced they are.
+[00:24:30.000] That's fine.
+[00:24:31.320] Either of those work, we can do it later.
+[00:24:33.200] We can do it now.
+[00:24:34.280] Obviously, both are labeled so that we can measure it.
+[00:24:37.320] And all of a sudden that endpoint that used to take 100 milliseconds,
+[00:24:41.520] except the fact that it kind of takes 45 seconds every once in a while.
+[00:24:45.120] Well, it doesn't anymore.
+[00:24:46.440] And I think that was a very,
+[00:24:48.040] very big learning for us that we just want to get to a point where
+[00:24:51.880] the humans kind of make the decision that it's worth a while.
+[00:24:56.160] The fact that merging to production did not become it's
+[00:24:59.240] not free, it's just cheaper to to merge and to ship.
+[00:25:03.320] And then we kind of have the ability to learn more about it.
+[00:25:08.600] So for things you can take from our experience
+[00:25:11.960] so far, one, we still need to define what matters.
+[00:25:16.200] And I think if I can be a bit philosophical, even though
+[00:25:19.520] it's a use case, I think that's going to be a huge part
+[00:25:23.280] of what we do as engineers in the future is decide what's worth a while,
+[00:25:27.640] worth the tokens,
+[00:25:28.520] worth the time, whether it's a human that's reviewing it or an agent.
+[00:25:32.560] We still define what matters more and what matters less than the ability
+[00:25:36.920] to score by what will be impactful for the business is really important.
+[00:25:41.880] And I think that's that's something that we can all take to our day to day lives.
+[00:25:45.240] And if we inform our agents on how we look at what they do,
+[00:25:49.720] then they're going to do better because they don't just lack the runtime context.
+[00:25:53.680] They also lack the business context.
+[00:25:56.480] Second part is to automate the investigation phase to
+[00:25:59.840] make prioritization better.
+[00:26:01.320] And this is an example that we had for performance.
+[00:26:04.080] We're doing similar things for reliability and the other things.
+[00:26:07.720] But I'm not saying that the backlog should be empty
+[00:26:10.560] just because we have agents.
+[00:26:13.040] I'm saying that we have a way
+[00:26:14.440] to use the agents to make better decisions on what to prioritize.
+[00:26:18.200] And this is a use case that is not as common as what we're seeing.
+[00:26:23.360] Like a lot of people are using agents to do what they were planned to do faster,
+[00:26:28.720] and this was a way for us to help people
+[00:26:33.040] prioritize the the ROI and not just the task itself.
+[00:26:39.760] Context over cleverness, I guess.
+[00:26:41.720] Like it's it's it seems obvious, but the agents get useful
+[00:26:46.160] once they see what's going on.
+[00:26:47.720] In our case, it was production context, being able to understand where it is
+[00:26:53.640] and to have very high signal data about it
+[00:26:57.400] so that they can build it the same way that a staff engineer
+[00:27:02.600] cannot just move to a different company and ship to production on day one.
+[00:27:06.280] That's the context that matters,
+[00:27:07.840] and it's going to change their behavior the same way that it changes our behavior.
+[00:27:12.160] And last but not least, Agentic engineering
+[00:27:15.680] is not like coding with an agent.
+[00:27:18.200] It is different.
+[00:27:20.040] If we want something to work as a workflow, it has to actually work
+[00:27:24.400] and it has to be confident in what it does.
+[00:27:26.800] It is better to do less but the right things.
+[00:27:29.520] And if I at any time I would suggest something that won't work.
+[00:27:34.400] We lose trust in the process, so the automation unlocks
+[00:27:38.520] continuous impact, but it also requires a higher confidence level.
+[00:27:42.680] So choose the things that you feel
+[00:27:44.880] that your repo and your automation level are ripe for.
+[00:27:48.680] But I think that's where we're going.
+[00:27:50.440] And when we try to think about that, our core engineers,
+[00:27:52.880] when we know the scale, we can architect the system.
+[00:27:56.040] So I think the scale that we're going to see,
+[00:27:59.200] and the question that I'm asking myself is, how would would it look like
+[00:28:03.320] to get to a point where some engineers and some of our customers
+[00:28:07.440] companies would actually just click that merge button and get that fixed as is?
+[00:28:11.680] And because I can measure it now,
+[00:28:14.120] we can get better and better until we get to that point.
+[00:28:16.800] And I think, you know,
+[00:28:18.040] we can talk a lot about how that would be perfect if it just works.
+[00:28:22.760] But the thing that was, I think really int about the process
+[00:28:26.800] here is the ability to start with something that is still net positive,
+[00:28:31.440] and it allows you that flywheel of understanding where it got stuck,
+[00:28:35.200] where the insights not good enough. Were they good enough.
+[00:28:37.440] But it was hard to merge them.
+[00:28:39.440] Did we merge them.
+[00:28:40.240] But they they didn't give that effect that we tried.
+[00:28:42.880] And that let's us learn and improve.
+[00:28:45.720] Before we get to that point of full automation.
+[00:28:47.880] And again, my dream is to get to a point where people would say, well,
+[00:28:51.920] 80% of the time we just did the exact same thing
+[00:28:54.280] and we kind of merged it to main, and then we will know that
+[00:28:58.160] we're ready, but we're providing value along the way as we're getting there.
+[00:29:01.920] When the models are getting better, the context is getting better,
+[00:29:05.000] and everyone can kind of spend their time on on the right things.
+[00:29:09.960] So thank you.
+[00:29:11.200] I hope that was somewhat helpful.
+[00:29:21.360] I appreciate your attention
+[00:29:23.960] in this tough hour and we have some time for questions.
+[00:29:26.960] Right. We have one minute, one questions.
+[00:29:30.160] If someone has a very quick question
+[00:29:33.920] anyone?
+[00:29:37.120] One in the back.
+[00:29:42.720] Yeah.
+[00:29:43.480] If someone has a question that requires more than a minute,
+[00:29:46.240] I'll stay outside to to answer them.
+[00:29:50.120] Thanks a lot for the talk.
+[00:29:51.200] I have one question.
+[00:29:52.360] So most people we probably already have integrated with, like Datadog
+[00:29:55.440] or Sentry or some other, like platform where you need
+[00:30:00.880] to ingest loads of data to be able to get all these production metrics.
+[00:30:04.920] So how do you stay competitive with it?
+[00:30:06.800] Because, yeah, I guess you need to
+[00:30:08.040] also ingest that amount of data, but then people won't be like, oh, well,
+[00:30:11.760] we just like also pay you 10-K a month or whatever to be able to do this stuff.
+[00:30:16.480] So to how do you figure that out?
+[00:30:18.440] That's a huge question and especially for a startup.
+[00:30:22.080] So we always like to say that we're like an espresso shop.
+[00:30:25.000] We only have a spesso, but it's the best one in town.
+[00:30:27.680] We try to focus on the thing that we do better.
+[00:30:29.600] If they have Datadog or all these tools, we will ask, okay, but
+[00:30:34.400] do you still suffer from production incidents and issues?
+[00:30:37.720] Do you still spend way too much time?
+[00:30:39.440] Are you still surprised by issues that your customers report?
+[00:30:42.200] And if so, let's run together, obviously, like for example, distributed tracing.
+[00:30:46.640] If they have that, we will just connect to what they already have.
+[00:30:49.440] The thing is the function level context and the forensic context
+[00:30:53.360] that is being proactively captured.
+[00:30:55.200] And we focus on that and integrate to whatever it is that they have.
+[00:31:01.600] Okay.
+[00:31:02.080] Thank you so much. My.

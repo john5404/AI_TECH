@@ -1,0 +1,2237 @@
+WEBVTT
+
+1
+00:00:01.120 --> 00:00:03.520
+There's literally no human to click the consent button.
+
+2
+00:00:03.520 --> 00:00:06.440
+So what was the agent actually succeeding at?
+
+3
+00:00:06.440 --> 00:00:08.480
+Our criteria had assumed
+
+4
+00:00:08.480 --> 00:00:11.600
+that OAuth would happen successfully because they were outcome oriented.
+
+5
+00:00:11.600 --> 00:00:15.280
+And so it was only looking at what the plausible outcome of the agent,
+
+6
+00:00:15.320 --> 00:00:18.520
+having actually interacted with the service that was doing OAuth
+
+7
+00:00:18.560 --> 00:00:22.120
+would have looked like, and the agent knew enough about the service to
+
+8
+00:00:22.160 --> 00:00:23.400
+plausibly hallucinate.
+
+9
+00:01:22.680 --> 00:01:23.880
+We run a lot of evals.
+
+10
+00:01:23.880 --> 00:01:25.440
+We've had a lot of pain running evils,
+
+11
+00:01:25.440 --> 00:01:27.560
+and we've had a lot of learnings from those emails.
+
+12
+00:01:27.560 --> 00:01:30.360
+So very happy to talk about anything that I chat about here
+
+13
+00:01:30.360 --> 00:01:32.920
+on these slides afterwards or at any point.
+
+14
+00:01:32.920 --> 00:01:35.760
+Also, all credit to Claude for the design of the slides.
+
+15
+00:01:35.760 --> 00:01:39.960
+I'm really bad designer, so the reason these look anything remotely too nice
+
+16
+00:01:40.000 --> 00:01:41.240
+is because of Claude.
+
+17
+00:01:41.240 --> 00:01:43.840
+Also, I know Simon said time for questions at the end.
+
+18
+00:01:43.840 --> 00:01:44.920
+We will leave some time.
+
+19
+00:01:44.920 --> 00:01:47.520
+If you do have any questions throughout the entire presentation,
+
+20
+00:01:47.520 --> 00:01:49.680
+please feel free to stick your hand up. Interrupt me.
+
+21
+00:01:49.680 --> 00:01:52.520
+Happy to kind of take those as we go along. Cool.
+
+22
+00:01:52.520 --> 00:01:57.760
+So basically what we've realized is that a lot of the coding benchmarks
+
+23
+00:01:57.760 --> 00:01:59.920
+that we got out there sweet bench, terminal, bench,
+
+24
+00:01:59.920 --> 00:02:01.800
+the leaderboards, all of those kind of things,
+
+25
+00:02:01.800 --> 00:02:04.160
+they're great, but they're a single number.
+
+26
+00:02:04.160 --> 00:02:07.240
+And there are a number that we've sort of stopped trusting a little bit
+
+27
+00:02:07.480 --> 00:02:11.080
+because of all of the kind of other impacts to that number.
+
+28
+00:02:11.080 --> 00:02:13.720
+So really what this talk is about is really trying
+
+29
+00:02:13.720 --> 00:02:14.880
+to get at what those numbers
+
+30
+00:02:14.880 --> 00:02:17.080
+actually are, measuring the ways that we can start
+
+31
+00:02:17.080 --> 00:02:19.480
+to decompose that into signals that we can actually trust,
+
+32
+00:02:19.480 --> 00:02:22.480
+and also the knowledge that we've learned that the numbers
+
+33
+00:02:22.480 --> 00:02:24.120
+aren't really what we expect them to be,
+
+34
+00:02:24.120 --> 00:02:26.160
+and that if we were just blindly optimizing
+
+35
+00:02:26.160 --> 00:02:28.200
+for the benchmark number for just benchmarking,
+
+36
+00:02:28.200 --> 00:02:32.320
+it's not going to get us the the results that we wanted to their there are three
+
+37
+00:02:32.320 --> 00:02:35.840
+main traps that we kind of saw that we'll go through in sequence.
+
+38
+00:02:35.880 --> 00:02:38.600
+I think personally I think they show up everywhere
+
+39
+00:02:38.600 --> 00:02:40.480
+else, Arun, including at the labs.
+
+40
+00:02:40.480 --> 00:02:42.800
+And it's not that evils are broken.
+
+41
+00:02:42.800 --> 00:02:46.040
+I really don't want to, Glenn, that we run far too many of them to be saying
+
+42
+00:02:46.080 --> 00:02:50.000
+evals are broken, but it's more so that figuring out how to evaluate
+
+43
+00:02:50.040 --> 00:02:52.280
+AI agents, that itself is a discipline.
+
+44
+00:02:52.280 --> 00:02:54.760
+I don't think we figure that out yet as a research community.
+
+45
+00:02:54.760 --> 00:02:58.280
+And so if we just treat it as cool, just run an eval,
+
+46
+00:02:58.320 --> 00:02:59.920
+then you're going to be led down the wrong path.
+
+47
+00:02:59.920 --> 00:03:00.640
+You actually need to
+
+48
+00:03:00.640 --> 00:03:04.320
+think about what it is, what signal you are that you're measuring.
+
+49
+00:03:04.520 --> 00:03:09.000
+So this is some numbers just from a run that we did last week.
+
+50
+00:03:09.040 --> 00:03:11.480
+This is for the Kimmy launch recently.
+
+51
+00:03:11.480 --> 00:03:13.440
+So Kimmy 2.5 and 2.6.
+
+52
+00:03:13.440 --> 00:03:16.920
+We ran this on Kimmy CLE backed by Kimmy platform.
+
+53
+00:03:18.000 --> 00:03:20.480
+So the official committee platform
+
+54
+00:03:20.480 --> 00:03:24.720
+same scenario same harmonies same eval orchestrator exact same everything.
+
+55
+00:03:24.720 --> 00:03:28.840
+And we were seeing radically different failure rates about 18 times
+
+56
+00:03:28.840 --> 00:03:32.440
+higher failure rate for 2.6 than we saw for 2.5.
+
+57
+00:03:32.840 --> 00:03:35.000
+This was kind of unexpected since, you know,
+
+58
+00:03:35.000 --> 00:03:39.120
+we think that 2.6 should be a better model, should be a better model.
+
+59
+00:03:39.160 --> 00:03:40.400
+This would be a regression.
+
+60
+00:03:40.400 --> 00:03:42.400
+This would be something bad that can be a chip
+
+61
+00:03:42.400 --> 00:03:45.880
+because it's showing up over pretty wide diversity of evils.
+
+62
+00:03:45.880 --> 00:03:49.200
+We run over 500 different skills and over 2000
+
+63
+00:03:49.200 --> 00:03:52.880
+different scenarios, kind of for benchmark that we do on new model releases.
+
+64
+00:03:52.880 --> 00:03:56.800
+So this would be at that point where like, okay, what's going on here.
+
+65
+00:03:56.840 --> 00:03:58.200
+When we started to dig into it.
+
+66
+00:03:58.200 --> 00:04:01.040
+It wasn't Kimmy was us, and it was specifically Daytona.
+
+67
+00:04:01.040 --> 00:04:04.040
+That's where the container platform that we end up running our evals on,
+
+68
+00:04:04.040 --> 00:04:06.080
+and it turned out, can be 2.6.
+
+69
+00:04:06.080 --> 00:04:09.800
+For whatever reason, when running, the Kimmy CLI started using up a lot more
+
+70
+00:04:10.120 --> 00:04:11.240
+a lot more memory on the box.
+
+71
+00:04:11.240 --> 00:04:13.920
+And so we had to bump the memory resources on the box.
+
+72
+00:04:13.920 --> 00:04:17.880
+We are kind of pretty consistently at a 3% rate,
+
+73
+00:04:17.880 --> 00:04:21.720
+and we weren't capturing that and being able to debug that easily, but also
+
+74
+00:04:21.800 --> 00:04:24.680
+that was showing up as failures, because the way that we had constructor
+
+75
+00:04:24.680 --> 00:04:27.600
+eval harness was not something that had to deal with this.
+
+76
+00:04:27.600 --> 00:04:30.040
+So some of you had a headline number of shoots.
+
+77
+00:04:30.040 --> 00:04:33.360
+Something is looking a lot worse than look before for
+
+78
+00:04:33.480 --> 00:04:37.240
+when we have kind of a strong prior that, hey, this should be a better model.
+
+79
+00:04:37.240 --> 00:04:40.560
+It is a model bump we'd expect the labs to be doing,
+
+80
+00:04:40.600 --> 00:04:43.680
+doing their due diligence and making sure that these are all better.
+
+81
+00:04:44.160 --> 00:04:47.840
+So what I would claim is that every eval lives somewhere between
+
+82
+00:04:47.880 --> 00:04:51.920
+kind of this axis of synthetic versus kind of real project, and there's kind of
+
+83
+00:04:51.960 --> 00:04:55.360
+trade offs that you're making across all of these, across this entire axis.
+
+84
+00:04:55.360 --> 00:04:57.320
+Synthetic. Those are the super easy ones.
+
+85
+00:04:57.320 --> 00:04:59.560
+Like they're controlled, they're cheap, they're repeatable.
+
+86
+00:04:59.560 --> 00:05:00.720
+You've got kind of a known state.
+
+87
+00:05:00.720 --> 00:05:03.000
+You've got a known scenario, you've got a known fixture.
+
+88
+00:05:03.000 --> 00:05:04.360
+It's pretty easy to do.
+
+89
+00:05:04.360 --> 00:05:06.520
+The real ones are the ones that are a little bit more difficult
+
+90
+00:05:06.520 --> 00:05:10.000
+because you're trying to do evil's over if something that changes in time.
+
+91
+00:05:10.000 --> 00:05:13.440
+So if you're modeling evals over a repo over a project,
+
+92
+00:05:13.440 --> 00:05:15.520
+that project is going to accrue different patterns,
+
+93
+00:05:15.520 --> 00:05:17.840
+different architecture, different features over time.
+
+94
+00:05:17.840 --> 00:05:21.640
+And so you can't just run the same eval scenario that you had before on the repo
+
+95
+00:05:21.640 --> 00:05:26.000
+under an a new timestamp, because, hey, the entire repo has changed. So
+
+96
+00:05:27.040 --> 00:05:29.480
+we think the real the real project evolves.
+
+97
+00:05:29.480 --> 00:05:30.600
+They have a lot of value.
+
+98
+00:05:30.600 --> 00:05:34.880
+They give you actual indication on what you, as a software engineer feel when
+
+99
+00:05:34.880 --> 00:05:37.120
+using a coding agent in your repo day to day,
+
+100
+00:05:37.120 --> 00:05:41.200
+but it is a much harder state space to be modeling and a much harder
+
+101
+00:05:41.520 --> 00:05:43.720
+to run versus the synthetic one, which might give you
+
+102
+00:05:43.720 --> 00:05:45.560
+a bit of a fuzzier signal, but give you cheaper.
+
+103
+00:05:45.560 --> 00:05:46.760
+You can run it more repeatedly.
+
+104
+00:05:46.760 --> 00:05:49.720
+Think unit test versus integration or into end test ones.
+
+105
+00:05:49.720 --> 00:05:52.800
+Expensive but stronger, signal ones cheaper but weaker signal.
+
+106
+00:05:52.800 --> 00:05:55.800
+Where do you kind of make the trade offs between the two?
+
+107
+00:05:56.280 --> 00:05:59.360
+So the first kind of pillar that I wanted to talk
+
+108
+00:05:59.360 --> 00:06:02.720
+about is what we've started to call kind of the outcome trap.
+
+109
+00:06:02.720 --> 00:06:05.800
+It's kind of the easy thing to be measuring.
+
+110
+00:06:05.800 --> 00:06:08.240
+It's did the agent produce the correct code?
+
+111
+00:06:08.240 --> 00:06:10.600
+Did the test pass? If you're doing something that's kind of sweet,
+
+112
+00:06:11.640 --> 00:06:14.320
+sweet bench kind of informed, did the task complete?
+
+113
+00:06:14.320 --> 00:06:16.120
+Did it do something?
+
+114
+00:06:16.120 --> 00:06:17.720
+What we realized is that it's kind of like
+
+115
+00:06:17.720 --> 00:06:20.480
+that's a necessary condition, but it's not the sufficient condition.
+
+116
+00:06:20.480 --> 00:06:23.560
+But we actually care about for a large number of things, particularly
+
+117
+00:06:23.560 --> 00:06:26.720
+skills is not what the agent did, but how the agent did it.
+
+118
+00:06:26.760 --> 00:06:29.480
+It's the workflow that it followed. Did it read your security policy?
+
+119
+00:06:29.480 --> 00:06:30.200
+Did it apply that?
+
+120
+00:06:30.200 --> 00:06:33.320
+Did it make sure all your endpoints have the proper endpoint protection
+
+121
+00:06:33.360 --> 00:06:34.280
+to go check linear
+
+122
+00:06:34.280 --> 00:06:34.600
+and update
+
+123
+00:06:34.600 --> 00:06:38.280
+the linear ticket in order to make sure that it tracked its work to file a PR?
+
+124
+00:06:38.400 --> 00:06:39.680
+Did it do all of that stuff?
+
+125
+00:06:39.680 --> 00:06:42.320
+And that's the stuff that we're seeing is encoded within skills.
+
+126
+00:06:42.320 --> 00:06:46.440
+A lot of skills are workflows and workflow oriented in terms of a sequence of steps
+
+127
+00:06:46.440 --> 00:06:48.040
+that you're meant to do, not.
+
+128
+00:06:48.040 --> 00:06:50.920
+Your output code must look exactly like this.
+
+129
+00:06:50.920 --> 00:06:51.840
+So this can mean
+
+130
+00:06:51.840 --> 00:06:55.760
+that the model can take shortcuts that happen to work on this scenario,
+
+131
+00:06:55.760 --> 00:06:58.440
+but won't necessarily generalize across other scenarios
+
+132
+00:06:58.440 --> 00:07:01.200
+that are kind of out of what this scenario is evaluating.
+
+133
+00:07:01.200 --> 00:07:02.480
+So what I would say
+
+134
+00:07:02.480 --> 00:07:05.480
+is that if you're only going to measure kind of the final outcome,
+
+135
+00:07:05.600 --> 00:07:06.960
+all of those ways of either
+
+136
+00:07:06.960 --> 00:07:09.560
+guessing the correct answer or skipping a couple of steps
+
+137
+00:07:09.560 --> 00:07:12.520
+or kind of jumping to the conclusion that looks like real success.
+
+138
+00:07:12.520 --> 00:07:13.560
+And so you might ship
+
+139
+00:07:13.560 --> 00:07:16.600
+a skill that you think is working, but it's actually not being loaded.
+
+140
+00:07:16.600 --> 00:07:17.600
+It's not being used, it's
+
+141
+00:07:17.600 --> 00:07:19.440
+not guiding the agent down the correct path
+
+142
+00:07:19.440 --> 00:07:21.840
+because it just happens to be getting there.
+
+143
+00:07:21.840 --> 00:07:22.840
+That is a separate question.
+
+144
+00:07:22.840 --> 00:07:24.120
+Also to understand in terms of
+
+145
+00:07:24.120 --> 00:07:26.520
+if it's doing, if it is completing the task
+
+146
+00:07:26.520 --> 00:07:28.720
+without your skill, is it actually valuable?
+
+147
+00:07:28.720 --> 00:07:30.560
+That's in a different talk though.
+
+148
+00:07:30.560 --> 00:07:35.400
+So for this one, this is one specific eval case that we had that was actually run
+
+149
+00:07:35.400 --> 00:07:38.440
+by one of our researchers internally at T-cell.
+
+150
+00:07:38.440 --> 00:07:43.640
+And it showed phenomenal improvements, 6.25 x improvements from kind of
+
+151
+00:07:43.680 --> 00:07:48.520
+the baseline case of no context to the experimental case of with context.
+
+152
+00:07:48.520 --> 00:07:52.000
+When we're kind of passing in the skill, it was pretty much the highest one
+
+153
+00:07:52.000 --> 00:07:54.720
+that we'd ever seen repeated, and we started to dig into it.
+
+154
+00:07:54.720 --> 00:07:57.080
+I mean, like, cool. What is so awesome about the skill?
+
+155
+00:07:57.080 --> 00:07:58.880
+We are first looking at the skill content
+
+156
+00:07:58.880 --> 00:08:02.560
+and trying to understand like, hey, is this skill content actually good?
+
+157
+00:08:02.640 --> 00:08:04.680
+Is there something that we can learn or generalize from that?
+
+158
+00:08:04.680 --> 00:08:06.640
+And then we started looking at the trajectories,
+
+159
+00:08:06.640 --> 00:08:09.080
+and then we started looking at the scenario on the output.
+
+160
+00:08:09.080 --> 00:08:11.720
+It turns out that the first step in this skill is OAuth.
+
+161
+00:08:11.720 --> 00:08:14.160
+So you've got an OAuth against a external service.
+
+162
+00:08:14.160 --> 00:08:17.920
+And then you can go follow the sequence of steps within that skill.
+
+163
+00:08:18.000 --> 00:08:20.200
+We don't support within our sandboxes.
+
+164
+00:08:20.200 --> 00:08:24.600
+We don't have that mechanism at the moment to be allowing your agents or whatever
+
+165
+00:08:24.600 --> 00:08:27.920
+coding agent to go off against a service that you haven't provided an API key
+
+166
+00:08:27.920 --> 00:08:31.200
+or another mechanism to do credential or to do authentication with.
+
+167
+00:08:31.240 --> 00:08:33.600
+There's literally no human to click the consent button.
+
+168
+00:08:33.600 --> 00:08:36.520
+So what was the agent actually succeeding at?
+
+169
+00:08:36.520 --> 00:08:38.560
+Our criteria had assumed
+
+170
+00:08:38.560 --> 00:08:41.680
+that OAuth would happen successfully because they were outcome oriented.
+
+171
+00:08:41.680 --> 00:08:45.360
+And so it was only looking at what the plausible outcome of the agent,
+
+172
+00:08:45.400 --> 00:08:48.600
+having actually interacted with the service that was doing OAuth
+
+173
+00:08:48.640 --> 00:08:51.040
+would have looked like, and the agent knew enough
+
+174
+00:08:51.040 --> 00:08:53.520
+about the service to plausibly hallucinate.
+
+175
+00:08:53.520 --> 00:08:55.280
+Given the context of the skill,
+
+176
+00:08:55.280 --> 00:08:57.920
+what an appropriate outcome would actually look like.
+
+177
+00:08:57.920 --> 00:09:00.920
+So we started having to realize, like, hey,
+
+178
+00:09:00.960 --> 00:09:02.640
+we need to start looking at trajectories.
+
+179
+00:09:02.640 --> 00:09:06.840
+And so not just this, but a bunch of other kind of scenarios and findings
+
+180
+00:09:06.840 --> 00:09:09.000
+we've had, and also the realization that, hey,
+
+181
+00:09:09.000 --> 00:09:11.000
+workflows are actually what people are doing.
+
+182
+00:09:11.000 --> 00:09:12.200
+That's really where we started
+
+183
+00:09:12.200 --> 00:09:15.160
+to invest more heavily in terms of kind of doing criteria
+
+184
+00:09:15.160 --> 00:09:17.680
+that aren't just tightly coupled to the actual outcome,
+
+185
+00:09:17.680 --> 00:09:20.160
+but criteria that are also coupled to the trajectory.
+
+186
+00:09:20.160 --> 00:09:22.000
+So being able to look at both of those dimensions
+
+187
+00:09:22.000 --> 00:09:23.400
+so you can actually evaluate
+
+188
+00:09:23.400 --> 00:09:27.720
+what kind of impact your skill has rather than just the outcome of that skill.
+
+189
+00:09:27.720 --> 00:09:29.960
+This is a fun gotcha.
+
+190
+00:09:29.960 --> 00:09:34.320
+But it's also kind of one that we think is more around
+
+191
+00:09:34.320 --> 00:09:37.320
+how we think about kind of framing evals and framing the approach
+
+192
+00:09:37.880 --> 00:09:40.360
+rather than something that we're going to have continuously
+
+193
+00:09:40.360 --> 00:09:42.960
+now that we're looking at kind of trajectories.
+
+194
+00:09:42.960 --> 00:09:43.360
+Yeah, cool.
+
+195
+00:09:43.360 --> 00:09:44.120
+We solved that one.
+
+196
+00:09:44.120 --> 00:09:46.640
+We're going to be able to kind of support this moving forward.
+
+197
+00:09:46.640 --> 00:09:51.400
+The one that I think we start to get into a little bit more trouble
+
+198
+00:09:51.400 --> 00:09:56.120
+is probably too far, but is a little bit more difficult, is also looking at judges.
+
+199
+00:09:56.120 --> 00:09:58.480
+And so LLM is a judge. We love it.
+
+200
+00:09:58.480 --> 00:10:01.920
+It's great being able to define rubrics and being able to have a bunch of llms
+
+201
+00:10:01.960 --> 00:10:03.440
+go assess the quality of either
+
+202
+00:10:03.440 --> 00:10:06.560
+a trajectory or an outcome based off that, that it makes our lives
+
+203
+00:10:06.560 --> 00:10:09.920
+a lot easier rather than going in hand grading a bunch of stuff.
+
+204
+00:10:09.920 --> 00:10:12.040
+But this does raise a problem.
+
+205
+00:10:12.040 --> 00:10:15.160
+One of the things that we started to notice is, yes, that there is a strong
+
+206
+00:10:15.200 --> 00:10:19.320
+there's kind of been some reports, some results reported in the literature
+
+207
+00:10:19.360 --> 00:10:22.720
+around self biasing of models in terms of hey, you have a sonnet model.
+
+208
+00:10:22.720 --> 00:10:23.680
+Great, a sonnet solution.
+
+209
+00:10:23.680 --> 00:10:26.760
+It's going to give it a higher score than if it's creating a GPT solution.
+
+210
+00:10:26.760 --> 00:10:31.080
+What we also started see is that those apply across model families as well.
+
+211
+00:10:31.080 --> 00:10:35.800
+So sonnet has a preference for GLM five one for whatever reason.
+
+212
+00:10:35.800 --> 00:10:37.240
+That is much higher than the preference
+
+213
+00:10:37.240 --> 00:10:41.080
+that GPT five five shows for GLM five one solutions.
+
+214
+00:10:41.080 --> 00:10:42.280
+So it's not just
+
+215
+00:10:42.280 --> 00:10:45.400
+you've got to make sure that you aren't just comparing within the model family.
+
+216
+00:10:45.400 --> 00:10:49.840
+You've also got to understand what the cross model family kind of bias is.
+
+217
+00:10:49.880 --> 00:10:54.280
+And so that is one of the other kind of issues with this judging bit
+
+218
+00:10:54.280 --> 00:10:55.560
+that we started to see.
+
+219
+00:10:55.560 --> 00:10:59.320
+And so this actually comes from one of the results at Simon
+
+220
+00:10:59.360 --> 00:11:03.160
+shared on the blog, I believe yesterday or today, very recently
+
+221
+00:11:03.160 --> 00:11:06.160
+that was looking at kind of or soon tomorrow.
+
+222
+00:11:06.160 --> 00:11:06.440
+Okay.
+
+223
+00:11:06.440 --> 00:11:07.920
+This will be shared tomorrow.
+
+224
+00:11:07.920 --> 00:11:10.280
+That is looking at exactly this.
+
+225
+00:11:10.280 --> 00:11:12.960
+So we had a bunch of scenarios.
+
+226
+00:11:12.960 --> 00:11:15.280
+We thought they showed phenomenal.
+
+227
+00:11:15.280 --> 00:11:18.880
+Very interesting results for GPT five five was actually worse
+
+228
+00:11:18.880 --> 00:11:22.640
+than GPT five three when we were being evaluating against one set of judges.
+
+229
+00:11:22.840 --> 00:11:24.120
+Then we started to investigate
+
+230
+00:11:24.120 --> 00:11:27.160
+and swapped in another set of judges and then another set of judges.
+
+231
+00:11:27.160 --> 00:11:29.440
+And then we started to see, okay, cool.
+
+232
+00:11:29.440 --> 00:11:31.640
+This is really what a case is of this.
+
+233
+00:11:31.640 --> 00:11:34.240
+It's a case of where there is some bias within a model family
+
+234
+00:11:34.240 --> 00:11:37.400
+towards a certain kind of solution or a certain set of solution.
+
+235
+00:11:37.400 --> 00:11:39.280
+So it wasn't kind of like catastrophic.
+
+236
+00:11:39.280 --> 00:11:43.040
+We're not going from 0 to 70 5 or 70 5 to 100 or something along those lines.
+
+237
+00:11:43.040 --> 00:11:46.440
+But it does kind of shift directionally the rankings
+
+238
+00:11:46.440 --> 00:11:49.560
+and shift kind of the results that you can for from that.
+
+239
+00:11:50.040 --> 00:11:53.160
+We want to mitigate this, though, because we use it a lot.
+
+240
+00:11:53.160 --> 00:11:56.360
+As I mentioned, we are big on our own as it judges, and we do think that this is
+
+241
+00:11:56.360 --> 00:11:59.520
+something you can mitigate, though, by putting in place enough checks.
+
+242
+00:11:59.560 --> 00:12:02.040
+Functionally. What we do is we run a lot of benchmarks.
+
+243
+00:12:02.040 --> 00:12:05.440
+We really try to understand the biases that each of these families will have
+
+244
+00:12:05.480 --> 00:12:06.040
+for either,
+
+245
+00:12:06.040 --> 00:12:10.200
+as I said, other models within that family or other models across families.
+
+246
+00:12:10.200 --> 00:12:11.720
+We also are building rubrics
+
+247
+00:12:11.720 --> 00:12:16.000
+because we find that those help reduce the inherent variance within Nivel.
+
+248
+00:12:16.040 --> 00:12:17.760
+Once you've got kind of like an artifact.
+
+249
+00:12:17.760 --> 00:12:20.840
+And yes, that artifact can be lemmas or LM generated,
+
+250
+00:12:20.840 --> 00:12:23.880
+but that helps ground the kind of scores and around the kind of results
+
+251
+00:12:23.880 --> 00:12:24.880
+that you're getting.
+
+252
+00:12:24.880 --> 00:12:29.680
+And we also start to averaging across different model families.
+
+253
+00:12:29.760 --> 00:12:33.400
+Like as with so many things, rather than just trying to get the one cherry
+
+254
+00:12:33.480 --> 00:12:34.880
+picked result, that is great.
+
+255
+00:12:34.880 --> 00:12:38.000
+Run out a bunch of times, do the average it starts to work out.
+
+256
+00:12:38.040 --> 00:12:39.040
+I think the real
+
+257
+00:12:39.040 --> 00:12:43.080
+big learning for us around this was it's not just averaging across the solutions.
+
+258
+00:12:43.080 --> 00:12:44.760
+That was something that we've been doing from the start
+
+259
+00:12:44.760 --> 00:12:46.360
+with recognition of the variance,
+
+260
+00:12:46.360 --> 00:12:50.000
+particularly in a non-deterministic setting with an environment in code
+
+261
+00:12:50.000 --> 00:12:52.920
+and all the kind of stuff that can go wrong. There it was.
+
+262
+00:12:52.920 --> 00:12:55.680
+We were always doing that kind of like run multiple solutions.
+
+263
+00:12:55.680 --> 00:12:58.680
+It was the oh, we also need to run multiple judges
+
+264
+00:12:58.760 --> 00:13:01.160
+and also need to do apply that same kind of principle
+
+265
+00:13:01.160 --> 00:13:04.160
+and that same kind of rigor to both sides of that equation.
+
+266
+00:13:04.840 --> 00:13:06.800
+Finally, scale.
+
+267
+00:13:06.800 --> 00:13:10.520
+So this is more on the infrastructure side and this is
+
+268
+00:13:10.520 --> 00:13:13.880
+more on the weird stuff happens when you are running at scale.
+
+269
+00:13:13.880 --> 00:13:17.360
+And that basically just comes down to any distributed service.
+
+270
+00:13:17.360 --> 00:13:21.080
+So super easy, super trivial when we're running kind of even
+
+271
+00:13:21.120 --> 00:13:24.880
+500 scenarios on a user's laptop, when someone on the research team
+
+272
+00:13:24.880 --> 00:13:27.320
+is there to click the button and it goes running locally,
+
+273
+00:13:27.320 --> 00:13:29.400
+that's a pretty good setting. We know locked up to go off.
+
+274
+00:13:29.400 --> 00:13:31.840
+We know the laptop is going to be connected to our office Wi-Fi.
+
+275
+00:13:31.840 --> 00:13:34.240
+It's strong and stable, all those kind of things.
+
+276
+00:13:34.240 --> 00:13:35.880
+That's pretty repeatable.
+
+277
+00:13:35.880 --> 00:13:40.040
+When we started to run these kind of 20,000 times, 30,000
+
+278
+00:13:40.080 --> 00:13:44.280
+times, 40,000 times across Daytona, across AWS,
+
+279
+00:13:44.320 --> 00:13:46.400
+across all of our different infrastructure providers.
+
+280
+00:13:46.400 --> 00:13:47.680
+And we then need to be kind of
+
+281
+00:13:47.680 --> 00:13:51.120
+considering load balancing across anthropic, across bedrock, across vertex.
+
+282
+00:13:51.120 --> 00:13:55.520
+Because of the scale eval runs are we start to see that hey misconfiguration.
+
+283
+00:13:55.560 --> 00:13:59.520
+Hey, those out of memory resource limits that I was talking about before
+
+284
+00:13:59.560 --> 00:14:02.560
+actually start to not just cause failures, but start to cause
+
+285
+00:14:02.560 --> 00:14:06.320
+differences in the scores that we're seeing anthropic or other.
+
+286
+00:14:06.360 --> 00:14:06.600
+Yeah.
+
+287
+00:14:06.600 --> 00:14:10.720
+So things that kind of broke at this scale, anthropic is the next slide.
+
+288
+00:14:10.760 --> 00:14:12.920
+Sorry. Things that work at the scale.
+
+289
+00:14:12.920 --> 00:14:13.480
+These are kind of
+
+290
+00:14:13.480 --> 00:14:16.720
+like the super concrete stuff that is very top of my mind at the moment.
+
+291
+00:14:16.720 --> 00:14:18.560
+There have been other issues in the past.
+
+292
+00:14:18.560 --> 00:14:20.440
+One is still Docker layers.
+
+293
+00:14:20.440 --> 00:14:23.120
+This is the chronic issue in terms of versioning of software.
+
+294
+00:14:23.120 --> 00:14:26.840
+I can't count the number of times that I've had the different version of Docker
+
+295
+00:14:26.840 --> 00:14:28.640
+running in public, or running on our cloud,
+
+296
+00:14:28.640 --> 00:14:30.480
+versus running locally on my machine.
+
+297
+00:14:30.480 --> 00:14:34.520
+This is all stuff that as you mature, you build the processes and the checks
+
+298
+00:14:34.520 --> 00:14:37.760
+and all that kind of stuff in place, but it's also stuff that makes versioning
+
+299
+00:14:37.760 --> 00:14:41.880
+and keeping track of the metadata specifically so important.
+
+300
+00:14:41.880 --> 00:14:44.640
+Because the number of times we've had, hey, cool, we've had a regression.
+
+301
+00:14:44.640 --> 00:14:46.520
+Oh no. Clod code just changed.
+
+302
+00:14:46.520 --> 00:14:47.720
+That is also been higher
+
+303
+00:14:47.720 --> 00:14:51.760
+than I would care to admit in terms of concurrent sandbox accounting.
+
+304
+00:14:51.800 --> 00:14:52.160
+Cool.
+
+305
+00:14:52.160 --> 00:14:55.920
+This is a specific work with Daytona where it will tell us, hey,
+
+306
+00:14:55.960 --> 00:14:58.000
+the sandbox is shutting down or shutting down.
+
+307
+00:14:58.000 --> 00:15:01.080
+It will act that request that we've made, but the sandbox itself
+
+308
+00:15:01.080 --> 00:15:03.000
+will then take a little bit longer to shut down,
+
+309
+00:15:03.000 --> 00:15:06.320
+and we immediately go, cool, okay, we got an sandboxes down.
+
+310
+00:15:06.320 --> 00:15:09.000
+Let's go spend another one up. No. Now we've got two sandboxes.
+
+311
+00:15:09.000 --> 00:15:11.080
+When we were expecting one sandbox to be running,
+
+312
+00:15:11.080 --> 00:15:14.040
+and we've used up all of our resource limits.
+
+313
+00:15:14.040 --> 00:15:17.560
+Another one in terms of zero second hangs, we've had a couple of things
+
+314
+00:15:17.560 --> 00:15:20.720
+that just hang like, just don't work.
+
+315
+00:15:20.760 --> 00:15:21.680
+Is that Daytona?
+
+316
+00:15:21.680 --> 00:15:22.800
+Is that the CLI?
+
+317
+00:15:22.800 --> 00:15:24.760
+Is that the underlying model
+
+318
+00:15:24.760 --> 00:15:27.520
+never been a big enough issue to kind of go investigate, but
+
+319
+00:15:27.520 --> 00:15:30.840
+been enough that we kind of need to go kick those boxes every once in a while.
+
+320
+00:15:30.840 --> 00:15:33.080
+So there's kind of a retry and a refresh loop
+
+321
+00:15:33.080 --> 00:15:35.160
+that is needed there in order to make sure that you're
+
+322
+00:15:35.160 --> 00:15:37.640
+kind of not just wasting time and wasting compute.
+
+323
+00:15:37.640 --> 00:15:39.880
+And then in terms of pod errors. Yeah.
+
+324
+00:15:39.880 --> 00:15:43.400
+BC basically this concept of like a bunch of tasks failing
+
+325
+00:15:43.400 --> 00:15:46.480
+when we kind of have super strict resource requirements because again,
+
+326
+00:15:46.520 --> 00:15:51.280
+non-deterministic agents that are writing code, importing dependencies,
+
+327
+00:15:51.320 --> 00:15:54.320
+loading up your system memory by doing really, really big VMs
+
+328
+00:15:54.320 --> 00:15:57.440
+or really, really big node modules and then importing everything.
+
+329
+00:15:57.440 --> 00:16:01.200
+And these again, often show up as failures because your solution didn't
+
+330
+00:16:01.200 --> 00:16:05.200
+complete it, didn't write out or it didn't get fully to the end, but they're not.
+
+331
+00:16:05.240 --> 00:16:06.480
+Their resource issues in the model
+
+332
+00:16:06.480 --> 00:16:10.080
+would have actually finished had it been given the opportunity to do so.
+
+333
+00:16:10.320 --> 00:16:12.800
+This is the anthropic slide that I was thinking of.
+
+334
+00:16:12.800 --> 00:16:16.960
+So this is from results back in Ethiopia published back in February,
+
+335
+00:16:17.000 --> 00:16:20.120
+that are basically what we saw just a couple of months later
+
+336
+00:16:20.120 --> 00:16:22.320
+because they're, as usual, leading the field.
+
+337
+00:16:22.320 --> 00:16:25.280
+And so it's very similar to that kind of concept.
+
+338
+00:16:25.280 --> 00:16:26.320
+It's like cool.
+
+339
+00:16:26.320 --> 00:16:30.880
+You've got a bunch of different resource configurations that you can give to a,
+
+340
+00:16:30.880 --> 00:16:34.760
+to an environment that are using to run terminal bench in their case.
+
+341
+00:16:34.760 --> 00:16:38.080
+And just by changing the amounts of resources that you're giving
+
+342
+00:16:38.120 --> 00:16:41.080
+to that environment, you actually affect the model performance
+
+343
+00:16:41.080 --> 00:16:44.880
+and therefore you affect the reward signal that you can get from that performance
+
+344
+00:16:44.880 --> 00:16:46.600
+in an VR setting.
+
+345
+00:16:46.600 --> 00:16:49.320
+And so that's super important because this is now
+
+346
+00:16:49.320 --> 00:16:52.600
+something that is not related to your model, not related to your agent
+
+347
+00:16:52.600 --> 00:16:55.960
+harness, but is related to something external to that.
+
+348
+00:16:56.000 --> 00:16:59.400
+So now you're not just trying to say, hey, I'm optimizing my model.
+
+349
+00:16:59.400 --> 00:17:01.920
+It's cool. Now I'm accidentally optimizing my model.
+
+350
+00:17:01.920 --> 00:17:03.480
+Given the resource constraints that I've used
+
+351
+00:17:03.480 --> 00:17:05.720
+for the environments that I'm running my emails in,
+
+352
+00:17:05.720 --> 00:17:08.840
+that is a much fuzzier signal than kind of you would hope it to be.
+
+353
+00:17:09.560 --> 00:17:12.720
+So what I would claim kind of overall
+
+354
+00:17:12.720 --> 00:17:17.800
+is that if you got kind of slow evals, slow comprehensive evals,
+
+355
+00:17:17.840 --> 00:17:21.720
+kind of the ones on the left, the really nice ones like those are great,
+
+356
+00:17:21.720 --> 00:17:25.000
+but they're not actually something that you can really effectively learn from.
+
+357
+00:17:25.040 --> 00:17:27.520
+These might be the real world projects that have time drift,
+
+358
+00:17:27.520 --> 00:17:29.560
+that you kind of spinning up an entire ecosystem,
+
+359
+00:17:29.560 --> 00:17:32.680
+like an entire dev ecosystem on a box, so that you give the agent
+
+360
+00:17:32.680 --> 00:17:34.120
+the most representative
+
+361
+00:17:34.120 --> 00:17:38.200
+eval scenario, eval environment possible, but then you've got really hard
+
+362
+00:17:38.240 --> 00:17:40.680
+kind of constraints in terms of getting that reward signal back
+
+363
+00:17:40.680 --> 00:17:44.640
+when the evil takes 24 hours to run, because it's complicated and difficult.
+
+364
+00:17:44.760 --> 00:17:46.720
+On the other side, you've got the really narrow ones.
+
+365
+00:17:46.720 --> 00:17:48.360
+These are the synthetic ones that we talked about.
+
+366
+00:17:48.360 --> 00:17:48.680
+Those
+
+367
+00:17:48.680 --> 00:17:52.720
+give you a cheaper, fuzzier reward signal, but they give it to you much quicker.
+
+368
+00:17:52.720 --> 00:17:56.560
+And so where do you want to sit kind of along that line, along that axis.
+
+369
+00:17:56.600 --> 00:17:59.640
+In terms of what is more valuable, is it to get something that is a fuzzier
+
+370
+00:17:59.640 --> 00:18:01.760
+approximation of reality, but quicker, so that you can
+
+371
+00:18:01.760 --> 00:18:03.200
+then optimize and train on that?
+
+372
+00:18:03.200 --> 00:18:05.280
+Or does it get a better representation of reality?
+
+373
+00:18:05.280 --> 00:18:06.000
+But it's slower.
+
+374
+00:18:06.000 --> 00:18:09.760
+And so yes, you get better data, but it takes you longer to run
+
+375
+00:18:09.800 --> 00:18:10.720
+kind of a reinforcement
+
+376
+00:18:10.720 --> 00:18:14.680
+learning loop or to optimize your context or anything along those lines.
+
+377
+00:18:14.680 --> 00:18:18.640
+And so I think for me sitting on this team, really
+
+378
+00:18:18.640 --> 00:18:23.560
+the most interesting perspective is that
+
+379
+00:18:23.640 --> 00:18:26.320
+and I come from a software engineering background for context,
+
+380
+00:18:26.320 --> 00:18:27.720
+is that evil infrastructure,
+
+381
+00:18:27.720 --> 00:18:29.800
+like these annoying bits of dealing with out of memory,
+
+382
+00:18:29.800 --> 00:18:31.880
+these annoying bits of looking at networking,
+
+383
+00:18:31.880 --> 00:18:34.360
+these annoying bits of figuring out how it works.
+
+384
+00:18:34.360 --> 00:18:37.160
+That's just not software engineering, platform investment.
+
+385
+00:18:37.160 --> 00:18:38.800
+That's like research investment.
+
+386
+00:18:38.800 --> 00:18:41.800
+That is the thing that we need to do in order to do research,
+
+387
+00:18:41.800 --> 00:18:45.960
+because otherwise we are getting noisy signal and noisy data, and that affects
+
+388
+00:18:46.000 --> 00:18:47.640
+the quality of the research that we ought to do.
+
+389
+00:18:47.640 --> 00:18:50.280
+And so it's not kind of this disjoint between cool.
+
+390
+00:18:50.280 --> 00:18:51.800
+The research investment is just
+
+391
+00:18:51.800 --> 00:18:55.840
+on the evil design or just on the criteria or just on the environments.
+
+392
+00:18:55.880 --> 00:18:58.000
+No, the research investment is just as much
+
+393
+00:18:58.000 --> 00:19:01.080
+on the underlying infrastructure, because all of this is connected
+
+394
+00:19:01.080 --> 00:19:05.160
+and only by kind of making sure one is solid, making sure that pieces are
+
+395
+00:19:05.160 --> 00:19:08.160
+solid, can you actually get the insights that you want?
+
+396
+00:19:08.520 --> 00:19:11.760
+So there's another kind of learning from this.
+
+397
+00:19:11.760 --> 00:19:13.840
+And that is really around decomposition.
+
+398
+00:19:13.840 --> 00:19:16.960
+So for each of those three kind of traps there's three issues
+
+399
+00:19:16.960 --> 00:19:18.160
+that I mentioned earlier.
+
+400
+00:19:18.160 --> 00:19:20.120
+Outcome judge scale.
+
+401
+00:19:20.120 --> 00:19:22.800
+There's a decomposition element to it as well.
+
+402
+00:19:22.800 --> 00:19:26.600
+So in terms of the outcome, the decomposition is going from
+
+403
+00:19:26.600 --> 00:19:30.920
+just looking at the outcome to looking at each step that the agent takes
+
+404
+00:19:30.920 --> 00:19:34.080
+to be more effectively able to measure the thing that you actually care about.
+
+405
+00:19:34.080 --> 00:19:36.480
+In some cases, it's just the how you don't care about how.
+
+406
+00:19:36.480 --> 00:19:39.160
+Sorry. It's just the what. It's not. You don't care about how you got there.
+
+407
+00:19:39.160 --> 00:19:41.600
+In other cases, you don't care about the what's and it's just the how.
+
+408
+00:19:41.600 --> 00:19:46.160
+And so you just want to look at that often it's both for the judge problem.
+
+409
+00:19:46.160 --> 00:19:50.280
+We can decompose that into making sure that the judge's checking small
+
+410
+00:19:50.280 --> 00:19:54.320
+verifiable claims rather than hey, is quality good?
+
+411
+00:19:54.360 --> 00:19:56.200
+Or hey, is this code correct?
+
+412
+00:19:56.200 --> 00:19:58.280
+Or hey, is this code secure?
+
+413
+00:19:58.280 --> 00:20:01.280
+The more work that you do in terms of defining that rubric
+
+414
+00:20:01.400 --> 00:20:06.200
+at a sufficient granularity, the more kind of the more agreement
+
+415
+00:20:06.200 --> 00:20:09.480
+that you will see across different judges in different judging families.
+
+416
+00:20:09.520 --> 00:20:12.720
+Yeah, opus four seven is great because you can give it a shitty prompt
+
+417
+00:20:12.720 --> 00:20:14.480
+and it will figure something out.
+
+418
+00:20:14.480 --> 00:20:17.160
+But if you're able to kind of break that down and decompose it,
+
+419
+00:20:17.160 --> 00:20:19.400
+you're going to get a lot more reliability out of it.
+
+420
+00:20:19.400 --> 00:20:23.360
+And then on the scale, well, we want to be able to decompose something
+
+421
+00:20:23.360 --> 00:20:27.400
+that we can run kind of fast and narrow for getting some of that signal.
+
+422
+00:20:27.400 --> 00:20:31.880
+But we also want to keep that opportunity for being able to run that super slow.
+
+423
+00:20:31.920 --> 00:20:33.400
+Shouldn't say super slow slow.
+
+424
+00:20:33.400 --> 00:20:37.000
+It's like a day for Take That, the opportunity for running that
+
+425
+00:20:37.000 --> 00:20:40.640
+comprehensive one, for the opportunities where it drives us, the value.
+
+426
+00:20:40.640 --> 00:20:44.520
+So it's really being able to understand the domain that we are optimizing against
+
+427
+00:20:44.560 --> 00:20:45.760
+enough that we can pick
+
+428
+00:20:45.760 --> 00:20:49.000
+and choose which signals are valuable, at which point in that cycle.
+
+429
+00:20:49.040 --> 00:20:53.160
+I would much rather run 100 unit tests than I would one end to end test.
+
+430
+00:20:53.160 --> 00:20:57.160
+If I can get 95% of the confidence from the unit testing, then I would be
+
+431
+00:20:57.320 --> 00:20:58.680
+from the end to end testing.
+
+432
+00:20:58.680 --> 00:21:01.760
+So this is kind of where I'm getting to in terms of
+
+433
+00:21:01.800 --> 00:21:06.080
+like what that bigger point is, and it's that we don't really know
+
+434
+00:21:06.080 --> 00:21:07.480
+how to properly evaluate these
+
+435
+00:21:07.480 --> 00:21:10.480
+because there are so many different moving parts of this system.
+
+436
+00:21:10.520 --> 00:21:13.720
+We've gone from a world where the original evaluations on an LLM
+
+437
+00:21:13.760 --> 00:21:16.320
+were give it some text and get some text back.
+
+438
+00:21:16.320 --> 00:21:19.160
+And that's all you're evaluating now we've got environments.
+
+439
+00:21:19.160 --> 00:21:21.680
+Now we've got agent harnesses, now we've got external dependencies.
+
+440
+00:21:21.680 --> 00:21:23.240
+Now we've got the file system.
+
+441
+00:21:23.240 --> 00:21:27.000
+Like there's so many things that could go wrong in this entire domain
+
+442
+00:21:27.000 --> 00:21:28.640
+that are all going to have an impact on it.
+
+443
+00:21:28.640 --> 00:21:32.720
+And so how do we then start to think through as kind of a community in terms
+
+444
+00:21:32.720 --> 00:21:34.560
+of figuring out which bits of that are important
+
+445
+00:21:34.560 --> 00:21:37.560
+and how we were able to then evaluate and report on that,
+
+446
+00:21:37.600 --> 00:21:40.680
+because it doesn't matter to me if they tell me, Claude, code with opus
+
+447
+00:21:40.680 --> 00:21:43.960
+47 got score whatever on Terminal bench.
+
+448
+00:21:44.000 --> 00:21:48.000
+If I don't know the closest cloud code version that that score got that
+
+449
+00:21:48.040 --> 00:21:51.280
+that score was run with, because it has shown that, hey,
+
+450
+00:21:51.320 --> 00:21:54.280
+cloud code changes the performance or the resource configuration
+
+451
+00:21:54.280 --> 00:21:56.440
+because I might be running on a smaller box and hey,
+
+452
+00:21:56.440 --> 00:21:58.200
+it can't actually write as much code.
+
+453
+00:21:59.480 --> 00:22:01.360
+So the last thing that I
+
+454
+00:22:01.360 --> 00:22:05.320
+kind of want to say is really what I've tried to kind of line here
+
+455
+00:22:05.320 --> 00:22:10.480
+is basically having an honest, honest mental model of what your evals are
+
+456
+00:22:10.480 --> 00:22:14.560
+in, aren't telling you like, yes, having a single number, that's great.
+
+457
+00:22:14.600 --> 00:22:16.160
+It gives you something to optimize against.
+
+458
+00:22:16.160 --> 00:22:18.720
+And if that's what you need to kind of report out, then fine.
+
+459
+00:22:18.720 --> 00:22:20.400
+I'm not against having a single number.
+
+460
+00:22:20.400 --> 00:22:22.000
+We do need to do some aggregation.
+
+461
+00:22:22.000 --> 00:22:25.280
+We can't just say everything is multiple numbers
+
+462
+00:22:25.280 --> 00:22:26.800
+or everything needs to be
+
+463
+00:22:26.800 --> 00:22:31.040
+kind of broken down into smaller parts, but be honest, kind of about what
+
+464
+00:22:31.040 --> 00:22:32.320
+those individual bits are
+
+465
+00:22:32.320 --> 00:22:34.760
+and if it is something that is going to bite you,
+
+466
+00:22:34.760 --> 00:22:36.280
+or if it is something where you're measuring
+
+467
+00:22:36.280 --> 00:22:37.840
+kind of the fuzzy approximation
+
+468
+00:22:37.840 --> 00:22:41.480
+because you're only looking at outcome and not the process, then yeah, that's fair.
+
+469
+00:22:41.480 --> 00:22:44.800
+You don't need to measure everything, but be aware of where those blind spots
+
+470
+00:22:44.840 --> 00:22:49.040
+are because you're a trust or evals a lot more when you're able to caveat them
+
+471
+00:22:49.040 --> 00:22:52.520
+with kind of the incorrect bits or the parts that you don't know and be,
+
+472
+00:22:52.520 --> 00:22:55.680
+then hopefully be building in a way that you can start to mitigate that.
+
+473
+00:22:55.720 --> 00:22:58.720
+Moving on. So that's pretty much it.
+
+474
+00:22:58.800 --> 00:23:02.120
+I think Simon has a fun throwing mic for questions.
+
+475
+00:23:02.160 --> 00:23:02.760
+Yeah.
+
+476
+00:23:04.400 --> 00:23:05.520
+Who's got a question
+
+477
+00:23:05.520 --> 00:23:08.520
+for all and who's going to catch me?
+
+478
+00:23:09.360 --> 00:23:12.360
+What if you're only good at one of those things.
+
+479
+00:23:12.400 --> 00:23:16.080
+So you mentioned that you need to run your ball fast.
+
+480
+00:23:16.600 --> 00:23:20.880
+What kind of tools are your favorite in this situation?
+
+481
+00:23:21.160 --> 00:23:23.320
+So I talked a lot about Daytona
+
+482
+00:23:23.320 --> 00:23:26.520
+and our frustrations with Daytona, but I love Daytona for that reason.
+
+483
+00:23:26.720 --> 00:23:30.840
+So basically we have invested a fair amount
+
+484
+00:23:30.840 --> 00:23:34.920
+in our own custom eval orchestrator, but it is all running on Daytona
+
+485
+00:23:34.920 --> 00:23:39.280
+as kind of our compute platform because of kind of subsecond startup times.
+
+486
+00:23:39.320 --> 00:23:43.880
+And when we want to spin up a whole bunch of eval containers, that really helps.
+
+487
+00:23:43.880 --> 00:23:47.280
+We haven't invested significantly in terms of like actually tuning
+
+488
+00:23:47.280 --> 00:23:51.080
+the evil environments themselves, because we'd rather paralyze out across
+
+489
+00:23:51.080 --> 00:23:54.800
+environments and cross scenarios than kind of speeding up any single run.
+
+490
+00:23:54.800 --> 00:23:59.040
+So I think our stack kind of biases a little bit towards
+
+491
+00:23:59.080 --> 00:24:05.040
+do a lot of things in parallel, rather than do any specific things super fast.
+
+492
+00:24:05.080 --> 00:24:08.440
+The implication of that, though, is that we then try to make rival scenarios
+
+493
+00:24:08.480 --> 00:24:12.440
+kind of as small as possible in order to get the signal that we want,
+
+494
+00:24:12.520 --> 00:24:13.720
+rather than having kind of
+
+495
+00:24:13.720 --> 00:24:16.680
+a bigger, complex scenario that might be measuring multiple things
+
+496
+00:24:16.680 --> 00:24:20.720
+that take a longer time, but then we can at least run them in parallel
+
+497
+00:24:22.280 --> 00:24:28.400
+on. Potentially controversial question
+
+498
+00:24:28.800 --> 00:24:32.360
+do you really need to evaluate for processes, or can you elaborate that
+
+499
+00:24:33.120 --> 00:24:37.000
+by using a large range of or representative data
+
+500
+00:24:37.040 --> 00:24:40.000
+that's been designed to trigger
+
+501
+00:24:40.000 --> 00:24:43.000
+processes?
+
+502
+00:24:45.440 --> 00:24:48.440
+Possibly.
+
+503
+00:24:48.440 --> 00:24:49.240
+So sorry.
+
+504
+00:24:49.240 --> 00:24:52.000
+The reason I'm hesitating there is just kind of thinking through
+
+505
+00:24:52.000 --> 00:24:55.440
+what how for some of the failure cases that we've seen where
+
+506
+00:24:55.440 --> 00:24:59.320
+we've needed to reach for the trajectory, if we would have been able
+
+507
+00:24:59.320 --> 00:25:03.480
+to construct a scenario or construct an outcome that would have triggered.
+
+508
+00:25:03.480 --> 00:25:08.720
+That may be, I think you can probably artificially construction
+
+509
+00:25:08.720 --> 00:25:12.040
+of scenarios that would cause a failure for any single step of the process.
+
+510
+00:25:12.040 --> 00:25:14.000
+But the fact that it is taking me
+
+511
+00:25:14.000 --> 00:25:17.440
+struggling a little bit to kind of think through what that process would look like
+
+512
+00:25:17.560 --> 00:25:20.760
+makes me want to reach for kind of like looking at the directory itself.
+
+513
+00:25:20.800 --> 00:25:24.640
+It kind of, in my mind, fits a bit more naturally in terms of like,
+
+514
+00:25:24.680 --> 00:25:25.720
+hey, you're asking the model,
+
+515
+00:25:25.720 --> 00:25:27.920
+you're asking the agent to go do a sequence of steps,
+
+516
+00:25:27.920 --> 00:25:30.880
+go look at whether it did the sequence of steps, not whether
+
+517
+00:25:30.880 --> 00:25:34.160
+you can create the scenario to have the outcome.
+
+518
+00:25:34.160 --> 00:25:37.760
+That would then imply it had the sequence of steps associated with it.
+
+519
+00:25:38.040 --> 00:25:39.960
+So I think it's possible.
+
+520
+00:25:39.960 --> 00:25:42.440
+I don't know if it's easier though.
+
+521
+00:25:42.440 --> 00:25:42.960
+Yeah.
+
+522
+00:25:42.960 --> 00:25:46.280
+I'm going to ask a actually I want to there's really no time for more questions.
+
+523
+00:25:46.320 --> 00:25:50.600
+I will take one more question, because I'll ask John to come up just to
+
+524
+00:25:51.400 --> 00:25:52.280
+just set up.
+
+525
+00:25:52.280 --> 00:25:55.280
+And after a while that happens, we'll take the first.
+
+526
+00:25:57.720 --> 00:25:59.680
+Further. I'm
+
+527
+00:25:59.680 --> 00:26:02.080
+sorry about.
+
+528
+00:26:02.080 --> 00:26:05.080
+I didn't want to get in the way of that.
+
+529
+00:26:05.680 --> 00:26:06.960
+In terms of what you said,
+
+530
+00:26:06.960 --> 00:26:09.960
+you've got a quick set of just.
+
+531
+00:26:10.800 --> 00:26:11.760
+How many.
+
+532
+00:26:11.760 --> 00:26:14.600
+People do you want to have and how long did it take?
+
+533
+00:26:14.600 --> 00:26:15.720
+How quick is great.
+
+534
+00:26:15.720 --> 00:26:16.200
+Yeah.
+
+535
+00:26:16.200 --> 00:26:20.320
+So any single scenario will take between 10 and 15 minutes.
+
+536
+00:26:20.320 --> 00:26:23.040
+And then we try to parallelize across that as much as we want
+
+537
+00:26:23.040 --> 00:26:24.280
+or as much as we can.
+
+538
+00:26:24.280 --> 00:26:28.640
+So kind of like our benchmark suites for any new model is
+
+539
+00:26:28.680 --> 00:26:31.720
+we've got 500 skills that we think are fairly represented, sample
+
+540
+00:26:31.720 --> 00:26:33.160
+of a bunch of different skills out there.
+
+541
+00:26:33.160 --> 00:26:35.920
+And then those decompose into.
+
+542
+00:26:35.920 --> 00:26:38.080
+Five.
+
+543
+00:26:38.080 --> 00:26:40.600
+That would mean different scenarios.
+
+544
+00:26:40.600 --> 00:26:44.600
+And so that will be kind of the set that we run over new models.
+
+545
+00:26:44.600 --> 00:26:49.080
+So from clock time on that is an hour because we don't kind of
+
+546
+00:26:49.120 --> 00:26:52.360
+do it entirely in parallel or just we don't feel the need to an hour.
+
+547
+00:26:52.400 --> 00:26:54.680
+It's a question of time for us to turn around.
+
+548
+00:26:54.680 --> 00:26:59.480
+We have explored doing a regression testing on kind of our product on PRS.
+
+549
+00:26:59.480 --> 00:27:01.080
+Didn't end up going for that,
+
+550
+00:27:01.080 --> 00:27:04.160
+because that ended up being about 15 minutes and that was felt.
+
+551
+00:27:04.160 --> 00:27:07.200
+It was too long, but we have looked more seriously.
+
+552
+00:27:07.200 --> 00:27:10.240
+I just kind of doing that on a nightly basis, because then it can be
+
+553
+00:27:10.280 --> 00:27:14.160
+kind of like the full suite for an hour overnight, being able to set that.
+
+554
+00:27:14.160 --> 00:27:15.840
+So not quite unit test time.
+
+555
+00:27:15.840 --> 00:27:16.480
+We would love to be able
+
+556
+00:27:16.480 --> 00:27:20.320
+to get down to unit test human the loop time, but enough that it's
+
+557
+00:27:20.360 --> 00:27:24.360
+PR review time, which is kind of the metric that we turn off for.
+
+558
+00:27:27.240 --> 00:27:28.080
+Thank you very much.
+
+559
+00:27:28.080 --> 00:27:31.080
+Please give it up for all.

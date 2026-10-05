@@ -1,0 +1,493 @@
+[00:00:00.620] [Music]
+[00:00:13.519] Hi, good morning. How are you? Hey, how
+[00:00:16.240] are you? Um, thanks for thanks for
+[00:00:18.240] jumping on and thanks for your your
+[00:00:20.000] patience on this. Um, yeah, as I said,
+[00:00:22.400] really excited to kick this off. So,
+[00:00:24.000] I'll just uh leave uh the presentation
+[00:00:26.240] to you. Over to you guys. All right.
+[00:00:28.240] Thank you very much. Hi, everybody.
+[00:00:29.599] Welcome. Uh my name is Josh Long. I work
+[00:00:31.679] on the Spring team and uh I am here to
+[00:00:34.079] talk to you all about the amazing Spring
+[00:00:35.760] AI project which by the buy uh releases
+[00:00:38.480] a GA release on uh 20 May. So that's
+[00:00:42.559] just uh what is that you know seven
+[00:00:44.480] short days away. And uh and indeed I
+[00:00:46.800] think there's even a a final sort of
+[00:00:48.320] release candidate uh or maybe it's a
+[00:00:50.239] final I don't know it's a release
+[00:00:51.280] candidate today or sometime very soon.
+[00:00:53.600] So be on the lookout for that. And uh
+[00:00:56.320] the whole purpose of Spring AI is to
+[00:00:58.640] sort of commoditize a lot of the
+[00:01:00.239] patterns that people realize that they
+[00:01:01.760] need when working with uh AI engineering
+[00:01:04.479] patterns. I think we in the Java and
+[00:01:05.840] Spring communities are uniquely well
+[00:01:08.000] situated to take uh advantage of this
+[00:01:10.000] moment in time uh to uh to to sort of
+[00:01:14.080] integrate uh AI into our applications.
+[00:01:16.400] And when we do that, we find that as
+[00:01:17.759] amazing as AI technologies are today,
+[00:01:20.320] they're not perfect and there are some
+[00:01:21.920] drawbacks. And so we see certain uh
+[00:01:24.240] problems and and well understood
+[00:01:26.280] patterns. For example, it's hard to get
+[00:01:28.880] an AI model to stay focused on one
+[00:01:30.720] particular outcome. So you give it a
+[00:01:32.079] system prompt. Uh they're stateless.
+[00:01:33.680] That is to say, they forget every single
+[00:01:35.840] uh you know, they forget what you've
+[00:01:37.920] said after every single request. So you
+[00:01:39.680] you're you're meant to uh provide a
+[00:01:41.280] transcript. That's called chat memory.
+[00:01:43.119] Uh they don't know how to ex to
+[00:01:44.720] integrate with the external world. So
+[00:01:46.079] you give them tool calling. They don't
+[00:01:47.759] know about your data. you prompt stuff
+[00:01:49.920] which is to say you take data and put it
+[00:01:51.439] in the body of the text sent to the AM
+[00:01:53.439] model. Uh but what data? That's the
+[00:01:55.280] question. Not all models can support all
+[00:01:57.040] your data. Certainly it's it's variable
+[00:01:58.880] and it depends on the model and the size
+[00:02:00.320] of your data. But there is for all of
+[00:02:02.240] them a finite sort of upper bound. Some
+[00:02:04.719] much larger than others, but still. So
+[00:02:06.479] in order to limit how much data you send
+[00:02:08.160] just to be sensible and to avoid the
+[00:02:09.759] complexity and dollars and cents cost,
+[00:02:11.840] use things like rag retrieval augmented
+[00:02:13.760] generation and vector stores which make
+[00:02:15.760] it easy to uh do sim semantic similarity
+[00:02:19.200] searches for data. And of course,
+[00:02:20.879] finally, these chat models are just
+[00:02:22.560] that. their chat models. They like to
+[00:02:24.319] chat and they sometimes do so
+[00:02:26.239] confidently even when they're dead
+[00:02:27.920] wrong. So you have to make sure that you
+[00:02:29.360] evaluate their output. So today we're
+[00:02:31.120] going to look at how you can use Spring
+[00:02:32.720] AI to uh sort of meet the uh moment with
+[00:02:35.840] um uh with some of these kind of use
+[00:02:37.440] cases in hand. So what I'm going to do
+[00:02:39.120] is I'm going to build a little dog
+[00:02:40.480] adoption shelter uh thing, right? We're
+[00:02:42.720] going to build a shelter for dogs that
+[00:02:44.879] you can adopt. And we're going to do so
+[00:02:46.959] in terms of, you know, thinking about
+[00:02:48.480] this dog that I learned about during the
+[00:02:49.840] pandemic whose owner went viral. the uh
+[00:02:52.560] the owner, this woman, she put was
+[00:02:54.080] trying to put up this dog for adoption,
+[00:02:55.920] and she described this dog very
+[00:02:57.760] hysterically. She says, "There's not a
+[00:02:59.599] very big market for neurotic,
+[00:03:01.440] man-hating, animal-hating,
+[00:03:02.720] children-hating dogs that look like
+[00:03:04.000] gremlins." And I think about this this
+[00:03:06.000] ad a lot. I mean, don't get me wrong,
+[00:03:08.080] very, very hysterically funny ad. And
+[00:03:10.159] the dog is super cute looking. And so,
+[00:03:12.159] this ad went viral. I mean, here it is
+[00:03:14.400] in uh People magazine. Here is the dog
+[00:03:17.360] in
+[00:03:18.360] Buzzfeed. and uh you know you know the
+[00:03:21.200] viral Chihuahua the demonic Chihuahua
+[00:03:23.519] and then of course here's the dog in the
+[00:03:26.000] New York Times as one does right so I
+[00:03:28.480] think about this dog a lot right like
+[00:03:30.000] what let's build a little service to
+[00:03:31.599] sort of make it easy for somebody to
+[00:03:32.799] adopt the dog of their dreams or uh you
+[00:03:34.959] know in this case nightmare so we're
+[00:03:36.480] going to go here to startso your
+[00:03:38.400] one-stop shop for generating new
+[00:03:39.760] applications and uh we're going to stick
+[00:03:41.440] to uh snapshots today obviously Wi-Fi
+[00:03:44.400] permitting oh goodness of all the times
+[00:03:46.720] for this to go slow oh my goodness oh
+[00:03:49.040] There we go. Okay, don't fret. I won't I
+[00:03:51.280] won't either. Okay, so what we're going
+[00:03:52.799] to do is we're going to build an
+[00:03:53.599] assistant. I'm going to call it as such.
+[00:03:55.040] I'll bring in uh the open AI support,
+[00:03:57.680] bring in the web support, bring in
+[00:03:59.360] Spring Data JDBC. Now, mind you, I've
+[00:04:01.519] already got a Postgres instance with the
+[00:04:03.439] vector store capability built in. So,
+[00:04:05.599] I'll use PG Vector. I've already got
+[00:04:07.280] that running. I'll bring in the Gravium
+[00:04:08.879] native image support. And uh I think
+[00:04:11.200] maybe I'll get the actuator as well. And
+[00:04:13.920] uh that looks like it's fine to me. You
+[00:04:15.360] can use any of a dozen different models.
+[00:04:16.799] I mean, OpenAI, Bedrock, Gemini, Alama,
+[00:04:19.519] whatever. You can use any any of I mean,
+[00:04:21.680] there's a bazillion different vector
+[00:04:23.440] databases. All the big ones that you can
+[00:04:24.960] imagine are all there as well. So, we're
+[00:04:27.120] going to open that up. Oh, you know what
+[00:04:28.320] else I want to do? Last thing. I also
+[00:04:30.400] want uh to build an MCP client. Okay.
+[00:04:33.320] So, go to the downloads directory here.
+[00:04:35.759] Going to delete the existing one that I
+[00:04:37.199] erently uh created. Just a second
+[00:04:39.120] though. Hit enter. That'll give me a zip
+[00:04:41.680] file. What is this? Okay. Go back to
+[00:04:43.680] that. go over here and we're going to go
+[00:04:46.720] back to my zip file here, ls, okay, uo
+[00:04:49.560] assistant.zip and uh that'll open up and
+[00:04:51.840] what we're going to do is we're going to
+[00:04:52.639] build an application that talks to a
+[00:04:53.840] database. Okay. Uh I'm going to bring in
+[00:04:56.240] some dependencies here as well. Before
+[00:04:57.759] we do that, so we're going to bring in a
+[00:05:00.160] uh a dependency for Spring AI Advisor
+[00:05:04.240] Vector Store, which is a custom one that
+[00:05:06.080] we're going to need. I'm going to switch
+[00:05:07.280] us to snapshots. Okay, so we'll go over
+[00:05:10.160] here. Uh okay, very good. snapshot and
+[00:05:14.880] uh you know the question is will it
+[00:05:16.560] recognize what dependencies I want looks
+[00:05:18.880] like it looks like it yep that's a
+[00:05:21.120] snapshot very good so let's go ahead and
+[00:05:22.720] build the application yeah first things
+[00:05:24.400] first this application is going to talk
+[00:05:25.840] to a SQL database so we'll specify as
+[00:05:27.759] much here we'll say spring data source
+[00:05:30.320] JDBC URL is a JDBC PostgresQL localhost
+[00:05:35.280] my database you should obviously
+[00:05:36.720] externalize these as environment
+[00:05:37.919] variables you wouldn't put them in your
+[00:05:39.520] your credentials like that but I am
+[00:05:41.440] doing the wrong thing do as I today and
+[00:05:43.120] as I as I do there's that. Uh we also
+[00:05:45.840] are going to want to in initialize a
+[00:05:48.320] vector store. So I'll tell it to
+[00:05:49.440] initialize a schema should that become
+[00:05:51.199] necessary. Uh and uh okay I think we're
+[00:05:53.520] ready to go. Let's build a controller.
+[00:05:55.759] And this is going to be an assistant
+[00:05:57.600] controller that'll help people answer
+[00:05:59.520] questions about the dogs uh in the
+[00:06:01.759] shelter. So we'll have an uh you know uh
+[00:06:04.319] assistant endpoint here string inquire
+[00:06:07.600] and we we'll accept a question from the
+[00:06:10.000] user to interview basically the shelter
+[00:06:12.080] about the dogs in the shelter right and
+[00:06:14.160] uh we're going to have an AI model
+[00:06:15.680] that'll do that work for us to answer
+[00:06:17.280] those questions for us to help people
+[00:06:19.039] get the dog of their of their dreams or
+[00:06:21.600] uh indeed nightmare. So so we're going
+[00:06:23.120] to go ahead and do that. And uh what
+[00:06:24.639] model are we using? Well like I said
+[00:06:26.080] when we initialize the program we're
+[00:06:27.280] using open AI but there's many you can
+[00:06:29.360] use. Make sure that you've specified a
+[00:06:31.680] credential like that. Right? I've
+[00:06:33.199] already done that as environment
+[00:06:34.639] variables offscreen, but just trust me
+[00:06:36.880] that it's been done and forgive me for
+[00:06:38.319] not leaking my API credential. So, first
+[00:06:40.880] things first, let's try this out. Huh?
+[00:06:42.240] So, this.ai dot um dot uh
+[00:06:49.440] uh what is that? Prompt user. And the
+[00:06:53.360] user prompt is the question being sent
+[00:06:54.960] from the user. Uh, we're going to call
+[00:06:56.560] the model, get the content back as a
+[00:06:58.400] string, although you can get it
+[00:06:59.440] structured as a strongly typed object as
+[00:07:01.919] well using entity, right? There's a
+[00:07:03.599] another variant there. And I think we're
+[00:07:05.599] good. I think that'll already be kind of
+[00:07:07.440] interesting. Let's go ahead and start
+[00:07:09.039] this up. The problem you're going to
+[00:07:10.160] find is that it's actually it'll do.
+[00:07:12.400] Okay, you can ask it questions like
+[00:07:14.160] http880
+[00:07:15.759] uh let's see make this jalong
+[00:07:18.840] um assistant and it'll be the question
+[00:07:22.319] will be uh you know my name is Josh.
+[00:07:26.400] Okay, fine. So that'll that should work.
+[00:07:28.479] Yeah, great. Okay, so what's my name?
+[00:07:30.639] Let's just see if it remembers. Right,
+[00:07:31.919] this is what we talked about earlier
+[00:07:32.880] with the memory. Uh what's my name?
+[00:07:36.120] Right. Uh okay, it's like that movie
+[00:07:39.199] momento. So what we have to do is to
+[00:07:41.039] give it a way to remember that we're
+[00:07:42.720] going to do so with an advisor. Advisor
+[00:07:44.479] are how you configure uh you know the
+[00:07:46.800] capture of the of the um transcript that
+[00:07:49.919] gets propagated on every single
+[00:07:51.120] subsequent request. So prompt chat
+[00:07:54.000] memory advisor. Okay, we'll say memory
+[00:07:56.800] and it'll just be a concurrent hashmap
+[00:07:58.879] tig user. Obviously we have
+[00:08:00.240] implementations that are backed by
+[00:08:02.479] durable storage like SQL or Reddus or
+[00:08:04.400] whatever. U so here we're going to say
+[00:08:06.000] this.memory.computee compute if absent
+[00:08:07.919] user and we're going to say prompt chat
+[00:08:09.759] memory advisor and here we're going to
+[00:08:11.280] use a message window chat memory uh
+[00:08:13.440] passing in a particular implementation
+[00:08:15.759] of the repository the in-memory
+[00:08:18.240] repository in this case okay so there's
+[00:08:20.160] that and when I've configured that uh oh
+[00:08:23.440] I'll do this down here when I actually
+[00:08:24.879] I'll do this in the uh in the call site
+[00:08:27.199] right okay put that there and we'll say
+[00:08:30.000] var memory or var
+[00:08:32.360] advisor okay so we're going to compute
+[00:08:34.640] it if it doesn't already exist if it
+[00:08:36.560] then great and that's going to be the
+[00:08:37.919] path variable string user coming in from
+[00:08:40.000] the URL template there. Okay. And we're
+[00:08:42.479] going to pass that that advisor along uh
+[00:08:45.440] on the call site. So here we go. Dot
+[00:08:47.440] advisor use uh advisor and voila. So
+[00:08:50.640] let's let's go ahead and uh uh start
+[00:08:53.360] that up and see what that's bought us if
+[00:08:54.959] anything right should be certainly a
+[00:08:56.800] little bit better situated to answer
+[00:08:58.080] this question. My name is Josh. Okay.
+[00:09:01.279] What's my name? Okay, great. So, it's
+[00:09:03.839] got the memory, but now it doesn't know
+[00:09:05.200] about the data and it doesn't know what
+[00:09:06.399] it's doing. So, let's rectify both of
+[00:09:07.760] those. We can get it to pretend it's
+[00:09:09.920] it's an employee for our fictitious dog
+[00:09:11.680] adoption agency by giving it a system
+[00:09:13.920] prompt. So, let's do that. I happen to
+[00:09:15.760] have a system prompt here. Let me just
+[00:09:17.360] cat it to the buffer. And wait, that's
+[00:09:19.360] wrong. You know what? That's wrong. Dog
+[00:09:21.200] it. There we go. Much better. Going to
+[00:09:22.720] copy and paste that. Put it here. And
+[00:09:24.640] we'll say dot system prompt system.
+[00:09:28.399] Okay. There we are. There's this. And uh
+[00:09:30.880] that's that's the uh system prompt.
+[00:09:32.320] It'll now act as though it's a an
+[00:09:34.080] employee of our fictitious dog adoption
+[00:09:35.760] agency named Pooch Palace with locations
+[00:09:37.519] in Antworp, Soul, Tokyo, Tokyo,
+[00:09:39.519] Singapore, Paris, whatever. Okay, let's
+[00:09:41.360] now then put that um data, you know, we
+[00:09:44.320] want to give it access to the data. The
+[00:09:45.440] data is in our database. Uh we're going
+[00:09:47.360] to use Spring Data JDBC to get the data
+[00:09:49.360] from our SQL database and write it out
+[00:09:51.760] to the implementation of the vector
+[00:09:53.519] store, which in this case happens to be
+[00:09:55.760] the same SQL database, but it not it
+[00:09:57.920] doesn't always necessarily need to be
+[00:09:59.200] that, right? It could be uh you know
+[00:10:00.800] wev8 or chromadb or elastic search or
+[00:10:03.600] whatever right so interface dog
+[00:10:05.519] repository and indeed there's a
+[00:10:07.200] implementation of the vector store
+[00:10:09.640] implementation or rather interface for
+[00:10:11.519] all those different implementations
+[00:10:12.800] right uh I'll tell spring data gdbc to
+[00:10:15.279] map that there you go that's the primary
+[00:10:16.800] key and let's write that code we're
+[00:10:18.399] going to read from the dog repository
+[00:10:20.079] and we're going to write out to the
+[00:10:21.120] vector store here vector store so I'll
+[00:10:23.120] say repository findall for each dog var
+[00:10:27.440] and you know we're going to write out a
+[00:10:29.200] Spring AI document uh for each record in
+[00:10:32.959] the database. So ID name and then
+[00:10:37.000] description and then we'll do a
+[00:10:39.399] formatted dog ID name description.
+[00:10:42.320] Fantastic. Now uh that's a document for
+[00:10:44.880] dogs. So obviously obviously uh it's a
+[00:10:47.680] it's a uh document. Okay, there we go.
+[00:10:50.240] So now we're going to write this out.
+[00:10:51.360] We'll say vector store. Oh no. Okay, I'm
+[00:10:54.240] learning Vim motions. If you uh see me
+[00:10:56.240] struggling here, list of document. All
+[00:11:00.320] right, good. So now the finally I want
+[00:11:01.920] to tell the model that hey should you
+[00:11:03.440] get a request for which uh you know uh
+[00:11:06.000] that necessitates necessitates the need
+[00:11:08.079] for data go ahead and get it from the uh
+[00:11:10.720] vector store we'll configure yet another
+[00:11:12.399] advisor a question answer advisor
+[00:11:14.880] passing in a pointer to the vector
+[00:11:16.160] store. So let's see where that's bought
+[00:11:17.680] us if anything. Yeah. So we go over here
+[00:11:20.000] http 8080 uh jong um assistant. Well,
+[00:11:24.399] here let me just uh we'll do
+[00:11:28.040] http controlr controlr again. Control-r
+[00:11:31.760] no nothing. Builder. Okay, whatever. So,
+[00:11:34.720] http 8080
+[00:11:37.560] jong assistant question equals uh do you
+[00:11:42.480] have any neurotic dogs? Right, that
+[00:11:46.240] should be the question. We're going to
+[00:11:47.120] look for our dog Prancer. Okay, yes, we
+[00:11:49.519] do have a neurotic dog available for
+[00:11:50.640] adoption. Meet Prancer, a demonic
+[00:11:52.000] neurotic dog who unfortunately has a
+[00:11:53.519] dislike for men, animals, and children.
+[00:11:55.200] If you're interested in learning more
+[00:11:56.079] about Prancer or arranging a visit,
+[00:11:57.360] please let me know. Boy, am I. Who
+[00:11:58.959] wouldn't be? I mean, that sounds like
+[00:12:00.000] the greatest dog, right? A spicy but
+[00:12:02.240] very, very cool doggo. So, what I want
+[00:12:04.079] to do is uh avoid reinitializing that.
+[00:12:05.760] Obviously, I don't want to do that more
+[00:12:07.200] than necessary because these uh calls to
+[00:12:09.760] your embedding models, they can be quite
+[00:12:11.279] expensive if not in dollars and cents
+[00:12:13.360] than in terms of complexity. And by the
+[00:12:15.200] way, we have the spring boot actuator on
+[00:12:16.720] the class path which gives you
+[00:12:17.680] observability which allows you to see
+[00:12:19.360] things like how many tokens have been
+[00:12:21.200] consumed. That is to say, how much data
+[00:12:22.720] you've sent to and fro. Okay, so let's
+[00:12:25.040] create a tool that allows this AI model
+[00:12:27.600] to help participate in the scheduling of
+[00:12:30.639] uh of adoption visits, right? And I'll
+[00:12:32.399] just create a simple method here,
+[00:12:33.920] schedule. It'll take in the dog ID and
+[00:12:36.480] the string dog name. And uh we're going
+[00:12:38.639] to return just a a date in the future
+[00:12:41.040] just to guarantee that we uh have
+[00:12:42.800] something you know that we know was not
+[00:12:44.880] hallucinated, right? And we'll give it a
+[00:12:46.480] two string. And I'll say system out
+[00:12:48.240] scheduling uh the dog ID. Okay. And then
+[00:12:52.639] dog name. Uh and then uh we're going to
+[00:12:54.720] say at tool description schedule and
+[00:12:57.839] appointment
+[00:12:59.600] uh point. You can use AI to grammar
+[00:13:02.000] correct this to pick up and uh or or
+[00:13:05.360] adopt a dog from a pooch palace
+[00:13:09.600] location, right? And uh you give it tool
+[00:13:11.920] params. And again, remember your parents
+[00:13:14.000] always taught you to use your words.
+[00:13:15.279] Well, this is what they meant, right?
+[00:13:16.480] Use the words um to better to be very
+[00:13:19.440] very descriptive in defining the schema
+[00:13:21.440] in effect of this tool. Okay, the idea
+[00:13:24.560] of the dog. Okay, fine. So there's
+[00:13:26.240] there's that. I'm going to now give my
+[00:13:28.160] model access to that tool by again just
+[00:13:30.160] injecting it into the constructor here
+[00:13:31.839] and uh doing that. Okay, souler and
+[00:13:34.959] gonna go down here. I'll say default
+[00:13:38.160] tools. Okay, scheduler. Let's go ahead
+[00:13:40.800] and start that
+[00:13:42.600] up. Okay, take this again. So, do you
+[00:13:45.360] have any
+[00:13:47.399] dogs? Okay, great. We got Prancer now.
+[00:13:50.160] Uh that sounds great. Let's pick up that
+[00:13:51.920] dog from the uh
+[00:13:54.519] fantastic uh when can I schedule an
+[00:13:58.760] appointment an appointment to pick up
+[00:14:02.720] Prancer from the London
+[00:14:06.040] location.
+[00:14:07.959] Okay, if if everything's gone to plan,
+[00:14:10.320] it says May 16th. Today's the 13th of
+[00:14:12.160] May. Fantastic. You can see it's been
+[00:14:13.839] there. Now, this is all well and good,
+[00:14:15.040] but I'm running on my local machine.
+[00:14:16.480] This is a Java tool that I've made
+[00:14:18.079] available to my model. it's knowing to
+[00:14:19.920] interact with it by the descriptive text
+[00:14:22.399] that we've given it. But that said, I
+[00:14:24.000] want to be able to repurpose this
+[00:14:25.199] business logic from other languages.
+[00:14:26.720] Enthropic back way back in November of
+[00:14:28.560] 2024. Does anybody here remember that
+[00:14:30.399] far back? I certainly don't. It's been a
+[00:14:31.920] blur. Uh they introduced this new
+[00:14:33.680] protocol called MCP. And MCP is model
+[00:14:37.040] context protocol. So we're going to spin
+[00:14:39.040] up a MCP service here. Uh just open that
+[00:14:41.920] up. And remember the Spring AI team
+[00:14:43.680] donated the core Java abstraction that
+[00:14:46.320] is now the official SDK for MCP. Indeed,
+[00:14:49.120] the easiest way to build MCP services on
+[00:14:51.600] the JDK is to use Spring AI since we
+[00:14:53.680] built the core abstraction and the uh
+[00:14:55.760] corresponding integration in Spring AI
+[00:14:57.839] itself. So, we're going to export. Now,
+[00:15:00.320] we I copied and pasted that code. Don't
+[00:15:02.240] ever don't ever do that, okay? Not even
+[00:15:03.760] when you're all by yourself at home and
+[00:15:04.880] no one is looking. Uh but I'm going to
+[00:15:07.199] copy and paste and I'm going to inject
+[00:15:09.040] the dog adoption and I'll
+[00:15:11.639] say and uh I'll tell this thing to run
+[00:15:14.000] on a separate port. I'll say port 8081.
+[00:15:16.800] Here we go. And now I've got a dog
+[00:15:18.800] adoption scheduleuler sized hole in my
+[00:15:21.199] original code. So I need to like uh I
+[00:15:23.440] need to replace that with instead a
+[00:15:25.440] reference to the MCP remote uh server.
+[00:15:28.959] Okay. So let's create a bean here. MCP
+[00:15:32.000] sync client. MCP sync client return MCP
+[00:15:35.040] sync client uh sorry MCP
+[00:15:37.639] client dot from and then it'll be HTTP.
+[00:15:42.880] builder and I'll say
+[00:15:44.839] localhost
+[00:15:46.519] 8081 and it'll be
+[00:15:49.240] build. Okay. And then technically
+[00:15:52.480] technically var mcp is this and I say
+[00:15:56.000] return mcp and I think you're supposed
+[00:15:57.519] to call mcp.initialize. I always forget.
+[00:15:59.839] I'm not really good at the uh the old
+[00:16:01.600] software thing, right? Okay. So uh let's
+[00:16:03.839] put that here and get rid of that. Okay,
+[00:16:07.680] goodbye. Injecting that now instead. And
+[00:16:10.399] we're going to replace this with a call
+[00:16:12.320] back. Yeah. So, call back new and then
+[00:16:15.040] we'll say
+[00:16:16.680] um new sync. Okay. Uh MCP sync client
+[00:16:22.360] restart. Okay. So, if everything's gone
+[00:16:24.399] to plan, we've got over here um oh, you
+[00:16:27.600] know what I forgot to do? I'm going to
+[00:16:28.720] use the snapshots here as well on my
+[00:16:32.360] uhuler. This will go well, I'm sure.
+[00:16:34.720] Okay, here we
+[00:16:36.440] go. Good. Hello. Okay, good. Snapshot.
+[00:16:40.560] Command shift I
+[00:16:43.079] reload. Depend that. Okay, so it's
+[00:16:45.839] reloading that with the new class path.
+[00:16:48.240] Josh, just to let you know, you have uh
+[00:16:50.079] one last minute to save all the dogs. No
+[00:16:52.160] problem. Here we go. Ready. Uh, do you
+[00:16:56.959] have any like
+[00:16:58.199] dogs? Yep, we got Prancer. When can I
+[00:17:01.680] schedule an appointment to pick up
+[00:17:02.639] Prancer from the London
+[00:17:04.760] location? And May 16th. So, there's the
+[00:17:07.760] original assistant talking via this MCP
+[00:17:10.000] protocol over here to theuler module.
+[00:17:12.240] Now, my friends, in that brief time,
+[00:17:13.679] we've looked at uh just a few of the
+[00:17:15.439] things you can do with the new Spring AA
+[00:17:17.439] 1.0. Again, coming out in just about a
+[00:17:19.520] week's time, GA uh you can go to
+[00:17:21.520] start.spring.io, get the bits. Um
+[00:17:23.439] obviously, the next natural step after
+[00:17:25.120] this is to then, you know, you've got
+[00:17:26.559] the primitives. You can do oneshot
+[00:17:27.839] requests with ease and applied
+[00:17:30.000] naturally, it's a very easy thing to
+[00:17:31.520] then put that in a sort of a flow, a
+[00:17:33.679] structure that allows you to drive
+[00:17:34.799] towards a more complex outcome. That's
+[00:17:36.640] called agentic programming and this is a
+[00:17:38.400] natural thing to do with Spring AI as
+[00:17:40.480] well. I want to thank you for your time
+[00:17:42.080] and take any and all questions. Thanks
+[00:17:44.400] very much.

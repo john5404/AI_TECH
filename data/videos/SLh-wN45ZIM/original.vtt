@@ -1,0 +1,689 @@
+WEBVTT
+
+1
+00:00:00.240 --> 00:00:04.760
+Back in June at AI DevCon in London, we got four completely different answers
+
+2
+00:00:04.760 --> 00:00:09.640
+to what sounds like a simple question where should the agent actually run?
+
+3
+00:00:09.640 --> 00:00:14.880
+Let's first hear from Oleg Šelajev at Docker, who built a sandbox on containers,
+
+4
+00:00:14.920 --> 00:00:18.960
+was told by enterprise security teams that containers are not a boundary
+
+5
+00:00:18.960 --> 00:00:22.880
+they trust and went and rebuilt it on micro VMs.
+
+6
+00:00:23.560 --> 00:00:26.560
+All right. Hi,
+
+7
+00:00:26.720 --> 00:00:27.560
+my name is Oleg.
+
+8
+00:00:27.560 --> 00:00:29.360
+I work at Docker.
+
+9
+00:00:29.360 --> 00:00:32.440
+I'm a member of the DevRel team, doing all things
+
+10
+00:00:32.440 --> 00:00:35.560
+AI at Docker, we thought about this,
+
+11
+00:00:35.880 --> 00:00:41.320
+and when we were building sandboxes, we built one version with containers.
+
+12
+00:00:41.400 --> 00:00:44.960
+We went out, we talked to a bunch of security teams
+
+13
+00:00:45.000 --> 00:00:48.280
+at enterprises, and all security teams said that no, containers
+
+14
+00:00:48.280 --> 00:00:52.560
+are not the isolation boundary that we can trust.
+
+15
+00:00:52.800 --> 00:00:55.600
+So being great engineers, what did we do?
+
+16
+00:00:55.600 --> 00:00:59.080
+We rewrote that using micro VMs.
+
+17
+00:00:59.080 --> 00:01:02.760
+So containers for micro VMs might not sound like
+
+18
+00:01:02.840 --> 00:01:05.800
+such a big difference, but if you're sharing a kernel,
+
+19
+00:01:05.800 --> 00:01:08.920
+if you have a number of security vulnerabilities for exploiting
+
+20
+00:01:08.920 --> 00:01:12.600
+from outside of the container, that is not something that,
+
+21
+00:01:13.040 --> 00:01:18.240
+well, a security team can sign off because it's going to be,
+
+22
+00:01:18.280 --> 00:01:21.520
+well, their jobs and their reputation when the leaks will happen.
+
+23
+00:01:22.120 --> 00:01:23.280
+And yeah, I'll bite.
+
+24
+00:01:23.280 --> 00:01:27.360
+Container escaping exploits are not frequent.
+
+25
+00:01:27.400 --> 00:01:31.840
+There are like a dozen over the last maybe six or seven or eight years.
+
+26
+00:01:31.880 --> 00:01:37.640
+But as we discussed, you only need to be breached once and then it's.
+
+27
+00:01:37.800 --> 00:01:38.680
+And then it's bad.
+
+28
+00:01:38.680 --> 00:01:43.960
+So you want the hardware sort of virtual machine isolated primitive.
+
+29
+00:01:43.960 --> 00:01:48.400
+And this is what Docker has built for the sandboxes, the SBX
+
+30
+00:01:49.200 --> 00:01:52.960
+thingy that runs in micro on your machine.
+
+31
+00:01:52.960 --> 00:01:56.600
+And then your agent is put there within the container.
+
+32
+00:01:57.000 --> 00:02:00.920
+In addition to that you can this micro can run other containers.
+
+33
+00:02:00.920 --> 00:02:04.400
+So if you are doing using agents for software development,
+
+34
+00:02:04.760 --> 00:02:08.120
+the agent within this micro can do exactly what you would do.
+
+35
+00:02:08.160 --> 00:02:09.800
+It can run tests.
+
+36
+00:02:09.800 --> 00:02:13.880
+Your tests might spin up some containers, maybe with Testcontainers libraries,
+
+37
+00:02:13.880 --> 00:02:14.880
+maybe
+
+38
+00:02:14.880 --> 00:02:18.720
+just a normal Docker Compose approach, but they can create the full environment,
+
+39
+00:02:18.760 --> 00:02:21.720
+run your applications, and that gives you much more control
+
+40
+00:02:21.720 --> 00:02:24.800
+over how your agent can develop software, because it can do
+
+41
+00:02:24.800 --> 00:02:28.320
+whatever you would do on your machine, just fully isolated.
+
+42
+00:02:28.640 --> 00:02:32.240
+So and within that sandbox, within that,
+
+43
+00:02:32.760 --> 00:02:35.840
+there is no access to the host file system.
+
+44
+00:02:35.880 --> 00:02:38.880
+You choose what you share with the thing.
+
+45
+00:02:39.000 --> 00:02:40.600
+You have the networking proxy.
+
+46
+00:02:40.600 --> 00:02:43.280
+So all the requests out of the sandbox go through that.
+
+47
+00:02:43.280 --> 00:02:48.280
+So you have control saying, please forbid all access to Pastebin.
+
+48
+00:02:48.280 --> 00:02:52.680
+So if the agent wants to steal the keys, it cannot do that this way.
+
+49
+00:02:52.720 --> 00:02:56.360
+And there is also a secrets injection mechanism.
+
+50
+00:02:56.360 --> 00:02:59.720
+So the agent inside doesn't have access to your private data
+
+51
+00:02:59.760 --> 00:03:03.080
+while still be able to do things on your behalf.
+
+52
+00:03:03.240 --> 00:03:07.200
+We also heard from Luke Marsden, CEO of Helix ML,
+
+53
+00:03:07.200 --> 00:03:10.640
+who takes the opposite view — from your laptop, entirely.
+
+54
+00:03:11.200 --> 00:03:14.280
+Put the agents on the organization's infrastructure
+
+55
+00:03:14.280 --> 00:03:17.800
+so the work can be handed between people in different time zones.
+
+56
+00:03:17.800 --> 00:03:21.280
+His line is that you should give each agent their own computer.
+
+57
+00:03:21.640 --> 00:03:24.320
+The first big
+
+58
+00:03:24.320 --> 00:03:27.520
+decision, in my opinion, is: do you want to carry on
+
+59
+00:03:27.520 --> 00:03:32.480
+letting every developer run whatever agent they like, or maybe
+
+60
+00:03:32.560 --> 00:03:36.040
+the same agent that everyone uses in the company,
+
+61
+00:03:36.040 --> 00:03:38.600
+but on their own specific development environment?
+
+62
+00:03:38.600 --> 00:03:40.360
+That's kind of like a snowflake.
+
+63
+00:03:40.360 --> 00:03:46.240
+Or do you want to create a pool of
+
+64
+00:03:46.240 --> 00:03:50.560
+agents that run on your organization's infrastructure
+
+65
+00:03:50.600 --> 00:03:53.600
+that many humans can interact with?
+
+66
+00:03:53.600 --> 00:03:58.200
+And my strong argument is that.
+
+67
+00:03:59.560 --> 00:04:01.400
+Going for the centralized approach
+
+68
+00:04:01.400 --> 00:04:03.720
+and I say centralized, it doesn't mean you have to
+
+69
+00:04:03.720 --> 00:04:07.440
+hand over all your data to OpenAI or run on their infrastructure or anything.
+
+70
+00:04:07.440 --> 00:04:09.360
+You can run it on your own infrastructure.
+
+71
+00:04:09.360 --> 00:04:12.800
+Still on Kubernetes or something, but there are
+
+72
+00:04:12.800 --> 00:04:16.960
+some significant benefits from having a centralized approach.
+
+73
+00:04:17.040 --> 00:04:23.200
+For example, you can have a globally distributed team
+
+74
+00:04:23.200 --> 00:04:26.440
+all around the world, and you can say
+
+75
+00:04:26.440 --> 00:04:31.440
+that when the sun sets in Tokyo and rises in London,
+
+76
+00:04:31.440 --> 00:04:35.880
+whoever a different human can carry on doing the work
+
+77
+00:04:35.920 --> 00:04:40.240
+that a certain agent was working on, especially if that agent truly
+
+78
+00:04:40.240 --> 00:04:43.240
+has its own computer for that specific task.
+
+79
+00:04:43.880 --> 00:04:46.240
+And so there's a really nice
+
+80
+00:04:46.240 --> 00:04:49.400
+article written by by someone.
+
+81
+00:04:49.400 --> 00:04:53.400
+We've been working with a company called Dev Icon,
+
+82
+00:04:53.400 --> 00:04:57.480
+and what they said was, to be honest, agentic coding is not new.
+
+83
+00:04:58.000 --> 00:05:00.560
+Going from doing it the easier way, which is the way on the left
+
+84
+00:05:00.560 --> 00:05:03.600
+which is unsafe and per engineer to something global per company
+
+85
+00:05:03.600 --> 00:05:07.280
+and safe is what they found interesting in this approach.
+
+86
+00:05:07.440 --> 00:05:08.760
+So that's kind of my argument.
+
+87
+00:05:08.760 --> 00:05:10.640
+My opinion number one is
+
+88
+00:05:11.640 --> 00:05:12.440
+you should
+
+89
+00:05:12.440 --> 00:05:15.720
+give each agent their own computer, not each human.
+
+90
+00:05:15.720 --> 00:05:17.080
+It's almost like you wouldn't hire
+
+91
+00:05:17.080 --> 00:05:20.320
+a team of software developers and ask them all to share one computer.
+
+92
+00:05:20.360 --> 00:05:23.360
+You should give each agent their own computer.
+
+93
+00:05:23.720 --> 00:05:27.840
+Lars Trieloff is a principal scientist at Adobe, and he built an agent
+
+94
+00:05:27.840 --> 00:05:31.480
+that runs inside the browser and drives the browser it's running in.
+
+95
+00:05:31.720 --> 00:05:36.160
+There's also a reveal at the end of his talk that I'll let him deliver himself.
+
+96
+00:05:36.880 --> 00:05:38.480
+How do we get started with this?
+
+97
+00:05:38.480 --> 00:05:41.840
+And the.
+
+98
+00:05:42.000 --> 00:05:46.800
+The idea that I came up with was an agent that is sitting in the browser.
+
+99
+00:05:46.800 --> 00:05:51.280
+It's actually running in the browser, which means it's not a cloud runtime
+
+100
+00:05:51.280 --> 00:05:56.240
+where the agent loop runs and you're just displaying in the browser,
+
+101
+00:05:56.240 --> 00:05:59.560
+but it's actually the actual agent loop is in the browser.
+
+102
+00:05:59.560 --> 00:06:02.560
+To close the browser tab, the agent loop starts,
+
+103
+00:06:02.920 --> 00:06:08.080
+and at the same time this agent should be able to control itself.
+
+104
+00:06:08.400 --> 00:06:10.800
+It should control it should
+
+105
+00:06:10.800 --> 00:06:13.400
+it should control the browser that it's running inside.
+
+106
+00:06:13.400 --> 00:06:17.800
+And this is how I came up with this notion of the self-licking ice cream cone.
+
+107
+00:06:18.080 --> 00:06:23.600
+And that's why you find it at SLICC,
+
+108
+00:06:24.560 --> 00:06:25.560
+sliccy.com
+
+109
+00:06:25.560 --> 00:06:29.800
+And while building it,
+
+110
+00:06:29.960 --> 00:06:33.360
+there are a bunch of things that I was absolutely sure.
+
+111
+00:06:33.440 --> 00:06:35.360
+Well it's a browser right.
+
+112
+00:06:35.360 --> 00:06:36.960
+It can display HTML pages.
+
+113
+00:06:36.960 --> 00:06:39.800
+But there are a lot of things that it suddenly cannot do right.
+
+114
+00:06:39.800 --> 00:06:42.280
+So cannot transcode videos.
+
+115
+00:06:42.280 --> 00:06:45.280
+It suddenly cannot access my local file system.
+
+116
+00:06:45.800 --> 00:06:48.760
+But I'm fine with these constraints.
+
+117
+00:06:48.760 --> 00:06:53.040
+But in reality, I found during this exploration
+
+118
+00:06:53.080 --> 00:06:54.200
+that there are so many things
+
+119
+00:06:54.200 --> 00:06:59.080
+that my browser can do that I didn't even dare to think about.
+
+120
+00:06:59.400 --> 00:07:04.040
+And that was one of the things that made this exploration extremely fun.
+
+121
+00:07:04.080 --> 00:07:08.560
+And now you're wondering what this what this slide means.
+
+122
+00:07:08.960 --> 00:07:11.800
+And this slide means that I haven't been showing
+
+123
+00:07:11.800 --> 00:07:14.800
+you a presentation for the past ten minutes.
+
+124
+00:07:14.800 --> 00:07:16.360
+I've been showing you SLICC.
+
+125
+00:07:16.360 --> 00:07:20.120
+I've been showing you the very agent that we are going to talk about.
+
+126
+00:07:20.120 --> 00:07:25.320
+And to close, Steve Ruiz, founder and CEO of tldraw, with the answer
+
+127
+00:07:25.360 --> 00:07:29.240
+nobody else gave the agents live on the canvas
+
+128
+00:07:29.240 --> 00:07:32.960
+as little characters you can pick up, throw, and talk to.
+
+129
+00:07:33.360 --> 00:07:37.000
+Then he selects three at once and they elect a leader.
+
+130
+00:07:37.160 --> 00:07:40.400
+We wanted to bring it onto the canvas in the same way that, like,
+
+131
+00:07:40.880 --> 00:07:42.920
+you know, other users are on the canvas.
+
+132
+00:07:44.120 --> 00:07:47.120
+So that led us to.
+
+133
+00:07:48.080 --> 00:07:51.080
+To fairies.
+
+134
+00:07:51.480 --> 00:07:52.840
+To these guys.
+
+135
+00:07:52.840 --> 00:07:57.200
+So each one of these is an instance of that,
+
+136
+00:07:57.240 --> 00:08:00.800
+that harness that lives kind of on the canvas.
+
+137
+00:08:02.600 --> 00:08:07.040
+And while it started with just being like a way of visualizing the
+
+138
+00:08:07.040 --> 00:08:10.760
+agents — number one, like, just where are they?
+
+139
+00:08:10.840 --> 00:08:13.840
+Which ones exist, which one is which. Right.
+
+140
+00:08:13.880 --> 00:08:16.880
+You can kind of configure them
+
+141
+00:08:16.880 --> 00:08:19.880
+and change their hat
+
+142
+00:08:20.280 --> 00:08:23.560
+Or, because we needed two things, like, you can change the length of their legs.
+
+143
+00:08:23.560 --> 00:08:28.280
+I don't know if you can see that, whatever — you can toss them around.
+
+144
+00:08:28.320 --> 00:08:29.360
+You can hold them.
+
+145
+00:08:29.360 --> 00:08:30.880
+They don't like that.
+
+146
+00:08:30.880 --> 00:08:33.160
+Yeah. Right on.
+
+147
+00:08:33.160 --> 00:08:35.520
+But you can talk to them as well.
+
+148
+00:08:35.520 --> 00:08:39.200
+Make a move as X and you can
+
+149
+00:08:39.200 --> 00:08:44.120
+you can visualize the state of the agent as well.
+
+150
+00:08:44.200 --> 00:08:48.880
+So whether it's thinking or reviewing or working
+
+151
+00:08:49.840 --> 00:08:51.040
+cool.
+
+152
+00:08:51.040 --> 00:08:53.880
+Make a move as
+
+153
+00:08:53.880 --> 00:08:57.120
+Oh, and you can ask them to do things.
+
+154
+00:08:57.160 --> 00:08:59.720
+And again, it's pretty much the same harness as
+
+155
+00:08:59.720 --> 00:09:02.040
+we looked at with the whole cat on the table thing.
+
+156
+00:09:02.040 --> 00:09:05.520
+But there they can exist simultaneously.
+
+157
+00:09:05.520 --> 00:09:08.240
+They know about where each other are.
+
+158
+00:09:08.240 --> 00:09:10.200
+This is worse on live coding, by the way.
+
+159
+00:09:10.200 --> 00:09:13.320
+Let me try this.
+
+160
+00:09:13.640 --> 00:09:15.920
+Maybe we can get them to work as a team.
+
+161
+00:09:15.920 --> 00:09:20.880
+So if I grab all three of them and I say play a full
+
+162
+00:09:21.920 --> 00:09:24.920
+game of tic tac toe.
+
+163
+00:09:27.080 --> 00:09:29.680
+Then they will operate as a unit.
+
+164
+00:09:29.680 --> 00:09:33.840
+One of them will be elected leader and will draft a plan.
+
+165
+00:09:33.880 --> 00:09:36.960
+Their wings will change colors to indicate that they're on the same team.
+
+166
+00:09:37.000 --> 00:09:38.360
+By the way, this is also collaborative.
+
+167
+00:09:38.360 --> 00:09:42.800
+You could have multiple people kind of sharing the same experience.
+
+168
+00:09:43.520 --> 00:09:46.120
+Coordinator comes up with a to-do list and then delegates
+
+169
+00:09:46.120 --> 00:09:49.320
+those tasks to different fairies, different agents.
+
+170
+00:09:49.320 --> 00:09:50.640
+Thanks for watching.
+
+171
+00:09:50.640 --> 00:09:55.320
+Be sure to join us for the next AI DevCon this November in New York City.
+
+172
+00:09:55.840 --> 00:09:59.680
+Visit ainativedev.io to learn more and book your ticket

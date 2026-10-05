@@ -1,0 +1,600 @@
+[00:00:09.040] And right now we're going to kick off
+[00:00:10.480] with Neil Ford. Neil Ford, a
+[00:00:12.080] distinguished engineer at ThoughtWorks.
+[00:00:13.599] And one of the big things that we very
+[00:00:15.040] often forget about when we uh when we
+[00:00:17.520] use AI coding assistants and coding
+[00:00:19.760] agents is the long-term maintenance, the
+[00:00:22.400] long-term debt that we really add in
+[00:00:24.240] when we when we are, you know, rapidly
+[00:00:26.160] building with AI. And so Neil's going to
+[00:00:28.320] give us a great insight into fitness
+[00:00:30.240] functions uh or fitness functiondriven
+[00:00:33.440] architecture and making sure we think
+[00:00:35.040] about the longerterm design, the
+[00:00:36.559] longerterm architecture of the
+[00:00:37.760] applications that we build. So with
+[00:00:39.520] that, Neil, it's a pleasure to welcome
+[00:00:41.040] you to Native DevCon.
+[00:00:42.239] >> Thank you very much. Thanks for having
+[00:00:43.520] me. So, uh, I'm going to talk about the
+[00:00:47.600] looming disaster of code quality and
+[00:00:49.920] sustainable software a little bit, but
+[00:00:51.920] mostly what I'm going to do is tie
+[00:00:53.680] together a bunch of things that exist
+[00:00:55.840] out in the world. Uh, so let's first
+[00:00:58.559] start talking about this concept of an
+[00:01:01.600] architectural fitness function. This is
+[00:01:04.159] something we defined in the book
+[00:01:05.760] building evolution architectures
+[00:01:07.280] originally back in 2017. And this is
+[00:01:10.240] sort of like a unit test but for
+[00:01:12.479] architecture capabilities.
+[00:01:14.799] Uh we want to verify that as we build
+[00:01:17.759] our architecture that we don't break
+[00:01:19.360] stuff. And so our definition is any
+[00:01:21.840] mechanism that gives you an objective
+[00:01:23.680] integrity assessment on some
+[00:01:25.200] architecture characteristic. But that's
+[00:01:26.880] how these are different than something
+[00:01:29.040] like fitness functions or than unit test
+[00:01:31.600] because these have a much broader scope.
+[00:01:34.640] Software metrics for example. I will
+[00:01:36.560] actually give you my preferred metric
+[00:01:39.200] for detecting AI slop in your codebase
+[00:01:41.840] from an architecture standpoint a little
+[00:01:43.360] bit later in this talk. Code level
+[00:01:45.280] metrics let you assess things about your
+[00:01:47.040] architecture. Unit testing libraries
+[00:01:49.119] which I'll talk about that are
+[00:01:50.240] specialized for this. But we also use
+[00:01:52.399] things like monitors and observability.
+[00:01:56.000] These are all things that we need to
+[00:01:57.439] know about architecture because
+[00:01:58.640] architecture is not just our codebase.
+[00:02:00.479] It's also data and uh um
+[00:02:05.360] integration architecture and all the
+[00:02:07.840] other things that go into our
+[00:02:09.200] ecosystems. Chaos engineering is a
+[00:02:11.200] perfect example of this idea of an
+[00:02:13.599] architectural fitness function. And over
+[00:02:16.000] time we've seen more and more of these
+[00:02:17.520] mechanisms come about and I'll show you
+[00:02:20.480] how that applies in the real world uh
+[00:02:24.000] kind of scenarios. The second part of
+[00:02:26.560] this is it needs to have an objective
+[00:02:28.879] integrity check. So that's the way you
+[00:02:31.440] verify something is you come up with an
+[00:02:33.519] objective value for it and then it's
+[00:02:35.040] either true or false or it's a number or
+[00:02:37.280] so that's how we verify things. And we
+[00:02:39.280] also look at not just code but also
+[00:02:43.360] things that impact architecture like
+[00:02:45.200] data. If we're in a distributed
+[00:02:47.440] architecture and splitting data, we
+[00:02:49.599] would still like to have referential
+[00:02:50.879] integrity between our databases. That's
+[00:02:52.640] an architectural concern. if we're in a
+[00:02:54.640] distributed architecture. And so it's
+[00:02:56.640] broader than just code bases.
+[00:03:00.319] I typically at this point want to show
+[00:03:02.080] you a very simple example of one of
+[00:03:04.239] these things. Uh but this one is
+[00:03:06.959] particularly apt
+[00:03:10.000] cyclic dependencies.
+[00:03:12.400] If I'm writing a software system that
+[00:03:14.480] composes of components and most of them
+[00:03:16.560] if they're any complexity have
+[00:03:18.400] components in them, one of the things I
+[00:03:20.720] want to try to avoid are cyclic
+[00:03:22.560] dependencies.
+[00:03:23.840] That's where one component references
+[00:03:25.680] another component which refers a third
+[00:03:27.840] one which references the original one.
+[00:03:29.840] Again, the reason this is bad is because
+[00:03:33.599] now if I reuse one of these components,
+[00:03:36.239] I have to take the whole rat's nest with
+[00:03:38.080] me. And if one of these is also
+[00:03:40.319] cyclically bound up with another one,
+[00:03:42.239] then now I'm having to pull this entire
+[00:03:44.720] uh tree of relationships. If I try to
+[00:03:47.200] reuse something, this is generally
+[00:03:49.280] considered an antiattern in software
+[00:03:51.599] architecture.
+[00:03:54.000] But it's subtle because if I have one of
+[00:03:57.120] these in my codebase, it's not a big
+[00:03:59.439] deal. If I have a hundred of these in my
+[00:04:01.439] codebase, my codebase is a piece of
+[00:04:03.280] trash. And so there's a a tipping point
+[00:04:05.360] here somewhere where it gets bad enough
+[00:04:07.920] to become really bad. The problem though
+[00:04:10.480] is that developers as they're coding
+[00:04:13.120] along and their IDE pops up a dialogue
+[00:04:15.840] and says, "You want me to autoimp import
+[00:04:17.199] that for you?" They never read that
+[00:04:18.880] dialogue. They just swat it away and
+[00:04:20.560] keep doing what they're doing. Most of
+[00:04:22.560] the time it's okay, every once in a
+[00:04:24.880] while it's this. And even worse, unless
+[00:04:27.840] you explicitly tell your agent, don't do
+[00:04:30.400] this. It's going to do this all the time
+[00:04:32.720] because it doesn't know that this is not
+[00:04:35.120] something you should be doing. This is
+[00:04:36.479] just something that it wants to do. How
+[00:04:39.120] do you prevent this from happening?
+[00:04:41.360] Because I can't spend all of my day
+[00:04:43.520] going through every line of code that's
+[00:04:45.199] been created to make sure nobody's
+[00:04:46.560] created cycles in my codebase. You
+[00:04:48.960] create an architectural fitness function
+[00:04:50.720] for this. This is using the tool called
+[00:04:52.639] ArcUnit that understands dependencies
+[00:04:55.680] and code bases. I wire this into my
+[00:04:58.320] continuous build and whether I write
+[00:05:00.400] this code or another human writes this
+[00:05:03.120] code or machine writes this code, I
+[00:05:05.680] don't get cycles in my codebase anymore.
+[00:05:08.479] This is a way that I can create more
+[00:05:10.639] sustainable code bases by building guard
+[00:05:13.360] rails around the important parts of my
+[00:05:16.240] architecture that I want to preserve for
+[00:05:18.639] long periods of time. Fortunately, there
+[00:05:21.440] are a lot of tools and frameworks that
+[00:05:23.280] have come out in this space. ArcUnit is
+[00:05:26.320] a library in the Java world. That's the
+[00:05:28.160] code I just showed you is ArcUnit, but
+[00:05:30.320] there are also a couple in the net
+[00:05:31.759] world. This is ArcUnit Net and Net Arc
+[00:05:34.479] test, both of which work in the .NET
+[00:05:36.400] world. Here is Piest Arc, which is from
+[00:05:40.000] the u uh Python world. This is ArcUnit
+[00:05:44.080] TS in the TypeScript, JavaScript,
+[00:05:46.240] ECMAScript world. And here is Arc Go in
+[00:05:49.919] the Go language world. And so pretty
+[00:05:51.840] much all the platforms, technologies,
+[00:05:54.080] and frameworks you can think about have
+[00:05:56.800] tools that let you write these
+[00:05:58.320] architectural fitness functions to
+[00:05:59.919] validate that the architectural concerns
+[00:06:02.080] in your code are actually working
+[00:06:03.600] correctly.
+[00:06:06.240] Okay, that's fine and good, but
+[00:06:10.639] limiting
+[00:06:13.354] [snorts] because here's the thing I
+[00:06:14.880] really want to write a fitness function
+[00:06:16.479] for.
+[00:06:17.759] I have microservices.
+[00:06:19.919] I have an orchestrator order placement,
+[00:06:22.400] payment, and inventory. And the way I've
+[00:06:24.479] designed my architecture, I don't want
+[00:06:26.880] the domain services talking to each
+[00:06:28.720] other because the orchestrators holding
+[00:06:30.319] on to the state of my workflow. And if
+[00:06:32.080] they talk to one another, my state gets
+[00:06:34.240] out of whack and bad things happen.
+[00:06:37.919] Where can I write my arcunit fitness
+[00:06:40.400] function to validate that that the
+[00:06:43.600] domain services only communicate with
+[00:06:45.360] the orchestrator? Where's the tool or
+[00:06:47.680] the framework or library I can download
+[00:06:49.360] to do that?
+[00:06:51.919] Unfortunately, that does not exist
+[00:06:54.800] nor can it exist.
+[00:06:58.240] The problem when you get into
+[00:06:59.280] architecture is variability.
+[00:07:01.759] What have I written these things in?
+[00:07:03.199] This is microservices. These may all be
+[00:07:05.520] written in different platforms or
+[00:07:06.960] technology stacks. So, who knows what
+[00:07:08.800] these things are written in? How are
+[00:07:10.720] they communicating with each other? Is
+[00:07:12.080] it REST? Is it SOAP? Is it message cues?
+[00:07:14.560] Is it gRPC? what kind of database are
+[00:07:17.039] they? It's it's so many variables.
+[00:07:18.880] There's no way you can find a pre-built
+[00:07:21.840] framework to do this for you. And so a
+[00:07:24.960] lot of architects just look at this and
+[00:07:26.880] just give up hope. But that's the wrong
+[00:07:29.280] approach to
+[00:07:33.120] the book that we're writing right now is
+[00:07:34.720] a book called architecture as code which
+[00:07:36.960] is encouraging architects to treat their
+[00:07:40.479] software development ecosystem as if it
+[00:07:42.720] were a codebase. And one of the mantras
+[00:07:45.599] in our book is what data do I need and
+[00:07:48.720] where does that data live?
+[00:07:51.599] So if I ask this question about this
+[00:07:53.919] particular problem,
+[00:07:56.080] what data do I need? Well, I need to
+[00:07:57.919] know who these domain services are
+[00:07:59.599] talking to. Where does that data live?
+[00:08:02.400] It lives in log files that they can
+[00:08:04.879] produce. And I can guarantee that they
+[00:08:07.520] produce. And so my fitness function
+[00:08:10.319] looks like this. for each one of those
+[00:08:13.039] services. Import the logs for the last
+[00:08:15.120] 24 hours. And unless they're calling the
+[00:08:17.520] orchestrator, they're cheating. Yell at
+[00:08:20.560] them. They violated my fitness function.
+[00:08:23.700] [snorts]
+[00:08:24.960] This is actually written in Ruby, which
+[00:08:26.639] is one of my favorite little scripting
+[00:08:28.319] languages. And in fact, most of these
+[00:08:30.560] architecture fitness functions are not
+[00:08:32.479] written in the platform or technology
+[00:08:34.479] stack that you're implementing your
+[00:08:35.839] solution in. and they're written in
+[00:08:37.039] little tiny scripting languages that
+[00:08:39.519] aggregate data that's already laying
+[00:08:41.519] around in your ecosystem that you're
+[00:08:43.120] just not taking advantage of. Uh most of
+[00:08:45.839] these fitness functions are 10 or 15
+[00:08:47.680] lines of code that's just piecing
+[00:08:49.360] together some things that are already
+[00:08:51.120] there. So what we're doing in
+[00:08:53.519] architecture is code is looking at all
+[00:08:56.880] the ways that architecture intersects
+[00:08:59.200] with the software development ecosystem
+[00:09:00.800] and trying to define those intersections
+[00:09:03.200] with fitness functions. Architecture and
+[00:09:06.240] implementation is obvious because we
+[00:09:07.920] have to implement architecture in code
+[00:09:10.560] to actually make it work. But we all can
+[00:09:13.200] look at architecture and engineering
+[00:09:14.959] practices.
+[00:09:16.480] One of the problems we perpetually have
+[00:09:18.240] is I need to make a bad choice. I've got
+[00:09:21.680] to choose between a monor repo or repo
+[00:09:23.920] per service. And the problem is they
+[00:09:26.240] both suck, but they both suck in
+[00:09:28.160] different ways.
+[00:09:30.240] Using this, you can find a way to write
+[00:09:32.720] code that mitigates the negative side
+[00:09:35.120] effects of the choices you have to make.
+[00:09:37.279] Anyway, that's [snorts] an example of
+[00:09:39.040] engineering practices. You can build
+[00:09:41.200] intersections around things like team
+[00:09:42.880] topologies or integration architecture
+[00:09:45.279] or the enterprise, which I'll talk about
+[00:09:46.880] in more depth in just a second. And
+[00:09:48.851] [snorts] of course, generative AI and
+[00:09:50.640] infrastructure and data and things like
+[00:09:54.000] the business environment. And in fact,
+[00:09:55.600] let's look at an example of this this
+[00:09:58.720] intersection with data and architecture.
+[00:10:06.399] The architect says, "I've decided to
+[00:10:08.640] split the database into two domain
+[00:10:10.640] databases for better fault tolerance,
+[00:10:14.000] better change control, and better
+[00:10:15.760] scalability."
+[00:10:17.440] The product owner says,"Great, but make
+[00:10:19.600] sure we don't lose any trouble tickets
+[00:10:22.079] that both domains have the same tickets.
+[00:10:28.240] Where is this information documented? I
+[00:10:30.880] just recently did a workshop and the
+[00:10:32.480] universal answer to this question was in
+[00:10:34.720] some spreadsheet somewhere." And alas,
+[00:10:36.880] that is probably true. Some spreadsheet
+[00:10:39.120] somewhere holds on to this information.
+[00:10:42.800] But how are we verifying that?
+[00:10:47.279] So here's the scenario. I have customers
+[00:10:50.160] and I have tickets and I've had to split
+[00:10:52.079] the database apart for architectural
+[00:10:53.920] reasons because I want better fault
+[00:10:55.920] tolerance and scalability.
+[00:10:58.937] [snorts] But now I need to make sure
+[00:11:01.120] that all the tickets have corresponding
+[00:11:04.000] customers because I don't want to have
+[00:11:05.839] tickets without a customer. That doesn't
+[00:11:07.920] make sense. So what data do I need and
+[00:11:12.240] where does it live?
+[00:11:15.040] What I'm going to do is go to this
+[00:11:17.200] database and grab the set of customer
+[00:11:19.519] keys from there. Go to my ticket
+[00:11:22.000] database and grab the ticket foreign
+[00:11:24.800] customer keys there. And [snorts] when
+[00:11:27.920] my Q has no messages pending, in other
+[00:11:30.560] words, it is at rest, assert that TC is
+[00:11:34.720] a member of C. In other words, assert
+[00:11:38.160] that there are no tickets in that
+[00:11:41.120] database that do not exist in this
+[00:11:42.959] database. I am now verifying the
+[00:11:45.200] referential integrity between these two
+[00:11:47.360] databases as if it were a single
+[00:11:49.200] database but doing it at the
+[00:11:51.440] architecture level because I need a
+[00:11:53.279] distributed architecture. This is an
+[00:11:54.959] example of the data intersection of
+[00:11:57.600] architecture as code and this works
+[00:11:59.519] great. We've done this a lot. Problem is
+[00:12:03.920] it's hard to do at an enterprise scale.
+[00:12:08.320] So this works fantastic. We've been
+[00:12:10.399] doing this for years at the uh
+[00:12:13.360] application level.
+[00:12:15.760] But now I want to talk about something
+[00:12:17.600] that I'm calling a meta bounded context.
+[00:12:21.120] When we talk about software
+[00:12:22.399] architecture, we talk about bounded
+[00:12:24.320] context all the time as it pertains to
+[00:12:26.399] the domain that we're writing. But
+[00:12:28.800] projects
+[00:12:30.320] have a meta bounded context which is the
+[00:12:33.360] way they've implemented well stuff like
+[00:12:35.760] this highly specific to this project
+[00:12:40.000] because I have details about the
+[00:12:42.000] databases that are used in this project
+[00:12:44.639] that I'm implementing for this fitness
+[00:12:46.639] function.
+[00:12:48.720] Hold on to that thought for just a
+[00:12:50.320] second because now I want to touch on
+[00:12:52.959] this intersection of architecture and
+[00:12:55.600] the enterprise.
+[00:12:57.600] We have a defined role called enterprise
+[00:13:01.120] architect who does this intersection
+[00:13:03.839] with architecture and enterprise. And in
+[00:13:06.800] fact there are a bunch of different
+[00:13:08.000] things that enterprise architects end up
+[00:13:10.399] doing in terms of software architecture
+[00:13:13.120] including things like global governance
+[00:13:16.639] uh um global code quality governance.
+[00:13:20.399] That's what I'm after here. This, by the
+[00:13:23.040] way, normalize distance from the main
+[00:13:25.680] sequence. If you're looking for one
+[00:13:28.720] single metric that identifies AI slop in
+[00:13:33.440] your codebase,
+[00:13:35.360] that's it. It looks for code that has
+[00:13:38.240] been built by brute force with a lack of
+[00:13:41.200] abstraction and too much implementation
+[00:13:43.360] details. Scores poorly on normalized
+[00:13:45.920] distance from the main sequence. So just
+[00:13:47.680] buy what by the way if you're looking
+[00:13:49.600] for actual metrics that find AI
+[00:13:51.839] generated code that's it and this is the
+[00:13:55.760] only thing that we've really seen a lot
+[00:13:58.320] of success with because as a group of
+[00:14:01.600] enterprise architects I would like to
+[00:14:03.279] govern a lot of stuff in my ecosystem
+[00:14:06.560] but this is really the only kind of
+[00:14:08.399] stuff we found that is universally
+[00:14:10.720] useful these kind of holistic governance
+[00:14:13.839] uh code quality things like cyclatic
+[00:14:16.079] complexity No code base benefits from
+[00:14:18.560] having overly complex code or poorly
+[00:14:21.199] structured code. But the problem we've
+[00:14:23.760] run into is we'd like to be a lot more
+[00:14:25.680] hands-on. In fact, our largest global
+[00:14:28.079] client has within their enterprise
+[00:14:30.880] architecture group a role called an
+[00:14:33.279] evolutionary architect and they are
+[00:14:34.959] going around implementing fitness
+[00:14:37.279] functions within their ecosystem to try
+[00:14:39.839] to govern things from the enterprise
+[00:14:43.519] level.
+[00:14:46.000] But there's a problem with that. We've
+[00:14:48.639] been doing this since 2017 2018 and
+[00:14:51.839] we've discovered the issues with that
+[00:14:55.040] that fortunately Agentic AI has come to
+[00:14:58.959] the rescue for. So let's talk for a
+[00:15:01.839] second about architecture and Agentic AI
+[00:15:06.079] and MCP. Before MCP, if I wanted to call
+[00:15:09.839] something directly, I had to know
+[00:15:11.680] exactly what that API was and know the
+[00:15:14.160] details and the metadata and the format.
+[00:15:16.320] MCP is like the best ever integration
+[00:15:19.279] hub because it gives you a way to query
+[00:15:21.519] capabilities or tools, etc., and allows
+[00:15:24.959] you to wire things together in a much
+[00:15:27.360] more generic way because you can query
+[00:15:29.120] capabilities and come back and iterate
+[00:15:30.959] on those capabilities and do things on
+[00:15:33.440] behalf of them. the MCP primitives which
+[00:15:35.680] I'm sure you're familiar with tools that
+[00:15:37.920] are tools that are available that you
+[00:15:39.519] can call and do stuff for like database
+[00:15:41.519] calls u resources like uh logs file
+[00:15:45.839] contents this is where I get logs very
+[00:15:48.480] often when I'm doing those kinds of
+[00:15:50.639] compare logs in my fitness functions I
+[00:15:54.079] can do that through something like MCP
+[00:15:55.920] because log contents are one of the
+[00:15:57.519] things it can deliver and of course
+[00:15:59.279] prompt libraries to let you piece things
+[00:16:01.519] together within that uh that MC MCP kind
+[00:16:04.399] of universe. So let's talk about how
+[00:16:07.120] this solves
+[00:16:08.959] this problem.
+[00:16:13.040] As an enterprise architect,
+[00:16:16.000] I want to be able to write these kind of
+[00:16:18.079] fitness functions because I as an
+[00:16:20.240] enterprise architect want to guarantee
+[00:16:22.560] that the projects I have have
+[00:16:24.399] referential integrity between the
+[00:16:25.839] databases.
+[00:16:27.839] Here's the problem. is the meta bounded
+[00:16:30.160] context
+[00:16:31.839] because as an enterprise architect I'm
+[00:16:34.079] sitting way far away from that
+[00:16:35.839] application and if I write this code and
+[00:16:39.120] they change the implementation
+[00:16:41.600] it breaks and that's the fundamental
+[00:16:45.040] problem of trying to implement these far
+[00:16:47.839] distance fitness functions is
+[00:16:50.079] brutaleness
+[00:16:51.680] because to be able to do that I have to
+[00:16:54.160] pierce the metabounded context to get to
+[00:16:57.360] the implementation detail tails and that
+[00:16:59.920] makes it brittle and that reduces its
+[00:17:03.120] effectiveness because if these things
+[00:17:04.880] break a lot because of incidental
+[00:17:07.120] reasons you get frustrated with them and
+[00:17:08.959] go ah this is not worth the trouble
+[00:17:10.880] don't want to do that anymore
+[00:17:14.559] that's where MCP comes in
+[00:17:17.760] because enterprise architects can now
+[00:17:20.799] through the service mesh which is the
+[00:17:22.880] thing that generally executes all of
+[00:17:24.559] these things say I want to validate
+[00:17:27.360] referential integrity
+[00:17:29.120] The project itself can set up an MCP
+[00:17:32.640] server inside their metabounded context
+[00:17:35.520] that knows the details of how to do that
+[00:17:38.080] and can offer this as a tool for the
+[00:17:40.320] enterprise architects.
+[00:17:42.400] I [snorts] want you to validate
+[00:17:43.440] referential integrity. When it gets
+[00:17:44.880] that, it says, "Oh, well, I know what
+[00:17:46.320] that means. When Q is equal to zero,
+[00:17:48.400] assert that TC is an element of C."
+[00:17:52.799] But then when the implementation
+[00:17:55.360] changes, which it inevitably does, I
+[00:17:59.280] need to add experts over there who also
+[00:18:01.600] have tickets, who also have foreign key
+[00:18:04.000] relationships between things. Now the
+[00:18:06.720] implementation of my fitness function
+[00:18:08.640] has to change,
+[00:18:11.200] but the intent doesn't.
+[00:18:14.960] This is huge as an empowering for
+[00:18:18.160] enterprise architects to be able to
+[00:18:21.280] state intent like this at the
+[00:18:23.600] architecture level without having to
+[00:18:26.080] know the implementation details of how
+[00:18:28.160] things work and still be able to
+[00:18:30.320] implement this kind of holistic
+[00:18:32.799] governance across the entire
+[00:18:34.559] organization. This having MCP as this
+[00:18:38.080] ultimate sort of integration layer is
+[00:18:40.160] fantastic because now it separates the
+[00:18:43.039] intent from the implementation in a way
+[00:18:44.880] that's very very useful for enterprise
+[00:18:47.520] architects. So could not have come along
+[00:18:50.240] at a better time for us. And so mesh
+[00:18:52.880] architectures like service mesh plus
+[00:18:55.200] agentic capabilities plus fitness
+[00:18:57.520] functions is what we're calling uh
+[00:19:00.720] fitness functiondriven architecture or
+[00:19:03.679] alternatively very ambitiously 21st
+[00:19:06.640] century enterprise architecture because
+[00:19:08.640] that's really what we're after here
+[00:19:10.720] because what this allows us to do and
+[00:19:12.960] this is one other interesting use for AI
+[00:19:15.919] that's a sort of a bonus use here
+[00:19:20.080] as an architect.
+[00:19:22.320] I design a lot of stuff. I design
+[00:19:24.240] components around domains and
+[00:19:26.400] relationships and dependencies between
+[00:19:28.480] these components and put a lot of
+[00:19:30.720] thought into this as an architect. This
+[00:19:32.880] is what we do as an architect is figure
+[00:19:34.720] out coupling and cohesion around
+[00:19:36.640] components etc.
+[00:19:40.880] But then I hand this off to a group of
+[00:19:42.559] developers to implement it.
+[00:19:47.039] After it's implemented, I look at it
+[00:19:48.960] again and I go, "What? what
+[00:19:53.440] ticket assignment disappeared at some
+[00:19:55.280] point during the implementation and uh
+[00:20:00.000] customer registration's not there and
+[00:20:01.840] this new thing showed up that I never
+[00:20:03.840] designed as part of my architecture and
+[00:20:07.280] all this chaos has occurred and this is
+[00:20:09.280] actually what got implemented
+[00:20:11.600] despite my nice clean design when I
+[00:20:14.080] handed this to developers and schedule
+[00:20:16.320] pressure showed up and things changed
+[00:20:19.120] and I ended up implementing in chaos
+[00:20:21.360] like this. This idea of architecture as
+[00:20:24.160] code. What this allows us to do is
+[00:20:26.880] actually define things
+[00:20:31.039] as code.
+[00:20:33.120] Define our domains. Define the
+[00:20:35.360] relationships between them. This is our
+[00:20:37.600] architecture as code pseudo code. And
+[00:20:39.760] then assert that classes are only
+[00:20:42.080] contained within classes within those
+[00:20:44.880] domains. This is the other use that we
+[00:20:47.360] have found is quite useful for
+[00:20:48.720] generative AI. the second L in LLM
+[00:20:51.919] because you hand it this pseudo code and
+[00:20:54.240] tell it to produce me a fitness function
+[00:20:56.880] in Java ornet and it will do so and what
+[00:21:00.640] this is of course doing is validating
+[00:21:02.159] the directory structure. So you hand
+[00:21:04.159] this to an LLM and it will produce
+[00:21:06.400] concrete fitness functions for you. This
+[00:21:08.960] is nice because I can keep my rules in
+[00:21:11.840] pseudo code and then if I have a Java
+[00:21:14.400] codebase or Golang codebase orn net
+[00:21:17.039] codebase or python codebase I can
+[00:21:19.200] generate all of the uh the pertinent
+[00:21:22.720] fitness functions for those that
+[00:21:24.880] validate the structure as I write my
+[00:21:27.120] code. Just like a building architect
+[00:21:29.919] creates a plan for how the build of the
+[00:21:32.480] room should be laid out and the
+[00:21:33.919] relationships like where plumbing goes.
+[00:21:36.240] I can now as an architect define how I
+[00:21:39.360] want things put together in my
+[00:21:41.440] ecosystem. That is this idea of a
+[00:21:44.159] fitness function-driven architecture and
+[00:21:46.799] it's a way to enhance collaboration
+[00:21:49.039] between architects and developers to
+[00:21:51.440] make sure that they are building the
+[00:21:52.799] things that I actually want them to
+[00:21:54.480] build. This is what we were referring to
+[00:21:56.159] as fitness function-driven architecture
+[00:21:58.480] and it's similar to so fitness functions
+[00:22:02.240] are like unit tests in that it allows
+[00:22:04.880] you to verify things as we go along
+[00:22:07.440] preferably on each change and it makes
+[00:22:09.520] sure that we haven't broken anything
+[00:22:11.039] that we're building on.
+[00:22:13.360] Fitness functions are not like unit
+[00:22:15.200] tests in that failures are placeholders
+[00:22:18.400] for conversations about design
+[00:22:20.080] decisions.
+[00:22:21.760] As an architect, I build one of those
+[00:22:23.840] things that say, "Here are the
+[00:22:25.039] components I need." And then somebody
+[00:22:27.200] builds a new component.
+[00:22:30.000] That's not an error. That's a
+[00:22:32.960] placeholder for conversation.
+[00:22:35.280] I'm going to I don't want to yell at
+[00:22:36.559] them about it. I just want to know that
+[00:22:38.240] it happened. And so, architecture is
+[00:22:40.080] code is really a fast feedback framework
+[00:22:43.520] for anything that happened in
+[00:22:45.200] architecture that I care about, let me
+[00:22:47.679] know about it so that I can react to it.
+[00:22:51.600] Fitness function-driven architecture is
+[00:22:53.039] like test-driven development that we
+[00:22:54.880] both build things and constantly verify
+[00:22:57.200] them as we go along. It's unlike
+[00:22:59.919] test-driven development in that it is
+[00:23:03.039] the mechanics for evolutionary
+[00:23:04.880] architecture. It's not meant to cover
+[00:23:07.600] every detail, just the important stuff.
+[00:23:10.640] And this is really an important
+[00:23:12.000] perspective. We're not trying to create
+[00:23:13.919] an architecture police state here. We're
+[00:23:15.840] trying to create an ecosystem where we
+[00:23:18.559] can work within the context of a project
+[00:23:22.080] and define rules at the enterprise
+[00:23:24.480] architecture level that I really want to
+[00:23:27.039] implement but I don't want to get into
+[00:23:29.280] details of how to implement that.
+[00:23:31.360] Agentic AI is a really really nice way
+[00:23:33.520] to do that and it gives us a way to uh
+[00:23:37.039] build this kind of holistic governance
+[00:23:39.120] in a way that doesn't create this sort
+[00:23:40.880] of brittle breakage all the time. So
+[00:23:43.440] very very nice more and more details of
+[00:23:46.400] this coming out. In fact, we just
+[00:23:47.679] published an article about this on the
+[00:23:49.200] O'Reilly website um talking about these
+[00:23:52.400] details. So u much more of this coming
+[00:23:54.400] in the architectures code book which
+[00:23:55.919] should be out sometime later this next
+[00:23:57.520] year.
+[00:23:59.039] And that's it. 30 seconds to spare.
+[00:24:01.039] Thanks very much. [music]
+[00:24:07.280] Heat. Heat.

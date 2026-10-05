@@ -1,0 +1,1941 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:00.920
+So, hello.
+
+2
+00:00:00.920 --> 00:00:06.960
+Welcome back to the latent space for a very packed session with Emma Burrows.
+
+3
+00:00:07.000 --> 00:00:10.600
+Emma is going to be talking about how to build a product brain
+
+4
+00:00:10.600 --> 00:00:14.280
+that becomes an agent orchestrator.
+
+5
+00:00:14.320 --> 00:00:15.360
+Yeah, sorry, I had to check
+
+6
+00:00:15.360 --> 00:00:18.520
+because the title has changed, but this sounds very exciting.
+
+7
+00:00:18.600 --> 00:00:20.720
+So a little bit about Emma.
+
+8
+00:00:20.720 --> 00:00:24.000
+Emma, as I mentioned, worked at Rezonant and she used to be the CTO
+
+9
+00:00:24.000 --> 00:00:25.560
+at Stripe in the UK.
+
+10
+00:00:25.560 --> 00:00:28.560
+So I'm going to hand over to her now,
+
+11
+00:00:29.360 --> 00:00:30.800
+if I should, to meet you.
+
+12
+00:00:30.800 --> 00:00:32.240
+Emma.
+
+13
+00:00:32.240 --> 00:00:33.560
+Thank you very much.
+
+14
+00:00:33.560 --> 00:00:34.160
+All right.
+
+15
+00:00:34.160 --> 00:00:38.200
+So I'm going to talk today about how to build your own product.
+
+16
+00:00:38.200 --> 00:00:43.080
+Brain so Rezonant for a little bit of context, is a product workspace
+
+17
+00:00:43.080 --> 00:00:47.840
+for helping people write specs, produce tasks, etc.
+
+18
+00:00:47.840 --> 00:00:49.400
+and then ship them very fast.
+
+19
+00:00:49.400 --> 00:00:53.240
+But what we have realized in the process of building out this product
+
+20
+00:00:53.240 --> 00:00:57.600
+is that PMS role fundamentally needs to change and accelerate
+
+21
+00:00:57.600 --> 00:01:01.720
+even faster than the kind of tools that we have built already accommodate.
+
+22
+00:01:01.760 --> 00:01:05.400
+So that's what we're going to talk about today, is how you can build a
+
+23
+00:01:05.600 --> 00:01:09.440
+reinforcement learning system that learns your product instincts
+
+24
+00:01:09.440 --> 00:01:13.040
+so that as a product manager, you can focus on the things that really matter,
+
+25
+00:01:13.040 --> 00:01:17.160
+which is the strategy of your company, and keep up with your engineers.
+
+26
+00:01:17.600 --> 00:01:19.440
+So a little bit about me.
+
+27
+00:01:19.440 --> 00:01:24.080
+Before founding Rezonant, as our host mentioned,
+
+28
+00:01:24.120 --> 00:01:27.360
+I was at Stripe for four years running engineering in the UK,
+
+29
+00:01:27.360 --> 00:01:31.560
+but I have always spent a bunch of time between basically product and engineering.
+
+30
+00:01:31.560 --> 00:01:35.680
+I started my career as a PM at Google, and then I ran product engineering
+
+31
+00:01:35.680 --> 00:01:40.680
+and design at an e-commerce company, so have really enjoyed this kind of fix
+
+32
+00:01:40.840 --> 00:01:43.280
+the last six months, where things have changed
+
+33
+00:01:43.280 --> 00:01:46.400
+dramatically in terms of the expectations of both engineers
+
+34
+00:01:46.400 --> 00:01:49.960
+and PMS, and thinking about where this is all going.
+
+35
+00:01:50.760 --> 00:01:55.920
+So coding is is solved sort of kind of a little bit at least.
+
+36
+00:01:56.240 --> 00:01:57.560
+And PM is next.
+
+37
+00:01:57.560 --> 00:02:02.240
+And what I mean by this is we have kind of really focused on this problem
+
+38
+00:02:02.240 --> 00:02:06.280
+of how we can accelerate code with the process of agents,
+
+39
+00:02:06.280 --> 00:02:09.920
+but nobody has really caught up from our product management perspective.
+
+40
+00:02:09.920 --> 00:02:14.400
+And so if you speak to a bunch of kind of CTOs and CPOs,
+
+41
+00:02:14.400 --> 00:02:19.320
+what tends to happen is product managers then get pulled down into the day to day.
+
+42
+00:02:19.360 --> 00:02:22.640
+Their engineers are moving so much faster as a consequence
+
+43
+00:02:22.640 --> 00:02:25.880
+of agent coding that now this core question of like,
+
+44
+00:02:25.920 --> 00:02:30.520
+what do you build and how do you build it tastefully has become much more key.
+
+45
+00:02:31.400 --> 00:02:36.320
+And at the moment, where most PMS are, is trying to just kind of do
+
+46
+00:02:36.360 --> 00:02:39.400
+workflows, basic workflows that help them do their day to day
+
+47
+00:02:39.400 --> 00:02:42.560
+job, you know, break this down into tickets.
+
+48
+00:02:42.600 --> 00:02:44.640
+Resonant also does all of these things very well,
+
+49
+00:02:44.640 --> 00:02:48.680
+for what it's worth, but I think where we need to go is towards
+
+50
+00:02:48.720 --> 00:02:52.480
+what software engineers has have become, which is agent orchestrators.
+
+51
+00:02:52.480 --> 00:02:56.880
+So we identify the slices of product management work
+
+52
+00:02:56.920 --> 00:03:01.080
+that can actually actually be done autonomously, end to end.
+
+53
+00:03:01.120 --> 00:03:02.360
+And in order to do that,
+
+54
+00:03:02.360 --> 00:03:06.240
+you need a system that kind of learns and understands your product.
+
+55
+00:03:06.240 --> 00:03:10.440
+So most of are here, they're using ChatGPT etc.
+
+56
+00:03:10.440 --> 00:03:12.280
+to help them do these workflows.
+
+57
+00:03:12.280 --> 00:03:13.800
+Then they're starting to
+
+58
+00:03:13.800 --> 00:03:17.000
+actually orchestrate a set of skills to help them run those workflows.
+
+59
+00:03:17.000 --> 00:03:20.960
+And then where I think we need to get to is actually having agents that have
+
+60
+00:03:21.000 --> 00:03:25.440
+a sense of taste, coherency, but also understand their own limitations.
+
+61
+00:03:26.400 --> 00:03:28.120
+Software engineering from a
+
+62
+00:03:28.120 --> 00:03:31.120
+product perspective, has also already gone through this right.
+
+63
+00:03:31.120 --> 00:03:35.240
+If you think about what cursor did, it was very much like line by line assistance
+
+64
+00:03:35.240 --> 00:03:38.520
+when it started out with C, cursor has become more than that over time.
+
+65
+00:03:38.520 --> 00:03:42.880
+Then we went really kind of deep on Claude code, and now there's the OpenClaw.
+
+66
+00:03:42.880 --> 00:03:45.960
+If you're brave enough from a kind of permissions perspective
+
+67
+00:03:45.960 --> 00:03:48.960
+to run those agents end to end,
+
+68
+00:03:49.800 --> 00:03:53.960
+but for the actual automation process is harder, right?
+
+69
+00:03:54.000 --> 00:03:58.080
+You have a much less consistent set of work and training data
+
+70
+00:03:58.240 --> 00:03:59.520
+to optimize this on.
+
+71
+00:03:59.520 --> 00:04:03.480
+So you need to automate your process of gathering information from your customers,
+
+72
+00:04:03.480 --> 00:04:06.160
+from your slack conversations, from your emails.
+
+73
+00:04:06.160 --> 00:04:09.880
+You need to work out what your human agent control plane is.
+
+74
+00:04:09.880 --> 00:04:13.680
+How are you going to ensure that you have the right checks and balances
+
+75
+00:04:13.680 --> 00:04:18.240
+between your agents and your PM so that they can work effectively?
+
+76
+00:04:18.920 --> 00:04:23.960
+And for that, we've built a kind of product brain to help us do that.
+
+77
+00:04:23.960 --> 00:04:27.080
+We've then deployed that with a number of design partners as well,
+
+78
+00:04:27.080 --> 00:04:32.040
+and now we're trying to backport it into into Rezonant over time also.
+
+79
+00:04:32.040 --> 00:04:34.760
+But it consists of a number of kind of key features.
+
+80
+00:04:34.760 --> 00:04:36.360
+So I'm going to run through kind of how it works.
+
+81
+00:04:36.360 --> 00:04:39.800
+And then I'll give you a bit of a demo end to end.
+
+82
+00:04:39.840 --> 00:04:42.800
+So the first thing is live ingestion.
+
+83
+00:04:42.800 --> 00:04:47.280
+So any time you have a meeting with a customer, for example, in granola,
+
+84
+00:04:47.320 --> 00:04:50.440
+you should automatically be able to process that information
+
+85
+00:04:50.440 --> 00:04:51.600
+and update your product.
+
+86
+00:04:51.600 --> 00:04:55.080
+Understanding GitHub itself is a valuable source of like
+
+87
+00:04:55.120 --> 00:04:56.960
+where is your product today?
+
+88
+00:04:56.960 --> 00:04:58.320
+What does it do?
+
+89
+00:04:58.320 --> 00:05:01.680
+Things like email, for example, linear tickets, etc.
+
+90
+00:05:01.720 --> 00:05:05.440
+all need to be ingested automatically because if the system isn't up to date,
+
+91
+00:05:05.440 --> 00:05:08.360
+you can't really run autonomous workflows.
+
+92
+00:05:08.360 --> 00:05:12.280
+Then you have your actual product brain, which needs to synthesize
+
+93
+00:05:12.280 --> 00:05:15.120
+all of these inputs into a form that can be quickly processed
+
+94
+00:05:15.120 --> 00:05:17.720
+by any agents that are running autonomously.
+
+95
+00:05:17.720 --> 00:05:21.960
+And finally, you need to configure a bunch of workflows on top of it.
+
+96
+00:05:22.000 --> 00:05:25.280
+Maybe when a customer ticket comes in, you want to be
+
+97
+00:05:25.320 --> 00:05:28.400
+able to go back to the customer if their ticket is unclear.
+
+98
+00:05:28.440 --> 00:05:29.800
+Equally, maybe if it is
+
+99
+00:05:29.800 --> 00:05:32.960
+well specked, you want to be able to ship that end to end really quickly.
+
+100
+00:05:32.960 --> 00:05:37.520
+All of this is very much a personal taste thing that companies need to grapple
+
+101
+00:05:37.520 --> 00:05:41.880
+with and work out how they want to express their level of autonomy over time.
+
+102
+00:05:41.960 --> 00:05:46.040
+But finally, the most important piece is you need some kind of human input
+
+103
+00:05:46.040 --> 00:05:49.800
+so that the system can reinforce its learning loop and get better over time.
+
+104
+00:05:49.960 --> 00:05:52.440
+Understanding how you think about product.
+
+105
+00:05:53.520 --> 00:05:54.640
+Okay, I think I probably
+
+106
+00:05:54.640 --> 00:05:58.360
+actually talked through most of this live ingestion as this process of input.
+
+107
+00:05:58.360 --> 00:05:59.680
+We'll see that in a second.
+
+108
+00:05:59.680 --> 00:06:02.520
+This is a kind of graph of our product brain.
+
+109
+00:06:02.520 --> 00:06:04.480
+It builds a bunch of links between
+
+110
+00:06:04.480 --> 00:06:08.080
+the different concepts being discussed at a bunch of different levels.
+
+111
+00:06:08.280 --> 00:06:11.120
+And then we can figure workflows on top of it,
+
+112
+00:06:11.120 --> 00:06:14.840
+which are completely customized to our kind of end to end process.
+
+113
+00:06:14.960 --> 00:06:17.480
+And we have a set of agents to do this.
+
+114
+00:06:17.480 --> 00:06:19.600
+The first is an action agent, pretty obvious.
+
+115
+00:06:19.600 --> 00:06:20.920
+It runs the workflows.
+
+116
+00:06:20.920 --> 00:06:22.760
+We have an input and a brain agent
+
+117
+00:06:22.760 --> 00:06:26.600
+whose function is to process those inputs and reorganize them.
+
+118
+00:06:26.600 --> 00:06:28.920
+And then we also have an organizational agent.
+
+119
+00:06:28.920 --> 00:06:32.240
+So over time your wiki gets out of date.
+
+120
+00:06:32.240 --> 00:06:33.560
+It needs to be reorganized.
+
+121
+00:06:33.560 --> 00:06:35.960
+Also, teams reorganized one selves as well.
+
+122
+00:06:35.960 --> 00:06:38.960
+And so you need a way to kind of organize around
+
+123
+00:06:38.960 --> 00:06:42.360
+company organizations, teams and constructs as well.
+
+124
+00:06:43.120 --> 00:06:46.560
+Okay, let's kick over to a demo.
+
+125
+00:06:46.720 --> 00:06:50.960
+So I'm going to start with a GitHub repo.
+
+126
+00:06:51.080 --> 00:06:55.240
+So this is our Rezonant product brain with some anonymization on top of it.
+
+127
+00:06:55.240 --> 00:06:56.400
+Because it's kind of cool
+
+128
+00:06:56.400 --> 00:06:59.760
+that it has customer data or conversations in it at least.
+
+129
+00:07:00.200 --> 00:07:03.760
+So you can see here we've got a bunch of different forms of inputs.
+
+130
+00:07:03.760 --> 00:07:08.200
+And we can see if we look at linear for we've got a bunch of linear tickets.
+
+131
+00:07:08.200 --> 00:07:11.800
+These are all the linear tickets that were updated since its last run.
+
+132
+00:07:11.800 --> 00:07:14.360
+It typically runs on a daily basis.
+
+133
+00:07:14.360 --> 00:07:16.560
+And the structure here is pretty simple.
+
+134
+00:07:16.560 --> 00:07:19.040
+You've got inputs that process daily.
+
+135
+00:07:19.040 --> 00:07:21.440
+You've got sources. That is the raw data.
+
+136
+00:07:21.440 --> 00:07:25.320
+We don't keep all the raw data because sometimes it can overwhelm the agent.
+
+137
+00:07:25.320 --> 00:07:26.800
+And then you've got wiki
+
+138
+00:07:26.800 --> 00:07:30.720
+which consists of customer insight features, product principles,
+
+139
+00:07:30.720 --> 00:07:32.240
+which is trying to express this
+
+140
+00:07:32.240 --> 00:07:36.120
+higher level of how do you have taste and coherency in a system,
+
+141
+00:07:36.120 --> 00:07:39.800
+and then technical context which expresses our front end flows.
+
+142
+00:07:39.800 --> 00:07:41.640
+So other things, we've got an input.
+
+143
+00:07:41.640 --> 00:07:45.280
+We've got granola session that we ran on Friday.
+
+144
+00:07:45.400 --> 00:07:48.840
+And then you can also add a bunch of manual information.
+
+145
+00:07:48.840 --> 00:07:54.120
+And lastly we've got a bunch of GitHub diffs in here as well
+
+146
+00:07:54.120 --> 00:07:57.840
+which are going to get processed by our system now because this takes
+
+147
+00:07:57.840 --> 00:08:01.720
+a little bit of time to process, probably longer than I have, unfortunately.
+
+148
+00:08:01.920 --> 00:08:05.200
+I'll show you what it did so we can see here.
+
+149
+00:08:05.200 --> 00:08:07.080
+It's gone through all of those tickets.
+
+150
+00:08:07.080 --> 00:08:11.600
+It's updated a bunch of the different kind of feature level context files
+
+151
+00:08:11.600 --> 00:08:14.680
+that we've got, as well as this like technical contents, front end
+
+152
+00:08:14.680 --> 00:08:19.240
+features, which describes all of our front end flows, end to end.
+
+153
+00:08:19.560 --> 00:08:22.560
+And you can see the final processed
+
+154
+00:08:22.600 --> 00:08:26.800
+state is it's moved a ton of stuff out of inputs.
+
+155
+00:08:26.840 --> 00:08:29.040
+That's it's kind of input queue.
+
+156
+00:08:29.040 --> 00:08:33.040
+And then it has done things like we moved our JIRA
+
+157
+00:08:33.040 --> 00:08:36.440
+authentication to no longer be team scoped, but OAuth scoped.
+
+158
+00:08:36.480 --> 00:08:38.520
+It's understood that and express that in a way
+
+159
+00:08:38.520 --> 00:08:42.280
+that can then be used by the agent going forward.
+
+160
+00:08:42.280 --> 00:08:46.360
+And we can see it's done a bunch more kind of synthesis here
+
+161
+00:08:46.360 --> 00:08:49.520
+across our front end features, which is our UX flows.
+
+162
+00:08:49.520 --> 00:08:54.040
+So that's the core is this kind of brain that can take inputs over time.
+
+163
+00:08:54.040 --> 00:08:57.280
+But now I want to show you an end to end demo.
+
+164
+00:08:57.280 --> 00:08:58.760
+So in order to do this
+
+165
+00:08:58.760 --> 00:09:02.160
+I need to just give you a tiny bit of context on Rezonant itself.
+
+166
+00:09:02.160 --> 00:09:04.080
+Resonant is a product workspace.
+
+167
+00:09:04.080 --> 00:09:05.160
+This is our home page.
+
+168
+00:09:05.160 --> 00:09:10.120
+It allows you to create PRD specs tickets and then ship them to coding agents
+
+169
+00:09:10.120 --> 00:09:11.200
+very quickly.
+
+170
+00:09:11.200 --> 00:09:13.000
+And we have this product
+
+171
+00:09:13.000 --> 00:09:16.640
+charter feature here, which I'm going to write a ticket for in a second.
+
+172
+00:09:16.960 --> 00:09:19.960
+This is what our kind of main page looks like.
+
+173
+00:09:20.040 --> 00:09:24.040
+So you can see here I've got a PRD about a new feature
+
+174
+00:09:24.040 --> 00:09:28.480
+we're working on, and a set of tasks that I can then send to coding agents.
+
+175
+00:09:28.480 --> 00:09:34.320
+But our main product interface for agents and humans is actually slack.
+
+176
+00:09:34.320 --> 00:09:37.840
+So we try to avoid anybody having to go into these systems
+
+177
+00:09:37.840 --> 00:09:41.680
+unless it's very direct to the task that they're trying to accomplish.
+
+178
+00:09:41.680 --> 00:09:45.840
+So what I'm going to do here is I'm just going to kick off a linear ticket.
+
+179
+00:09:45.840 --> 00:09:48.880
+Let's imagine this was reported by the customer.
+
+180
+00:09:49.440 --> 00:09:54.160
+And I'm just going to select my ticket context.
+
+181
+00:09:54.200 --> 00:09:59.720
+So product charter confusion is the kind of feedback.
+
+182
+00:09:59.720 --> 00:10:02.720
+And it says here can never be read that actually it's a bit fuzzy.
+
+183
+00:10:02.720 --> 00:10:05.560
+Hey let me see if I can make it a bit bigger.
+
+184
+00:10:05.560 --> 00:10:07.680
+That doesn't seem to be. I've got much better.
+
+185
+00:10:07.680 --> 00:10:08.960
+I'll try and explain it anyway.
+
+186
+00:10:08.960 --> 00:10:11.160
+So it says users are confused about the product
+
+187
+00:10:11.160 --> 00:10:12.800
+charter feature shown on the home page.
+
+188
+00:10:12.800 --> 00:10:14.160
+They don't understand what it is
+
+189
+00:10:14.160 --> 00:10:17.320
+and have no way to get to see it or understand it better.
+
+190
+00:10:17.320 --> 00:10:22.000
+So I'm just going to submit this as our first ticket, and the system will
+
+191
+00:10:22.040 --> 00:10:24.000
+then operate on top of that.
+
+192
+00:10:24.000 --> 00:10:28.240
+Now I'm going to create a second linear ticket here.
+
+193
+00:10:28.360 --> 00:10:33.120
+And this one instead is going to be a bit more complicated.
+
+194
+00:10:33.120 --> 00:10:37.560
+So the idea here is that people want to be able to estimate
+
+195
+00:10:37.560 --> 00:10:41.520
+the size of the task before the agent actually get started.
+
+196
+00:10:41.560 --> 00:10:46.480
+And there's a description here of basically, you know what that means.
+
+197
+00:10:46.480 --> 00:10:48.440
+The process of story pointing essentially
+
+198
+00:10:48.440 --> 00:10:52.000
+is a kind of common feature request that we've had within Rezonant.
+
+199
+00:10:52.080 --> 00:10:58.000
+I'm just going to make sure this is labeled and kick this off.
+
+200
+00:10:58.160 --> 00:11:03.320
+So these tickets on the surface they're both kind of feature requests.
+
+201
+00:11:03.400 --> 00:11:06.560
+But what the agent should do if it understands my product
+
+202
+00:11:06.560 --> 00:11:10.120
+brain correctly is different actions as a consequence.
+
+203
+00:11:10.120 --> 00:11:15.080
+And so what we can see over here in the Rezonant chat.
+
+204
+00:11:15.120 --> 00:11:18.280
+So I cheated a little bit on this first one.
+
+205
+00:11:18.280 --> 00:11:19.280
+Just because I need something
+
+206
+00:11:19.280 --> 00:11:23.360
+to show you in the kind of coding task takes a little bit of time, is
+
+207
+00:11:23.400 --> 00:11:26.480
+Rezonant has pinged me here with a question about the product
+
+208
+00:11:26.480 --> 00:11:28.360
+charter confusion on the start page.
+
+209
+00:11:28.360 --> 00:11:32.120
+So because it's understood a whole bunch of context here
+
+210
+00:11:32.160 --> 00:11:35.720
+about our product and exactly how it works,
+
+211
+00:11:35.760 --> 00:11:39.680
+it's made a recommendation and it thinks that this is well specified enough
+
+212
+00:11:39.680 --> 00:11:43.720
+that it can actually go all the way through to implementation.
+
+213
+00:11:43.720 --> 00:11:46.560
+So you can see it's presented me with two options.
+
+214
+00:11:46.560 --> 00:11:49.720
+The first is ship a quick fix here, and the second is
+
+215
+00:11:49.760 --> 00:11:54.200
+fold it into the onboarding work that Rob is working on more generally.
+
+216
+00:11:54.200 --> 00:11:57.160
+And it's asking me, what do I want to do about that? Right.
+
+217
+00:11:57.160 --> 00:12:00.800
+So I've responded here and I've said, yeah,
+
+218
+00:12:00.840 --> 00:12:03.840
+let's implement the narrow fix that you suggested.
+
+219
+00:12:03.840 --> 00:12:06.920
+And then it has come back to me here and said
+
+220
+00:12:06.920 --> 00:12:10.000
+that it's posted its recommendation on this comment.
+
+221
+00:12:10.000 --> 00:12:13.360
+So let's click in here and have a look at that.
+
+222
+00:12:14.680 --> 00:12:15.760
+And we can see
+
+223
+00:12:15.760 --> 00:12:21.160
+here that it's got the recommendation to pursue the fix well documented, but
+
+224
+00:12:21.160 --> 00:12:24.840
+it's actually created the task in Rezonant and sent it to a coding agent.
+
+225
+00:12:24.840 --> 00:12:27.880
+So it's really gone all the way through there, but made sure
+
+226
+00:12:27.880 --> 00:12:31.920
+that it has solicited my opinion on how to do the kind of
+
+227
+00:12:31.960 --> 00:12:36.000
+coherency and strategy within our product before going there.
+
+228
+00:12:36.440 --> 00:12:39.440
+Okay, so if we have a look at this,
+
+229
+00:12:39.800 --> 00:12:42.880
+we can see here that we've got this product charter
+
+230
+00:12:43.040 --> 00:12:47.720
+chip task and Apr associated with it
+
+231
+00:12:47.720 --> 00:12:52.320
+and that that has completed the work end to end.
+
+232
+00:12:52.320 --> 00:12:56.360
+So obviously here you would then want an engineer to check it before
+
+233
+00:12:56.360 --> 00:13:02.560
+it submitted, but it's really trying to do a full autonomous PM workflow there. Now
+
+234
+00:13:04.120 --> 00:13:05.000
+the other thing
+
+235
+00:13:05.000 --> 00:13:08.800
+that it can do is when it sees that there is a ticket,
+
+236
+00:13:08.880 --> 00:13:13.280
+it will actually ping me with a different recommendation about this
+
+237
+00:13:13.320 --> 00:13:15.640
+kind of second ticket that we were just looking at.
+
+238
+00:13:15.640 --> 00:13:21.560
+So you can see here for the task complexity estimator what it's done.
+
+239
+00:13:21.560 --> 00:13:24.320
+Instead, if we have a look at its reply, is
+
+240
+00:13:24.320 --> 00:13:27.320
+it has not recommended that this goes straight to agent coding.
+
+241
+00:13:27.320 --> 00:13:31.640
+What it has recommended instead is that we write a PRD for this.
+
+242
+00:13:31.640 --> 00:13:33.520
+And I've given it a bit of guidance here.
+
+243
+00:13:33.520 --> 00:13:35.360
+So I've said, yeah, let's do that.
+
+244
+00:13:35.360 --> 00:13:37.040
+Here's here's what it said.
+
+245
+00:13:37.040 --> 00:13:40.320
+Strategically, it's a strong yes,
+
+246
+00:13:40.320 --> 00:13:43.400
+but it also overlaps with some other work that we are doing.
+
+247
+00:13:43.480 --> 00:13:47.200
+And it wants to write a short PRD up before proceeding.
+
+248
+00:13:47.200 --> 00:13:49.360
+And I've said you should do that.
+
+249
+00:13:49.360 --> 00:13:53.080
+But the important thing to understand here is that when we talk about
+
+250
+00:13:53.120 --> 00:13:57.760
+task complexity and story pointing, that is extremely individual per customer.
+
+251
+00:13:57.760 --> 00:14:01.520
+And so you need a way to tackle that as a fundamental part of the work.
+
+252
+00:14:01.680 --> 00:14:03.280
+So then it's again
+
+253
+00:14:03.280 --> 00:14:07.080
+kind of gone through the same process here, posted its recommendation.
+
+254
+00:14:07.080 --> 00:14:09.200
+And we can take a look at that.
+
+255
+00:14:11.200 --> 00:14:11.920
+Okay.
+
+256
+00:14:11.920 --> 00:14:14.920
+So there's a PRD.
+
+257
+00:14:15.800 --> 00:14:17.920
+And if we take a look
+
+258
+00:14:17.920 --> 00:14:20.920
+at what it's done here we can see
+
+259
+00:14:21.200 --> 00:14:22.520
+why should we pursue.
+
+260
+00:14:22.520 --> 00:14:26.120
+It reduces the ambiguity a bunch of things that explains
+
+261
+00:14:26.120 --> 00:14:31.600
+how it relates to a strategic work, explains a bunch of kind of related work,
+
+262
+00:14:31.640 --> 00:14:35.360
+and then also starts to try and understand
+
+263
+00:14:35.360 --> 00:14:39.760
+this kind of piece of complexity, understanding work that I had asked it to.
+
+264
+00:14:39.800 --> 00:14:42.840
+So that's really kind of how a product brain can
+
+265
+00:14:42.840 --> 00:14:46.920
+then really superpower a set of workflows.
+
+266
+00:14:46.960 --> 00:14:50.880
+Now also, what should of course happen is it should feed that work
+
+267
+00:14:50.880 --> 00:14:54.440
+finally back to the product brain itself.
+
+268
+00:14:54.440 --> 00:14:59.080
+So hopefully if we refresh here we can see there's product charter confusion.
+
+269
+00:14:59.080 --> 00:15:04.400
+Work has populated an input session that then the next time product brain work
+
+270
+00:15:04.400 --> 00:15:09.480
+runs will read that and it will improve the way it thinks about product work
+
+271
+00:15:09.480 --> 00:15:10.200
+going forward.
+
+272
+00:15:10.200 --> 00:15:13.480
+So you get a full cycle experience.
+
+273
+00:15:14.880 --> 00:15:15.520
+All right.
+
+274
+00:15:15.520 --> 00:15:18.200
+So you can build this yourself.
+
+275
+00:15:18.200 --> 00:15:22.440
+We critically use a GitHub repo to back this system,
+
+276
+00:15:22.520 --> 00:15:27.440
+because it means your engineers can also provide it with their own forms of input,
+
+277
+00:15:27.440 --> 00:15:30.440
+as well as the kind of inputs that we've shown today.
+
+278
+00:15:30.480 --> 00:15:33.720
+Working with a bunch of companies as well to think
+
+279
+00:15:33.720 --> 00:15:36.840
+about how to do this for different size of orgs.
+
+280
+00:15:36.840 --> 00:15:41.160
+I think if folks are familiar with OpenClaw, OpenClaw has a lot of
+
+281
+00:15:41.160 --> 00:15:45.840
+the same concepts, but actually configuring how you think about privacy,
+
+282
+00:15:45.960 --> 00:15:48.240
+the different MCP connectors that you want,
+
+283
+00:15:48.240 --> 00:15:52.040
+how you want to organize for teams, etc., and then how you want to tweak that over
+
+284
+00:15:52.040 --> 00:15:57.160
+time is the expertise that we have built up with a number of our design partners.
+
+285
+00:15:58.640 --> 00:15:59.720
+All right.
+
+286
+00:15:59.720 --> 00:16:04.400
+If you want to talk about this, this is a QR code.
+
+287
+00:16:04.440 --> 00:16:05.720
+I respond to every email.
+
+288
+00:16:05.720 --> 00:16:09.720
+We've also got a booth here that we can chat at.
+
+289
+00:16:09.720 --> 00:16:13.240
+But yeah, we'd love to take any questions that you've got.
+
+290
+00:16:13.280 --> 00:16:16.280
+I think I've managed to actually go ahead of time.
+
+291
+00:16:18.240 --> 00:16:20.280
+There's going to be a lot of questions.
+
+292
+00:16:20.280 --> 00:16:22.040
+So can we get a mic?
+
+293
+00:16:22.040 --> 00:16:25.040
+Just a couple of questions down the front here.
+
+294
+00:16:28.040 --> 00:16:31.040
+Got one over here and then one over here.
+
+295
+00:16:31.160 --> 00:16:33.160
+Sure. There'll be more after that.
+
+296
+00:16:33.160 --> 00:16:35.720
+Oh. Thank. You for your presentation.
+
+297
+00:16:35.720 --> 00:16:37.480
+Talking about privacy.
+
+298
+00:16:37.480 --> 00:16:43.160
+One thing that maybe it's not managing representation.
+
+299
+00:16:43.360 --> 00:16:47.880
+What about when a client ask you where my data is going?
+
+300
+00:16:47.920 --> 00:16:51.400
+Whenever you share with LLMs, like Afrobeat or
+
+301
+00:16:52.080 --> 00:16:54.400
+any models that you have behind.
+
+302
+00:16:54.400 --> 00:16:54.760
+Yeah.
+
+303
+00:16:54.760 --> 00:16:57.880
+So the the brain repo that
+
+304
+00:16:57.880 --> 00:17:01.640
+we have lives very much in customers domain.
+
+305
+00:17:01.640 --> 00:17:03.720
+It's not our repo. I mean this is our repo, right.
+
+306
+00:17:03.720 --> 00:17:04.520
+Because it's our company.
+
+307
+00:17:04.520 --> 00:17:07.840
+But for the design partners we've got it lives in their repo.
+
+308
+00:17:07.840 --> 00:17:12.680
+So from a privacy perspective, all the fundamental data there is
+
+309
+00:17:13.400 --> 00:17:14.000
+is stored
+
+310
+00:17:14.000 --> 00:17:18.320
+there in terms of like actually sending that conversation to LLMs for indexing.
+
+311
+00:17:18.360 --> 00:17:22.600
+Yes. You would have to reveal that as part of your kind of like third party
+
+312
+00:17:22.640 --> 00:17:26.520
+processing agreement or do an anonymization system.
+
+313
+00:17:26.520 --> 00:17:30.440
+So like if you look at our product brain, for example, that I've got here,
+
+314
+00:17:30.520 --> 00:17:36.200
+I'm nominally going to show you all of our like customer data,
+
+315
+00:17:36.440 --> 00:17:40.640
+except that like it goes through an anonymization process before it gets here.
+
+316
+00:17:40.680 --> 00:17:40.960
+Right?
+
+317
+00:17:40.960 --> 00:17:45.200
+So if you've got that plus a mapping that owning your team can see,
+
+318
+00:17:45.200 --> 00:17:48.240
+then none of that system is actually
+
+319
+00:17:48.240 --> 00:17:51.360
+sending data to Anthropic that they don't that they can do anything with.
+
+320
+00:17:51.360 --> 00:17:51.800
+If you see what.
+
+321
+00:17:59.600 --> 00:18:01.080
+Thanks for the presentation in the demo.
+
+322
+00:18:01.080 --> 00:18:02.640
+I'm myself.
+
+323
+00:18:02.640 --> 00:18:06.880
+You mentioned briefly that you use GitHub as a base
+
+324
+00:18:06.920 --> 00:18:08.960
+so you can actually connect with developers nicely.
+
+325
+00:18:08.960 --> 00:18:13.840
+Could you elaborate on the ways how developers then use the outputs?
+
+326
+00:18:13.840 --> 00:18:16.200
+Put in a git repo? Yes.
+
+327
+00:18:16.200 --> 00:18:16.880
+And yeah.
+
+328
+00:18:16.880 --> 00:18:19.440
+How it's like from the lifecycle perspective,
+
+329
+00:18:19.440 --> 00:18:22.640
+how it mentions the responsibilities between PM and developer.
+
+330
+00:18:22.800 --> 00:18:23.120
+Yeah.
+
+331
+00:18:23.120 --> 00:18:25.880
+So there's a couple of ways that developers can interact with this.
+
+332
+00:18:25.880 --> 00:18:28.840
+The first is our inputs have a manual folder.
+
+333
+00:18:28.840 --> 00:18:30.960
+Doesn't have anything in it right now because
+
+334
+00:18:30.960 --> 00:18:32.520
+we haven't processed anything manually.
+
+335
+00:18:32.520 --> 00:18:36.240
+But if a developer wants to put something in manually, they can do so.
+
+336
+00:18:36.240 --> 00:18:39.400
+But they can also just treat this like a normal GitHub repo, right?
+
+337
+00:18:39.440 --> 00:18:44.560
+So they can pull it down from their GitHub org and then interact it using whatever
+
+338
+00:18:44.600 --> 00:18:46.280
+coding agent of their choice
+
+339
+00:18:46.280 --> 00:18:50.080
+to then ensure that they can move faster from a coding perspective.
+
+340
+00:18:50.120 --> 00:18:53.720
+So I mean, like if they have the linear issue
+
+341
+00:18:53.720 --> 00:18:58.160
+and it references the the documents within that
+
+342
+00:18:58.160 --> 00:19:01.160
+repo, how it should look like from the developer standpoint.
+
+343
+00:19:01.200 --> 00:19:01.600
+Yeah.
+
+344
+00:19:01.600 --> 00:19:06.200
+So it really depends on there is no kind of one size fits
+
+345
+00:19:06.200 --> 00:19:09.600
+all with building the kind of system that allows flexibility
+
+346
+00:19:09.640 --> 00:19:13.000
+for different workflows and different kind of waves of engaging with it.
+
+347
+00:19:13.000 --> 00:19:16.920
+And so what we do with design partners is really trying to understand, like,
+
+348
+00:19:17.000 --> 00:19:19.600
+what are the initial workflows that would add a ton of value
+
+349
+00:19:19.600 --> 00:19:23.560
+but are also getting towards this like spectrum of autonomy.
+
+350
+00:19:23.560 --> 00:19:25.800
+And so the question kind of depends a bit on like,
+
+351
+00:19:25.800 --> 00:19:29.800
+how are they working, what are their core artifacts and that kind of thing.
+
+352
+00:19:29.800 --> 00:19:31.240
+So it's difficult to answer
+
+353
+00:19:31.240 --> 00:19:34.200
+kind of in the abstract, but hopefully that can seem a bit.
+
+354
+00:19:34.200 --> 00:19:34.760
+Of a step.
+
+355
+00:19:34.760 --> 00:19:39.000
+And the quick follow up, does it mean that ultimately you nudge
+
+356
+00:19:39.000 --> 00:19:43.200
+product managers to put their documents into the GitHub
+
+357
+00:19:43.200 --> 00:19:46.720
+instead of like Google Docs, so developers can actually access
+
+358
+00:19:46.760 --> 00:19:50.440
+and like grounder agents to what they are building for? Yes.
+
+359
+00:19:50.480 --> 00:19:51.480
+Yeah, that's that's
+
+360
+00:19:51.480 --> 00:19:55.160
+kind of a core concept of resonance, is that there's a lot of context
+
+361
+00:19:55.200 --> 00:19:57.760
+that's useful for coding agents that is currently kept in things
+
+362
+00:19:57.760 --> 00:20:02.000
+like Google Docs, which now to us anyway feel very backwards.
+
+363
+00:20:02.080 --> 00:20:04.280
+But, you know, you could in theory,
+
+364
+00:20:04.280 --> 00:20:08.400
+I don't think has an MCP connector that's super easy to use.
+
+365
+00:20:08.400 --> 00:20:13.000
+But yeah, you could ingest via MCP as well if you wanted to.
+
+366
+00:20:13.240 --> 00:20:13.880
+Thank you.
+
+367
+00:20:21.160 --> 00:20:23.160
+It's okay.
+
+368
+00:20:23.160 --> 00:20:27.400
+So the like all all the time
+
+369
+00:20:27.440 --> 00:20:30.520
+like like the input you are showing, they're like user stories.
+
+370
+00:20:31.080 --> 00:20:35.040
+They will probably build on on on each other relate and so on.
+
+371
+00:20:35.040 --> 00:20:39.600
+So which actually would require that you have to kind of refactor
+
+372
+00:20:39.600 --> 00:20:43.240
+your input to give like the current state of a user stories
+
+373
+00:20:43.240 --> 00:20:46.800
+or any ideas on on how how you work on this.
+
+374
+00:20:46.960 --> 00:20:49.680
+Yeah. So it does do that automatically.
+
+375
+00:20:49.680 --> 00:20:52.720
+So everything that's in the wiki, for example,
+
+376
+00:20:53.040 --> 00:20:56.000
+is very specific
+
+377
+00:20:56.000 --> 00:20:59.000
+in terms of the underlying tickets that it referenced.
+
+378
+00:20:59.000 --> 00:21:00.720
+Let me just see if I can find one here.
+
+379
+00:21:00.720 --> 00:21:04.520
+So you can see here there's a bunch of like linear references.
+
+380
+00:21:04.520 --> 00:21:07.640
+And as it goes through it will see it will basically do it
+
+381
+00:21:07.640 --> 00:21:10.080
+the same way as you do a diff of the GitHub.
+
+382
+00:21:10.080 --> 00:21:13.800
+It will do a diff of the linear to understand how stuff has progressed,
+
+383
+00:21:13.800 --> 00:21:17.520
+and then feed that into the wiki as appropriate.
+
+384
+00:21:19.360 --> 00:21:20.560
+Hi Emma.
+
+385
+00:21:20.560 --> 00:21:21.200
+Christ as.
+
+386
+00:21:21.200 --> 00:21:23.600
+Lord I think every product.
+
+387
+00:21:23.600 --> 00:21:27.000
+Manager has a love hate relationship with product
+
+388
+00:21:27.000 --> 00:21:30.160
+management tools and have done for the best however many years.
+
+389
+00:21:30.200 --> 00:21:31.640
+Do you see a world with Rezonant
+
+390
+00:21:31.640 --> 00:21:35.400
+where you're abstracting the need for them to interact with one of those tools?
+
+391
+00:21:35.400 --> 00:21:38.120
+So it's largely through an agent? Or do you?
+
+392
+00:21:38.120 --> 00:21:42.560
+Do you still see a UI interface for them in terms of how they do their job?
+
+393
+00:21:43.400 --> 00:21:48.680
+Yeah, I think that the tooling that you will need going forward is
+
+394
+00:21:48.680 --> 00:21:53.440
+more about like maintaining your strategy, maintaining your kind of product
+
+395
+00:21:53.440 --> 00:21:58.120
+principles, the necessarily like managing a lot of the tickets.
+
+396
+00:21:58.240 --> 00:22:01.200
+And I think the transition that a lot of AI native
+
+397
+00:22:01.200 --> 00:22:04.240
+teams have gone through already is that a ticket
+
+398
+00:22:04.240 --> 00:22:08.520
+is basically a full feature now, rather than something which is like,
+
+399
+00:22:08.560 --> 00:22:12.760
+you know, broken out into your front end and your back end and that kind of thing.
+
+400
+00:22:12.800 --> 00:22:14.960
+But yeah, I don't know.
+
+401
+00:22:14.960 --> 00:22:18.040
+We'll see how we'll see how far people, people push out.
+
+402
+00:22:20.600 --> 00:22:20.880
+Thank
+
+403
+00:22:20.880 --> 00:22:23.880
+you for the overview from the stuff that we work on.
+
+404
+00:22:23.880 --> 00:22:26.440
+A lot of it is compliance related and regulatory,
+
+405
+00:22:26.440 --> 00:22:29.440
+and therefore we have to be very specific with what we do.
+
+406
+00:22:29.440 --> 00:22:32.560
+How do you manage ownership of the
+
+407
+00:22:32.960 --> 00:22:36.080
+PRD, or the work that's put forward by the agents,
+
+408
+00:22:36.080 --> 00:22:38.320
+and ensuring that it is checked by a person
+
+409
+00:22:38.320 --> 00:22:41.360
+so that you can later on say, okay, this has been checked by a person
+
+410
+00:22:41.360 --> 00:22:44.600
+and we made a mistake versus the agent just came up with it.
+
+411
+00:22:44.680 --> 00:22:48.600
+Yeah, I mean, I think that's why the workflows have to be configurable
+
+412
+00:22:48.600 --> 00:22:53.040
+and also why we think this like agent human interface is very important
+
+413
+00:22:53.040 --> 00:22:57.520
+so that if you're running in a more regulatory domain, you can say
+
+414
+00:22:57.560 --> 00:23:01.040
+like it's never the case, for example, that an agent can write the code
+
+415
+00:23:01.040 --> 00:23:04.920
+without some kind of a documentation first, for example,
+
+416
+00:23:05.000 --> 00:23:06.840
+and that you can also build
+
+417
+00:23:06.840 --> 00:23:10.600
+an approval flows and that kind of thing which are actually documented.
+
+418
+00:23:10.640 --> 00:23:13.040
+I mean, in some ways it is an approval flow.
+
+419
+00:23:13.040 --> 00:23:16.720
+When there is a PR and you move it forward to the next layer.
+
+420
+00:23:16.720 --> 00:23:21.880
+But obviously as to whether or not people have like really read the PRD, I mean,
+
+421
+00:23:23.120 --> 00:23:25.080
+it depends on the underlying company
+
+422
+00:23:25.080 --> 00:23:29.120
+and how how good people are at meeting their compliance
+
+423
+00:23:29.120 --> 00:23:32.120
+goals, I guess.
+
+424
+00:23:32.960 --> 00:23:35.400
+Hi. Yeah.
+
+425
+00:23:35.400 --> 00:23:39.720
+You presented this sort of evolution of the PM role, and even there
+
+426
+00:23:39.720 --> 00:23:43.240
+you had the agent automatically creating code off the back of it.
+
+427
+00:23:43.280 --> 00:23:47.360
+So it seems like the line between PM and engineer blurring now.
+
+428
+00:23:47.400 --> 00:23:50.400
+And so where do you sort of see that going actually.
+
+429
+00:23:50.600 --> 00:23:53.240
+Yeah I mean I think the
+
+430
+00:23:53.240 --> 00:23:56.040
+there's two directions that this seems to be heading.
+
+431
+00:23:56.040 --> 00:23:59.800
+One is that you end up with this kind of product builder role,
+
+432
+00:23:59.800 --> 00:24:03.360
+which is PMS moving down, and then you are also ending up
+
+433
+00:24:03.360 --> 00:24:06.520
+with PMS moving up, which is they move into a much more of a focus
+
+434
+00:24:06.560 --> 00:24:09.640
+kind of GM and strategy role.
+
+435
+00:24:09.680 --> 00:24:13.760
+I don't think that necessarily companies will there'll be one
+
+436
+00:24:13.760 --> 00:24:15.520
+winner in the short term,
+
+437
+00:24:15.520 --> 00:24:18.520
+I think from like a Stripe perspective and a Google perspective.
+
+438
+00:24:18.520 --> 00:24:23.280
+For example, they've always run more as PMS, being GM
+
+439
+00:24:23.320 --> 00:24:27.720
+type roles anyway, and this will only kind of accentuate that.
+
+440
+00:24:27.720 --> 00:24:31.840
+And so if I had a prediction, it's probably more that way.
+
+441
+00:24:31.840 --> 00:24:36.360
+And you'll see engineers moving more into kind of the product builder type
+
+442
+00:24:36.400 --> 00:24:37.000
+type roles.
+
+443
+00:24:37.000 --> 00:24:40.920
+But I think a lot of experimentation is also happening right now.
+
+444
+00:24:42.480 --> 00:24:43.200
+Thanks for the talk.
+
+445
+00:24:43.200 --> 00:24:44.440
+It's been really interesting.
+
+446
+00:24:44.440 --> 00:24:47.640
+I can see how this would be a great tool for a greenfield project.
+
+447
+00:24:47.680 --> 00:24:49.040
+Team or company,
+
+448
+00:24:49.040 --> 00:24:52.640
+but how would an existing company with millions of lines of code
+
+449
+00:24:52.640 --> 00:24:57.400
+or documents all across confluence or something like that?
+
+450
+00:24:57.440 --> 00:25:00.840
+How would they how would you ingest that information at scale?
+
+451
+00:25:00.880 --> 00:25:03.400
+And wouldn't that be hugely costly?
+
+452
+00:25:03.400 --> 00:25:03.920
+Yeah.
+
+453
+00:25:03.920 --> 00:25:07.400
+So in terms of kind of the typical rollout.
+
+454
+00:25:07.440 --> 00:25:08.000
+So a company
+
+455
+00:25:08.000 --> 00:25:12.040
+typically starts with like a team kind of seeing what this looks like.
+
+456
+00:25:12.080 --> 00:25:12.400
+Right.
+
+457
+00:25:12.400 --> 00:25:16.400
+And one of the most important things about kind of
+
+458
+00:25:16.440 --> 00:25:21.160
+I think deploying this kind of product brain infrastructure into a company
+
+459
+00:25:21.160 --> 00:25:25.280
+is understanding, like, okay, how are their teams actually laid out
+
+460
+00:25:25.280 --> 00:25:28.600
+and how are you going to ingest data over time in a way
+
+461
+00:25:28.600 --> 00:25:31.600
+that kind of scales with the rate of change?
+
+462
+00:25:31.600 --> 00:25:34.600
+And really every product brain needs to look a little bit
+
+463
+00:25:34.600 --> 00:25:38.480
+different for the company for the rate of change of data.
+
+464
+00:25:38.480 --> 00:25:42.760
+And then it needs to be managed to their cost parameters.
+
+465
+00:25:42.760 --> 00:25:45.840
+So what we are aiming to do through the kind of design
+
+466
+00:25:45.840 --> 00:25:50.000
+partnerships we've got is understand how much consistency there is,
+
+467
+00:25:50.000 --> 00:25:54.920
+so that you can actually have a system that helps to initialize a product brain
+
+468
+00:25:54.920 --> 00:25:59.280
+without us having to spend a lot of time consulting on it, essentially,
+
+469
+00:25:59.280 --> 00:26:00.720
+because there's a lot of different ways
+
+470
+00:26:00.720 --> 00:26:04.080
+that companies are structured and that kind of thing.
+
+471
+00:26:04.120 --> 00:26:07.400
+So yeah, I think it's for us, it's an art right now
+
+472
+00:26:07.400 --> 00:26:11.920
+that we want to turn into a science, well, a codified science ideally.
+
+473
+00:26:13.800 --> 00:26:16.080
+Are there any further questions?
+
+474
+00:26:16.080 --> 00:26:19.080
+Oh, we've got one over here.
+
+475
+00:26:22.040 --> 00:26:24.040
+In terms of the workflow.
+
+476
+00:26:24.040 --> 00:26:28.240
+Does resonance send this straight into the agent to start coding
+
+477
+00:26:28.240 --> 00:26:34.120
+or Eagle straight to egleston human face before coding actually starts.
+
+478
+00:26:34.160 --> 00:26:39.040
+So the way that our product brain works is it uses the Rezonant
+
+479
+00:26:39.400 --> 00:26:42.880
+API to actually create those coding agent jobs.
+
+480
+00:26:42.880 --> 00:26:47.880
+And then that creates PRS on top of main, which are then reviewed by a human.
+
+481
+00:26:47.960 --> 00:26:49.560
+So that's how that's how I work.
+
+482
+00:26:49.560 --> 00:26:52.560
+But different people do at different ways.
+
+483
+00:26:53.160 --> 00:26:55.520
+Okay. I think that's all the questions.
+
+484
+00:26:55.520 --> 00:26:58.520
+Emma, thank you ever so much for a fantastic job.
+
+485
+00:27:05.920 --> 00:27:07.280
+Up next we have

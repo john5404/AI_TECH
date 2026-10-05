@@ -1,0 +1,533 @@
+[00:00:00.080] I would like you to give it up for Amit.
+[00:00:03.560] Kushwaha from NVIDIA.
+[00:00:12.080] Whilst Amit is getting set up I will.
+[00:00:17.400] Realize I haven't
+[00:00:18.320] got all my notes on my machine.
+[00:00:22.600] So you're going to be talking about benchmarking the agent era:
+[00:00:26.440] the agent era and you're ready to go, so I will leave you to it.
+[00:00:32.120] Thank you. Thank you very much, Amit.
+[00:00:34.520] My name is Amit.
+[00:00:35.560] I'm a principal solutions architect at NVIDIA,
+[00:00:38.560] and we live in the
+[00:00:41.680] Deep Learning Solutions Department.
+[00:00:43.080] And one of the most important things that we care about
+[00:00:46.000] will have benchmarks that will present real-world workloads.
+[00:00:49.800] However, these benchmarks have been changing over the last six
+[00:00:52.840] last one and a half years.
+[00:00:54.560] We started with simple chat bot applications
+[00:00:57.480] where now we are prepared into the agent.
+[00:01:00.480] There is no more single input output.
+[00:01:02.800] It's much more complex. Workflows are running.
+[00:01:05.280] Agents are calling multiple tools dealing with multiple context lengths.
+[00:01:10.320] However, the benchmarking has not kept up with it.
+[00:01:13.640] So in the next 30 minutes I'm going to talk about three three things one
+[00:01:17.960] what does the agent benchmark look workload looks like?
+[00:01:21.840] Second, what are the optimizations that already exist to run these
+[00:01:26.600] workloads efficiently?
+[00:01:27.840] And third, what will the current benchmarks actually miss?
+[00:01:31.480] And I'm going to conclude with giving an example
+[00:01:35.040] of a given example of a benchmark that is trying to close that gap
+[00:01:38.960] and then also share some learnings on what is in the future,
+[00:01:42.040] what is still missing, and what we still need to kind of cover up.
+[00:01:46.280] Before we start, let's
+[00:01:48.600] look at what exactly has changed.
+[00:01:51.560] So on the left, what you see is the kind of old chatbot that when I say
+[00:01:55.960] old chatbot data, what you mean is most of the conversations are single turn.
+[00:01:59.840] You asked a question, you get a response back.
+[00:02:02.640] Context were very small from one K to 4K tokens.
+[00:02:07.600] The output tokens were also small.
+[00:02:09.040] Depending on what kind of questions you are asking,
+[00:02:10.720] you typically get a shorter response.
+[00:02:12.360] So the context means that the LLMs were producing as output was much smaller
+[00:02:18.040] wherever there was no concept of tools, these agents
+[00:02:22.600] or these applications were not using tools.
+[00:02:26.560] Now, in the agentic workloads, what we are seeing there are dozens of tool calls.
+[00:02:30.840] And I'll give you concrete examples of what I mean.
+[00:02:33.760] The LLMs are getting called multiple times.
+[00:02:37.920] The context lengths have exploded from tens of thousands
+[00:02:40.760] to hundreds of thousands. Context lengths.
+[00:02:43.200] The output tokens are also increased from hundreds
+[00:02:45.800] to thousands of tokens that these LLMs are producing.
+[00:02:49.880] And we are using tools.
+[00:02:51.800] Having most of these workloads are using different kinds of tools
+[00:02:55.680] to achieve the tasks that we have asked them to do.
+[00:02:59.080] So the benchmark that scored yesterday on this slide doesn't
+[00:03:02.800] say anything about the real workloads that are currently exist.
+[00:03:07.880] And before
+[00:03:08.640] we talk about benchmarking agent workflows, let look.
+[00:03:12.680] Let's look at a simple example of what an agent workload looks like
+[00:03:18.480] here.
+[00:03:20.320] The the user is actually asking the LLM
+[00:03:23.040] to fix a flaky test in their code base.
+[00:03:26.600] So this is a user input.
+[00:03:28.960] After that you see a series of calls.
+[00:03:31.800] This is where the LLM takes the user input, comes back with a response.
+[00:03:36.640] And the response in this case is oh, go and check this certain
+[00:03:39.880] file and grab certain things in this file
+[00:03:43.640] based on that response.
+[00:03:45.240] Now a tool is run,
+[00:03:46.400] and this tool could be anything that is sitting on your Linux terminal.
+[00:03:49.880] It could be bash scripts, it could be graphs, it could be web search.
+[00:03:55.120] And then it keeps on doing that.
+[00:03:57.480] It feeds that input back to the LLMs at the new information,
+[00:04:01.880] provides a new response, and tell it to go and look into the next file.
+[00:04:05.600] Then the tool goes and gets into the next part.
+[00:04:07.560] So this this whole trajectory where you have a single user input in the
+[00:04:11.320] beginning can go on for 20 to 40 times, depending on how complex the workflow is.
+[00:04:16.600] And a few things to note here.
+[00:04:18.960] The portion in green is what is being run by or what is running on a GPU.
+[00:04:24.600] The portion on in purple is typically run on on CPUs, so it's
+[00:04:29.360] kind of a mix of a workload where GPU and CPU kind of interplay to solve it.
+[00:04:33.920] Whole problem.
+[00:04:35.040] And just to reiterate what I said, one user message can lead to 20 to 40 tool calls.
+[00:04:41.760] Most of the tokens that are
+[00:04:43.120] generated are actually at this step when you are calling the two.
+[00:04:46.960] This is where most of the tokens are being generated.
+[00:04:49.880] The two lists, calling multiple files, reading multiple files,
+[00:04:52.640] and then feeding that information attack into the other well.
+[00:04:55.520] So that's where kind of the most tokens are input.
+[00:04:59.760] And the output tokens are very small.
+[00:05:01.800] And the reason
+[00:05:02.400] being the output of the LLMs are typically just calling to discuss
+[00:05:06.360] giving small instructions on what to do, which tool to call, and how to call it.
+[00:05:10.120] So typically what you see is the output tokens are much smaller
+[00:05:13.200] than what we would have seen in the older era.
+[00:05:16.520] And again, this is an example for a coding agent.
+[00:05:18.800] So the talk will be mostly focused on the coding agent side of things.
+[00:05:23.000] This workload might look different
+[00:05:24.800] if you are talking about different kinds of agent.
+[00:05:26.760] But here the focus is primarily on the coding agents.
+[00:05:32.240] So looking at that workload, there are few optimizations
+[00:05:35.600] that are already kind of present in the production systems.
+[00:05:40.160] And these are very critical to make that workload work.
+[00:05:44.080] Again, going back to kind of the current
+[00:05:48.160] setup that I shared in the previous slide, in the first turn,
+[00:05:52.680] this is your user input and you get an output in the second turn.
+[00:05:57.960] This whole thing could be cached.
+[00:06:00.200] And this is the optimization
+[00:06:02.640] that I'm talking about for most of the agent workloads.
+[00:06:05.520] Caching becomes very, very important because what you are doing is piling up.
+[00:06:10.000] By the time you are at the 40th turn,
+[00:06:12.960] a lot of context has been created, but you don't need to do all the work.
+[00:06:18.120] If you are caching your output inputs properly, then you only need to do
+[00:06:22.720] work on the new tokens that are being generated in this whole workflow.
+[00:06:27.680] So at the end of kind of this, this 40th turn, for example,
+[00:06:32.120] most of this is cached and you don't have to do any work on it.
+[00:06:36.240] The new part is only where you run your GPUs and actually to make the work,
+[00:06:40.600] if the caching was not enabled, you can imagine
+[00:06:43.520] a lot more work needs to be done, and there's consequences
+[00:06:46.240] on one performance on time to first token and different kinds of metrics.
+[00:06:49.880] So caching becomes kind of a must have in most of these agentic workloads.
+[00:06:55.960] And as you see, the
+[00:06:57.800] vast majority of output input tokens by the end could be cached
+[00:07:02.120] because it's just building up on the previous display.
+[00:07:06.880] The caching itself is not the full story,
+[00:07:10.800] especially when you are serving these models on multiple replicas.
+[00:07:15.400] Your turns have to kind of get on the right replica.
+[00:07:19.560] For example, if you turn one in, the previous slide landed on replica one,
+[00:07:24.160] and this is just an example of you could have a model serving multiple times.
+[00:07:28.160] So these are three replicas
+[00:07:29.800] of the same model that you are using neural network things.
+[00:07:33.120] So turn one ended up on replica K.
+[00:07:36.800] If you do a round robin kind of a setup
+[00:07:39.080] the turn you might end up on some other replica.
+[00:07:42.200] But this replica does not have the cache that we talked about.
+[00:07:45.680] So the other thing that becomes very important in a
+[00:07:49.000] kind of setup is to make sure that your turns
+[00:07:53.000] land on the same replica where your cache is stored.
+[00:07:56.840] So this is what is kind of shown here in KV cache-aware routing,
+[00:08:00.560] where turn one lands on replica one, we make sure that the turn
+[00:08:04.560] two also lands on replica one, so that we can leverage the cache
+[00:08:08.280] that is stored already on that side.
+[00:08:11.800] And so there are multiple ways of doing the session idea.
+[00:08:16.440] We just keep track of the session and make sure whatever request
+[00:08:20.760] was served on one replica actually goes to the same replica.
+[00:08:24.200] Or you can do more clean, cache-aware kind of setup.
+[00:08:30.760] Okay,
+[00:08:31.720] so it's just K and V matrices you can think about.
+[00:08:35.200] And the LLM world this is how you store the history.
+[00:08:37.640] And it's kind of a maybe I should have explained.
+[00:08:39.800] It's a very generic term that is used in a language.
+[00:08:42.280] You can think of it as storing the history of what we have already
+[00:08:45.360] been.
+[00:08:48.480] So both
+[00:08:49.400] these optimizations that I talked about are on the pre-filled side.
+[00:08:52.720] So this is where the input is getting to your elements.
+[00:08:55.800] Now the other the third kind of optimization that
+[00:08:58.680] that goes into an agentic workload is on the decoder side.
+[00:09:02.720] So there are two workloads for a large language model.
+[00:09:06.160] One is when you provide your input and the LLLM is just the input,
+[00:09:10.600] and the second is when the LLM starts producing the output.
+[00:09:14.600] So the first set of prefix caching in cash primarily deals on the pre-fill phase.
+[00:09:20.040] On the pre-fill side of the input side, this optimization is on the output side.
+[00:09:24.760] When the LLLM starts producing the output, how can you make that output
+[00:09:29.280] go as fast as possible?
+[00:09:30.960] And this is where this optimization on
+[00:09:33.960] speculative decoding is becoming very, very common.
+[00:09:37.480] The high level idea is
+[00:09:39.720] this is the input to your big model.
+[00:09:42.280] And what happens is a small model called the draft
+[00:09:45.520] model helps this big model to go fast.
+[00:09:48.960] And the way it does it, you provide the input.
+[00:09:52.920] The draft model, which is much smaller, can run way faster than the larger model.
+[00:09:57.240] So it produces these four tokens.
+[00:09:59.120] It says Brown fox soft over
+[00:10:02.840] the job of target model.
+[00:10:04.120] The big model is just to verify these tokens.
+[00:10:07.440] And it can do that in a single request.
+[00:10:09.960] And that's where the efficiency comes in.
+[00:10:13.000] So you start with an input.
+[00:10:15.040] The small model goes and predicts four tokens in advance.
+[00:10:19.160] The big model comes in and just checks all these four tokens in one row.
+[00:10:23.200] And this is where you get the efficiency.
+[00:10:26.440] So in the end what ends up happening is you produce three tokens in just one task.
+[00:10:31.560] Whereas if you didn't have this step of speculative decoding,
+[00:10:36.320] the large model would have had to produce these tokens one by one.
+[00:10:40.440] So roughly you can think you get three times
+[00:10:42.600] the speed up just by using the speculative decoder.
+[00:10:46.400] And there are multiple flavors of speculative decoding.
+[00:10:50.280] One is where actually go and train these draft models.
+[00:10:54.040] You have.
+[00:10:54.520] You use the data from the big model and then train the small draft models.
+[00:10:58.480] What is happening?
+[00:10:59.320] More and more, these draft models are coming back with the model itself.
+[00:11:04.920] So you might have heard about the terminology multi token prediction MDPs,
+[00:11:09.360] which is basically these draft tokens coming back with the new models.
+[00:11:13.880] So you can essentially just turn it on.
+[00:11:16.760] And your model should be able to use this optimization one right away without
+[00:11:21.400] having to do much.
+[00:11:23.920] So as I said three tokens in one pass.
+[00:11:26.560] And I'll come to the caveat.
+[00:11:28.960] And I have a slide that will show what what happens when you do this.
+[00:11:32.880] But essentially I talked about three optimizations
+[00:11:38.240] prefix caching cache and then speculative decoding.
+[00:11:42.480] The reason I talked about them, because these are kind of the foundational
+[00:11:46.400] optimizations that you would do for Agent Perkins.
+[00:11:49.880] Whereas if you looked at the current existing benchmarks,
+[00:11:54.160] it doesn't capture all the complexity that I just talked about.
+[00:11:58.080] Most of the current benchmarks used fixed states.
+[00:12:01.520] That means if you have done any sort of benchmarking,
+[00:12:04.040] if you are trying to answer the question, oh, I have a particular workload,
+[00:12:07.520] how many did you use?
+[00:12:08.320] I need what typically is done.
+[00:12:10.600] You choose your cell and our cell and strictly a fixed value.
+[00:12:15.800] So you keep the shape fixed.
+[00:12:18.680] You don't have any tuple calls.
+[00:12:20.480] This this is on the left is basically the current status or the benchmark.
+[00:12:24.240] It looks like fixed input output.
+[00:12:27.280] No tool talks.
+[00:12:28.280] And most of the optimizations that I just talked about are turned off
+[00:12:33.400] and a single time.
+[00:12:34.680] So no concept of multi terminal.
+[00:12:36.520] You're talking about project Tree which is completely different
+[00:12:40.200] from what we see in agentic workloads at the particle level.
+[00:12:43.880] Now what we miss there is no fixed.
+[00:12:46.240] As I saw the project tree keeps growing as you are interacting with your system.
+[00:12:50.280] It's collecting information from the tool and the information to the LLMs
+[00:12:54.040] continuously grown so the fixed chip misses the fiction.
+[00:12:58.480] There is no concept of multithreading in this original benchmarking board.
+[00:13:02.280] Most of the optimizations that I talked about prefix caching Korea,
+[00:13:06.080] where and speculatively coding are mostly turned off and no tools.
+[00:13:12.040] And that's where the that's where the main issue is.
+[00:13:15.640] The performance that we are measuring right now
+[00:13:17.960] doesn't represent the real workload.
+[00:13:22.640] It's not just this slide.
+[00:13:25.640] When you talk about agent workflows, even talking about performance
+[00:13:29.600] become a little tricky. You can't talk about means and medians.
+[00:13:32.520] Now you have to talk about in terms of distributions.
+[00:13:37.200] And what I'm showing here is kind of two distributions.
+[00:13:41.120] And you can think of the first one is time to first token.
+[00:13:44.360] So this is how fast you get the token back from the elm.
+[00:13:48.080] The right one is token speed.
+[00:13:49.600] So how fast you took your element is producing the tokens.
+[00:13:53.920] And the way you produce these histograms.
+[00:13:57.360] You run your workload against the hardware.
+[00:14:00.680] You capture all the requests that are going to your large language models.
+[00:14:05.760] You, you, you
+[00:14:08.440] collect all the time to first tokens that you get from these requests.
+[00:14:12.080] And you create the system Ram.
+[00:14:14.200] So left is good.
+[00:14:15.800] That means you are getting your response back very fast.
+[00:14:18.440] In this
+[00:14:20.240] right is bad.
+[00:14:21.160] That means your token is taking longer and longer for you,
+[00:14:25.240] taking longer and longer for you to get better at once.
+[00:14:29.320] Whereas on the on the other distribution
+[00:14:32.240] left is bad because that's slow generation of tokens.
+[00:14:36.680] Right is good.
+[00:14:37.560] You're generating more tokens and the way
+[00:14:41.360] and your user experience kind of dies on those tails.
+[00:14:45.920] So even if a lot of your requests sit in this,
+[00:14:50.320] if the users start experiencing this tail, their experience is going to be hurt.
+[00:14:55.760] So you want to make sure you clip these P90 five to a reasonable register
+[00:15:01.600] that kind of matches with your customers experience.
+[00:15:06.160] So all this slide is trying to say in the agent workload
+[00:15:10.480] you can't just stop about mean median.
+[00:15:12.480] You have to look at distributions.
+[00:15:13.960] You have to talk about metrics in terms of distributions in terms of P90
+[00:15:18.960] five, P25 and P90 five.
+[00:15:22.040] If you don't remember, your stats will be 9595 of the request.
+[00:15:27.080] 95% of the request have time to first open better than this value.
+[00:15:33.440] P25 means
+[00:15:35.080] 75% of the request have faster speed than that.
+[00:15:39.800] 2520. The.
+[00:15:45.080] So this is this is kind of a
+[00:15:48.360] deeper dive on the distribution.
+[00:15:50.720] So ignore if you don't kind of follow this slide.
+[00:15:54.840] But just wanted to mention this
+[00:15:58.480] again I'm plotting the same distribution that was in the previous
+[00:16:01.560] slide for speed how fast you took concept using the speed.
+[00:16:05.680] But now I have two distributions
+[00:16:08.640] on the green one I have speculated decoding on.
+[00:16:12.440] So this is the optimization that I talked about where you can generate
+[00:16:15.720] three tokens in one year versus just waiting at a time.
+[00:16:20.040] And what you see is the distribution is towards the right.
+[00:16:23.680] So the speeds in general are much higher for this.
+[00:16:28.400] Distribution with with MPP or speculative decoding
+[00:16:33.080] on whereas distribution for for blue, which does not have speculatively coded
+[00:16:37.440] on, is actually much slower than than the other one.
+[00:16:41.440] But if you're not looking at the right metric, for example,
+[00:16:44.440] if I look at the P5 value, which is 95% of
+[00:16:49.880] my requests are producing outputs faster than this value for this distribution,
+[00:16:54.040] and 95% of my requests are producing faster tokens than this value.
+[00:17:00.440] For this distribution,
+[00:17:02.960] your situation will be reversed.
+[00:17:04.280] The green looks worse here, whereas the blue looks better
+[00:17:09.320] and which is not the complete picture.
+[00:17:11.280] You are actually penalizing a very good optimization where most of your requests
+[00:17:16.240] are actually sitting on the right side, just because you chose the wrong.
+[00:17:20.880] In this sense, I'm saying wrong, but for some people, maybe
+[00:17:26.440] five is the criteria that they don't want to satisfy.
+[00:17:29.240] For our case, what turned out was instead of P5, we should be looking at
+[00:17:33.760] P25, because what we are doing is we are unnecessarily penalizing
+[00:17:39.840] kind of an artifact of speculatively loading
+[00:17:43.200] again, the goal.
+[00:17:44.080] If you don't understand the detail, that's fine.
+[00:17:45.760] The goal of this slide is when you're thinking about percentiles,
+[00:17:49.560] when you're thinking about silver, you need to take a deeper, deeper dive on
+[00:17:53.440] what what different optimizations are doing to your distributions
+[00:17:57.280] and how do you want to match them against customer expectations.
+[00:18:01.320] So it does require kind of a two bit more in-depth kind of digging into your data,
+[00:18:06.640] rather than kind of simple chatbot style workloads.
+[00:18:14.320] The other thing that you need to think about.
+[00:18:16.960] So I have two colorful blocks here.
+[00:18:20.520] Different rows are basically user,
+[00:18:23.360] user one, user two, user three, user four.
+[00:18:26.320] And what this slide is trying to convey is if you ignore the tools
+[00:18:31.400] tool part of it, you're not really measuring the right
+[00:18:35.280] workload again.
+[00:18:37.120] So on the left side I'm assuming there is no tool call.
+[00:18:40.920] So there is none of that purple block that I showed where the
+[00:18:45.760] kind of things are running on the CPU.
+[00:18:48.240] In that case, what you ended up saying is user one, user
+[00:18:52.080] two, user three, user four
+[00:18:53.240] are fully packing my elements or fully packing my GPUs.
+[00:18:56.480] So this whole bridge is basically when your large language model is being called.
+[00:19:02.520] But in
+[00:19:03.000] reality, that's not the case when you are running close.
+[00:19:06.200] This is not how your GPUs look like.
+[00:19:08.280] You're not continuously kind of keeping your GPS busy.
+[00:19:12.200] What is happening is you run your large language models and then actually
+[00:19:18.560] you are running tool calls which are which are running on your CPU.
+[00:19:22.560] So actually your GPU is not doing any work during that time.
+[00:19:26.400] And depending on how big that variation
+[00:19:29.680] is, you can actually support more users because you are effectively
+[00:19:34.360] not packing GPUs as much as you can.
+[00:19:39.080] So just ignoring the concept that there is no tool actually ends up
+[00:19:43.760] predicting the wrong concurrency or wrong workload
+[00:19:47.480] that that that you can support on your hardware.
+[00:19:51.480] And there are some metrics there, like if you assume
+[00:19:53.960] one call takes one second,
+[00:19:56.960] if you have a tool call that takes one second, two and half of your areas,
+[00:20:01.400] you can actually support twice the number of users than you thought,
+[00:20:05.280] because a bunch of that work load is being done on CPU two.
+[00:20:09.360] So again, that the crux of this slide is make sure you are representing
+[00:20:13.840] your workload correctly, especially in a generic workloads.
+[00:20:16.840] Those gray regions where this stuff is being run on CPU is very important,
+[00:20:21.160] and that kind of helps you getting the right number of
+[00:20:24.480] kind of users you can support for a given worker.
+[00:20:28.560] So that's the tool side of things.
+[00:20:32.360] Now this this is the last piece
+[00:20:34.120] on kind of what is missing in the current workloads.
+[00:20:37.280] And this is again
+[00:20:40.120] a subtle piece when you're talking about agent workloads.
+[00:20:43.640] Again
+[00:20:45.400] the metrics take some time to stabilize.
+[00:20:48.160] So if you are looking at the same metrics that are talked about,
+[00:20:51.240] the time to first token and speed,
+[00:20:55.480] you can see like in the beginning
+[00:20:57.400] when the cache is not warmed up, things are still in the transient state.
+[00:21:02.920] Your metrics is still evolving.
+[00:21:05.120] So if you would have measured your performance at this point
+[00:21:09.240] and assume that your slow was 10 seconds for TTFT, you would have said that
+[00:21:15.040] this deployment is filled, that it's a lower, which is not the case.
+[00:21:19.800] It's just that this is still in the ground state.
+[00:21:22.640] It starts stabilized yet.
+[00:21:24.440] And that is just because again, with the agent workflows,
+[00:21:27.800] the caches are coming into play.
+[00:21:29.160] There are much more high level of optimizations that are coming into play.
+[00:21:32.440] So they need time to stabilize.
+[00:21:35.240] So make sure we are looking at this metrics.
+[00:21:38.920] You are sure that the metrics
+[00:21:41.400] that you are kind of focused on is has stabilized.
+[00:21:44.440] And some curves like that where you plot the metrics over time
+[00:21:48.280] and see if you see flat flatness towards the end is a way to do that.
+[00:21:53.160] And just to reiterate the same point, the same story here holds for the speed.
+[00:21:58.720] So if these were your slow lines, you would have said that this is
+[00:22:02.000] a bad deployment and you would have said, now we need you the more details,
+[00:22:05.880] whereas if you would have just let the system stabilize,
+[00:22:08.920] you would have said,
+[00:22:09.480] this is a perfectly well deployment which matches both of these SLOs.
+[00:22:16.480] So now I just want to
+[00:22:17.640] give you an example of a benchmark that is trying to close this graph.
+[00:22:23.080] This is a benchmark from artificial analysis.
+[00:22:24.960] It's a third party benchmarking company.
+[00:22:28.440] And they came up with this benchmark a couple of weeks ago.
+[00:22:34.040] The results are still not out.
+[00:22:35.840] So in a few weeks of time you can see different
+[00:22:38.200] hardware players and how they did on this benchmark.
+[00:22:41.080] But it does enable most of the things that we talked about.
+[00:22:45.520] KV cache-aware routing in multi-tenant is along with speculative decoding,
+[00:22:48.920] the slow based setup that we just talked about.
+[00:22:52.920] It's it's for two models deep before and GPT us 120 for now.
+[00:22:57.880] And this this list will grow.
+[00:23:00.400] And the way they are going to end the and the question that they are trying
+[00:23:03.920] to answer is they are given three slots, for example, there
+[00:23:09.280] where they have an SLO, how fast your alarm
+[00:23:12.120] should generate the tokens, what is the time to first token.
+[00:23:16.680] And now you can imagine another column here
+[00:23:19.440] which says to meet this as a loan for a given hardware.
+[00:23:23.480] How many users can I sustain?
+[00:23:25.000] So that's the question that they are trying to answer for each of these slots.
+[00:23:29.080] What's the maximum number of users a given hardware can sustain.
+[00:23:33.720] And you should see numbers for different hardware and things like that.
+[00:23:36.520] And they have curated this whole data set multi-tenant trajectory
+[00:23:40.880] real world data set.
+[00:23:42.600] So this is trying to close that gap.
+[00:23:45.400] In addition to that, it will also show kind of what metrics
+[00:23:49.400] and kind of some some per dollar metrics also.
+[00:23:54.080] So keep an eye out attention analysis is
+[00:23:59.120] this benchmark is going to start kind of closing some of the gaps
+[00:24:02.680] that I talked about. And it's going
+[00:24:03.880] to get more and more towards the real agentic workloads like that.
+[00:24:07.760] Most of the production applications are.
+[00:24:12.760] Just bringing everything together.
+[00:24:15.600] We talked about multi-tenant trajectories, very important.
+[00:24:19.880] We talked about different kinds of optimization, caching and routing
+[00:24:23.640] speculative decoding.
+[00:24:25.720] We talked about how to think about performance
+[00:24:28.800] in terms of the sellers rather than means and medians.
+[00:24:31.880] We talked about how tools become very important
+[00:24:34.440] in this case, and we talked about the steady state
+[00:24:37.560] to make sure that the metrics, the metrics that is, you are not measuring something
+[00:24:41.280] that is still in the transient state and has has stabilized.
+[00:24:45.600] Again, as I said, this is still the beginning.
+[00:24:47.480] This is like the bread and butter of agentic verticals.
+[00:24:51.480] What's still missing is a lot.
+[00:24:53.960] And this field is going to still evolve and we are going to get better and better
+[00:24:58.240] multi-agent workflows.
+[00:24:59.720] Still, I'm talking about single trajectory one agent doing interacting with two.
+[00:25:03.240] How about when multiple agents are interacting?
+[00:25:05.120] What do you think? How do you think
+[00:25:06.120] about kind of benchmarking in that case quality in the cloud?
+[00:25:10.240] I kind of skipped the whole
+[00:25:11.280] accuracy is how good your agent is, how fast you can solve something.
+[00:25:14.680] I primarily focused on performance, but you need to couple these things together,
+[00:25:19.920] how fast your model can run
+[00:25:21.160] and how good is the model actually solving a particular task.
+[00:25:24.760] Long running sessions agents are becoming longer and longer.
+[00:25:28.320] You can let their agents run for two days.
+[00:25:30.280] Three days. How do you think about performance data?
+[00:25:32.640] Because now you're getting cash, or cash is continuously growing.
+[00:25:36.040] You need to manage that memory somehow.
+[00:25:39.160] Heterogeneous workload.
+[00:25:40.160] This was all coded.
+[00:25:41.280] How about different kinds of agent for close CPU coupling?
+[00:25:46.000] We didn't even talk
+[00:25:46.840] about how the CPU comes into play,
+[00:25:48.440] which is kind of talked about delays and things like that.
+[00:25:51.160] But in this case, now GPU and CPU have to play together to make things
+[00:25:56.720] work efficiently.
+[00:25:58.840] And there are different kinds of metrics.
+[00:26:00.320] You can talk about task completion time rather than what what I talked about.
+[00:26:03.880] So a lot of work on what the good metrics look like.
+[00:26:07.240] So so in short, today's benchmarks have caught up to chat
+[00:26:11.120] bot area and kind of chatbot world.
+[00:26:14.480] But the benchmarks for word are still being built
+[00:26:18.600] and we are just getting started.
+[00:26:21.440] There's still a long way to go, but benchmarks like it.
+[00:26:25.800] Artificial intelligence agent for benchmark is trying to close that gap.
+[00:26:32.360] With that, I'm going to
+[00:26:33.160] end my talk and happy to take any questions you have.
+[00:26:44.600] Questions?
+[00:26:45.400] Oh, one very eager question down here.
+[00:26:47.400] Can we get a mic down here please, friends?
+[00:27:02.800] Thank you for the nice presentation.
+[00:27:04.280] I have a question about speculative decoding.
+[00:27:06.440] Does it work with non-zero modal temperatures,
+[00:27:09.840] or is this all just about benchmarking?
+[00:27:12.840] Assumes that all users on server use zero modal temperatures.
+[00:27:17.600] Now it does work with non-zero non-zero temperatures.
+[00:27:20.640] Can you give us a bit details? How?
+[00:27:23.760] I don't imagine so.
+[00:27:25.960] How model can verify something that was randomly picked from choice.
+[00:27:29.320] So so so so the distribution is still matches.
+[00:27:31.880] So so when you talk about kind of matching the distributions of these two.
+[00:27:36.120] So this
+[00:27:36.840] you are still sampling from a distribution right.
+[00:27:38.640] Even for a struggle at decoding or not just randomly going
+[00:27:40.880] and picking up anything.
+[00:27:42.040] So if your distribution is still matches, you still have higher probability
+[00:27:45.520] of predicting what the target is going to produce. Right?
+[00:27:48.440] So so it's still still.
+[00:27:54.000] Yeah I think I have
+[00:27:54.720] another question over here.
+[00:28:04.920] So thank you for.
+[00:28:07.720] Your time to first token and speed histograms.
+[00:28:12.680] Are you running those on the same workflow the same requests
+[00:28:16.520] or are you doing that cross your kind of whole suite
+[00:28:19.680] of kind of agent requests.
+[00:28:23.880] This is for
+[00:28:25.920] do you mean is it just agentic or is.
+[00:28:28.320] It kind of like a running the same prompt through that.
+[00:28:32.000] No, no. This is. The multiple.
+[00:28:34.120] So that, that,
+[00:28:34.720] that example that I had in the beginning was just an example of a trajectory.
+[00:28:38.880] And you can imagine like hundreds and thousands of these things
+[00:28:42.440] that we have collected
+[00:28:43.240] and are running against them, against the hardware to get these numbers.
+[00:28:47.120] So you would with that, you would expect a harder problem
+[00:28:50.800] to be longer to the first token anyway, wouldn't you?
+[00:28:54.080] So so
+[00:28:56.600] this is where caching comes into play, right?
+[00:28:58.560] So so if most of your
+[00:29:01.640] refill is cached,
+[00:29:03.520] what you are doing the work together, time to first token is just this cube.
+[00:29:07.520] Extra work if the caching goes off.
+[00:29:10.320] Yes you at the last kind of.
+[00:29:12.680] At this point you will be doing something like that
+[00:29:14.760] which is doing computation for this whole input input field,
+[00:29:19.000] which yes, obviously your TTFT will be much worse, but because of
+[00:29:23.200] caching, your, your, your TTFT is kind of just constrained by that new piece.
+[00:29:29.600] And I think we are also trying to ask is because of the trajectory,
+[00:29:33.400] the time to first.
+[00:29:34.200] So the time to first token here still means for a request
+[00:29:38.200] for one of these kind of one of these green blocks time.
+[00:29:42.160] The first token is not when your answers that's coming.
+[00:29:46.040] Let me say that that's another.
+[00:29:48.040] No, that makes sense.
+[00:29:48.960] Yeah. You got it back on. Yeah.
+[00:29:50.800] I was just thinking if, for example, one of your tool called came out with
+[00:29:54.600] like a really long response and it really struggled to chime through that,
+[00:29:57.640] then you'd expect a really high peak to get to that type of token,
+[00:30:00.760] because it would be working through a harder problem. Exactly.
+[00:30:03.680] And that's why the prefix caching is like the bread
+[00:30:06.680] and butter for optimizing the design clothes.
+[00:30:08.760] And it's a shame that agent
+[00:30:10.600] most of the benchmarks don't capture that and know that you can't do that.
+[00:30:13.360] So yeah. Really interesting. Thank you.
+[00:30:16.000] Okay.
+[00:30:16.560] I'm afraid
+[00:30:17.240] we're out of time there, but would you be happy to answer a few questions? Yes.
+[00:30:21.080] So yeah, please do come and find a it for more questions.
+[00:30:25.200] But in the meanwhile, thank you very much.

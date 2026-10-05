@@ -1,0 +1,1264 @@
+[00:00:00.000] OpenClaw could really do everything.
+[00:00:02.000] It felt very uncontrolled and just a disaster waiting to happen.
+[00:00:05.480] LLMs in an agent harness, if they have an open check to do everything,
+[00:00:09.680] then like it's inevitable that they will eventually do something terrible.
+[00:00:13.440] It's just like evolution.
+[00:00:14.640] We came up with this idea of having an agent that's
+[00:00:18.240] within the controlled environment
+[00:00:20.040] and has access to the data, and you can have it investigate the issue
+[00:00:24.240] and troubleshoot it, and it has access to everything, right?
+[00:00:28.480] But one big constraint: it cannot output,
+[00:00:31.640] except for structured validated output.
+[00:00:34.840] So it can only output for a fixed vocabulary which you can verify
+[00:00:38.960] doesn't leak any data.
+[00:00:40.400] So those two agents,
+[00:00:41.360] they’re called Mulder and Scully, because they worked on the X-Files.
+[00:00:46.680] The AI Native Dev is a podcast for developers and engineering
+[00:00:49.960] leads at the cutting edge of AI and agentic coding.
+[00:00:53.280] Join your hosts, Guy Podjarny and me, Simon Maple,
+[00:00:56.280] every week as we chat with the most exciting voices in
+[00:00:59.480] AI and tackle the biggest questions facing developers today.
+[00:01:03.880] This is the AI Native Dev. ﻿
+[00:01:09.560] We just wrapped up two amazing days at AI DevCon in London.
+[00:01:13.160] But the great thing is that
+[00:01:14.240] we get to do it all over again in New York City this November.
+[00:01:18.080] You're absolutely right.
+[00:01:19.200] We're going to be back in the City that never sleeps on November 3rd and
+[00:01:23.080] fourth for more amazing sessions, really engaging hands-on workshops, and much more.
+[00:01:28.480] Yeah, all that great networking, partying, eating, and
+[00:01:31.520] drinking that you've come to expect from AI DevCon.
+[00:01:34.520] We think we have one of the best hallway tracks in the business,
+[00:01:37.520] and it's the perfect complement to our incredible speakers and presenters.
+[00:01:42.000] We'll both be in person and virtual,
+[00:01:44.120] with livestreamed access to all mainstage keynotes and talks.
+[00:01:47.960] Sign up right now for our Super Blind Bird ticket for just $100.
+[00:01:51.680] Only available for a limited time.
+[00:01:53.840] We're really excited to be headed back to the Big Apple, and we hope
+[00:01:57.520] to see you all there.
+[00:02:04.400] Hello, everyone.
+[00:02:05.280] Welcome back to the AI Native Dev.
+[00:02:08.040] Today we're going to have kind of a real world
+[00:02:10.400] case study talking about building agents within a company.
+[00:02:13.960] This will be within Cyera, which is a data security company.
+[00:02:16.880] We'll hear more about that in a second.
+[00:02:18.440] And to talk about that, we have Ori Shoshan, who has been one of the key leads
+[00:02:22.760] building that out.
+[00:02:23.760] So welcome to the show, Ori.
+[00:02:25.400] Thank you. Nice to be here.
+[00:02:27.600] So we're we're going to go a little bit in chronological order.
+[00:02:31.000] So just to give people a little bit
+[00:02:32.240] of a teaser around what it is that, that we're going to talk about.
+[00:02:36.040] I think you've built a really, really interesting and oftentimes
+[00:02:39.240] quite unusual platform for how to kind of work with agents.
+[00:02:42.880] That's a compliment.
+[00:02:44.200] It's like you're a little bit weird. It's good. Who wants to be normal?
+[00:02:46.880] And actually like a lot of many smart sort of small innovations and learnings.
+[00:02:52.040] I like you've built a different approach to harness engineering that starts
+[00:02:56.520] maybe like white lists tools versus blacklists them.
+[00:02:59.880] You have made some really smart infra investments and creating context graphs.
+[00:03:04.440] You, my agentic side, that has to have control over.
+[00:03:08.440] Just that sort of efficiency and part of it.
+[00:03:11.600] But that's been great.
+[00:03:12.880] And then,
+[00:03:13.480] you know, a lot of things, a lot of I loved the sort of small earnings around.
+[00:03:16.720] How do you permeate through the org?
+[00:03:18.520] You know, things like having people
+[00:03:20.160] take ownership of their agents or they care about it.
+[00:03:22.160] So and there's all these like great nuggets that we're going to dig into.
+[00:03:26.480] But instead of jumping into those, let's let's do this properly and kind of run
+[00:03:30.200] through a little bit of intros and origin story.
+[00:03:32.400] So first tell us a little bit about what is it that you do at Cyera.
+[00:03:35.520] And maybe a little bit about what Cyera is.
+[00:03:37.320] I'm a tech lead.
+[00:03:38.600] I work all across the world.
+[00:03:41.280] A lot of my work is focused on the DSPM product.
+[00:03:44.840] So that's the data
+[00:03:45.600] security, security posture management, as well as leading AI adoption.
+[00:03:49.800] as an AI data security company, we combine AI security.
+[00:03:55.000] Well, everybody wants to do a security.
+[00:03:57.320] Nowadays it's about.
+[00:03:59.200] And before I really boomed,
+[00:04:02.920] Cyera did that data security.
+[00:04:05.240] Right.
+[00:04:05.480] So we're a data security platform, meaning in a nutshell, we scan your data,
+[00:04:11.400] we find whether sensitive data is what type of data it is.
+[00:04:15.240] And then we let you do the really important stuff with it, like
+[00:04:19.160] deciding what your posture should be,
+[00:04:23.240] seeing what's exposed and how it's exposed and fixing that.
+[00:04:26.800] And in AI security also enabling you to allow
+[00:04:32.240] AI access to that data, but in a controlled and secure way.
+[00:04:36.520] Yeah. Which is
+[00:04:40.040] it's quite important to
+[00:04:41.600] to know where your sensitive data is and what you do with it.
+[00:04:44.880] If you want to build agents and let that agentic run freely,
+[00:04:48.520] because otherwise your risk leaks.
+[00:04:50.240] And if you're scared of data leaking, you're kind of paralyzed, right?
+[00:04:53.920] So it's it's really all about control. Yeah.
+[00:04:56.080] I love the agentic side. Yeah.
+[00:04:58.320] I love the the generally analogies and companies
+[00:05:02.320] that have have kind of grown up out of the problem
+[00:05:06.040] of the empowered workforce, which I think say,
+[00:05:08.400] and sort of data security posture management or sort of DSPM
+[00:05:11.160] fits that sort of mold where everybody gets to do a thing,
+[00:05:14.240] like everybody gets to create data in the cloud, you create those,
+[00:05:16.840] and then of course you have chaos because everybody's empowered to do that.
+[00:05:20.000] And so here, like income, a variety of solutions, many in the security space,
+[00:05:24.520] specifically in DSPM to like wrangle, where do I have data,
+[00:05:27.560] what's sensitive and what's not.
+[00:05:28.840] And then as we get into Agent Land, you know, agents are even less trusted,
+[00:05:33.880] you know, empowered entities that you're sort of running along.
+[00:05:37.320] And so they have to they have to be reined in even even more.
+[00:05:41.120] And so I love these kind of realities in which kind of solutions built for the,
+[00:05:45.800] for the prior,
+[00:05:46.800] but for the empowerment era actually very much sort of applied to this.
+[00:05:50.040] So yeah.
+[00:05:50.800] Oh, and about me, I forgot to tell about myself.
+[00:05:54.480] So I joined Cyera about a year ago for the other AIS acquisition.
+[00:06:00.000] So otherwise was my company.
+[00:06:02.080] I joined together with my team and my co-founder, Tomer Greenwald,
+[00:06:06.440] and together we lead AI adoption in Cyera
+[00:06:09.840] and and that sort of cool how it all connects.
+[00:06:13.040] And I guess just for, for context a little bit, that's how I got to know you.
+[00:06:15.600] So that was a part of the journey.
+[00:06:17.320] It was super interesting talk about sort of a
+[00:06:19.640] intent based access control and all that. I still believe in that, you know,
+[00:06:23.360] still happen, but, you know, love sort of
+[00:06:26.200] working out in the on the Cyera side, you know, collaborating there.
+[00:06:30.720] So, so, so this is sort of the background you're sort of in say
+[00:06:34.520] clearly data security company,
+[00:06:36.560] I think in the order of magnitude of sort of hundreds of engineers on it.
+[00:06:39.680] How how did you come so you're doing AI enablement or rebuilding it.
+[00:06:43.360] But I think your story was more about like scratching your own each.
+[00:06:46.240] Right. Right.
+[00:06:47.240] So it's 2026
+[00:06:50.360] and I'm, I'm sitting in my living room.
+[00:06:53.160] It's it's January.
+[00:06:54.320] So it's now 2026. We're still in 2026 right.
+[00:06:57.320] Like I don't know timelines are a little bit murky and the island but okay.
+[00:07:00.640] But it's January so we're like 5 or 6 months.
+[00:07:02.880] It's January 2026
+[00:07:04.360] and I'm I'm sitting in my living room and I'm doing something on my phone
+[00:07:08.280] and I ask myself, why am I using my hands to do this?
+[00:07:12.720] Why is it?
+[00:07:13.560] Is it not an agent doing it? For me, it's 2026.
+[00:07:16.440] It's not 125.
+[00:07:18.040] As we all know, in late November of
+[00:07:23.120] 2025,
+[00:07:25.480] 40 year models really took a leap, at least from my perspective.
+[00:07:29.320] I saw that I was able to build a primitive harness back
+[00:07:35.520] then, basically, you know, like a coding agent with, with some tests
+[00:07:38.880] and allow an agent to run much longer than it would have been able to before
+[00:07:44.000] with the just one generation of, of the frontier models before.
+[00:07:49.320] And then so few weeks
+[00:07:52.320] after that, I'm in my living room thinking how, why?
+[00:07:56.800] Why am I still doing things on my own?
+[00:07:58.320] I need a personal assistant agent to do it for me.
+[00:08:01.400] I'm building a house and all that, and I needed something to keep track of
+[00:08:05.240] of all of my commitments and
+[00:08:10.080] the argument I currently have with the contractor for the house.
+[00:08:14.440] And I really wanted an agent that would kind of
+[00:08:19.040] be like open claw, but I didn't like Open Claw at the time.
+[00:08:23.800] I think it was still called its previous name Cloud Bot or something.
+[00:08:28.640] But yeah, it went through phases.
+[00:08:31.320] It's like a teenager going up.
+[00:08:33.080] Yeah, but I didn't like that.
+[00:08:35.600] OpenClaw could really do everything. and anything.
+[00:08:38.320] It felt very uncontrolled and just a disaster waiting to happen.
+[00:08:42.320] because I kind of uri as or not not AI,
+[00:08:45.920] but LLMs in an agent harness,
+[00:08:49.520] if they have an open check to do everything, then
+[00:08:52.200] I feel like it's inevitable that they will eventually do something terrible.
+[00:08:56.080] It's just like evolution.
+[00:08:57.320] they will explore that path if it's the.
+[00:09:01.160] So I felt
+[00:09:01.600] like hooking up open cloud to all my stuff and having it manage my life.
+[00:09:05.480] My life is kind of precarious. Yeah, yeah.
+[00:09:08.600] So I started building out my own personal assistant,
+[00:09:12.160] which when I took a bit of a different approach
+[00:09:16.280] where instead of letting it do anything, I let it use a specific set of tools.
+[00:09:21.520] And then, I got it on WhatsApp and I would text with it
+[00:09:26.800] and it would be able to mention, well, where it's data is from.
+[00:09:33.040] And then I figured, actually, I would like to know it's not making stuff up.
+[00:09:38.120] Where is that sourced from?
+[00:09:39.960] And I figured, well, I actually have that data, I have that link.
+[00:09:43.680] So why don't I just have the harness, tell me,
+[00:09:46.680] well, where the what the source actually is.
+[00:09:49.960] Right.
+[00:09:51.000] And then eventually I realized, actually I want this at work to I mean,
+[00:09:55.560] why am I still getting slack messages and following on Salesforce.
+[00:10:00.280] And consuming tasks?
+[00:10:01.640] Yeah. Why don't I just know everything
+[00:10:03.600] all the time, but only the most important stuff.
+[00:10:06.000] And I want to have links to all of them.
+[00:10:08.000] Yeah.
+[00:10:08.280] I don't want to wonder,
+[00:10:09.640] is this something the model made up or is this backed by data?
+[00:10:13.400] Yeah. So this is I want to sort of unravel a few.
+[00:10:15.960] I love this sort of the personal to
+[00:10:17.960] to company paths on it, I think in part because you're, you're
+[00:10:20.320] kind of allowed to play a little bit more at home. Right?
+[00:10:22.760] As much as you are conscious about your sort of your own
+[00:10:25.840] kind of personal blast radius, you know, it's
+[00:10:27.840] sort of a little bit different than playing with sort of company data.
+[00:10:30.160] So, so as you, as you build those out, I think the first thing you talked about
+[00:10:33.880] is sort of this sort of containment of, of only
+[00:10:37.760] giving the agent some specific subset of tools on it, I guess.
+[00:10:40.800] How how crippling is that? Right.
+[00:10:42.920] Because some like clearly kind of from an AI or sort of AGI maximalist
+[00:10:47.360] path, it's a lot of like, you know, do not get in the way of intelligence.
+[00:10:50.520] Right.
+[00:10:50.680] Just sort of that it's that it's due the path, I guess.
+[00:10:55.360] How much was that felt that when you if you contain it
+[00:10:58.960] and you need to choose every time
+[00:11:00.720] which tools are available and maybe like a little bit of,
+[00:11:03.160] you know, there's probably still some leeway that you have to give it.
+[00:11:06.120] So what did you find was effective in terms of, of the lines?
+[00:11:09.760] So I, I would give it quite a bit of tools
+[00:11:12.840] and it would be the one tool I would not give.
+[00:11:16.000] It is bash, which is basically do whatever you want,
+[00:11:19.000] but it would have a bunch of other tools, for example, to read all my WhatsApp
+[00:11:23.360] messages and browse my email and but the
+[00:11:28.320] how do you say
+[00:11:29.680] the attack surface for each of them would be well known.
+[00:11:34.200] And I always leave an escape hatch,
+[00:11:37.360] so I could have.
+[00:11:40.680] So what you don't want is for an LLM
+[00:11:43.160] to try and use a set of tools and really be trying to do something else.
+[00:11:47.320] If it had bash, let it do whatever and then do something
+[00:11:51.240] that doesn't make sense just because it doesn't have the option.
+[00:11:54.560] That's a bad failure mode, because you may not notice
+[00:11:57.040] unless you actually look at the thinking tokens for the for the model.
+[00:12:02.000] Yeah.
+[00:12:02.320] So I always leave a tool that's, that's a sort of escape hatch,
+[00:12:05.560] whether that's doing something else. What.
+[00:12:08.880] But with a human in the loop or recording feedback.
+[00:12:12.840] So for the model to be able to tell you, I wanted to do this, but I have no,
+[00:12:16.880] no option to do that.
+[00:12:18.440] And then you go and add that and you very quickly arrive at a
+[00:12:23.320] 50 at a set of 50 tools which the model has access to,
+[00:12:27.720] and it can do pretty much everything at once,
+[00:12:31.320] but you know that it can only do those things.
+[00:12:34.000] And structurally,
+[00:12:36.040] oh, I guess the hardness and forces that it can't do anything disastrous
+[00:12:40.000] like it can't send all my personal notes
+[00:12:43.000] to the contractor over email.
+[00:12:46.240] Yeah, yeah, that sounds like a negotiation
+[00:12:49.200] sort of sides or, maybe even like just sort of a goodwill.
+[00:12:51.800] So, okay,
+[00:12:52.720] let's come back to that a little bit in the context of the company on it.
+[00:12:55.800] The other piece you talked about is this notion of citations.
+[00:12:58.280] And so bring proof, I guess, is sort of the association
+[00:13:00.520] that comes to mind is what we see in Google, right?
+[00:13:02.560] Oftentimes today when you Google something, you get the A preview.
+[00:13:05.200] You've got sort of the the the equivalent of the blue links today.
+[00:13:08.480] Right. That talks about those references.
+[00:13:11.880] What's
+[00:13:12.280] is it just about sort of sourcing the information.
+[00:13:16.000] Is it similar
+[00:13:16.880] what you build for your, for the personal agent there, or is it something
+[00:13:19.880] a bit more distinct from that when you use it for your sort of
+[00:13:23.680] maybe kind of more elaborate because Google is very much
+[00:13:26.720] about like lookup of information.
+[00:13:28.080] So maybe a little bit more expected that the,
+[00:13:33.240] there will be a link for it.
+[00:13:35.320] Yeah.
+[00:13:35.880] So that that there is
+[00:13:39.000] I took inspiration from ChatGPT actually where they at some point
+[00:13:43.240] they started adding links next to where that the, the claim is sourced.
+[00:13:48.280] And the
+[00:13:52.480] the colony that I had was to know if the model is lying to me easily
+[00:13:56.920] because you get like a wall of text from an LLM and then you're thinking,
+[00:14:01.680] okay, well, which of this is based on fact and which of this is reasoning?
+[00:14:06.240] That's correct.
+[00:14:06.880] And which of this is reasoning that's incorrect.
+[00:14:09.320] And and it's really cognitively
+[00:14:12.760] exhausting to, to have to constantly evaluate that.
+[00:14:15.800] And it's one thing when you're working with a coding agent
+[00:14:18.440] and you're in an interactive session and you in the zone,
+[00:14:21.680] but for the personal assistant use case, you really don't want to be
+[00:14:25.280] paying so much attention, because that's kind of the the use case.
+[00:14:29.080] So I wanted.
+[00:14:30.800] So you don't care about
+[00:14:31.520] like you're fine for it to take more turns for the exchange
+[00:14:34.680] of getting the correct result at the end of it
+[00:14:36.840] because you're not sitting there supervising.
+[00:14:38.560] But if you get the wrong answer or you get something that that that can be
+[00:14:43.320] that can be, can cause substantial damage or at least waste a lot of time.
+[00:14:47.840] Yeah.
+[00:14:48.200] Well, I, I, I sort of assumed that, LLM is going to get
+[00:14:52.040] the model is going to get some stuff wrong.
+[00:14:53.880] And then I wanted to make it more obvious to me when that's happening.
+[00:14:57.840] And the way to do that is to have basically
+[00:15:00.960] instead of having the model be able to just produce prose,
+[00:15:04.680] it would be able to produce a structured output.
+[00:15:07.960] And that output is a, a set of blocks
+[00:15:11.520] where each block is a tuple of a citation and a source
+[00:15:16.000] reference, sorry, a claim and a source reference.
+[00:15:20.320] The source reference is a citation.
+[00:15:22.320] And then when the the output is rendered to me, I just get a list of.
+[00:15:28.160] Well, each claim is just a paragraph, say.
+[00:15:30.520] And then it has a a source reference and the link is automatically rendered.
+[00:15:35.240] And once I had that, I realized that I could actually use that
+[00:15:39.800] to do some context engineering and do a claim verification as well,
+[00:15:45.600] because LLMs tend to hallucinate more
+[00:15:49.120] or make the wrong conclusion when they have a ton of stuff
+[00:15:52.640] in the context and they end up paying attention. To that.
+[00:15:54.960] They're kind of in the dumb mode, you know, there's
+[00:15:56.720] sort of a lot of their sort of, context window is taken up by historical actions.
+[00:16:01.280] They might end up, you know, answering in the wrong answer.
+[00:16:03.920] And because they're kind of looking for a needle in the haystack.
+[00:16:07.160] Right. And they might look at the wrong needle.
+[00:16:09.440] Attention is the scarce resource, right?
+[00:16:11.280] Yeah. Attention is all you need.
+[00:16:12.880] So I realized, okay, now I have the ability to take each
+[00:16:18.720] claim and pair it with the raw data that supposedly behind it.
+[00:16:22.760] At least the LM says so.
+[00:16:25.040] And then I can take those two pieces of data and ask another model
+[00:16:30.000] with clean context, which has the claim and the data.
+[00:16:33.240] Is this claim supported by this data.
+[00:16:35.720] And in that mode of operation,
+[00:16:38.840] they tend to hallucinate a lot less because there's no noise.
+[00:16:43.080] So that reduces the amount of hallucinations overall.
+[00:16:46.040] So each claim independently tends to be.
+[00:16:51.200] More accurate that there is far fewer hallucinations.
+[00:16:53.840] And then if it is still a hallucination, I can just say that
+[00:16:58.080] the source and it's easy to tell if it made a citation.
+[00:17:01.240] That makes no sense, right?
+[00:17:02.360] It cited something completely irrelevant.
+[00:17:04.760] It does happen quite rarely.
+[00:17:07.040] Yeah, because the LLMs have the models have gotten quite good, right?
+[00:17:10.600] Yeah, I love the so I like that and I think I think a general kind of,
+[00:17:14.960] I guess a principle of working with multiple agencies
+[00:17:17.560] that any individual agent might hallucinate.
+[00:17:19.720] But if you layer on even one more to sort of, you know, review the work,
+[00:17:24.720] then then you reduce dramatically the sort of the chances of a hallucination.
+[00:17:28.600] And I think you're, you're you took it a step further
+[00:17:31.000] because you're even requesting the original kind of claimer
+[00:17:35.760] to, to create something in a slightly structured format on it.
+[00:17:39.000] So I, I like that.
+[00:17:40.640] So that's.
+[00:17:41.520] The escape hatch here was I let
+[00:17:44.120] him actually, go past go if they,
+[00:17:48.000] if they don't have a, a source reference, they can still produce a claim.
+[00:17:52.480] But it has to be marked as opinion.
+[00:17:54.160] And that's where all the reasoning goes.
+[00:17:55.800] So I know to take those with a grain of salt.
+[00:17:59.040] And the rest is what I use to evaluate I really like that.
+[00:18:03.280] I think oftentimes like the thing that is annoying when you're
+[00:18:06.480] sort of interacting and indeed, you know, the airlines have gotten better in this.
+[00:18:10.080] But, you know,
+[00:18:10.480] what used to be very annoying is it's not so much
+[00:18:12.320] that the LM makes a mistake,
+[00:18:13.400] but that it says these mistakes with such confidence on it.
+[00:18:16.680] So even just labeling it as like, hey,
+[00:18:18.560] I have proof of this and I do not, this is my opinion is probably useful.
+[00:18:23.160] I think it possibly even helps the LM to have that in the context
+[00:18:27.200] as the output, right?
+[00:18:28.760] So you're not so much to build on it. Yeah.
+[00:18:31.800] So let's move this back into work.
+[00:18:33.720] So you've learned and I imagine you sort of started
+[00:18:36.480] bringing this into the company before all of these things
+[00:18:38.400] was resolved on it, but I don't know.
+[00:18:40.200] But, as you, as you brought it into the company.
+[00:18:42.960] So how does this manifest in, in bringing into the company?
+[00:18:47.040] What did you have to set up and what does it look like today
+[00:18:50.040] when you run these agents inside the context of Cyera.
+[00:18:54.200] running it at home, I run it on a nuke
+[00:18:57.480] PC and I didn't even know it had a fan, but it turns out it has a fan.
+[00:19:02.160] And then bringing it into it
+[00:19:06.760] first I started running it locally, but I wanted it to run it 2447,
+[00:19:12.760] and I wanted it to have access to some things
+[00:19:16.200] and be unable to access some things which maybe my laptop can access.
+[00:19:20.880] Again.
+[00:19:21.680] My, my agentic side has to know, like what?
+[00:19:24.360] I have to know what's the possible failure mode and be okay with it.
+[00:19:28.000] Generally, like those are good tendencies
+[00:19:29.560] when you work at the data security company, right? that. Yeah.
+[00:19:31.840] So after you, you set up the kind of the,
+[00:19:33.920] so you handle the sort of the ops part of it. You're going to run this.
+[00:19:36.640] Now you have it in some sort of Cyera
+[00:19:39.840] owned or controlled agentic environment.
+[00:19:43.040] And then you mentioned that you have different agents that that can run on it.
+[00:19:47.160] So that's already like a bit of a distinction.
+[00:19:48.960] So before you kind of created this, this one agent to,
+[00:19:52.400] to be your personal assistant, you didn't need to probably like multiples of them.
+[00:19:56.320] I guess what I'm curious a little bit because I think a lot of
+[00:19:59.520] companies talk about like the, the blank slate problem.
+[00:20:03.280] Right? Or how do they get going?
+[00:20:04.680] What are what's a type of agent that got created.
+[00:20:08.880] We'll come back maybe a little bit to how you create agents on it,
+[00:20:13.080] but maybe just sort of talk a little bit about the use cases. So
+[00:20:17.120] within the
+[00:20:17.520] context of the company, how did you interact with the
+[00:20:21.280] with with yourself I guess, and with sort of users.
+[00:20:23.440] Because at the beginning it was like,
+[00:20:24.480] you know, to help you read slack messages and what are
+[00:20:27.600] what are the use cases that end up, you know, proving to be valuable?
+[00:20:31.400] Right?
+[00:20:32.120] So the first one was a type of personal assistant or its work
+[00:20:36.280] mode is chief of staff.
+[00:20:38.040] And then I
+[00:20:42.040] looked at making it more generally available, which initially did.
+[00:20:46.560] The obvious choice was to
+[00:20:47.760] make it into a slack bot to you can DM and tag in threads and.
+[00:20:52.400] An actual sort of chat interface. For it.
+[00:20:54.120] Yeah, just, you know, bring the bot to, to the, to where people work already.
+[00:20:58.960] And so the first use case is that the easiest one is to build.
+[00:21:04.240] Well and on call triage agent.
+[00:21:06.920] Well analytics pops up. There's a discussion about it.
+[00:21:09.640] You can ask the agent, hey, can you cause this
+[00:21:13.960] what's the impact.
+[00:21:14.920] Which tenants does it impact?
+[00:21:16.320] Stuff like that.
+[00:21:18.160] Very operational aka type of agent.
+[00:21:21.520] And this is you create the agent or someone creates an agent,
+[00:21:26.680] but then multiple people use it like this is a deviation from what you had before.
+[00:21:29.800] Before you were like there was a 1 to 1 one user to this agent.
+[00:21:33.200] Now there are multiple users to this agent, but
+[00:21:37.000] collaboratively or just like every every individual might sort of a
+[00:21:41.400] at the, the the bot and and get a response.
+[00:21:45.640] So early on really it was just every individual.
+[00:21:49.760] But there were some emerging properties out of that.
+[00:21:53.600] Well, the agent can read the thread so it can tell when it can see
+[00:21:57.800] the previous discussion.
+[00:21:58.800] It can see people
+[00:21:59.640] talking about using the agent, people complaining about hallucinations.
+[00:22:04.440] And then when you tag it, it sees the prompt, but it also sees the context.
+[00:22:07.720] So you might respond to something else as well. Okay.
+[00:22:10.480] So it's like it's like naturally a multi-person
+[00:22:13.320] kind of a multiplayer environment on it.
+[00:22:15.200] So it just sort of you got that for free.
+[00:22:17.440] So that was the interactive use case.
+[00:22:19.520] And then another use case was something else.
+[00:22:23.400] CTO Tomer proposed we have these channels on slack,
+[00:22:28.400] where's is a is and so on.
+[00:22:31.720] Might ask questions of product and R&D.
+[00:22:34.800] And you can answering
+[00:22:39.120] some of these questions can be done by looking at the knowledge base
+[00:22:44.200] the internal knowledge base, the public knowledge base, sometimes
+[00:22:47.000] the code, sometimes the questions.
+[00:22:50.320] And I think in many cases you just don't know exactly what you want to search for.
+[00:22:55.160] Kind of like searching on Google.
+[00:22:57.320] If you know the right keyword, you're going to find the answer.
+[00:23:00.000] But sometimes you first have to figure out what it is.
+[00:23:03.240] So agents are quite good at that.
+[00:23:06.080] Yeah, yeah.
+[00:23:06.920] But in this case like the, the the way that people interact with it.
+[00:23:10.480] Unlike the previous one is they don't add the bot.
+[00:23:12.920] They, they just ask the question in the channel.
+[00:23:15.640] And then the bot would ask them using an ephemeral message,
+[00:23:19.440] which is the type of message that shows up on slack when only you can see this,
+[00:23:23.440] like when you tag somebody in a channel and slack what says, hey,
+[00:23:26.480] this person isn't in the channel, should I add them?
+[00:23:28.480] That's an ephemeral message.
+[00:23:30.000] So the bot would ask you, do you want me to try and answer this?
+[00:23:33.120] And then if you click it, yes, it's going to answer publicly in the thread
+[00:23:36.800] for everybody to see.
+[00:23:38.200] And that's actually an adaptation because initially
+[00:23:41.800] it would just answer and it would annoy some people.
+[00:23:45.680] So I had it just start asking.
+[00:23:47.240] I figure just read it like a human, right?
+[00:23:49.960] If you ask for permission, if somebody wants you to, it's fine.
+[00:23:54.760] They won't be upset. Yeah, yeah. Cool.
+[00:23:57.480] Okay, so.
+[00:23:58.080] So, we kind of scattered a little bit over here
+[00:24:00.120] as I kind of ask different paths, but you have the bot.
+[00:24:02.400] It's running in your sort of slack.
+[00:24:03.880] Yeah.
+[00:24:04.400] You know, it has one use case, which is when you run mode of operation,
+[00:24:09.320] I guess when you sort of interact with it and it sort of answers
+[00:24:12.480] questions and one that it's sort of a proactively,
+[00:24:14.760] I guess, on a, on a schedule or just monitoring a channel.
+[00:24:17.040] So it reviews every message.
+[00:24:18.640] So it's just it's just monitoring the channel.
+[00:24:20.960] It's called ambient mode.
+[00:24:23.560] And it has a classifier that uses a cheap model to decide, is this a question?
+[00:24:29.040] Is this an announcement or something else?
+[00:24:31.000] And only if it's a question does it actually all fail to answer.
+[00:24:34.760] And there are a bunch of other use cases.
+[00:24:37.280] That's where the multi bot part comes into play.
+[00:24:40.840] So initially there was just one slack bot my own.
+[00:24:44.600] I called it Borg for the Star Trek reference.
+[00:24:48.520] That's the, you know, the cyborg hive mind.
+[00:24:51.240] And the thing about the platform is all the
+[00:24:54.880] would be agents of the platform
+[00:24:56.560] are going to share the same knowledge and all the feedback.
+[00:24:59.600] Yeah. Yes, they're going to all be assimilated.
+[00:25:02.040] So the joke was too good.
+[00:25:03.560] Plus I gave it a I took Cyera's.
+[00:25:06.960] If you go to a website you'll see we have this flying space pod icon.
+[00:25:12.680] So I put a little cute face on it and that's Borg.
+[00:25:19.360] So then the multi bots.
+[00:25:21.760] Right.
+[00:25:22.040] So I started out with just my own bot.
+[00:25:25.120] But the way that you would interact with these agents is by tagging them.
+[00:25:29.280] Right.
+[00:25:29.520] So now somebody else wants to create a bot.
+[00:25:33.880] The way for them to do that would be to create a new slack app
+[00:25:36.840] and give it a name and possibly a personality.
+[00:25:41.280] And this was something I did for a functional reason.
+[00:25:44.200] I just wanted
+[00:25:45.160] them to be able to customize the system, prompt the tooling, the context.
+[00:25:49.320] Right.
+[00:25:49.840] That the platform is aimed at engineers,
+[00:25:53.280] so they would potentially rewrite
+[00:25:56.080] the code that sets up the agent when it gets a prompt.
+[00:25:59.160] Right, and be able to do context engineering.
+[00:26:02.280] But a really nice side effect of that was
+[00:26:05.360] they ended up naming their agent and really feeling like it's their thing.
+[00:26:09.480] And it really helps adoption because it was no longer,
+[00:26:12.520] you know, I'm adding a bit of code to always agent.
+[00:26:15.520] It's my agent, which was really kind of my goal with this, for this
+[00:26:19.320] to be a platform that everybody on Cyera can use to build agent,
+[00:26:24.040] and they get the data infrastructure or the citations, the knowledge graph,
+[00:26:30.320] which maybe we'll talk about in a segment, but also the guardrails.
+[00:26:34.640] And to satisfy my, my need for.
+[00:26:38.080] For those controls. So so let's call okay.
+[00:26:40.920] So at this point of advanced down the story of it.
+[00:26:43.200] Now we have these bots running.
+[00:26:45.120] They're connected to slack.
+[00:26:46.480] They can do a variety of use cases which we you know we touched a couple.
+[00:26:50.120] We probably should sort of cover some more.
+[00:26:51.600] But then they don't you don't just sort of lump on all
+[00:26:55.000] the many use cases just to to Ori's Borg.
+[00:26:58.800] But rather now there might be you know, there are multiple agents.
+[00:27:03.480] I love the I love that sort of human insight of it,
+[00:27:06.600] which is once you name it, you care for it.
+[00:27:08.480] And it's like.,
+[00:27:09.600] It's fun to they make stupid jokes while they're answering.
+[00:27:13.280] Yeah, well, and you can do because you can kind of add your personality.
+[00:27:16.080] But then if you if you care for it, there's, you know, just like the yeah,
+[00:27:20.040] you get the investment within that.
+[00:27:21.720] But it also lowers the friction because people allow themselves to modify
+[00:27:25.320] because it's fine. It's mine.
+[00:27:26.280] I'm not getting in anybody's way.
+[00:27:27.920] So on one hand you kind of get that foundation.
+[00:27:30.760] Maybe let's go back a little bit and understand,
+[00:27:33.800] first, like maybe let's talk a little bit more about some use cases.
+[00:27:37.520] And then when we come back to understand how did that citation platform
+[00:27:40.880] kind of manifest.
+[00:27:41.600] Probably should talk about the knowledge graph there.
+[00:27:43.600] But how did that sort of come back?
+[00:27:45.160] But first let's come back a little bit to the to the use case example.
+[00:27:48.480] So like one I get its internal knowledge based lookup.
+[00:27:50.880] I think everybody relates to that. That's sort of a common use case.
+[00:27:53.520] You start talking about some some oppositions like root
+[00:27:55.600] cause analysis of it, maybe say a few words about that
+[00:27:57.920] and then you have a few other ops use cases.
+[00:28:00.640] All right.
+[00:28:00.960] So Cyera is a complex system. And
+[00:28:06.000] by by its very
+[00:28:07.240] nature data security deals with a lot of data.
+[00:28:10.440] Some of it takes quite a bit of time to scan just because of the sheer scale.
+[00:28:15.640] And so some operations can run for quite a while.
+[00:28:19.360] And that makes them how to troubleshoot.
+[00:28:21.360] I mean, if something ends in 10 seconds, you look at the operation, it's done.
+[00:28:26.440] Yeah.
+[00:28:26.880] So these on call or operation or troubleshooting
+[00:28:31.240] agents would have different triggers.
+[00:28:32.800] So some of them interactive.
+[00:28:34.680] Some of them are like the ambient answering questions agents.
+[00:28:40.400] But they would actually respond to alerts or
+[00:28:45.840] tickets from customers being open and do initial triage.
+[00:28:50.000] Some of them would do triage in terms of
+[00:28:53.200] assigning it to the right team based on what's in the in the ticket.
+[00:28:57.000] And then there's an entirely different class of agents still or slack bots.
+[00:29:02.360] But we have said a
+[00:29:06.120] the costs agent, which analyzes the cloud costs for Cyera
+[00:29:11.320] and then creates a report and root causes changes.
+[00:29:14.320] So it would see an increase in cost and try to attribute it
+[00:29:17.440] to increasing workload or changing the code
+[00:29:21.800] and help you sort of keep it under control over the time.
+[00:29:26.360] Like spring cleaning type housekeeping agents.
+[00:29:29.120] Yeah, exactly.
+[00:29:30.520] And then you also have agents which which have product managers, for example,
+[00:29:35.600] by looking at, feature
+[00:29:38.840] requests by customers or mentioned some slack for features
+[00:29:43.440] by customers and sort of help the PMC that there was a trend forming way before
+[00:29:48.240] it would have been detected otherwise, because before you had to have,
+[00:29:52.760] say an E or an A say, we need this feature and then it would need to
+[00:29:58.640] people would need to realize it's actually the same thing.
+[00:30:01.640] LLMs are good at finding those similarities and saying, hey, yeah,
+[00:30:05.520] I think this this is actually similar.
+[00:30:07.240] Pay attention here, in here and here. Yeah.
+[00:30:09.840] And this is like how many,
+[00:30:10.840] how many people have built agents because like these are.
+[00:30:15.640] This is sort of shared infrastructure.
+[00:30:17.960] But there are also very different agents that that people have built.
+[00:30:21.160] They share the same sort of, I guess, kind of patterns
+[00:30:23.840] around interfaces and the slack integration on it.
+[00:30:26.400] How like what is the result you mentioned developers are the ones
+[00:30:30.560] that are building the agents, but are there like five agents, 50
+[00:30:34.240] agents, 500 agents, like what's the what's the rough order of magnitudes?
+[00:30:38.040] It's around 30 agents,
+[00:30:41.280] built by about the same number of developers.
+[00:30:45.600] And the number of users is.
+[00:30:48.720] I don't have an exact number, but I imagine it's around
+[00:30:51.960] several hundred because it's it's not just the developers in the company.
+[00:30:55.600] Everybody use them.
+[00:30:57.640] Some even indirectly. cool.
+[00:30:59.600] So like I love the use cases.
+[00:31:00.840] And again there's sort of there, there they're very practical example
+[00:31:04.360] of, of of in general kind of building agents.
+[00:31:07.840] You know when people talk about sort of, you know, building
+[00:31:09.480] kind of enterprise automation,
+[00:31:10.600] but I love that it's, it's bringing bringing it into the heart, into slack.
+[00:31:14.360] But all of this is substantially enabled
+[00:31:16.800] by both the citation side and the tooling side.
+[00:31:20.560] Maybe actually, let's talk about the constraints first,
+[00:31:22.800] the sort of the tooling side.
+[00:31:24.720] So before we talked about how you kind of whitelist the tools versus blacklisting,
+[00:31:28.080] how does that work here.
+[00:31:29.080] Like all of these things, they need different tools.
+[00:31:31.640] Do you share the tools between the agents?
+[00:31:33.640] Do you define them like how does that work.
+[00:31:36.560] Right.
+[00:31:36.840] So the the agents all have a shared baseline of tools
+[00:31:41.160] and you can exclude some of them.
+[00:31:42.640] Or you can add custom tools to, to your agent
+[00:31:46.480] basically like skill like skills, except they have
+[00:31:50.880] how do you
+[00:31:51.240] say schema that gets validated and you can run code
+[00:31:55.080] and do the deterministic checks, for example.
+[00:31:58.800] Another example of an agent is an agent
+[00:32:02.360] that actually doesn't operate in slack, but it works on sentry.
+[00:32:06.840] So errors that sentry is an error management platform.
+[00:32:10.760] And then LS show up on sentry.
+[00:32:13.920] And we want to basically same thing as the slack agent right.
+[00:32:16.840] We want to triage them figure out the root cause if it's a bug, fix it
+[00:32:21.160] if it's an environmental issue.
+[00:32:22.880] So these are just basically settings as part of the configuration of
+[00:32:26.280] of the agent, which I guess you can think of
+[00:32:28.280] as a configuration of the harness, you know,
+[00:32:29.840] because this is the sort of the environment that you're exactly.
+[00:32:32.440] It is the harness. Yeah. It is the harness kind of with the tools.
+[00:32:35.320] Okay.
+[00:32:36.080] So that's fairly straightforward.
+[00:32:37.080] And I guess how, how often do people like
+[00:32:38.760] before you talked about kind of your mechanisms for knowing
+[00:32:42.000] that you need another tool because that's probably the, the piece that is
+[00:32:47.400] a, you know, like the dash dash dangerously accept.
+[00:32:52.200] Right.
+[00:32:52.400] Or sort of the dash dash is is also convenient, which is like,
+[00:32:55.600] I don't know what it's going to need, you know,
+[00:32:57.240] can you just just let it do its thing and, and trust it.
+[00:33:01.040] So I guess what's the what's the loop here.
+[00:33:03.440] You know, what's the interaction model and how often does it happen that people,
+[00:33:07.440] you know, like it fails because it doesn't have a tool and they come back to it?
+[00:33:10.600] Does it.
+[00:33:10.960] Does it typically sort of stabilize like they do that a few times.
+[00:33:13.480] And then generally
+[00:33:14.520] it kind of works or you know, what's the what's the experience there?
+[00:33:18.320] I think it's actually quite rare already from the
+[00:33:23.680] after the first few agents were well spun up because we,
+[00:33:27.240] we kind of plateaued around 60 ish tools that most agents have.
+[00:33:32.080] And that basically, Because the tools are shared between the different agents.
+[00:33:36.640] Right? Yeah.
+[00:33:37.240] So somebody adds a tool, all the other agents get
+[00:33:41.160] get it automatically, and then it just becomes possible.
+[00:33:44.160] So the way that we discover that the new tool tool is needed.
+[00:33:48.120] So the obvious choice is somebody would tell me that's quite bad
+[00:33:53.160] because in many cases people wouldn't tell you,
+[00:33:55.320] I wouldn't even know what to tell you.
+[00:33:57.440] And then there are a few other mechanisms.
+[00:33:59.640] So the citations they show up in line in the text,
+[00:34:04.920] whatever the interface is on slack or another platform.
+[00:34:08.120] And then what also shows up is the feedback mechanism.
+[00:34:11.320] So you get to thumbs up, thumbs down, and a few times down you can write why.
+[00:34:16.960] So that's the the obvious one. It goes.
+[00:34:19.520] And and when you when you specify feedback
+[00:34:23.480] that gets linked up against the original data
+[00:34:26.400] that backed this claim and not the specific answer.
+[00:34:29.480] So already the agent is learning just based on
+[00:34:33.120] if it queries the same data, it's going to see that in the context.
+[00:34:37.280] So you have that.
+[00:34:39.600] And then if somebody is talking in the conversation after the
+[00:34:43.680] the agent has responded
+[00:34:44.880] and he's like, man, I just wish it could, you know, give me a,
+[00:34:48.840] an update every 15 minutes so that that gets recorded.
+[00:34:53.680] Right. It's just on slack.
+[00:34:55.440] And then one, one
+[00:34:58.240] other mechanism that the platform has is a schedule mechanism.
+[00:35:01.640] So the agents can trigger have a trigger every schedule.
+[00:35:05.760] And the first one I added as an example really was the dream state,
+[00:35:09.920] which is to which is where the agent spins up every week and goes
+[00:35:13.920] and reviews all of its interactions, feedback,
+[00:35:17.040] and also the responses.
+[00:35:20.080] People go just around the answer and they might say something like that.
+[00:35:25.040] And then the dream state is going to go and submit
+[00:35:27.520] a pull request to improve the agent.
+[00:35:29.480] I like to joke that this part of the agent is the part that replaces me.
+[00:35:34.920] As it sort of chooses to sort of evolve it.
+[00:35:36.680] Cool.
+[00:35:36.880] So this is the loop, like this is the part in which it sort of optimizes it.
+[00:35:40.360] And in those context, the, the agent might come back and say, I need a new tool.
+[00:35:45.360] Or of course, it might sort of.
+[00:35:46.840] Change this one little thing. I forgot.
+[00:35:48.400] There's also a tool called
+[00:35:49.720] Submit Feedback, which is fully agent to submit feedback.
+[00:35:53.560] So if it's time to do something and it so it's looking at the tool list.
+[00:35:58.160] Right.
+[00:35:58.440] And it is. Honest for sort of some World Cup results on it.
+[00:36:01.200] And I don't know where those exist on it I need I need.
+[00:36:03.600] And then that gets saved.
+[00:36:05.320] And when the dream statements, it's going to see that in the context
+[00:36:08.320] of everything and possibly propose that change.
+[00:36:11.760] Got it. Okay.
+[00:36:12.880] And this is it's interesting that the tools are shared between the agents.
+[00:36:15.880] I guess I expect at some point in the future you might find yourself
+[00:36:19.040] sort of isolating and kind of further constraining the agents,
+[00:36:22.160] but just hasn't come up because you're already sufficiently contained.
+[00:36:25.040] So there is there is a bit of, divergence between them,
+[00:36:29.800] but it mostly has to do with functionality because not
+[00:36:32.360] all of the agents are only slack bots at this point.
+[00:36:36.240] There are other interfaces like the sentry one I mentioned.
+[00:36:38.840] Yeah.
+[00:36:39.320] And so so sending a slack message is a tool.
+[00:36:44.120] Right.
+[00:36:44.360] And going on about about control and and being
+[00:36:48.320] and the agents being constrained, the agent isn't able to select where it's
+[00:36:52.280] sending a message to that it gets triggered in a particular context.
+[00:36:55.880] And then it can call send message, but it only sends it to
+[00:36:59.640] the same thread that is unlocked for it.
+[00:37:02.880] It doesn't. It can't choose the destination.
+[00:37:04.360] So it can't make mistakes, you know, provided
+[00:37:07.360] that the harness only allows it to be triggered in the right context.
+[00:37:10.480] Right. But that's the deterministic bit.
+[00:37:12.200] Yeah, we know how to deal with that most of the time.
+[00:37:15.720] I think that very much is aligned with kind of my view. Right.
+[00:37:18.440] I think when you have the agent stack today, you have the models
+[00:37:21.600] that are kind of our operating systems we're building on.
+[00:37:24.160] And then on top of that, you have tools and context and harness,
+[00:37:28.040] and the context is kind of sandwiched between the sort of the tools
+[00:37:32.560] and the and the harness with the harness creating constraints.
+[00:37:36.480] And so that drives some determinism and some sort of security.
+[00:37:39.240] But then also the tools drive another, another set of constraints
+[00:37:43.880] and determinism.
+[00:37:44.960] So I like that you're sort of building that.
+[00:37:47.040] And I love also like as we had conversations about this.
+[00:37:49.720] It also sounds like you didn't set out to do this, but in practice
+[00:37:53.480] this also saves you substantial costs because you're talking about
+[00:37:56.960] like a fairly notable amount of sort of use here.
+[00:38:00.200] You know, it's scanning a whole bunch of data. It's doing all that work.
+[00:38:03.080] And I guess have costs stayed contained, like it hasn't really expanded.
+[00:38:08.560] Pretty much. Yeah.
+[00:38:09.360] The the actual usage is quite cheap relative to what I would expect.
+[00:38:14.680] And I think it is indeed, because it's, it's very structured
+[00:38:19.280] like the constraints keep it sort of on, on the rails.
+[00:38:22.720] Yeah.
+[00:38:24.040] Just setting up the, the, the knowledge graph which,
+[00:38:29.160] which will get into was quite expensive, but it was a one time class.
+[00:38:32.280] Is that so.
+[00:38:32.640] Let's, let's go there.
+[00:38:33.280] We sort of we've now sort of teased it up enough on it.
+[00:38:36.520] So okay.
+[00:38:37.200] And this also relates I think to the citations infrastructure.
+[00:38:39.800] Right.
+[00:38:40.040] So maybe talk a little bit about the knowledge graph and maybe
+[00:38:43.200] we can kind of slip into citations.
+[00:38:44.920] I know you have that sort of reviewer aspect of it.
+[00:38:47.600] So how does that work inside of the setup.
+[00:38:49.640] Yeah.
+[00:38:50.600] So that the knowledge graph is really so okay,
+[00:38:55.120] I didn't mention this, but quite early on when I had the idea of
+[00:39:00.440] maybe I want citations, maybe I want
+[00:39:03.240] I want all my data to be backed by a source reference.
+[00:39:06.920] I went and read, I am using, you know, here.
+[00:39:11.200] Yeah, yeah.
+[00:39:11.640] Using the AI version of read.
+[00:39:13.760] I, I did assisted reading using ChatGPT of a bunch of white papers
+[00:39:19.640] and all of these concepts that are provenance claim verification.
+[00:39:23.160] They've been explored quite fully,
+[00:39:26.160] over the years and especially in the, in the last year.
+[00:39:29.920] And it just made sense to put them together in this way, you know,
+[00:39:35.240] having all of your data backed by a source and then using that to do
+[00:39:40.640] claim verification and hooking up feedback into that.
+[00:39:44.440] It all felt natural.
+[00:39:45.640] It didn't come to me initially.
+[00:39:47.200] It came gradually. Yeah.
+[00:39:49.760] So the knowledge graph is an extension of that.
+[00:39:53.680] I was looking so
+[00:39:56.880] the obvious thing most coding agents or interactive agents,
+[00:40:00.680] you're going to give them access to data,
+[00:40:03.680] maybe to an LLM wiki, markdown files.
+[00:40:07.480] And they're going to go and explore.
+[00:40:09.800] Now, as a user, I know that sometimes they will not explore
+[00:40:14.240] all the things that they should be exploring.
+[00:40:15.960] And then you'll kinda down to
+[00:40:18.320] will they find a hint of something that pushes them in the right direction.
+[00:40:23.160] And Andre Karpathy
+[00:40:26.080] wrote about this, that having those links in the wiki helps them
+[00:40:30.280] find find the data they're looking for.
+[00:40:34.560] Right?
+[00:40:34.960] But that really lag in in the sense that using using a rag to build context
+[00:40:40.640] and just dumping that into the agent right off is no longer necessary
+[00:40:45.160] because agents are better at exploring nowadays.
+[00:40:47.040] Agent search versus rag is yeah.
+[00:40:49.480] So and and I see that.
+[00:40:51.960] But again, going back to my need for full control over agents, I,
+[00:40:57.000] I didn't like that sometimes the results would be inconsistent.
+[00:41:01.320] And so my way to solve that was okay, let's take all the data,
+[00:41:06.600] put it into a knowledge graph, a database, really with interconnections
+[00:41:11.120] between the entities, almost a rag, but then don't actually use it like a rag.
+[00:41:15.600] Let the agent walk the connections like it would an LM wiki on disk.
+[00:41:19.680] Just you can have many, many more pieces of data because now
+[00:41:24.600] it's indexed and the search is fast and finding relations is fast.
+[00:41:29.280] This is just sort of clarify
+[00:41:30.560] a little bit about what type of data might be in there.
+[00:41:33.000] Like, you know, this is like in the organizational context, right?
+[00:41:36.280] So it's anything from our code
+[00:41:39.520] slack messages, a particular exception popping
+[00:41:44.480] up, basically anything but
+[00:41:49.640] setting this up has quite a bit of cost
+[00:41:52.360] because extracting the entities and all that that goes through LLMs.
+[00:41:56.280] And then probably
+[00:41:59.320] the most important piece was working on data quality,
+[00:42:03.680] which is still very manual,
+[00:42:06.720] because if I just took all of sales data,
+[00:42:09.960] the relevant data, at least obviously not all the data,
+[00:42:12.720] and just stuck it in a knowledge graph, I think there would be mostly noise.
+[00:42:17.120] I don't know, maybe bots on slack sending alerts repeatedly?
+[00:42:20.920] It probably dwarves the amount of messages that humans send, which is the signal.
+[00:42:25.320] So figuring out the different data sources that we want
+[00:42:31.000] agents to have access to, how to model that in a graph.
+[00:42:34.720] So an account, an exception,
+[00:42:39.400] a service, those entities that that need to be in the graph
+[00:42:42.760] and then as the data is interested seeing well
+[00:42:47.200] where the noise is and actually going and cleaning that up.
+[00:42:50.640] So it took. Me well manually.
+[00:42:52.600] Manually. In bulk. But yeah.
+[00:42:54.720] Yeah.
+[00:42:55.400] But yeah, it took me a few weeks to, to finish.
+[00:42:58.400] Interesting because it was really bottlenecked on my own ability
+[00:43:01.480] to look at data.
+[00:43:03.360] I would of course look at the noisiest pieces.
+[00:43:05.560] Felt like you group by the source and the the origin
+[00:43:09.080] and and then and then clean that up.
+[00:43:12.800] But now we have about a million
+[00:43:16.080] or so pieces of data in the graph as opposed to many, many millions.
+[00:43:19.440] That would have been the other wise.
+[00:43:22.520] And the agents find surprising things,
+[00:43:25.160] which is a good sign, I think, as the the amount of signal in the.
+[00:43:28.920] So this is a so you gather data from a bunch of places and I imagine
+[00:43:32.800] like once that data is gathered and you kind of cleaned up the sources,
+[00:43:37.080] those are not repeatable, right?
+[00:43:38.280] You're now kind of keeping it up to date with, with new data
+[00:43:42.120] as it comes in of that shape, I guess, you know, kind of from,
+[00:43:45.600] from the relevant slack channels and the other, you gather that up
+[00:43:48.440] and then I guess, what are the tools that the agent uses to consult that?
+[00:43:54.480] This is like a data lake, right?
+[00:43:55.680] This is not what kind of a context layer
+[00:43:57.080] context graph, you know, you call it a knowledge graph.
+[00:43:59.000] Use whatever words you want and you say that the agent is able to kind of mine
+[00:44:03.160] that data in more efficient ways of doing it.
+[00:44:07.480] What what tools are make that possible.
+[00:44:10.880] So there are a few generic tools, an exact search.
+[00:44:15.040] So if it's looking for a particular service, for example,
+[00:44:18.840] it would use an exact search and find entities that have that,
+[00:44:23.080] that value in them.
+[00:44:25.000] So that maybe backing up a little bit.
+[00:44:27.720] So the Knowledge graph has episodes,
+[00:44:29.560] which is things that happened and got ingested,
+[00:44:32.640] and then it has entities and relations between those entities.
+[00:44:37.920] So if it's looking say at a particular
+[00:44:41.960] exception or a slack message in that slack
+[00:44:46.320] message, an exception, we have the entities that participate.
+[00:44:51.160] So in a system prompt which is shared to all the agents.
+[00:44:54.320] So there's a piece of the system prompt, a block of the system prompt
+[00:44:57.560] that's shared to all the agents and agents and explains
+[00:45:00.560] kind of how to walk the graph and, and what a radiant should behave like.
+[00:45:04.640] Yeah. And then you have another piece that's per agent.
+[00:45:07.520] So that shared piece explains
+[00:45:10.840] you should first use find exact if it makes sense.
+[00:45:14.520] If not use the semantic search.
+[00:45:17.080] Once you find the relevant entity, go ahead and walk the graph using
+[00:45:20.680] Find related.
+[00:45:21.680] So they're just finds that it would.
+[00:45:23.920] It's kind of like listing the directory and looking at interconnected entities.
+[00:45:29.360] So in the LLM wiki those would be the dimensions within the file.
+[00:45:34.000] And then once it does
+[00:45:36.720] that it has a bunch of specialized tools per data source.
+[00:45:39.760] Right.
+[00:45:40.000] So it might find an episode of a slack message.
+[00:45:43.880] And then it has a tool to read that slack messages thread
+[00:45:47.800] or look up more info, more messages by that person, and so on.
+[00:45:53.080] So those are the bulk of the tools, like just
+[00:45:56.280] just probably 5 or 6 tools per data source.
+[00:46:00.320] And then those the generic tools and those are all read only.
+[00:46:04.880] And there are a few right tools that are that involved with actually
+[00:46:08.200] solving problems, like performing a code review, posting a comment somewhere.
+[00:46:13.640] Submitting a pull request.
+[00:46:17.000] Cool, good.
+[00:46:18.120] So the so the context ref is is a great tool to basically spare
+[00:46:24.000] a bunch of this work during during the the agent run, and I love that.
+[00:46:29.440] Again, you sort of you, you were driven to create it
+[00:46:31.840] because you wanted determinism or, you know, like consistent success
+[00:46:36.280] when it should have the answer that part on it.
+[00:46:40.040] But it probably is a pretty big kind of time and money saver as well,
+[00:46:44.000] because now we don't need to, you know, kind of blunder its way,
+[00:46:47.400] you know, sort of through up through the data
+[00:46:50.440] and it doesn't read unnecessary data or it doesn't repeat that, which I guess
+[00:46:54.440] kind of comes back to you could just ask for structured data
+[00:46:57.720] or sort of cleaning it up. Yeah.
+[00:46:59.520] The goal was context engineering.
+[00:47:01.720] So that the setting it up so that the, the right data is, is in the context.
+[00:47:06.240] Yeah.
+[00:47:06.760] And I wanted to for example, if, if we go back to the very first use case,
+[00:47:12.160] it was finding a piece of data and finding what's related to it.
+[00:47:16.600] So if somebody is talking about an exception, I want to see the pull request
+[00:47:20.560] that introduced it.
+[00:47:21.560] I want to see the the exception, the logs
+[00:47:24.760] that the impact it has, and for the agent to reliably do that.
+[00:47:28.960] In my experience, it has to have a way to find those relations.
+[00:47:32.480] Right.
+[00:47:33.160] And they are there, like if I as a human can go and look at at a log line
+[00:47:39.160] and something like that and find them, then all I have to do is build a tool
+[00:47:42.840] that sets it up.
+[00:47:43.640] So when it calls, find related, those things just.
+[00:47:46.320] Pop up fine. Yeah, yeah.
+[00:47:47.360] I mean I think it's basically the conversation about structured versus
+[00:47:49.760] unstructured data.
+[00:47:50.800] And and I think what we're seeing is agents are, are so powerful
+[00:47:55.400] that you can give them highly unstructured environments.
+[00:47:58.600] You can give them bash and give them files and they will get a lot done on it.
+[00:48:04.600] But when you come to doing things at scale, reviewing large volumes of data
+[00:48:09.560] and performing actions repeatedly and you want to improve reliability,
+[00:48:15.720] I think there are there are multiple paths you can take.
+[00:48:19.760] There's the path of, you know, better instructing the agents
+[00:48:24.160] to eventually figure it out in like
+[00:48:28.840] it's all
+[00:48:29.480] I mean, I guess you can make significant progress, but it is
+[00:48:33.960] it's you're just playing with kind of make smarter individuals, right?
+[00:48:38.840] You know, in the elements.
+[00:48:39.960] But you're not actually sort of grouping them.
+[00:48:41.800] There is another path you have around sort of giving them.
+[00:48:45.840] Making the data more structured.
+[00:48:47.360] So making it easier for them to sort of
+[00:48:49.400] look up the right information at the right place.
+[00:48:51.840] And so that is that is helpful.
+[00:48:54.280] Of course, kind of adapt the context.
+[00:48:56.000] And then you can take it further and you can say,
+[00:48:58.280] okay, now that I have that structured data,
+[00:48:59.960] I can actually offload some of the cognitive efforts into tools
+[00:49:04.560] and, and run that, which makes a lot of sense because it's
+[00:49:08.320] basically how we operate with, with humans.
+[00:49:10.480] Yeah.
+[00:49:10.760] Actually really think about LLMs as humans.
+[00:49:13.200] I think that you just it's it's not it's really tempting
+[00:49:17.080] to think of them as computers, but really the only other thing in the world
+[00:49:21.000] which we know that, you know, if if they have the right training
+[00:49:26.560] and they have the right information, they generally do a pretty good job
+[00:49:29.720] of humans, but they're not infallible and neither are LLMs.
+[00:49:33.080] Right. So you're really helping them.
+[00:49:34.720] And it's so having these constraints and tools.
+[00:49:38.000] That's kind of how I work with myself as an engineer, I,
+[00:49:40.960] I try to set up my development environment so that the compiler yells at me
+[00:49:45.840] when I do something wrong.
+[00:49:47.040] I try to set myself up
+[00:49:49.640] so that my own mistakes are caught before they actually have an impact.
+[00:49:53.600] So I do that for my friend bug too.
+[00:49:56.320] Yeah.
+[00:49:57.320] No, I think, I think that that is a very effective way.
+[00:50:00.120] I think about that as well for a bit.
+[00:50:01.880] And there are somewhere in between humans and sort of systems.
+[00:50:03.800] You know, sometimes you use a system analogy and sometimes you.
+[00:50:06.600] Use eventually they'll just say kind of systems.
+[00:50:09.600] So, so cool.
+[00:50:11.280] So I just want to take stock a little bit.
+[00:50:12.760] Right.
+[00:50:12.880] Like at this point we talk about how you've gone from choosing
+[00:50:16.280] the citations based and sort of tools whitelisting approach to create the agent.
+[00:50:22.520] You created, the sort of shared repository
+[00:50:25.360] with infrastructure for everybody to create an agent.
+[00:50:28.680] And then you started by hosting yours and giving slack interactions to it
+[00:50:34.280] with both the kind of explicit and ambient
+[00:50:37.320] mode of interaction, which is pretty cool.
+[00:50:40.360] Basically who's who's who's in the driver's seat, right?
+[00:50:43.440] Like who initiates the conversation changes over there.
+[00:50:46.720] And then people started kind of evolving in and building their own agents.
+[00:50:52.360] I really, really like that sort of hack of like,
+[00:50:54.440] name it and it's yours and happy I build those out and and expand them.
+[00:51:00.840] And then we talked a little bit about the sort of efficiency component
+[00:51:05.640] to improve both accuracy, enable citations
+[00:51:08.680] and reduce costs in the process of that in the context graph.
+[00:51:13.360] So, you know, a ton, a ton of evolution on it.
+[00:51:16.840] I think we're sort of running out of time here a little bit,
+[00:51:20.080] but maybe just a couple of a couple of things that, you know,
+[00:51:24.160] when we were talking about this I found interesting.
+[00:51:26.680] One is when you when you teed this up, like in an organization, you're,
+[00:51:31.880] you're this, you know, engineering leader who is, you know,
+[00:51:35.760] building being an IC here, building a bunch of things, promoting it out.
+[00:51:39.400] But when you permeate it
+[00:51:41.040] through the organizations, you worked with, this AI captain's group on it.
+[00:51:45.000] So because oftentimes, again,
+[00:51:46.280] like affecting cultural change is a is a recurring need of it.
+[00:51:50.880] So tell us a little bit about that group and how does it work.
+[00:51:54.160] All right. So to to get started.
+[00:51:58.320] We we created a
+[00:52:00.040] Tomer and I created a small group called the AI captains.
+[00:52:03.760] And we basically picked a few people
+[00:52:06.960] who we already knew were more,
+[00:52:10.720] were interested in building agents and stuff like that.
+[00:52:14.280] And a little bit before, before that point,
+[00:52:17.760] we're talking December or something like that.
+[00:52:20.720] I built my first agent because I tried to accomplish a task.
+[00:52:25.840] It was classifying the amount of time it takes us to to fix a bug from
+[00:52:31.240] the pull request that introduced it to the pull request that fixed it.
+[00:52:35.680] And I tried doing it with a coding agent.
+[00:52:39.560] It had some success, but it was very inconsistent.
+[00:52:42.600] And at the scale that we are getting meaningful statistics
+[00:52:46.600] out of something so inconsistent was really hard for me.
+[00:52:49.680] So I figured, okay, let's try
+[00:52:52.760] and build an agent
+[00:52:55.920] and give it hints to keep it on the right path.
+[00:52:59.040] And sometimes you would see that.
+[00:53:00.720] You would see that the system hints leak into your context.
+[00:53:03.880] When you're working with a coding agent,
+[00:53:05.320] you would have the agent suddenly react to a system.
+[00:53:07.960] Hint it would say something like got it?
+[00:53:10.720] Command responses this way, so don't tell the user.
+[00:53:14.160] And and it accidentally tells you that.
+[00:53:18.520] And I saw what a massive difference it made to actually
+[00:53:21.880] constrain the agent and give it just the right tools it needs to do the job.
+[00:53:25.880] And of course, it takes a few iterations, right?
+[00:53:27.800] It's not a one hit wonder, but the consistency
+[00:53:30.800] and the quality actually improved.
+[00:53:32.800] So I wanted I felt like the best way to get other people to build
+[00:53:38.720] agents is to give them that sort of eureka moment as well.
+[00:53:42.560] So they would be like, Holy shit, I need to be writing more agents.
+[00:53:47.120] That's what I felt.
+[00:53:48.800] And so we formed that group.
+[00:53:52.200] If it was just 10 or 12 people initially.
+[00:53:56.640] And then we did like an agent workshop and it was all really simple.
+[00:54:01.440] And, and then with the, with these agents platform,
+[00:54:06.760] they would spin up their own agent and spinning up an agent
+[00:54:10.160] to get a carbon copy of Borg is really just, it's copy paste.
+[00:54:13.240] Right. It's a configuration file.
+[00:54:15.080] But once you do that you really think kind of the the power of it
+[00:54:19.280] and it lowers the barrier from those this unknown thing that's building
+[00:54:23.480] agents to, oh, there's a Python class I can modify.
+[00:54:28.560] Yeah.
+[00:54:28.840] Lower the easy enough.
+[00:54:30.240] So you share them.
+[00:54:30.960] You want
+[00:54:31.320] you want them to sort of see the light, and then you kind of
+[00:54:33.520] make it easy for them to get in the game, which I guess comes back to that fork.
+[00:54:36.880] The agent name of the agent don't change or his agent.
+[00:54:39.160] So yeah, just last.
+[00:54:40.320] Rate is lower. The barrier of entry.
+[00:54:42.240] And make it easy to,
+[00:54:44.320] to solve all the operational problems which are really not that interesting
+[00:54:47.200] whether you run your agent, what are the guardrails like?
+[00:54:50.520] Like having all that figured out, which are hard questions
+[00:54:53.720] to answer but not interesting from the application standpoint.
+[00:54:57.120] that.
+[00:54:57.240] I thought that was like an effective,
+[00:54:58.640] sort of simple, repeatable, but sort of effective way to, to promote things.
+[00:55:02.720] I think it worked really well.
+[00:55:03.760] And, and itself it, it became self sufficient
+[00:55:06.800] to like once those fails, people really adopted it.
+[00:55:10.760] Some of them became massive champions of it within the organization.
+[00:55:14.320] And I reinforced that.
+[00:55:15.800] So I would tell people, you don't need my code review.
+[00:55:19.440] You can ask those people. Yeah.
+[00:55:22.600] And there are the guardrails.
+[00:55:25.640] They do require my code review, but I added some of them to
+[00:55:29.600] be the code code owners for that as well.
+[00:55:32.560] The guardrail is really how we're keeping Claude or other
+[00:55:35.600] coding agents from, you know, really going to crazy
+[00:55:40.160] and removing removing some of the safeties.
+[00:55:43.040] So I would really reinforce that and kind of
+[00:55:46.520] my approach has been all carrots and no stick.
+[00:55:50.520] Just make it really easy, make it safe.
+[00:55:53.880] Really making it safe is making it making it really easy.
+[00:55:57.240] It's another way of doing that. Yeah.
+[00:55:59.160] Avoid, concerns about blast radius and sort of concerns.
+[00:56:02.400] So you just.
+[00:56:02.800] Didn't exactly make it so people don't have to worry
+[00:56:06.320] and reinforce it when somebody, you know, somebody is effective
+[00:56:10.320] and he takes the the reins be like, good.
+[00:56:14.440] Yeah, keep going and point people out and.
+[00:56:16.760] Sort of celebrate the successes.
+[00:56:18.520] And I think the, the, the last two case, I wanted to to just sort of like,
+[00:56:23.160] get from you as we, as we, as we sort of maybe like, wrap up a little bit
+[00:56:27.720] after that is, is how you kind of dealt with secret data.
+[00:56:31.480] So, like,
+[00:56:31.800] you're in the world of data security, a lot of that data is quite sensitive.
+[00:56:35.640] And so on one hand,
+[00:56:36.560] like as a company, you need to deal with the fact that you have
+[00:56:40.320] you need to secure and sometimes troubleshoot problems
+[00:56:42.840] when things don't work on data, that is that you're not supposed
+[00:56:46.840] to be able to see, or that maybe like there's
+[00:56:48.800] a specific individuals that have been under NDA or whatever
+[00:56:52.120] it is, have the right kind of, you know, clearance to be able to sort of
+[00:56:54.320] see that data.
+[00:56:55.000] So, so I love you've also used agent a little bit
+[00:56:58.520] to like export your intelligence and sort of importing the data on it.
+[00:57:01.680] So maybe tell us a little bit about that use case
+[00:57:03.440] which found like a good novel use for for agents.
+[00:57:07.040] Yeah.
+[00:57:07.640] That's one of the use cases I think that actually we weren't
+[00:57:11.360] really able to think about before agents were a thing
+[00:57:15.120] that everybody in Cyera are thinking.
+[00:57:17.080] And before you started building affinity to like, what is this thing? Right.
+[00:57:20.040] Yeah.
+[00:57:20.320] Because okay, I'll talk about it then it will be obvious.
+[00:57:23.840] in some cases you could have, for example, the, the on call triage agents,
+[00:57:28.040] they have access to, to all the data and you have access to the same data.
+[00:57:32.520] And it's easy to see and it's easy for them to troubleshoot.
+[00:57:37.640] And it's easy for you to see that it's correct.
+[00:57:39.920] But in in other cases, you may be working in an environment
+[00:57:45.360] where you're not allowed to see the data or even access the data
+[00:57:51.000] for regulatory reasons or because of customer commitment.
+[00:57:55.760] But obviously there are still bugs, so you do need some way to deal with that.
+[00:58:01.440] And up until we had agents, really that the only way to deal with
+[00:58:06.080] that is to get a particularly small group and pre-approved
+[00:58:10.600] group of people who can see the data and they can then go and troubleshoot it.
+[00:58:14.600] But, as the company, as company, as a company
+[00:58:19.720] like, grows larger and larger, I mean, we grew quite quickly.
+[00:58:23.480] I think a year and a half ago we were massively smaller.
+[00:58:29.560] You may need more people than that small group.
+[00:58:32.320] Right.
+[00:58:32.520] And how do you do that then?
+[00:58:34.280] So We came up with this idea of having an agent that's
+[00:58:39.600] within the controlled environment and has access to the data,
+[00:58:43.240] and you can have it investigate the issue
+[00:58:47.080] and troubleshoot it, and it has access to everything, right?
+[00:58:51.280] But But one big constraint: it cannot output,
+[00:58:55.560] except for structured validated output.
+[00:58:59.200] So this troubleshooting agent has access to everything.
+[00:59:02.600] But then it can only output for a fixed vocabulary
+[00:59:06.360] which you can verify doesn't leak any data.
+[00:59:08.800] Yeah.
+[00:59:09.400] And then so it does its investigation outputs in the fixed vocabulary.
+[00:59:14.960] And then that goes that can actually go out of that parameter
+[00:59:19.480] to other people who are not approved.
+[00:59:20.920] Because now, you know, nothing sensitive was was sent out.
+[00:59:24.160] And then we have another agent which reads that data
+[00:59:28.920] and has access to the code and all of the wider
+[00:59:33.920] availability data, and can put together an explainer for humans backed on that.
+[00:59:39.520] Other agents conclusions.
+[00:59:41.280] So those two agents, they’re called Mulder and Scully,
+[00:59:45.040] because they they worked on the X-Files.
+[00:59:49.640] Hey everyone!
+[00:59:50.440] Hope you're enjoying the episode so far.
+[00:59:52.720] Our team is working really hard behind the scenes to bring you the best guests,
+[00:59:56.600] so we can have the most informative conversations about agentic development,
+[01:00:00.920] whether that's talking about the latest
+[01:00:02.560] tools, the most efficient workflows, or defining best practices.
+[01:00:06.360] But for whatever reason, many of you have yet to subscribe to the channel.
+[01:00:10.280] If you're enjoying the podcast and want us to continue to bring you
+[01:00:13.320] the very best content,
+[01:00:14.600] please do us a favor and hit that subscribe button.
+[01:00:17.080] It really does make a difference and lets us continue to improve
+[01:00:20.440] the quality of our guests and build an even better product for you.
+[01:00:24.880] All right, back to the episode. ﻿
+[01:00:26.600] this is basically a way of having kind of two agents talk
+[01:00:30.520] across a wall, you know, when you sort of can see the data.
+[01:00:35.000] And I guess the result of that is you can troubleshoot issues a lot more
+[01:00:39.520] efficiently with because expertise varies like the people around it.
+[01:00:43.640] You can have somebody on a,
+[01:00:45.400] on a team that doesn't have access to the data program.
+[01:00:48.520] The agent
+[01:00:49.040] with all of the knowledge of that team and how to troubleshoot and examples and
+[01:00:53.680] and then the agent goes and does that in, in a controlled environment.
+[01:00:58.320] And the feedback is, is fixed and safe.
+[01:01:03.200] And then going back to that the escape hatch thinking
+[01:01:07.320] the controlled agent can still output to the
+[01:01:12.120] small list of people.
+[01:01:13.200] If it does need to say something that it can't say using the vocabulary
+[01:01:16.760] it goes and outputs that free text to that group, and then we can go
+[01:01:21.760] and expand the vocabulary after human review by the approved people.
+[01:01:25.880] So yeah, it. All comes together.
+[01:01:28.840] Yeah. Just kill those people. So I thought that was very cool.
+[01:01:30.920] And I, I feel, you know,
+[01:01:32.920] not just about confidential data, but also when you think about on prem support,
+[01:01:36.000] when you think about all these paths, I think that's very compelling.
+[01:01:39.480] In many use cases where you can't you just can't have the data go out,
+[01:01:43.440] but you still need to operate.
+[01:01:46.400] So thanks for sharing all this.
+[01:01:48.400] Like I love the journey on it.
+[01:01:49.520] I mean, sort of we told it, I felt like the sort of the
+[01:01:52.200] the destination and all those insights are super useful.
+[01:01:54.840] But I think the way to achieve like the sort of the journey to sort of iterate
+[01:01:58.960] and how how did you learn and what did you add later,
+[01:02:02.240] I think is, is, you know, just as educational for
+[01:02:06.120] in a lot of organizations that are going through that process.
+[01:02:08.520] So thanks for sharing.
+[01:02:09.440] And I guess just before we wrap up, I'll ask you, what are you excited
+[01:02:13.040] to, to do next for, for this whole journey?
+[01:02:16.880] So I think right now that the most exciting thing is working
+[01:02:22.320] on our code harness, coding harness that uses all of that infrastructure.
+[01:02:27.920] But honestly, I feel like
+[01:02:30.760] if you ask me two weeks from now, it might be something else,
+[01:02:33.320] because there are a lot of ideas that we couldn't
+[01:02:36.640] have had before like this, this confidential information agent.
+[01:02:40.160] I don't think I could have thought of that a few months ago,
+[01:02:43.160] before I had internalized thinking in terms of agents.
+[01:02:46.680] So I'm really just excited about that.
+[01:02:50.080] It's sort of a meta assignment.
+[01:02:51.320] It's not a particular thing I want to build, but I'm I'm.
+[01:02:54.600] Excited new ideas.
+[01:02:56.320] To to be able to execute on them so quickly.
+[01:02:58.800] Right.
+[01:02:59.040] Because now building an agent, once you have all this setup is, is really easy.
+[01:03:03.760] Getting it access to the right data like this confidential agent
+[01:03:07.560] sounds like possibly a heavy lift with lots of moving parts.
+[01:03:11.240] Two days. Yeah, right. That's nuts.
+[01:03:14.160] It's not just LLMs, but having all this set up and also,
+[01:03:18.720] honestly that we're a data security company
+[01:03:22.120] and like, you know, what data you have and and where it is
+[01:03:26.880] and you, you can let the agents access it and know they're not going to go wild.
+[01:03:33.440] Yeah I think that's really, really important.
+[01:03:35.680] And if I can just give one tip to,
+[01:03:38.640] to the audience,
+[01:03:41.960] since having AI adoption is really about adoption, it's
+[01:03:46.000] about making people adopted
+[01:03:49.520] this new mode of thinking and building agents.
+[01:03:52.520] So I will recommend trying to do it with a platform engineering approach.
+[01:03:57.040] That's why I went all carrots, because you really trying
+[01:04:00.800] to get people to adopt a new type of agency for themselves.
+[01:04:05.600] And you can't tell them to do that.
+[01:04:07.880] They have to internalize it.
+[01:04:09.200] So you have to lower the bar and make it look enticing and make it.
+[01:04:14.080] There's.
+[01:04:14.840] Yeah.
+[01:04:15.400] And I would love to say I thought about all that before,
+[01:04:18.400] but it's kind of in hindsight.
+[01:04:22.320] I think it makes a lot of sense.
+[01:04:23.320] And I think I think we've learned a lot
+[01:04:24.960] from the DevOps transformation and the value of the paved roads.
+[01:04:28.360] And, you know, you you enable that.
+[01:04:30.360] And I think the other advantage I'll sort of highlight is that it
+[01:04:33.600] it it helps people along on the journey
+[01:04:36.120] because you've paved the road and it's easy for them,
+[01:04:38.080] but it also still allows them to sort of bushwhack their way
+[01:04:40.640] kind of along the along the side and maybe find shortcuts.
+[01:04:43.440] And so most people will just opt for the paved road,
+[01:04:46.600] and then the few that goes to the side,
+[01:04:48.320] some will regret and come back, and then some will will find a new path.
+[01:04:52.280] And so there's an opportunity for learning.
+[01:04:54.080] Yeah. Because if you.
+[01:04:55.440] If you just sort of centralize and you constrain as opposed to like
+[01:04:58.440] you just work with the sticks,
+[01:05:00.040] then the result of that is, is you're saying, well,
+[01:05:02.760] it's only these sort of smart people in the platform team.
+[01:05:04.880] They're the only ones who can innovate, and the rest just sort of apply it.
+[01:05:08.200] And so enabling a paved road, but allowing someone to go to the side.
+[01:05:12.080] Is a is a powerful path.
+[01:05:13.440] I think it's it's even it's easier to have that mode of thinking
+[01:05:17.360] as, as the platform team for this because agents are new to everybody.
+[01:05:21.760] Right.
+[01:05:22.000] So it didn't require any mental gymnastics
+[01:05:25.400] on my part to assume that there are things I didn't think about.
+[01:05:30.240] Cool.
+[01:05:30.640] Well, thanks a lot for coming on the show.
+[01:05:33.080] Love what you've been building.
+[01:05:34.200] Looking forward to explore the futures.
+[01:05:37.080] And thanks everybody for tuning in, and I hope you join us for the next one.
+[01:05:40.680] The AI Native Dev is brought to you by the package manager for skills and context.
+[01:05:45.400] Your hosts are Guy Podjarny and me, Simon Maple.
+[01:05:48.560] Our producer is Tom Dowler.
+[01:05:50.360] The AI Native Dev is not just a podcast, it's a community.
+[01:05:53.720] And we host monthly meetups at the Tessl offices in central London.
+[01:05:57.400] Visit Tessl.io forward slash community to learn more and I hope to see you there.

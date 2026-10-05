@@ -1,0 +1,2509 @@
+WEBVTT
+
+1
+00:00:00.280 --> 00:00:04.440
+Kicking off our talks, we have the wonderful
+
+2
+00:00:04.600 --> 00:00:10.400
+Dana Lawson who is the CTO of Netlify and of course Netlify for many, many years
+
+3
+00:00:10.400 --> 00:00:14.920
+have been have been building wonderful software for a world that is agent less.
+
+4
+00:00:15.120 --> 00:00:17.000
+And now we have agents.
+
+5
+00:00:17.000 --> 00:00:20.280
+So Dana is going to tell us how we adapt for that.
+
+6
+00:00:20.280 --> 00:00:22.960
+So please welcome on stage Dana Lawson.
+
+7
+00:00:22.960 --> 00:00:25.960
+Have a great session.
+
+8
+00:00:27.560 --> 00:00:28.360
+Oh man.
+
+9
+00:00:28.360 --> 00:00:30.480
+How do y'all. Good morning.
+
+10
+00:00:30.480 --> 00:00:31.720
+I'm a little jet
+
+11
+00:00:31.720 --> 00:00:35.880
+lagged and a little caffeinated, so hopefully I don't talk to darn fast.
+
+12
+00:00:35.880 --> 00:00:36.920
+But I'll tell you what.
+
+13
+00:00:36.920 --> 00:00:40.560
+Coming into the city yesterday, I was I became an Arsenal fan.
+
+14
+00:00:40.600 --> 00:00:42.040
+Y'all are crazy.
+
+15
+00:00:42.040 --> 00:00:44.520
+I was like, what the hell is going on here?
+
+16
+00:00:44.520 --> 00:00:47.960
+Somebody should have warned me, but y'all sure do you know how to party?
+
+17
+00:00:47.960 --> 00:00:50.520
+So I was down, but I didn't clown last night.
+
+18
+00:00:50.520 --> 00:00:52.240
+I had had to be serious for this.
+
+19
+00:00:52.240 --> 00:00:55.360
+All right, so as you heard, I'm Dana Lawson, CTO of Netlify.
+
+20
+00:00:55.400 --> 00:01:00.760
+Netlify is, as we all are, a web application platform.
+
+21
+00:01:00.760 --> 00:01:05.040
+We help anybody build, deploy and create experiences.
+
+22
+00:01:05.040 --> 00:01:07.280
+And now in an agent world, guess what?
+
+23
+00:01:07.280 --> 00:01:08.280
+Anybody can do it.
+
+24
+00:01:08.280 --> 00:01:11.720
+And so our world is changing so rapidly that this talk
+
+25
+00:01:11.720 --> 00:01:14.720
+might be out of date, but maybe not.
+
+26
+00:01:14.760 --> 00:01:16.920
+Depends on how far you are in your journey.
+
+27
+00:01:16.920 --> 00:01:19.600
+So let's get going. So
+
+28
+00:01:20.560 --> 00:01:21.880
+before we get into the
+
+29
+00:01:21.880 --> 00:01:25.320
+architecture, I need to say something that might feel uncomfortable.
+
+30
+00:01:25.360 --> 00:01:28.400
+How many of you here identify as a developer?
+
+31
+00:01:30.080 --> 00:01:32.240
+Oh man, we ain't precious no more, y'all.
+
+32
+00:01:32.240 --> 00:01:35.520
+The builder persona has changed.
+
+33
+00:01:35.520 --> 00:01:39.720
+The person our platforms were built for are no longer just developers.
+
+34
+00:01:39.760 --> 00:01:44.280
+We're still builders, don't get me wrong, but we're not the only ones.
+
+35
+00:01:44.280 --> 00:01:46.880
+Now, with agents, anybody can participate.
+
+36
+00:01:46.880 --> 00:01:50.320
+In fact, the IDC predicts that more than 500
+
+37
+00:01:50.320 --> 00:01:53.880
+million new applications will be built by 2028.
+
+38
+00:01:53.880 --> 00:01:55.440
+And in fact, I create one a day.
+
+39
+00:01:55.440 --> 00:02:01.440
+So I'm a I'm a part of that damn problem more than the previous 40 years combined.
+
+40
+00:02:01.480 --> 00:02:03.640
+Think about it for a minute now,
+
+41
+00:02:03.640 --> 00:02:07.480
+40 years have been compressed into three, just like this room.
+
+42
+00:02:07.480 --> 00:02:10.080
+That's not because the number of engineers is expanding.
+
+43
+00:02:10.080 --> 00:02:13.800
+It's because agents have turned intent into a programming language.
+
+44
+00:02:13.840 --> 00:02:16.960
+In fact, the strongest programming language that will happen now
+
+45
+00:02:16.960 --> 00:02:19.520
+and into the future is guess what, English.
+
+46
+00:02:19.520 --> 00:02:21.440
+So I hope you go and study that in school.
+
+47
+00:02:21.440 --> 00:02:25.120
+Kids, if you're watching you better, you better learn how to talk to somebody.
+
+48
+00:02:25.840 --> 00:02:26.920
+Claude.
+
+49
+00:02:26.920 --> 00:02:28.800
+Code, Cursor.
+
+50
+00:02:28.800 --> 00:02:30.520
+Bolt, Lovable, Netlify.
+
+51
+00:02:30.520 --> 00:02:35.960
+These tools let anyone with an idea create working software through conversations.
+
+52
+00:02:36.000 --> 00:02:37.440
+No longer is it just developers.
+
+53
+00:02:37.440 --> 00:02:40.440
+It's therapists, teachers, small business owners, students,
+
+54
+00:02:40.440 --> 00:02:44.240
+people in line at the store building experiences on their phone.
+
+55
+00:02:44.280 --> 00:02:44.600
+Thank you.
+
+56
+00:02:44.600 --> 00:02:48.080
+Lovable and becoming software
+
+57
+00:02:48.080 --> 00:02:51.960
+creators at Netlify, we build for all of these builders.
+
+58
+00:02:51.960 --> 00:02:53.120
+And here's the thing.
+
+59
+00:02:53.120 --> 00:02:56.440
+When we designed our platform to work better for agents
+
+60
+00:02:56.440 --> 00:03:00.440
+serving these new builders, it got better for developers too.
+
+61
+00:03:00.720 --> 00:03:03.840
+And that's the paradox.
+
+62
+00:03:04.200 --> 00:03:05.880
+So let me tell you a little story.
+
+63
+00:03:05.880 --> 00:03:09.280
+Let me introduce you to my best friend, my home girl, Toria.
+
+64
+00:03:09.320 --> 00:03:12.160
+This is her. She is a licensed massage therapist.
+
+65
+00:03:12.160 --> 00:03:16.440
+She's a vibrant drummer, a delightful, authentic, woo woo Burning Man hippie.
+
+66
+00:03:16.440 --> 00:03:19.280
+So I can't even believe she hangs out with an AI overlord.
+
+67
+00:03:19.280 --> 00:03:20.160
+But she does.
+
+68
+00:03:20.160 --> 00:03:22.440
+And she just radiates incredible energy.
+
+69
+00:03:22.440 --> 00:03:23.840
+She has a dream.
+
+70
+00:03:23.840 --> 00:03:26.080
+She came to me and she said, girl, I want to build
+
+71
+00:03:26.080 --> 00:03:28.920
+an all inclusive experience, not just a website.
+
+72
+00:03:28.920 --> 00:03:30.200
+I ain't going on to Wix.
+
+73
+00:03:30.200 --> 00:03:34.760
+I want to build an app for my Barbados massage retreat, where I can build
+
+74
+00:03:34.760 --> 00:03:39.280
+community and I can take payments and I can can deliver content.
+
+75
+00:03:39.320 --> 00:03:41.080
+These aren't just static website dreams.
+
+76
+00:03:41.080 --> 00:03:43.200
+These are full blown application dreams.
+
+77
+00:03:43.200 --> 00:03:44.720
+She doesn't write the code.
+
+78
+00:03:44.720 --> 00:03:46.480
+She really just writes intentions.
+
+79
+00:03:46.480 --> 00:03:48.920
+And she decided she was going to build this website.
+
+80
+00:03:48.920 --> 00:03:53.920
+So she went on to her favorite chat application, ChatGPT,
+
+81
+00:03:54.000 --> 00:03:56.920
+and described her vision and she started building.
+
+82
+00:03:58.480 --> 00:04:02.160
+She prompted an agent to build the website, but every assumption
+
+83
+00:04:02.160 --> 00:04:06.080
+we have baked in to the tooling turned out to be a human assumption.
+
+84
+00:04:06.080 --> 00:04:08.120
+As we originally had built Netlify,
+
+85
+00:04:08.120 --> 00:04:11.440
+it was for front end developers, and now we realized with agents
+
+86
+00:04:11.440 --> 00:04:14.440
+we were lowering that gatekeeping in that barrier.
+
+87
+00:04:14.800 --> 00:04:16.320
+First it was about git.
+
+88
+00:04:16.320 --> 00:04:18.280
+She had no idea what git was.
+
+89
+00:04:18.280 --> 00:04:21.080
+I worked at GitHub. Some other GitHub people are here.
+
+90
+00:04:21.080 --> 00:04:24.000
+I was like, man, you don't need to know what git is.
+
+91
+00:04:24.000 --> 00:04:26.480
+Trust me on this. But she was stuck.
+
+92
+00:04:26.480 --> 00:04:29.920
+This is the reality for millions of new builders right now.
+
+93
+00:04:30.440 --> 00:04:34.880
+Agents still speak fluent developer, but the humans they're serving don't.
+
+94
+00:04:34.920 --> 00:04:35.800
+They don't know.
+
+95
+00:04:35.800 --> 00:04:36.600
+They don't know posts.
+
+96
+00:04:36.600 --> 00:04:38.440
+They don't know anything.
+
+97
+00:04:38.440 --> 00:04:40.240
+First, this was.
+
+98
+00:04:40.240 --> 00:04:42.680
+She had no idea what she's doing.
+
+99
+00:04:42.680 --> 00:04:43.920
+The tools assumed
+
+100
+00:04:43.920 --> 00:04:48.240
+a level of technical literacy that most of the world just does not have.
+
+101
+00:04:48.440 --> 00:04:51.240
+And this is the thing that really surprises Netlify.
+
+102
+00:04:51.240 --> 00:04:55.160
+As we were redesigning for agents, fixing this for Toria
+
+103
+00:04:55.200 --> 00:04:57.600
+also fixed it for our experienced developers
+
+104
+00:04:57.600 --> 00:05:01.640
+that have to write with spec, intent, context, all the things that Guy said
+
+105
+00:05:01.640 --> 00:05:05.160
+with the new software delivery lifecycle, those are the things that we have
+
+106
+00:05:05.160 --> 00:05:09.560
+to just make work out of the box, because the new builder has no idea.
+
+107
+00:05:09.680 --> 00:05:12.720
+When we made the agent's error messages clear and structured
+
+108
+00:05:12.720 --> 00:05:16.000
+the build output for machine, and removed unnecessary friction.
+
+109
+00:05:16.080 --> 00:05:19.120
+Our developers also benefited from this.
+
+110
+00:05:19.640 --> 00:05:24.080
+Every human assumption we remove made the platform better for everyone.
+
+111
+00:05:24.240 --> 00:05:27.920
+This is the gap of what we call agent experience.
+
+112
+00:05:29.360 --> 00:05:31.240
+So as I said, she called me.
+
+113
+00:05:31.240 --> 00:05:32.760
+I was like, girl, you don't need to worry about git.
+
+114
+00:05:32.760 --> 00:05:35.080
+You don't have to worry about deploy. You need to just go.
+
+115
+00:05:35.080 --> 00:05:37.040
+You just need to go prompt your vision into the world.
+
+116
+00:05:37.040 --> 00:05:38.680
+And I got you.
+
+117
+00:05:38.680 --> 00:05:41.680
+But this got me thinking about what this means.
+
+118
+00:05:41.760 --> 00:05:44.480
+After years, I've been a software developer.
+
+119
+00:05:44.480 --> 00:05:45.520
+Builder QA.
+
+120
+00:05:45.520 --> 00:05:48.160
+I've done it all, man. I've been doing this since the 90s.
+
+121
+00:05:48.160 --> 00:05:52.400
+Maybe decades of building guardrails to prevent humans from breaking production.
+
+122
+00:05:52.440 --> 00:05:55.240
+We're now removing those guardrails and saying, hey, come play with us.
+
+123
+00:05:55.240 --> 00:05:59.960
+Come, come create, go build the next experiences for the world. Why?
+
+124
+00:06:00.720 --> 00:06:03.080
+Because the interfaces have changed.
+
+125
+00:06:03.080 --> 00:06:04.840
+The agent now handles git.
+
+126
+00:06:04.840 --> 00:06:07.040
+It handles deployment, it handles DNS.
+
+127
+00:06:07.040 --> 00:06:08.800
+The builder focuses on the vision.
+
+128
+00:06:08.800 --> 00:06:13.360
+And and this is really what agent experience in practice looks like.
+
+129
+00:06:13.400 --> 00:06:16.160
+Agents have full access to our platform primitives.
+
+130
+00:06:16.160 --> 00:06:19.520
+They deploy configure iterate so the human never touches anything.
+
+131
+00:06:19.520 --> 00:06:20.560
+It's pretty scary right.
+
+132
+00:06:20.560 --> 00:06:21.200
+So under the hood
+
+133
+00:06:21.200 --> 00:06:24.440
+you're going to have all the things that you need to make it frictionless
+
+134
+00:06:24.440 --> 00:06:28.200
+so that builders in this new breed of developers can get those ideas out.
+
+135
+00:06:28.240 --> 00:06:31.320
+AX captures the humanity in this story.
+
+136
+00:06:31.360 --> 00:06:33.720
+It removes that technical friction.
+
+137
+00:06:33.720 --> 00:06:37.280
+So again, people like Toria or anybody else with a good idea
+
+138
+00:06:37.280 --> 00:06:40.600
+that wants to change humanity for the better, they can now do it.
+
+139
+00:06:40.640 --> 00:06:42.600
+But here's the key insight.
+
+140
+00:06:42.600 --> 00:06:46.480
+Again, we didn't just make this as a separate dumbed down platform.
+
+141
+00:06:46.480 --> 00:06:47.600
+If you go on to Netlify
+
+142
+00:06:47.600 --> 00:06:50.600
+is still as powerful as it was ten years ago as it is today.
+
+143
+00:06:50.600 --> 00:06:52.440
+But we had to think about how
+
+144
+00:06:52.440 --> 00:06:56.160
+that intersection of developers and builders are coming together.
+
+145
+00:06:56.600 --> 00:06:57.480
+So what do we do?
+
+146
+00:06:57.480 --> 00:06:59.720
+We just built a better platform for everyone.
+
+147
+00:06:59.720 --> 00:07:03.320
+The same structure signals that help that agent deploy to a site.
+
+148
+00:07:03.320 --> 00:07:08.120
+Also helped our engineers to bug and build faster build systems, understand where
+
+149
+00:07:08.120 --> 00:07:12.000
+we have errors under the hood, really help us create that magical experience.
+
+150
+00:07:12.000 --> 00:07:15.000
+And so what we learned was designing for agents,
+
+151
+00:07:15.560 --> 00:07:18.920
+actually was designing for humans all along.
+
+152
+00:07:19.360 --> 00:07:22.360
+And so this shift brings me to my core thesis.
+
+153
+00:07:22.480 --> 00:07:25.720
+You've all heard user experience we heard in 2012.
+
+154
+00:07:25.720 --> 00:07:30.200
+Jeremiah at Spotify coined developer experience in my boss Matt Billman
+
+155
+00:07:30.240 --> 00:07:33.280
+last year said, you know what the new paradigm is?
+
+156
+00:07:33.280 --> 00:07:38.040
+AX, DX, and UX are collapsing into a single discipline.
+
+157
+00:07:38.040 --> 00:07:39.120
+And here's why.
+
+158
+00:07:39.120 --> 00:07:42.400
+Again, that builder persona is no longer you.
+
+159
+00:07:42.400 --> 00:07:44.120
+The agents are doing the heavy lifting.
+
+160
+00:07:44.120 --> 00:07:47.760
+So when you're thinking about how that end user interacts, it's also an agent.
+
+161
+00:07:47.760 --> 00:07:49.280
+When you're thinking about how that developer
+
+162
+00:07:49.280 --> 00:07:51.200
+goes and programs on your platform.
+
+163
+00:07:51.200 --> 00:07:52.360
+It's not a developer, it's an agent.
+
+164
+00:07:52.360 --> 00:07:55.400
+But on the other end is a human that just speaks plain English
+
+165
+00:07:55.400 --> 00:07:58.560
+and expects it to just work.
+
+166
+00:07:59.000 --> 00:08:02.840
+And again, agent experience isn't about making machines happy.
+
+167
+00:08:02.840 --> 00:08:05.840
+It's about removing that friction every step of the way
+
+168
+00:08:05.840 --> 00:08:10.360
+so that you can get from idea into reality in a few simple prompts.
+
+169
+00:08:10.400 --> 00:08:14.200
+Now, I know that's again scary for all of us as software developers, but
+
+170
+00:08:14.240 --> 00:08:17.960
+haven't we always just built so that we can explore, collaborate,
+
+171
+00:08:17.960 --> 00:08:19.240
+and share our ideas?
+
+172
+00:08:19.240 --> 00:08:21.680
+And some of us actually change humanity?
+
+173
+00:08:21.680 --> 00:08:23.240
+I hope for the better.
+
+174
+00:08:24.720 --> 00:08:27.960
+Deploy so structured errors and agents can parse.
+
+175
+00:08:28.000 --> 00:08:29.920
+Engineers can stand them faster to
+
+176
+00:08:29.920 --> 00:08:33.800
+and then deploy previews that give agents clear pass fail signals.
+
+177
+00:08:33.840 --> 00:08:37.720
+These all give us human clarity, and a lot of this stuff is often skated.
+
+178
+00:08:37.720 --> 00:08:40.280
+We don't need the end user to think about it anymore.
+
+179
+00:08:40.280 --> 00:08:42.560
+And now the end user is anybody.
+
+180
+00:08:42.560 --> 00:08:46.560
+Because we are building a development platform, we have to just make it work.
+
+181
+00:08:46.560 --> 00:08:50.280
+So as you heard in Guy's talk, really Agent Experience is thinking
+
+182
+00:08:50.280 --> 00:08:54.800
+about all that new system content and intent in the SDLC.
+
+183
+00:08:54.960 --> 00:08:59.480
+It is the practice of designing where humans and agents collaborate seamlessly.
+
+184
+00:08:59.480 --> 00:09:04.360
+And it isn't just about making API API calls agent friendly.
+
+185
+00:09:04.440 --> 00:09:08.480
+You really do have to rethink the entire stack along the way from how
+
+186
+00:09:08.480 --> 00:09:13.040
+we express the intent to how systems communicate and so that we can trust.
+
+187
+00:09:14.200 --> 00:09:16.040
+So let's look at the landscape.
+
+188
+00:09:16.040 --> 00:09:18.080
+You already heard a little bit from Guy of what's changing.
+
+189
+00:09:18.080 --> 00:09:19.200
+And like I said,
+
+190
+00:09:19.200 --> 00:09:22.840
+some of this is probably out of date as I open my mouth in just two years.
+
+191
+00:09:22.840 --> 00:09:23.280
+That's right.
+
+192
+00:09:23.280 --> 00:09:24.160
+And only two years
+
+193
+00:09:24.160 --> 00:09:28.920
+we've seen an explosion of these AI powered development tools or harnesses.
+
+194
+00:09:28.960 --> 00:09:30.440
+I mean, call them what you will.
+
+195
+00:09:30.440 --> 00:09:32.560
+I'm sure the name is going to change many, many times.
+
+196
+00:09:32.560 --> 00:09:36.160
+I was sitting here thinking, man, Netlify is a harness on a harness on a harness.
+
+197
+00:09:36.200 --> 00:09:38.440
+That's so damn meta. How many harnesses do you need?
+
+198
+00:09:38.440 --> 00:09:40.400
+So I hope somebody comes out with the second hard
+
+199
+00:09:40.400 --> 00:09:43.400
+human problem, which is naming things.
+
+200
+00:09:46.600 --> 00:09:49.320
+Claude Code from Anthropic is an agent
+
+201
+00:09:49.320 --> 00:09:52.800
+CLI that writes, tests, and commits. Cursor and Windsurf AI
+
+202
+00:09:53.800 --> 00:09:55.800
+pair program with you. v0,
+
+203
+00:09:55.800 --> 00:09:57.000
+Netlify, Bolt
+
+204
+00:09:57.000 --> 00:10:00.760
+from StackBlitz, Lovable, all turn natural language into applications.
+
+205
+00:10:00.800 --> 00:10:05.880
+GitHub Copilot now has agent modes that autonomously works on
+
+206
+00:10:05.880 --> 00:10:09.880
+issues and submits PRs — the idea of a software factory.
+
+207
+00:10:09.880 --> 00:10:11.240
+It's been instilled for years.
+
+208
+00:10:11.240 --> 00:10:13.480
+This is not a new concept that we're determining here,
+
+209
+00:10:13.480 --> 00:10:16.080
+but now with agents, we can actually go and implement
+
+210
+00:10:16.080 --> 00:10:18.920
+those software factories to go and just run.
+
+211
+00:10:18.920 --> 00:10:22.240
+All of these again, share a common pattern intent
+
+212
+00:10:22.240 --> 00:10:25.240
+as input working software is output.
+
+213
+00:10:25.240 --> 00:10:28.880
+But there's the thing they all need infrastructure that understands
+
+214
+00:10:28.880 --> 00:10:33.320
+the patterns, the deploy target targets, the C pipelines, the edge networks.
+
+215
+00:10:33.320 --> 00:10:35.280
+They all have to be designed for agents.
+
+216
+00:10:35.280 --> 00:10:38.280
+And that's what we've been building at Netlify.
+
+217
+00:10:38.480 --> 00:10:40.240
+So what actually is changing?
+
+218
+00:10:40.240 --> 00:10:41.160
+Again, you've heard it.
+
+219
+00:10:41.160 --> 00:10:43.080
+It's gone from the SDLC.
+
+220
+00:10:43.080 --> 00:10:44.600
+The big shift is we're moving from
+
+221
+00:10:45.760 --> 00:10:46.680
+to intent.
+
+222
+00:10:46.680 --> 00:10:47.640
+Specs still matter.
+
+223
+00:10:47.640 --> 00:10:50.240
+And when you have large scale technical
+
+224
+00:10:50.240 --> 00:10:53.440
+platforms like myself, believe me, you're still using specs.
+
+225
+00:10:53.440 --> 00:10:55.680
+But for your average user, because I hate to break it to you,
+
+226
+00:10:55.680 --> 00:10:57.720
+the internet is just a bunch of apps and websites.
+
+227
+00:10:57.720 --> 00:10:59.880
+It's not that hard if you're a tech company.
+
+228
+00:10:59.880 --> 00:11:02.200
+It's hard if you're an end user that's building an experience.
+
+229
+00:11:02.200 --> 00:11:03.320
+Not that hard anymore.
+
+230
+00:11:03.320 --> 00:11:06.600
+Traditional development workflows typically would begin
+
+231
+00:11:06.600 --> 00:11:10.320
+with a PRD that passes to a ticket or a linear ticket.
+
+232
+00:11:10.360 --> 00:11:13.640
+Spec docs written for humans AI native workflows
+
+233
+00:11:13.640 --> 00:11:17.560
+begin with prompts, problem descriptions, sketches, and references.
+
+234
+00:11:17.600 --> 00:11:20.160
+The input is the intent.
+
+235
+00:11:20.160 --> 00:11:24.440
+I want a wellness retreat with booking, not a 50 page requirement doc.
+
+236
+00:11:24.480 --> 00:11:28.640
+This is where we have to think about how can we take that intent in those ideas
+
+237
+00:11:28.640 --> 00:11:33.160
+and turn them into reality by creating the software factories beneath them?
+
+238
+00:11:33.160 --> 00:11:34.800
+And at Netlify, we've been dog food.
+
+239
+00:11:34.800 --> 00:11:37.440
+In this we have a tool called Agent Runners.
+
+240
+00:11:37.440 --> 00:11:41.000
+An agent now or a harness takes the intent, generates the code.
+
+241
+00:11:41.000 --> 00:11:44.840
+The output moves immediately into real engineering workflows.
+
+242
+00:11:44.840 --> 00:11:48.520
+Preview deploys automated tests, production pipelines.
+
+243
+00:11:48.520 --> 00:11:53.000
+What used to take millions of minutes
+
+244
+00:11:53.400 --> 00:11:56.960
+now takes seconds, which is pretty darn incredible.
+
+245
+00:11:57.640 --> 00:12:00.120
+And so the second shift that we're seeing in the software
+
+246
+00:12:00.120 --> 00:12:04.080
+development lifecycle, with the rise of agent coding and the builder persona
+
+247
+00:12:04.080 --> 00:12:07.920
+becoming the every person is, we're moving from those sequential handoffs to
+
+248
+00:12:07.960 --> 00:12:09.520
+shared creation pipelines.
+
+249
+00:12:09.520 --> 00:12:10.800
+Now for Netlify,
+
+250
+00:12:10.800 --> 00:12:14.320
+yes, we have a sophisticated software development team and all people do
+
+251
+00:12:14.360 --> 00:12:15.200
+participate.
+
+252
+00:12:15.200 --> 00:12:18.240
+And historically, it was that relay relay race
+
+253
+00:12:18.240 --> 00:12:21.240
+that we all knew: PMs write the specs
+
+254
+00:12:21.320 --> 00:12:25.480
+hands to design, design creates the mockups, hands it to engineering.
+
+255
+00:12:25.480 --> 00:12:26.520
+Engineering builds it.
+
+256
+00:12:26.520 --> 00:12:29.000
+If you have QA, probably not. It's just a bot.
+
+257
+00:12:29.000 --> 00:12:31.120
+It validates it and it hands it to the DevOps
+
+258
+00:12:31.120 --> 00:12:35.000
+for deployment because nobody trusts anybody to go and hit that button.
+
+259
+00:12:35.000 --> 00:12:36.840
+But let me tell you, that takes weeks.
+
+260
+00:12:36.840 --> 00:12:41.000
+And some crazy billionaire bald tech overlords
+
+261
+00:12:41.000 --> 00:12:42.600
+said there ain't no doors you can't walk through.
+
+262
+00:12:42.600 --> 00:12:44.640
+You can't walk the other way back through.
+
+263
+00:12:44.640 --> 00:12:47.720
+So having that mindset of shipping
+
+264
+00:12:47.720 --> 00:12:51.120
+rapidly is now more so a reality than ever before.
+
+265
+00:12:51.200 --> 00:12:54.720
+So now instead of having these handoffs, this collaborative
+
+266
+00:12:54.760 --> 00:12:57.800
+product teams are generating working prototypes with agents.
+
+267
+00:12:57.800 --> 00:13:00.880
+Designers are redefining the experience directly in code.
+
+268
+00:13:00.920 --> 00:13:03.640
+They're not participating outside the lifecycle.
+
+269
+00:13:03.640 --> 00:13:07.480
+Engineers are now spending their time validating the architecture, and again,
+
+270
+00:13:07.520 --> 00:13:09.800
+spending time writing those precious guardrails
+
+271
+00:13:09.800 --> 00:13:12.120
+that didn't exist the way they need to exist now,
+
+272
+00:13:12.120 --> 00:13:16.480
+whether it's contact specs, recipes, etc.
+
+273
+00:13:16.520 --> 00:13:20.560
+we'll call it skills for ease of use as well.
+
+274
+00:13:20.640 --> 00:13:24.400
+Agents handled the testing and deployment and now everybody participates.
+
+275
+00:13:24.440 --> 00:13:28.320
+The cycle time compresses again from weeks to hours.
+
+276
+00:13:29.880 --> 00:13:32.200
+Third, what was the other change that we
+
+277
+00:13:32.200 --> 00:13:35.320
+this is the software factory layer that you heard in the previous talk.
+
+278
+00:13:35.360 --> 00:13:39.040
+Third, we move from passive CI pipelines to development loops.
+
+279
+00:13:39.040 --> 00:13:42.000
+That is one thing that I always brought to developers was like, hey,
+
+280
+00:13:42.000 --> 00:13:44.600
+you don't have to go and create your own CI/CD.
+
+281
+00:13:44.600 --> 00:13:48.120
+You can come to Netlify, we'll set it up and we'll get it configured for you.
+
+282
+00:13:48.120 --> 00:13:52.720
+But that has gone even crazier now with autonomous development loops.
+
+283
+00:13:52.760 --> 00:13:54.960
+Agents don't just write the code, they're participating
+
+284
+00:13:54.960 --> 00:13:57.120
+in the entire infrastructure lifecycle.
+
+285
+00:13:57.120 --> 00:13:58.400
+They're generating the test,
+
+286
+00:13:58.400 --> 00:14:02.560
+detecting fall failing previews, analyzing build logs, proposing fixes.
+
+287
+00:14:02.560 --> 00:14:07.040
+And so CI/CD just becomes a continuous feedback loop.
+
+288
+00:14:07.040 --> 00:14:10.560
+And some of you may not be at that level of sophistication, but
+
+289
+00:14:10.560 --> 00:14:14.440
+this is where you need to start thinking about how you're reinventing those needs.
+
+290
+00:14:14.600 --> 00:14:17.320
+And Netlify's deploy, preview and build infrastructure.
+
+291
+00:14:17.320 --> 00:14:21.640
+Again, like I said, already provides the actionable signals agents need.
+
+292
+00:14:21.640 --> 00:14:25.440
+When a build fails, an agent can read the logs because we went and updated them,
+
+293
+00:14:25.480 --> 00:14:30.080
+diagnose the root cause, and submit a fix all without a human in the loop.
+
+294
+00:14:30.240 --> 00:14:31.920
+And this isn't some future.
+
+295
+00:14:31.920 --> 00:14:36.520
+This is happening every day and this will happen in your workforces as well.
+
+296
+00:14:36.520 --> 00:14:39.840
+There will be a demand that comes in and says there's your common path
+
+297
+00:14:39.840 --> 00:14:42.160
+to turn it into a software factory. Make it go
+
+298
+00:14:43.880 --> 00:14:44.440
+our agent.
+
+299
+00:14:44.440 --> 00:14:46.800
+Runners are protected.
+
+300
+00:14:46.800 --> 00:14:49.960
+We give agents sandbox environments with full platform access.
+
+301
+00:14:49.960 --> 00:14:53.840
+They deploy, configure, iterate without humans deploy from agents
+
+302
+00:14:53.840 --> 00:14:57.360
+mean every change gets a unique URL preview URL.
+
+303
+00:14:57.400 --> 00:14:59.800
+This is where we bring the human back into it.
+
+304
+00:14:59.800 --> 00:15:01.440
+The human gets to visually look
+
+305
+00:15:01.440 --> 00:15:05.440
+at the output and continue to iterate, because when you're flowing and vibing,
+
+306
+00:15:05.440 --> 00:15:09.320
+if you vibe code, you know all it is is about that preview, preview, preview.
+
+307
+00:15:09.320 --> 00:15:12.400
+And here's a specific example of a redesigned surface.
+
+308
+00:15:12.480 --> 00:15:15.640
+As I mentioned, our build logs used to be human readable narratives.
+
+309
+00:15:15.680 --> 00:15:18.840
+Great for scanning, great for DevOps, great for debugging.
+
+310
+00:15:18.920 --> 00:15:20.720
+Terrible, terrible for agents.
+
+311
+00:15:20.720 --> 00:15:22.520
+It had no idea what we're talking about.
+
+312
+00:15:22.520 --> 00:15:25.560
+It wasn't leet speak, it was log speak, which is even worse.
+
+313
+00:15:25.600 --> 00:15:29.200
+We restructured them into a structured format with machine-readable error codes.
+
+314
+00:15:29.200 --> 00:15:32.200
+Alongside that, human text and agent can now parse
+
+315
+00:15:32.200 --> 00:15:35.920
+a build failure, identify missing dependency, and fix it automatically.
+
+316
+00:15:36.240 --> 00:15:38.480
+But again, here's the thing.
+
+317
+00:15:38.480 --> 00:15:42.880
+That same structured output made our dashboard clear
+
+318
+00:15:42.920 --> 00:15:46.720
+for human engineers too, because we took it and really put emphasis
+
+319
+00:15:46.720 --> 00:15:51.960
+on how an agent would utilize our logs to make decisions.
+
+320
+00:15:52.000 --> 00:15:54.480
+That also meant that our developers could bug quicker
+
+321
+00:15:54.480 --> 00:15:56.040
+if the agent didn't know what was going on.
+
+322
+00:15:56.040 --> 00:15:57.160
+Because I don't know about your.
+
+323
+00:15:57.160 --> 00:16:00.040
+But I still don't trust agents 100%.
+
+324
+00:16:00.040 --> 00:16:02.600
+Especially not my Claude bot. It kind of hates me.
+
+325
+00:16:03.680 --> 00:16:05.760
+Error categorization at a glance.
+
+326
+00:16:05.760 --> 00:16:06.720
+Failure reasons.
+
+327
+00:16:06.720 --> 00:16:07.840
+And what we learned again
+
+328
+00:16:07.840 --> 00:16:12.320
+was this part of the agent experience really did improve the human experience.
+
+329
+00:16:12.320 --> 00:16:14.920
+It made us quicker to debug any of those problems,
+
+330
+00:16:14.920 --> 00:16:17.920
+because we were thinking about how an agent would read it to.
+
+331
+00:16:19.200 --> 00:16:22.000
+But I'm sure most of you all live in the world that I live in.
+
+332
+00:16:22.000 --> 00:16:26.040
+If only we had greenfield technology and architecture.
+
+333
+00:16:26.040 --> 00:16:27.160
+That was simple.
+
+334
+00:16:27.160 --> 00:16:28.840
+This would not be a problem at all.
+
+335
+00:16:28.840 --> 00:16:30.480
+In fact, you would probably be building
+
+336
+00:16:30.480 --> 00:16:34.240
+the next 500,000 tech startups because you can do that.
+
+337
+00:16:34.280 --> 00:16:37.800
+But the problem that most of us face is we're introducing agents
+
+338
+00:16:37.800 --> 00:16:40.840
+into fragmented systems that have been existing.
+
+339
+00:16:40.840 --> 00:16:44.600
+Even if you're building net new, I implore you to think
+
+340
+00:16:44.600 --> 00:16:48.760
+about your agent experience before you start hands on keyboard.
+
+341
+00:16:49.000 --> 00:16:52.880
+A lot of these systems are collections of APIs, microservices, CI pipelines
+
+342
+00:16:52.880 --> 00:16:54.920
+that, again, were designed for human operators.
+
+343
+00:16:54.920 --> 00:16:58.080
+There was an intent that a human would be a part of that loop,
+
+344
+00:16:58.080 --> 00:17:01.360
+even if stuff was sent to work continuously.
+
+345
+00:17:01.480 --> 00:17:03.080
+Agents struggled with this.
+
+346
+00:17:03.080 --> 00:17:05.520
+They can't see across service boundaries.
+
+347
+00:17:05.520 --> 00:17:07.680
+Every API speaks a different dialect.
+
+348
+00:17:07.680 --> 00:17:11.200
+Critical workflows live in tribal knowledge and in someone's head.
+
+349
+00:17:11.200 --> 00:17:16.160
+In a slack thread from 2022, in an undocumented Terraform module,
+
+350
+00:17:16.160 --> 00:17:19.680
+when agents can't observe the system, they can't act intelligently.
+
+351
+00:17:19.720 --> 00:17:23.760
+No longer can you rely on tribal knowledge or the person that down the hall on
+
+352
+00:17:23.760 --> 00:17:26.560
+slack to be like, yo, what did this do? I have no idea.
+
+353
+00:17:26.560 --> 00:17:27.360
+You're expected
+
+354
+00:17:27.360 --> 00:17:30.680
+to make it work for your agents because your agent should just work.
+
+355
+00:17:30.920 --> 00:17:32.440
+This is the fundamental change.
+
+356
+00:17:32.440 --> 00:17:36.440
+We just can't bolt agents into existing legacy architectures.
+
+357
+00:17:36.560 --> 00:17:39.560
+The architecture itself must evolve.
+
+358
+00:17:39.560 --> 00:17:43.520
+The first architectural shift is from APIs to capabilities.
+
+359
+00:17:43.520 --> 00:17:46.360
+Traditional systems expose rest in points. Post to this.
+
+360
+00:17:46.360 --> 00:17:47.560
+You'll put to that one.
+
+361
+00:17:47.560 --> 00:17:48.600
+Get this resource.
+
+362
+00:17:48.600 --> 00:17:52.840
+An agent looking at a 200 endpoint API surface has to figure out the right
+
+363
+00:17:52.840 --> 00:17:57.240
+context, the right sequence, the right parameters in the right order.
+
+364
+00:17:57.440 --> 00:17:59.480
+And I know we're making jokes about context windows.
+
+365
+00:17:59.480 --> 00:18:01.080
+Believe me, you will run out of time
+
+366
+00:18:01.080 --> 00:18:05.280
+if you don't specify what agents are supposed to do in your systems.
+
+367
+00:18:05.320 --> 00:18:09.040
+Agent native systems expose these intent level operations.
+
+368
+00:18:09.040 --> 00:18:10.360
+Create a site.
+
+369
+00:18:10.360 --> 00:18:11.000
+Look again.
+
+370
+00:18:11.000 --> 00:18:14.720
+Plain English deploy repository provision edge compute.
+
+371
+00:18:14.840 --> 00:18:17.600
+These are capability agents can reason about.
+
+372
+00:18:17.600 --> 00:18:21.160
+They express what you want to accomplish, not the mechanical steps to get there.
+
+373
+00:18:21.200 --> 00:18:22.280
+And at Netlify again
+
+374
+00:18:22.280 --> 00:18:26.040
+we've evolved our API service to support both modes traditional Rest
+
+375
+00:18:26.040 --> 00:18:31.600
+for existing integrations and capability based interfaces for agent interactions.
+
+376
+00:18:31.960 --> 00:18:34.000
+This also extended to our CLI.
+
+377
+00:18:34.000 --> 00:18:39.320
+When you use a CLI, commonly you have a developer that has to hit yes no.
+
+378
+00:18:39.320 --> 00:18:41.960
+Next parameter that does not work when you have an agent.
+
+379
+00:18:41.960 --> 00:18:45.360
+We had to go rethink about how our CLI will be utilized.
+
+380
+00:18:45.680 --> 00:18:48.960
+The second shift is from request response.
+
+381
+00:18:49.200 --> 00:18:54.680
+Oh man, I'm going to go faster — to event-driven architecture.
+
+382
+00:18:54.720 --> 00:18:56.240
+Traditional APIs are pull-based.
+
+383
+00:18:56.240 --> 00:18:57.920
+You send a request, you get a response.
+
+384
+00:18:57.920 --> 00:19:03.520
+Agents have to poll, guess, and retry. AI-native systems push events. Again,
+
+385
+00:19:03.560 --> 00:19:07.520
+deploy started PR created agents, subscribe to these events and act.
+
+386
+00:19:08.360 --> 00:19:11.680
+So if you're still doing stuff asynchronously, you need to think about
+
+387
+00:19:11.720 --> 00:19:13.400
+updating your systems to event base.
+
+388
+00:19:13.400 --> 00:19:17.480
+I know we all love Kafka, and so you can use any kind of streaming that you love,
+
+389
+00:19:17.520 --> 00:19:19.200
+but that's just one way to get there.
+
+390
+00:19:19.200 --> 00:19:22.200
+This was already how we built the Netlify build system.
+
+391
+00:19:22.240 --> 00:19:26.120
+Every deploy emits events, and so now the structure, logs
+
+392
+00:19:26.120 --> 00:19:28.520
+and infrastructure was designed for observable
+
+393
+00:19:29.960 --> 00:19:30.360
+agents
+
+394
+00:19:30.360 --> 00:19:33.360
+are the ones observing versus the humans.
+
+395
+00:19:33.360 --> 00:19:36.080
+The third shift, and probably the most important,
+
+396
+00:19:36.080 --> 00:19:39.080
+is making architecture legible to agents.
+
+397
+00:19:39.120 --> 00:19:42.680
+Again, a lot of these distributed systems run on tribal knowledge.
+
+398
+00:19:42.680 --> 00:19:47.360
+Somebody that knows this service may not know service B. Agents
+
+399
+00:19:47.360 --> 00:19:48.280
+don't have that knowledge.
+
+400
+00:19:48.280 --> 00:19:51.160
+This is why we created our system of record called blueprints.
+
+401
+00:19:51.160 --> 00:19:54.120
+Yes, this is skills, context and recipes.
+
+402
+00:19:54.120 --> 00:19:57.480
+Think of it as the CLAUDE.md files, AGENTS.md,
+
+403
+00:19:57.520 --> 00:20:00.480
+the architecture decision records and design
+
+404
+00:20:00.480 --> 00:20:03.960
+so coding agents understand the system for they make the changes.
+
+405
+00:20:04.000 --> 00:20:07.360
+The goal isn't better documentation, it's ensuring agents can operate
+
+406
+00:20:07.360 --> 00:20:10.360
+safely in complex systems.
+
+407
+00:20:10.800 --> 00:20:12.960
+Putting it all together, we have removed.
+
+408
+00:20:12.960 --> 00:20:16.560
+We have moved from static tool change to agent orchestrated systems.
+
+409
+00:20:16.560 --> 00:20:20.480
+This development cycle becomes a continuous human agent loop.
+
+410
+00:20:20.480 --> 00:20:25.120
+So no longer is it a handoff, it is everybody participating at the same time.
+
+411
+00:20:25.120 --> 00:20:29.560
+And the human stays in the loop by providing judgment, taste, direction.
+
+412
+00:20:29.560 --> 00:20:32.760
+But the move, the loop moves at machine speed.
+
+413
+00:20:32.800 --> 00:20:34.440
+This isn't replacing engineers.
+
+414
+00:20:34.440 --> 00:20:37.720
+It's amplifying everybody's ability to be a builder.
+
+415
+00:20:38.720 --> 00:20:40.680
+Now, with all this power, you heard it.
+
+416
+00:20:40.680 --> 00:20:43.920
+Here comes with serious responsibility, where agents can deploy
+
+417
+00:20:43.920 --> 00:20:47.080
+code, provision infrastructure and modify production systems.
+
+418
+00:20:47.120 --> 00:20:49.760
+Trust has to be default and is not optional.
+
+419
+00:20:49.760 --> 00:20:53.360
+We have three principles we follow at Netlify.
+
+420
+00:20:53.480 --> 00:20:55.480
+First, sandbox execution.
+
+421
+00:20:55.480 --> 00:20:56.320
+They can't.
+
+422
+00:20:56.320 --> 00:20:59.560
+Agents can't escape their sandbox and access resources.
+
+423
+00:20:59.560 --> 00:21:00.800
+They're not granted.
+
+424
+00:21:00.800 --> 00:21:02.840
+Second human in the loop by default.
+
+425
+00:21:02.840 --> 00:21:05.040
+I know you say like you heard me say software factory.
+
+426
+00:21:05.040 --> 00:21:05.840
+You don't need one.
+
+427
+00:21:05.840 --> 00:21:06.920
+But guess what?
+
+428
+00:21:06.920 --> 00:21:08.880
+I still don't trust stuff 100%.
+
+429
+00:21:08.880 --> 00:21:11.920
+But we want to make the human in the loop the meaningful part of the job.
+
+430
+00:21:11.960 --> 00:21:15.320
+The agent builds, the human approves, and third audit and roll back.
+
+431
+00:21:15.320 --> 00:21:17.040
+Every agent action —
+
+432
+00:21:17.040 --> 00:21:18.560
+every action is logged.
+
+433
+00:21:18.560 --> 00:21:21.080
+This is where events become so incredibly important
+
+434
+00:21:21.080 --> 00:21:23.320
+knowing the changes in the system, because today
+
+435
+00:21:23.320 --> 00:21:27.600
+a lot of code is not being stored in git, which is absolutely bonkers.
+
+436
+00:21:27.600 --> 00:21:30.160
+But we still have to have a system of record to roll it back.
+
+437
+00:21:30.160 --> 00:21:32.240
+Trust is built on this transparency.
+
+438
+00:21:32.240 --> 00:21:36.120
+If you can't explain what the agent did, why would you trust it in production?
+
+439
+00:21:37.560 --> 00:21:39.360
+The organizational impact is profound.
+
+440
+00:21:39.360 --> 00:21:39.960
+When we
+
+441
+00:21:39.960 --> 00:21:44.240
+when agents lower the barrier to building, now the entire company participates.
+
+442
+00:21:44.400 --> 00:21:46.440
+Everybody's making prototypes.
+
+443
+00:21:46.440 --> 00:21:49.160
+We're testing hypotheses, coming up with ideas,
+
+444
+00:21:49.160 --> 00:21:52.560
+supports creating internal tools, custom solutions for customers.
+
+445
+00:21:52.600 --> 00:21:56.800
+No longer are you bound by the engineering software development lifecycle.
+
+446
+00:21:56.800 --> 00:22:00.080
+You now have the ability to go let everybody get out of your hair
+
+447
+00:22:00.080 --> 00:22:02.120
+and just go right and build their own code.
+
+448
+00:22:02.120 --> 00:22:03.320
+As a DevOps professional,
+
+449
+00:22:03.320 --> 00:22:06.840
+this has been my dream for over 20 years is build it yourself.
+
+450
+00:22:06.880 --> 00:22:10.200
+Let me work on the hard problems and now that's what we get to do.
+
+451
+00:22:10.240 --> 00:22:14.000
+Engineering evolves into implementing from implementing every feature
+
+452
+00:22:14.000 --> 00:22:16.520
+to really ensuring that the systems have the guardrails.
+
+453
+00:22:16.520 --> 00:22:18.520
+The architecture is tight and solid.
+
+454
+00:22:18.520 --> 00:22:21.320
+The skills, recipe and context just work.
+
+455
+00:22:21.320 --> 00:22:23.240
+This is where AX is critical.
+
+456
+00:22:23.240 --> 00:22:28.080
+It's a discipline that ensures that democratization happens safely.
+
+457
+00:22:28.080 --> 00:22:31.320
+Because I don't know about you, I still believe in an open web.
+
+458
+00:22:31.840 --> 00:22:34.840
+So let me summarize the takeaways
+
+459
+00:22:34.960 --> 00:22:37.960
+and I want you to take this home first.
+
+460
+00:22:37.960 --> 00:22:40.400
+I hate to break it to you. We ain't precious no more.
+
+461
+00:22:40.400 --> 00:22:42.960
+The builder persona has expanded your platforms.
+
+462
+00:22:42.960 --> 00:22:45.680
+Don't just serve professional developers anymore.
+
+463
+00:22:45.680 --> 00:22:48.440
+Agents are enabling therapist, teachers,
+
+464
+00:22:48.440 --> 00:22:51.640
+students, and anybody that has a dream to build and design.
+
+465
+00:22:51.680 --> 00:22:53.240
+So design for them.
+
+466
+00:22:53.240 --> 00:22:56.680
+Second, legacy legacy systems must evolve.
+
+467
+00:22:56.720 --> 00:23:00.520
+APIs need to become capabilities that agents can reason about again,
+
+468
+00:23:00.560 --> 00:23:02.400
+intent level operations.
+
+469
+00:23:02.400 --> 00:23:05.200
+Third, safety and trust are foundational.
+
+470
+00:23:05.200 --> 00:23:08.120
+Sandboxing human and loop reviews. Full audit trails.
+
+471
+00:23:08.120 --> 00:23:09.520
+These aren't nice to haves.
+
+472
+00:23:09.520 --> 00:23:13.600
+When agents can deploy to productions, they are have to haves and forth.
+
+473
+00:23:13.640 --> 00:23:16.440
+This is what you can start shipping well tomorrow.
+
+474
+00:23:16.440 --> 00:23:18.160
+Go fix your structured errors.
+
+475
+00:23:18.160 --> 00:23:21.440
+Go create event driven signals and legible architecture.
+
+476
+00:23:21.480 --> 00:23:23.160
+There's an expert spa I heard.
+
+477
+00:23:23.160 --> 00:23:25.280
+Go sign up now if you haven't done it before,
+
+478
+00:23:25.280 --> 00:23:28.840
+go learn how to write your dang skills because your job depends on it.
+
+479
+00:23:29.120 --> 00:23:31.880
+Would have to say that, but I do.
+
+480
+00:23:31.880 --> 00:23:35.480
+So our biggest takeaway here is designing for agents
+
+481
+00:23:35.480 --> 00:23:39.920
+didn't just make our systems better, it made it better for humans.
+
+482
+00:23:39.920 --> 00:23:41.840
+And that was really the surprise of it all.
+
+483
+00:23:41.840 --> 00:23:45.800
+This wasn't a trade off for a developer experience or the user experience.
+
+484
+00:23:45.880 --> 00:23:47.320
+It was a multiplier.
+
+485
+00:23:47.320 --> 00:23:49.320
+And so why does all this matter?
+
+486
+00:23:49.320 --> 00:23:52.680
+Because, as Matt says, when anybody can generate
+
+487
+00:23:52.680 --> 00:23:56.440
+software, code is no longer the scarce, scarce resource.
+
+488
+00:23:56.440 --> 00:23:58.680
+For decades, the bottleneck has been writing code,
+
+489
+00:23:58.680 --> 00:24:00.280
+finding engineers, shipping features.
+
+490
+00:24:00.280 --> 00:24:01.840
+The bottleneck is dissolving.
+
+491
+00:24:01.840 --> 00:24:04.320
+Now the scarce resource becomes taste.
+
+492
+00:24:04.320 --> 00:24:06.320
+Know what's worth building, judgment,
+
+493
+00:24:06.320 --> 00:24:10.320
+knowing when to ship in architecture, designing systems at scale.
+
+494
+00:24:10.360 --> 00:24:12.640
+And this is where we come full circle.
+
+495
+00:24:12.640 --> 00:24:14.000
+Full circle.
+
+496
+00:24:14.000 --> 00:24:15.800
+Ax didn't just help agents
+
+497
+00:24:15.800 --> 00:24:19.880
+work with our platform, it forced us to clarify our architecture,
+
+498
+00:24:19.920 --> 00:24:24.040
+our structure, and our signals, in fact, made us all better developers.
+
+499
+00:24:24.920 --> 00:24:28.800
+So the judgment to build systems agents can work with
+
+500
+00:24:28.840 --> 00:24:31.960
+that is the engineering skill of the future.
+
+501
+00:24:32.080 --> 00:24:33.880
+An agent experience ensures
+
+502
+00:24:33.880 --> 00:24:37.600
+agents amplify human creativity rather than replacing it.
+
+503
+00:24:37.640 --> 00:24:40.120
+And so this brings us back to Toria.
+
+504
+00:24:40.120 --> 00:24:43.280
+After hitting the wall of git in a million problems.
+
+505
+00:24:43.280 --> 00:24:44.560
+She didn't give up.
+
+506
+00:24:44.560 --> 00:24:47.520
+With an ecosystem designed for agents designed for her,
+
+507
+00:24:47.520 --> 00:24:50.680
+she bypassed all of those roadblocks.
+
+508
+00:24:50.680 --> 00:24:53.600
+She was able to drag and drop her intentions into Netlify.
+
+509
+00:24:53.600 --> 00:24:54.520
+And it just worked.
+
+510
+00:24:54.520 --> 00:24:58.200
+No git, no CLI, no deployment configurations, no worries.
+
+511
+00:24:58.240 --> 00:24:58.720
+Trust.
+
+512
+00:24:58.720 --> 00:25:02.200
+By default, the agent handled all of it.
+
+513
+00:25:02.240 --> 00:25:04.120
+She called me that day and I remember it.
+
+514
+00:25:04.120 --> 00:25:05.840
+And I'll censor it since it's a stream.
+
+515
+00:25:05.840 --> 00:25:07.960
+She called me and she said, girl.
+
+516
+00:25:07.960 --> 00:25:09.360
+I am a developer.
+
+517
+00:25:09.360 --> 00:25:12.440
+And I was like, oh man. But she's right.
+
+518
+00:25:12.480 --> 00:25:15.120
+That's the most incredible part. I didn't build this site.
+
+519
+00:25:15.120 --> 00:25:15.960
+She did.
+
+520
+00:25:15.960 --> 00:25:16.760
+Here's her vision.
+
+521
+00:25:16.760 --> 00:25:19.320
+I hope you all go to the Barbados with us.
+
+522
+00:25:19.320 --> 00:25:21.120
+Here's her vision. Live for the world to see.
+
+523
+00:25:21.120 --> 00:25:24.880
+This is AX in action — we designed for agents, and doing so,
+
+524
+00:25:24.880 --> 00:25:26.040
+we made building possible
+
+525
+00:25:26.040 --> 00:25:30.560
+for a massage therapist in Barbados who writes intentions and not code.
+
+526
+00:25:30.600 --> 00:25:34.200
+That's not just agent experience, that's actually human experience.
+
+527
+00:25:34.200 --> 00:25:36.600
+And that's what agent experience is for.
+
+528
+00:25:37.640 --> 00:25:38.720
+Thank you for your time.
+
+529
+00:25:38.720 --> 00:25:41.880
+And if you want to participate, we have some resources available.
+
+530
+00:25:41.920 --> 00:25:46.320
+Turns out redesigning for everyone is the agent experience.
+
+531
+00:25:46.320 --> 00:25:48.080
+Experience not designing for agents.
+
+532
+00:25:48.080 --> 00:25:49.600
+So don't get stuck in the trap.
+
+533
+00:25:49.600 --> 00:25:53.080
+Remember who you serve and if you want to learn more, you can visit Netlify.
+
+534
+00:25:54.640 --> 00:25:57.640
+Thanks.
+
+535
+00:25:59.520 --> 00:26:02.320
+Thank you very much, Dana for a wonderful session.
+
+536
+00:26:02.320 --> 00:26:06.480
+We have four minutes for questions, so if you have questions,
+
+537
+00:26:06.480 --> 00:26:10.280
+please do raise your hand and someone will run at you with a mic.
+
+538
+00:26:12.400 --> 00:26:14.000
+Any questions for Dana at all?
+
+539
+00:26:14.000 --> 00:26:14.720
+They're blown away.
+
+540
+00:26:14.720 --> 00:26:17.720
+It's blown away. Yeah.
+
+541
+00:26:18.320 --> 00:26:21.320
+One question from.
+
+542
+00:26:24.960 --> 00:26:25.440
+You said
+
+543
+00:26:25.440 --> 00:26:29.640
+500,000 apps could be built, or we're going to build so much ever.
+
+544
+00:26:29.680 --> 00:26:33.320
+When do we we're learning these context.
+
+545
+00:26:33.360 --> 00:26:37.720
+Now, when do we talk about what not to build and how do you stop,
+
+546
+00:26:37.760 --> 00:26:42.200
+like the environmental impacts, the impact on complexity of code, etc.?
+
+547
+00:26:42.520 --> 00:26:45.240
+I think that's the challenge that we have right now is
+
+548
+00:26:45.240 --> 00:26:48.560
+the bitter truth is you're going to be stuck building a whole bunch of stuff
+
+549
+00:26:48.560 --> 00:26:52.080
+that's going to be obsolete probably in months, not years.
+
+550
+00:26:52.080 --> 00:26:55.440
+And so finding the right paths and putting intent in the right areas
+
+551
+00:26:55.440 --> 00:26:57.360
+is what's going to be the keeper.
+
+552
+00:26:57.360 --> 00:27:01.520
+I mean, hopefully we all continue to think environmentally and conscious
+
+553
+00:27:01.520 --> 00:27:03.840
+about the world, because building AI
+
+554
+00:27:03.840 --> 00:27:07.560
+for not anybody on the planet, what's the point?
+
+555
+00:27:07.760 --> 00:27:09.240
+But there is a bunch of slop right now,
+
+556
+00:27:09.240 --> 00:27:12.360
+and a bunch of these applications are going to be a drain on our resources.
+
+557
+00:27:12.360 --> 00:27:15.840
+But this is where development and engineering practices are core to this,
+
+558
+00:27:15.840 --> 00:27:19.680
+because now anybody in the world can build and literally anybody can.
+
+559
+00:27:19.760 --> 00:27:23.880
+We have to burden that responsibility on our shoulders to make sure
+
+560
+00:27:23.880 --> 00:27:28.120
+that we are implementing compaction, that we are thinking about compression,
+
+561
+00:27:28.120 --> 00:27:32.200
+that we are building the right resources to make the internet continue
+
+562
+00:27:32.200 --> 00:27:36.440
+to be open and democratized for everybody, but also being environmentally friendly.
+
+563
+00:27:36.440 --> 00:27:38.760
+And those are the things that these builders won't understand.
+
+564
+00:27:38.760 --> 00:27:41.720
+So when I talk to people and say, oh, you know, you're getting in development,
+
+565
+00:27:41.720 --> 00:27:44.840
+I had to be like, well, I don't know if I'd be like a builder.
+
+566
+00:27:44.840 --> 00:27:48.800
+I would probably focus on the internals and take that background in computer
+
+567
+00:27:48.800 --> 00:27:50.200
+science and really apply that,
+
+568
+00:27:50.200 --> 00:27:53.960
+because there's still a lot that we we can do as developers.
+
+569
+00:27:53.960 --> 00:27:58.000
+But but that that shift is changing for some of these experiences
+
+570
+00:27:58.000 --> 00:27:59.840
+that we all have. Anybody can do them now.
+
+571
+00:27:59.840 --> 00:28:04.000
+And so not getting stuck in that trap is is incredibly important.
+
+572
+00:28:04.920 --> 00:28:06.840
+We have one just to the right.
+
+573
+00:28:06.840 --> 00:28:07.040
+Oh yeah.
+
+574
+00:28:07.040 --> 00:28:09.280
+We got a question over here.
+
+575
+00:28:09.280 --> 00:28:11.840
+Hi. It was a really insightful talk.
+
+576
+00:28:11.840 --> 00:28:12.840
+Thank you for that.
+
+577
+00:28:12.840 --> 00:28:15.840
+I wanted to ask about accountability.
+
+578
+00:28:15.880 --> 00:28:19.240
+So how is your company approaching accountability
+
+579
+00:28:19.240 --> 00:28:22.240
+where if you're creating useful abstractions and people
+
+580
+00:28:22.240 --> 00:28:26.040
+building, it doesn't don't understand what's below the abstraction.
+
+581
+00:28:26.120 --> 00:28:29.120
+Where does accountability sit in that?
+
+582
+00:28:29.600 --> 00:28:33.960
+Are you planning to, like, flip the accountability and say, we will
+
+583
+00:28:33.960 --> 00:28:37.880
+give you exposure to what's underneath if you need if you have an IT team?
+
+584
+00:28:37.880 --> 00:28:39.400
+If not, we will take the accountability.
+
+585
+00:28:39.400 --> 00:28:41.160
+How are you thinking about that?
+
+586
+00:28:41.160 --> 00:28:44.120
+I mean, you know, it's it's a it's a push and pull.
+
+587
+00:28:44.120 --> 00:28:45.120
+I mean, again, it's
+
+588
+00:28:45.120 --> 00:28:48.840
+like what do I want to build right now that's going to be commoditized.
+
+589
+00:28:48.880 --> 00:28:50.760
+You know, there used to be a lot of systems
+
+590
+00:28:50.760 --> 00:28:53.840
+that were super simple, super complex to use that.
+
+591
+00:28:53.840 --> 00:28:55.160
+Now you just plug and play.
+
+592
+00:28:55.160 --> 00:28:58.280
+And I think we're in a world where nothing is
+
+593
+00:28:58.280 --> 00:29:01.360
+really set on, on what will be developed next.
+
+594
+00:29:01.360 --> 00:29:05.920
+And so again, it's finding the right balance in two parts.
+
+595
+00:29:05.960 --> 00:29:09.760
+A lot of our users at Netlify come in and want to build websites and applications.
+
+596
+00:29:09.760 --> 00:29:10.680
+So we are going to put
+
+597
+00:29:10.680 --> 00:29:14.000
+all the accountability and context in the trust in the system.
+
+598
+00:29:14.000 --> 00:29:17.920
+So under the hood where you saw on guys talk, that's all Netlify.
+
+599
+00:29:17.960 --> 00:29:21.920
+We do every bit of that build, deploy, you know, QA, etc.
+
+600
+00:29:21.920 --> 00:29:25.400
+but in large scale organizations, because Netlify is still built
+
+601
+00:29:25.400 --> 00:29:28.560
+for developers, we still have this context of a control plane.
+
+602
+00:29:28.640 --> 00:29:33.080
+We're working on things like policy engines, control panels, really for,
+
+603
+00:29:33.280 --> 00:29:37.240
+you know, whether it's the CSO or production, R&amp;D,
+
+604
+00:29:37.360 --> 00:29:41.840
+whoever's doing the guardrails, be able to have that control panel.
+
+605
+00:29:41.840 --> 00:29:45.600
+But a lot of it, what we're building is often skated, because what we found
+
+606
+00:29:45.640 --> 00:29:48.960
+is, again, the internet is just a collection of apps and websites.
+
+607
+00:29:48.960 --> 00:29:51.120
+They're not that complex. I hate to break it to you.
+
+608
+00:29:51.120 --> 00:29:53.360
+It's usually some JavaScript and maybe a database.
+
+609
+00:29:53.360 --> 00:29:57.000
+Not a lot of serverless functions in between.
+
+610
+00:29:57.000 --> 00:29:59.760
+People don't describe building like that anymore.
+
+611
+00:29:59.760 --> 00:30:02.080
+They say, build me a website that can be shown in Portugal.
+
+612
+00:30:02.080 --> 00:30:04.840
+That's a serverless function that's doing locality.
+
+613
+00:30:04.840 --> 00:30:06.800
+They're not going to go in there and write that function.
+
+614
+00:30:06.800 --> 00:30:07.640
+I'm going to do that for them.
+
+615
+00:30:07.640 --> 00:30:10.160
+They're just going to come and tell me I want this in Portugal.
+
+616
+00:30:10.160 --> 00:30:14.360
+And so we are trying to balance where developer
+
+617
+00:30:14.400 --> 00:30:16.240
+needs to put their attention and where they don't.
+
+618
+00:30:16.240 --> 00:30:19.400
+And so really utilizing what's important to that system
+
+619
+00:30:19.400 --> 00:30:22.960
+and more of it is governance policy and identity.
+
+620
+00:30:23.000 --> 00:30:23.880
+That's what
+
+621
+00:30:23.880 --> 00:30:26.880
+a lot of large scale enterprises and professional systems care about.
+
+622
+00:30:26.880 --> 00:30:28.440
+As far as accountability
+
+623
+00:30:28.440 --> 00:30:32.360
+and more of the hobbyists or solopreneurs, they just want it to work.
+
+624
+00:30:32.400 --> 00:30:33.160
+I don't care.
+
+625
+00:30:35.840 --> 00:30:38.120
+We actually don't have any more time for extra questions,
+
+626
+00:30:38.120 --> 00:30:41.120
+but please do grab Dana in the hallway track.
+
+627
+00:30:41.200 --> 00:30:42.800
+Once again, thanks very much, Dana.

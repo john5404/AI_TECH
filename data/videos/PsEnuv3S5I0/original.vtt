@@ -1,0 +1,2201 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.400
+this is Luke Marsden from HelixML.
+
+2
+00:00:03.720 --> 00:00:07.840
+He's going to be talking to us about giving every agent its own desktop
+
+3
+00:00:07.880 --> 00:00:10.880
+lessons from dogfooding. Helix ML.
+
+4
+00:00:10.920 --> 00:00:11.520
+Thank you very much.
+
+5
+00:00:11.520 --> 00:00:14.520
+Thank you. Cool.
+
+6
+00:00:14.760 --> 00:00:16.120
+Everyone.
+
+7
+00:00:16.120 --> 00:00:18.880
+It's nice to be here. Yeah.
+
+8
+00:00:18.880 --> 00:00:22.360
+I'm going to talk about basically how we use agents ourselves
+
+9
+00:00:22.360 --> 00:00:25.560
+and things that we built to do it better.
+
+10
+00:00:25.640 --> 00:00:28.520
+So just to introduce myself.
+
+11
+00:00:28.520 --> 00:00:29.560
+I'm Luke.
+
+12
+00:00:29.560 --> 00:00:31.800
+I self-identify as a kind human.
+
+13
+00:00:31.800 --> 00:00:35.960
+I'm also the CEO at Helix where we do private agents.
+
+14
+00:00:35.960 --> 00:00:38.840
+And before that I didn't MLOps business.
+
+15
+00:00:38.840 --> 00:00:43.800
+I was cluster lifecycle lead for the Kubernetes project,
+
+16
+00:00:43.800 --> 00:00:48.480
+and I also did a DevOps company doing storage for Docker
+
+17
+00:00:48.480 --> 00:00:51.760
+and Kubernetes back in the early Docker and Kubernetes days.
+
+18
+00:00:52.360 --> 00:00:57.880
+So so my thesis is that all information
+
+19
+00:00:57.880 --> 00:01:01.880
+work is eventually going to become about managing agents.
+
+20
+00:01:01.880 --> 00:01:05.680
+And it's just software engineering where that's really started.
+
+21
+00:01:05.680 --> 00:01:07.120
+And it's kind of makes sense
+
+22
+00:01:07.120 --> 00:01:11.720
+why it started in software engineering because that's also where AI came from.
+
+23
+00:01:11.880 --> 00:01:14.920
+But eventually
+
+24
+00:01:15.680 --> 00:01:20.400
+everyone who is moving information around in any way,
+
+25
+00:01:20.560 --> 00:01:24.240
+basically all white collar workers are going to end up having to interact
+
+26
+00:01:24.240 --> 00:01:26.360
+with with agents one way or another.
+
+27
+00:01:26.360 --> 00:01:29.440
+It's a bit difficult to see on this slide, but this is from Steve.
+
+28
+00:01:29.480 --> 00:01:31.920
+Yeah, who is the creator of Gastown.
+
+29
+00:01:31.920 --> 00:01:34.920
+And he talks about how
+
+30
+00:01:35.000 --> 00:01:39.040
+there are these different stages of AI adoption that people go through.
+
+31
+00:01:39.040 --> 00:01:42.440
+And you go from just kind of using
+
+32
+00:01:42.800 --> 00:01:47.600
+chat completion like a GitHub copilot through to running
+
+33
+00:01:47.640 --> 00:01:52.600
+like a single CLI agent, like a Claude code.
+
+34
+00:01:52.680 --> 00:01:54.520
+And then you kind of get
+
+35
+00:01:54.520 --> 00:01:58.760
+bored of babysitting a single agent running on your computer,
+
+36
+00:01:58.800 --> 00:01:59.360
+at which point
+
+37
+00:01:59.360 --> 00:01:59.960
+you're like, oh,
+
+38
+00:01:59.960 --> 00:02:03.360
+I should be able to go faster if I run more than one of these in parallel.
+
+39
+00:02:03.360 --> 00:02:06.720
+And that's where the problems start, because the naive approach to
+
+40
+00:02:06.720 --> 00:02:09.840
+that is just run many agents on the same working directory,
+
+41
+00:02:09.840 --> 00:02:12.880
+and then you end up in the horrible situations.
+
+42
+00:02:12.880 --> 00:02:17.000
+Like when I was rushing to prepare a presentation for a customer in Paris,
+
+43
+00:02:17.000 --> 00:02:22.120
+and I was up early on a Monday morning and I was trying to get my
+
+44
+00:02:22.120 --> 00:02:25.120
+I was trying to run five agents in parallel to get everything done,
+
+45
+00:02:25.120 --> 00:02:27.040
+and one of them decided to get stashed the work
+
+46
+00:02:27.040 --> 00:02:28.320
+that all the other ones were doing.
+
+47
+00:02:28.320 --> 00:02:31.520
+And then the following day, a different agent decided
+
+48
+00:02:31.520 --> 00:02:34.960
+to RF dot on my git checkout.
+
+49
+00:02:34.960 --> 00:02:36.600
+And this actually happened.
+
+50
+00:02:36.600 --> 00:02:40.600
+So I've been working since 2023
+
+51
+00:02:40.640 --> 00:02:44.120
+on making it possible to run agents
+
+52
+00:02:44.120 --> 00:02:48.600
+and LMS and Rag and all that stuff around it
+
+53
+00:02:48.600 --> 00:02:53.800
+that that runs entirely on your own infrastructure.
+
+54
+00:02:53.800 --> 00:02:57.720
+And we've been working with, with people who who care about that.
+
+55
+00:02:57.760 --> 00:03:02.040
+And so kind of late last year, I got really obsessed with this idea
+
+56
+00:03:02.040 --> 00:03:03.840
+of making the snake eats its own tail
+
+57
+00:03:03.840 --> 00:03:08.360
+by actually using our own stuff that we were building to build itself.
+
+58
+00:03:08.520 --> 00:03:13.800
+And, and so we, we also were lucky to have customers who,
+
+59
+00:03:14.200 --> 00:03:16.840
+who wanted to push us towards the sort of coding
+
+60
+00:03:16.840 --> 00:03:19.840
+agent side of, of the equation.
+
+61
+00:03:19.840 --> 00:03:22.200
+And so we've spent a lot of time
+
+62
+00:03:22.200 --> 00:03:25.920
+thinking about kind of this design space for systems
+
+63
+00:03:25.920 --> 00:03:30.440
+that run agents and in particular systems that, that run agents on the server.
+
+64
+00:03:30.480 --> 00:03:33.600
+So all I want to say here is
+
+65
+00:03:33.680 --> 00:03:36.680
+and we'll go through each of these in turn in the slides.
+
+66
+00:03:36.720 --> 00:03:39.160
+Kind of warning contains opinions.
+
+67
+00:03:39.160 --> 00:03:42.400
+And the reason I'm sharing these opinions is that I hope
+
+68
+00:03:42.400 --> 00:03:45.880
+they will be helpful to anyone else who's building systems like this.
+
+69
+00:03:45.880 --> 00:03:50.480
+So kind of both lay out kind of the shape of the landscape,
+
+70
+00:03:50.480 --> 00:03:55.960
+and then also carve out some specific opinions,
+
+71
+00:03:55.960 --> 00:04:01.840
+but also why I came to have them, because you might have different opinions
+
+72
+00:04:01.920 --> 00:04:05.880
+or you might not have thought about some of these things. So
+
+73
+00:04:07.000 --> 00:04:09.680
+the first big
+
+74
+00:04:09.680 --> 00:04:12.880
+decision in my opinion, is do you want to carry on
+
+75
+00:04:12.880 --> 00:04:17.840
+letting every developer run whatever agent they like, or maybe the
+
+76
+00:04:17.920 --> 00:04:21.400
+the same agent that everyone uses in the company,
+
+77
+00:04:21.400 --> 00:04:23.960
+but on their own specific development environment?
+
+78
+00:04:23.960 --> 00:04:25.720
+That's kind of like a snowflake.
+
+79
+00:04:25.720 --> 00:04:31.600
+Or do you want to create a pool of
+
+80
+00:04:31.600 --> 00:04:35.920
+agents that run on your organization's infrastructure
+
+81
+00:04:35.960 --> 00:04:38.960
+that many humans can interact with?
+
+82
+00:04:38.960 --> 00:04:43.560
+And my strong argument is that.
+
+83
+00:04:44.920 --> 00:04:47.760
+Going for the centralized approach and I say centralized,
+
+84
+00:04:47.760 --> 00:04:49.080
+it doesn't mean you have to
+
+85
+00:04:49.080 --> 00:04:52.800
+hand over all your data to OpenAI or run on their infrastructure or anything.
+
+86
+00:04:52.800 --> 00:04:54.720
+You can run it on your own infrastructure.
+
+87
+00:04:54.720 --> 00:04:58.160
+Still on Kubernetes or something, but there are
+
+88
+00:04:58.160 --> 00:05:02.320
+some significant benefits from having a centralized approach.
+
+89
+00:05:02.400 --> 00:05:08.560
+For example, you can have a globally distributed team
+
+90
+00:05:08.560 --> 00:05:11.800
+all around the world, and you can say
+
+91
+00:05:11.800 --> 00:05:16.800
+that when the sun sets in Tokyo and rises in London,
+
+92
+00:05:16.800 --> 00:05:21.240
+whoever a different human can carry on doing the work
+
+93
+00:05:21.280 --> 00:05:25.600
+that a certain agent was working on, especially if that agent truly
+
+94
+00:05:25.600 --> 00:05:28.600
+has its own computer for that specific task.
+
+95
+00:05:29.240 --> 00:05:31.600
+And so there's a really nice
+
+96
+00:05:31.600 --> 00:05:34.760
+article written by by someone.
+
+97
+00:05:34.760 --> 00:05:38.760
+We've been working with a company called DevIcon,
+
+98
+00:05:38.760 --> 00:05:42.840
+and what they said was, to be honest, agents, coding is not new.
+
+99
+00:05:43.360 --> 00:05:45.920
+Going from doing it the easier way, which is the way on the left
+
+100
+00:05:45.920 --> 00:05:48.960
+which is unsafe and per engineer to something global per company
+
+101
+00:05:48.960 --> 00:05:52.640
+and safe is is what they found interesting in this approach.
+
+102
+00:05:52.800 --> 00:05:54.120
+So that's kind of my argument.
+
+103
+00:05:54.120 --> 00:05:56.000
+My opinion number one is
+
+104
+00:05:57.000 --> 00:05:57.800
+you should
+
+105
+00:05:57.800 --> 00:06:01.080
+give each agent their own computer, not each human.
+
+106
+00:06:01.080 --> 00:06:02.440
+It's almost like you wouldn't hire
+
+107
+00:06:02.440 --> 00:06:05.680
+a team of software developers and ask them all to share one computer.
+
+108
+00:06:05.720 --> 00:06:08.720
+You should give each agent their own computer.
+
+109
+00:06:09.680 --> 00:06:13.440
+The next opinion that I've come to is do.
+
+110
+00:06:13.520 --> 00:06:15.360
+Do we still need an ID?
+
+111
+00:06:15.360 --> 00:06:20.200
+Claude code started making us, like, not look at the code so much,
+
+112
+00:06:20.240 --> 00:06:24.080
+and I genuinely feel like it made me stupider.
+
+113
+00:06:24.440 --> 00:06:29.040
+My opinion is that you should still have an ID.
+
+114
+00:06:29.520 --> 00:06:32.080
+These agents will increasingly do
+
+115
+00:06:32.080 --> 00:06:35.120
+more autonomous, long running tasks.
+
+116
+00:06:35.120 --> 00:06:39.800
+But when it comes to actually stepping in and pair
+
+117
+00:06:39.840 --> 00:06:44.520
+programing with an agent, you do still need to be able
+
+118
+00:06:44.520 --> 00:06:48.120
+to look at the code, and having a visual display
+
+119
+00:06:48.200 --> 00:06:51.240
+that follows what the agent is doing is actually really useful
+
+120
+00:06:51.240 --> 00:06:53.360
+when you want to understand what it's doing.
+
+121
+00:06:53.360 --> 00:06:56.280
+Another thing that really matters is that things have to be fast.
+
+122
+00:06:56.280 --> 00:07:01.400
+I got incredibly frustrated with with cursor were back when I was a cursor user,
+
+123
+00:07:01.400 --> 00:07:04.520
+and just how slow it was at Hadley keyboard input.
+
+124
+00:07:04.520 --> 00:07:08.520
+And then Claude code came out with anthropic, came up with Claude code.
+
+125
+00:07:08.520 --> 00:07:12.400
+And they just do you know Claude code is implemented in react.
+
+126
+00:07:12.920 --> 00:07:16.240
+And so they've ended up having to implement
+
+127
+00:07:16.240 --> 00:07:17.880
+basically a web browser in the terminal.
+
+128
+00:07:17.880 --> 00:07:21.600
+And it's just like, can't we just have a working text box?
+
+129
+00:07:21.600 --> 00:07:26.000
+So anyway, the next thing I want to talk about is
+
+130
+00:07:27.240 --> 00:07:29.520
+how you organize your agents.
+
+131
+00:07:29.520 --> 00:07:33.840
+And there's kind of two different schools of thought here.
+
+132
+00:07:34.200 --> 00:07:39.240
+The first one is do you scale your agents out by number of tasks,
+
+133
+00:07:39.320 --> 00:07:43.960
+or do you try and build like an organization out of your agents,
+
+134
+00:07:43.960 --> 00:07:45.440
+and you hire a CEO agent
+
+135
+00:07:45.440 --> 00:07:48.440
+and they hire a VP of engineering agent, and the VP of engineering
+
+136
+00:07:48.440 --> 00:07:52.440
+agent hires some engineers and you give them all names or something.
+
+137
+00:07:52.800 --> 00:07:54.960
+And we are.
+
+138
+00:07:54.960 --> 00:07:58.720
+We started with the left hand approach because it's easier, but
+
+139
+00:07:58.800 --> 00:08:00.680
+we're researching the right hand approach.
+
+140
+00:08:00.680 --> 00:08:04.480
+But so far what we've researched, what we've found in the research
+
+141
+00:08:04.520 --> 00:08:08.600
+is if you go to fine grained on giving each agent their own
+
+142
+00:08:08.600 --> 00:08:11.760
+specific role and you give them these special channels they can communicate on,
+
+143
+00:08:11.800 --> 00:08:15.080
+like Agent Slack or something, they end up
+
+144
+00:08:15.120 --> 00:08:19.080
+kind of devolving into enterprise politics.
+
+145
+00:08:21.360 --> 00:08:22.600
+Because they were trained on
+
+146
+00:08:22.600 --> 00:08:27.200
+all of this human data of how humans argue with each other about stupid stuff.
+
+147
+00:08:27.200 --> 00:08:29.760
+So you end up burning a lot of tokens like that.
+
+148
+00:08:29.760 --> 00:08:33.120
+But what I, what I actually think is ultimately going to be appropriate
+
+149
+00:08:33.120 --> 00:08:37.800
+here is to combine the models where the
+
+150
+00:08:38.040 --> 00:08:42.640
+you have these coarse grained, different categorizations of roles
+
+151
+00:08:42.640 --> 00:08:47.440
+like marketing agents and sales agents and engineering agents,
+
+152
+00:08:47.440 --> 00:08:50.880
+because they all need different tools and connectivity to different systems.
+
+153
+00:08:51.040 --> 00:08:56.520
+But within those you scale the tasks, scale the agents by task.
+
+154
+00:08:56.760 --> 00:09:00.280
+So you have a sort of pool of of bees maybe, and so on.
+
+155
+00:09:01.640 --> 00:09:04.960
+So yeah, I also wanted to share some kind of demos
+
+156
+00:09:04.960 --> 00:09:10.840
+as I go to to illustrate the design decisions I'm talking about.
+
+157
+00:09:10.840 --> 00:09:13.120
+So I'll start with this one.
+
+158
+00:09:13.120 --> 00:09:16.800
+So what we put together here,
+
+159
+00:09:16.960 --> 00:09:21.600
+this is basically this idea of scaling by by task.
+
+160
+00:09:21.600 --> 00:09:24.600
+And the notion there is that
+
+161
+00:09:24.720 --> 00:09:28.680
+Kanban is quite a natural fit for scaling by task, because you want to
+
+162
+00:09:28.720 --> 00:09:31.600
+constrain the parallelism. So you can kick off.
+
+163
+00:09:31.600 --> 00:09:35.200
+This is a sample project that has a to do list app.
+
+164
+00:09:35.240 --> 00:09:38.760
+And what you can see hopefully, is that
+
+165
+00:09:39.080 --> 00:09:42.880
+by clicking play on the backlog, we've spun up three separate computers.
+
+166
+00:09:42.880 --> 00:09:46.400
+For those three agents that are working on those three different tasks.
+
+167
+00:09:46.400 --> 00:09:48.520
+One of them is adding a dark mode toggle.
+
+168
+00:09:48.520 --> 00:09:50.200
+Another one of them is fixing a bug.
+
+169
+00:09:50.200 --> 00:09:55.080
+Another one is adding like customized categories.
+
+170
+00:09:55.080 --> 00:09:59.000
+And so what you can see here is that we've gone
+
+171
+00:10:00.480 --> 00:10:01.840
+we ended up down this sort of rabbit
+
+172
+00:10:01.840 --> 00:10:05.400
+hole of like, okay, if you've got
+
+173
+00:10:05.920 --> 00:10:10.760
+if you want like a good background agent experience
+
+174
+00:10:11.520 --> 00:10:14.520
+that feels like a foreground agent experience,
+
+175
+00:10:14.680 --> 00:10:18.880
+you end up implementing GPU accelerated desktops
+
+176
+00:10:18.880 --> 00:10:22.280
+because non GPU accelerated desktops are not very nice to use.
+
+177
+00:10:22.280 --> 00:10:25.680
+But if we're doing AI infrastructure, we've got some GPUs lying around.
+
+178
+00:10:25.680 --> 00:10:28.360
+And it just so happens that the same GPUs are used for inference.
+
+179
+00:10:28.360 --> 00:10:29.680
+A lot of them also support
+
+180
+00:10:29.680 --> 00:10:32.080
+like what GPUs were originally for which is graphics,
+
+181
+00:10:32.080 --> 00:10:34.800
+and they also support hardware video encoding.
+
+182
+00:10:34.800 --> 00:10:37.840
+So we borrowed a lot of the technology from the gaming industry.
+
+183
+00:10:37.840 --> 00:10:40.840
+I don't know if anyone's ever played like
+
+184
+00:10:41.000 --> 00:10:43.520
+computer games in the cloud.
+
+185
+00:10:43.520 --> 00:10:46.480
+It's actually possible to get pretty low latency and good performance.
+
+186
+00:10:46.480 --> 00:10:49.920
+So so we're using the same the same tech as that.
+
+187
+00:10:50.000 --> 00:10:53.080
+But basically what's happening here from a process perspective
+
+188
+00:10:53.120 --> 00:10:56.840
+is the agent has.
+
+189
+00:10:56.840 --> 00:11:01.160
+Started up inside the IDE.
+
+190
+00:11:01.160 --> 00:11:04.480
+We use Zed because it's fast.
+
+191
+00:11:04.640 --> 00:11:08.360
+And we also forked it so that you can remote control it.
+
+192
+00:11:08.360 --> 00:11:11.280
+So we can inject prompts into the Zed agent.
+
+193
+00:11:11.280 --> 00:11:14.720
+And the other thing that's nice about Z is that it supports ACP,
+
+194
+00:11:14.720 --> 00:11:19.240
+which means it integrates with all of the major agent harnesses.
+
+195
+00:11:19.240 --> 00:11:21.280
+So it works with Codex and Claude code.
+
+196
+00:11:21.280 --> 00:11:22.960
+We're not trying to reinvent that bill
+
+197
+00:11:24.200 --> 00:11:25.960
+then.
+
+198
+00:11:25.960 --> 00:11:26.320
+Yeah.
+
+199
+00:11:26.320 --> 00:11:30.800
+So the next thing is like, well, what's that agent actually going to do
+
+200
+00:11:30.920 --> 00:11:32.120
+when it starts up?
+
+201
+00:11:32.120 --> 00:11:33.840
+And this is a Tessl conference.
+
+202
+00:11:33.840 --> 00:11:36.280
+So it would be bad not to talk about spec-driven development,
+
+203
+00:11:36.280 --> 00:11:38.400
+but I'm actually a huge fan of spec driven development.
+
+204
+00:11:38.400 --> 00:11:41.640
+So the approach that we've taken is.
+
+205
+00:11:42.280 --> 00:11:47.560
+Spec is central to to what's going on.
+
+206
+00:11:47.600 --> 00:11:51.120
+The the human prompt
+
+207
+00:11:51.120 --> 00:11:55.320
+that comes in is something really short, like add dark mode
+
+208
+00:11:55.320 --> 00:11:58.920
+support to my to do list app or something kind of really trivial.
+
+209
+00:11:58.920 --> 00:12:03.160
+And that prompt goes into the into this agent.
+
+210
+00:12:03.160 --> 00:12:04.640
+It's actually the same agent.
+
+211
+00:12:04.640 --> 00:12:08.600
+It's just the agent has an explicit planning phase and later
+
+212
+00:12:08.600 --> 00:12:10.040
+in implementation phase.
+
+213
+00:12:10.040 --> 00:12:14.120
+So we prompt the agent to say please write a plan.
+
+214
+00:12:14.160 --> 00:12:15.240
+Because it turns out that
+
+215
+00:12:15.240 --> 00:12:19.840
+if you get the agent to write a plan before it does the work, you get much,
+
+216
+00:12:19.880 --> 00:12:22.880
+much better results because you can then correct it and you can kind of
+
+217
+00:12:22.880 --> 00:12:25.480
+do that design work before the agent has gone off
+
+218
+00:12:25.480 --> 00:12:27.560
+in the wrong direction, when it's harder to steer it,
+
+219
+00:12:27.560 --> 00:12:29.520
+if it's in the middle of doing an implementation
+
+220
+00:12:29.520 --> 00:12:32.520
+and it's got it's misunderstood, something fundamental.
+
+221
+00:12:32.720 --> 00:12:36.240
+So you put the prompt in into the planning phase,
+
+222
+00:12:36.240 --> 00:12:40.080
+and then you have a human in the loop commenting, which you'll see in a second.
+
+223
+00:12:40.080 --> 00:12:43.600
+And then but, but the spec is the combination
+
+224
+00:12:43.600 --> 00:12:47.280
+of the human prompt and the planning agent reading the code.
+
+225
+00:12:47.280 --> 00:12:49.800
+So I don't know if you can see this red arrow here.
+
+226
+00:12:49.800 --> 00:12:50.920
+We've got a code
+
+227
+00:12:50.920 --> 00:12:54.280
+check out for the project, which is whatever repos you've attached.
+
+228
+00:12:54.280 --> 00:12:59.400
+And the job of the planning phase is based on the user's requirement.
+
+229
+00:12:59.440 --> 00:13:02.480
+Write a good spec based on also looking at the code,
+
+230
+00:13:02.480 --> 00:13:04.880
+so that you understand what you're going to do
+
+231
+00:13:04.880 --> 00:13:08.080
+in quite a lot more detail than the user specified.
+
+232
+00:13:08.240 --> 00:13:13.080
+And then once you approve the spec.
+
+233
+00:13:13.080 --> 00:13:15.160
+So there's a human human in the loop.
+
+234
+00:13:15.160 --> 00:13:16.480
+On commenting on the spec,
+
+235
+00:13:16.480 --> 00:13:18.720
+there's also a human in the loop on approving spec
+
+236
+00:13:18.720 --> 00:13:20.840
+to say, yes, I'm happy with that spec.
+
+237
+00:13:20.840 --> 00:13:25.720
+Then you go into the implementation phase and because each agent
+
+238
+00:13:25.720 --> 00:13:28.920
+has its own desktop environment, you can now do some interesting things
+
+239
+00:13:28.920 --> 00:13:32.040
+like the agent can self if it's a web application.
+
+240
+00:13:32.040 --> 00:13:34.520
+And lots and lots of things are web applications.
+
+241
+00:13:34.520 --> 00:13:38.640
+So you can then have the agent put up a PR on GitHub,
+
+242
+00:13:38.640 --> 00:13:42.840
+but then also kind of human in the loop review both the PR
+
+243
+00:13:42.880 --> 00:13:47.840
+but also the running application in that agents own computer.
+
+244
+00:13:47.840 --> 00:13:51.720
+And because each agent has its own isolated computer, they're actually
+
+245
+00:13:51.720 --> 00:13:54.920
+Docker and Docker environments or Docker on Kubernetes environments.
+
+246
+00:13:54.920 --> 00:14:00.400
+They can they're not treading on each other's toes when
+
+247
+00:14:00.400 --> 00:14:06.320
+they're bringing up a Chrome instance and using Chrome MCP to navigate around.
+
+248
+00:14:06.600 --> 00:14:09.520
+So yeah, I'll show you this.
+
+249
+00:14:10.720 --> 00:14:15.400
+Spec review phase.
+
+250
+00:14:15.400 --> 00:14:20.960
+So here we had these three tasks or four tasks.
+
+251
+00:14:20.960 --> 00:14:24.840
+And like a 30s a minute later
+
+252
+00:14:24.840 --> 00:14:28.400
+the systems created each agent has created its own spec.
+
+253
+00:14:28.400 --> 00:14:31.760
+And so if we go and look at the bug where deleting
+
+254
+00:14:31.760 --> 00:14:34.840
+a to do item from the to do list doesn't.
+
+255
+00:14:34.840 --> 00:14:39.280
+Doesn't delete it from from storage,
+
+256
+00:14:39.320 --> 00:14:42.200
+what you can see is it's come up with this spec.
+
+257
+00:14:42.200 --> 00:14:45.000
+So it was given that simple prompt.
+
+258
+00:14:45.000 --> 00:14:48.000
+There's a bug with deletion and it's come
+
+259
+00:14:48.000 --> 00:14:51.480
+and written out a much more detailed document.
+
+260
+00:14:51.480 --> 00:14:55.920
+And then you can comment on the document, because I believe that the terminal like
+
+261
+00:14:55.920 --> 00:14:59.720
+called code is actually a terrible place for reviewing and commenting on documents.
+
+262
+00:14:59.720 --> 00:15:05.160
+It's much nicer to use a Google Doc style UI, which is why we added one.
+
+263
+00:15:05.240 --> 00:15:09.000
+So you can see there's this kind of wrapper around
+
+264
+00:15:09.080 --> 00:15:11.360
+the agent where
+
+265
+00:15:11.360 --> 00:15:15.280
+you can comment on a line on the document, and it will push changes to the spec.
+
+266
+00:15:15.280 --> 00:15:18.880
+And the specs are all just markdown files in in a git repo.
+
+267
+00:15:18.880 --> 00:15:22.680
+And we put all those markdown files on a special branch that's separate
+
+268
+00:15:22.680 --> 00:15:25.240
+from the rest of the repo, so all the agents can see
+
+269
+00:15:25.240 --> 00:15:27.520
+all the other specs that all the other agents are working on.
+
+270
+00:15:27.520 --> 00:15:29.080
+So they're pretty isolated from each other,
+
+271
+00:15:29.080 --> 00:15:32.640
+but they can all see the history of all the work that's, that's happened
+
+272
+00:15:32.640 --> 00:15:35.720
+or, or is or, or is happening.
+
+273
+00:15:36.000 --> 00:15:38.080
+So then.
+
+274
+00:15:39.040 --> 00:15:43.040
+We fast forward this a little bit.
+
+275
+00:15:43.040 --> 00:15:48.320
+And what I did was I added a request to on deletion.
+
+276
+00:15:48.320 --> 00:15:51.560
+Let's also do like a fiery CSS animation.
+
+277
+00:15:51.560 --> 00:15:55.440
+So it looks like the to do list item is burning.
+
+278
+00:15:55.680 --> 00:15:59.920
+And then I can review the rest of the plan.
+
+279
+00:15:59.920 --> 00:16:06.160
+There's a basic to do list and then that's the human approval gate.
+
+280
+00:16:06.200 --> 00:16:07.760
+You click Approve Design.
+
+281
+00:16:07.760 --> 00:16:11.800
+And again we put the prompt in there.
+
+282
+00:16:11.800 --> 00:16:14.600
+And then I sped up the actual implementation part.
+
+283
+00:16:14.600 --> 00:16:17.440
+So I've only got 15 minutes left.
+
+284
+00:16:17.440 --> 00:16:20.360
+But then you can see this is the really cool part.
+
+285
+00:16:20.360 --> 00:16:22.920
+The agent starts shaping the application.
+
+286
+00:16:22.920 --> 00:16:24.800
+I'm not typing here.
+
+287
+00:16:24.800 --> 00:16:28.280
+The agent is typing by groceries and walk the dog and then watch.
+
+288
+00:16:28.280 --> 00:16:30.640
+It's going to delete by groceries I think.
+
+289
+00:16:31.680 --> 00:16:34.640
+And then we get to see the
+
+290
+00:16:34.640 --> 00:16:38.720
+animation and I'm like, that wasn't a very good fire animation.
+
+291
+00:16:38.800 --> 00:16:44.440
+So I'm going to prompt it and I'm going to say that was a bit rubbish.
+
+292
+00:16:44.480 --> 00:16:48.120
+I want to I want you to make it look like it was actually burning
+
+293
+00:16:48.120 --> 00:16:51.120
+in hell, as I think the phrase I used earlier.
+
+294
+00:16:51.240 --> 00:16:54.600
+So as soon as we
+
+295
+00:16:54.600 --> 00:16:58.320
+yeah, the CSS animation was not cool enough.
+
+296
+00:16:58.480 --> 00:17:00.400
+And then you can press enter twice
+
+297
+00:17:00.400 --> 00:17:03.400
+and it will interrupt the agent that's running in the background.
+
+298
+00:17:03.400 --> 00:17:06.320
+So it does some thinking
+
+299
+00:17:06.320 --> 00:17:09.560
+it comes up with with some better CSS animation.
+
+300
+00:17:09.560 --> 00:17:12.360
+And then you can kind of collaboratively QA
+
+301
+00:17:12.360 --> 00:17:16.720
+what the agent has done directly in the browser.
+
+302
+00:17:16.960 --> 00:17:19.040
+And it's pretty cool.
+
+303
+00:17:20.320 --> 00:17:24.720
+So it's actually kind of nice to give each agent their own computer
+
+304
+00:17:24.920 --> 00:17:26.680
+and to have a high quality,
+
+305
+00:17:26.680 --> 00:17:30.040
+like way of interacting with it that you'd actually want to use.
+
+306
+00:17:30.280 --> 00:17:33.920
+And just to give you a sense of what the board looks like after this,
+
+307
+00:17:33.920 --> 00:17:37.840
+you get to see that you've still got these items
+
+308
+00:17:37.840 --> 00:17:41.160
+to review the spec on, but then you've got this in progress task over here.
+
+309
+00:17:41.960 --> 00:17:44.960
+So there's a few other things that we learned from
+
+310
+00:17:45.720 --> 00:17:50.840
+kind of the change that the changes that come about
+
+311
+00:17:50.840 --> 00:17:54.160
+when instead of developers wanting to spend
+
+312
+00:17:55.320 --> 00:18:00.120
+all of their time looking at their ID to only leading to interact
+
+313
+00:18:00.120 --> 00:18:05.240
+with each agent like for a few minutes every hour, of course they can parallelize
+
+314
+00:18:05.440 --> 00:18:08.280
+and like try and try and do more, but
+
+315
+00:18:08.280 --> 00:18:11.280
+they can also go to the gym and
+
+316
+00:18:12.720 --> 00:18:13.120
+do some
+
+317
+00:18:13.120 --> 00:18:16.120
+exercise while their agents are doing work.
+
+318
+00:18:16.120 --> 00:18:21.800
+And so we also wanted to optimize for mobile experience.
+
+319
+00:18:21.800 --> 00:18:24.800
+So we made sure that
+
+320
+00:18:25.960 --> 00:18:28.120
+everything worked on
+
+321
+00:18:28.120 --> 00:18:31.440
+on mobile and on tablet.
+
+322
+00:18:31.440 --> 00:18:36.000
+I had I put a LinkedIn message out that was like our niche pitch is that
+
+323
+00:18:36.120 --> 00:18:39.840
+this is the best way to run
+
+324
+00:18:39.880 --> 00:18:44.000
+to to run Zed on your iPad while you're at the gym.
+
+325
+00:18:44.440 --> 00:18:48.360
+And I had one person commenting that was like, I feel seen.
+
+326
+00:18:48.880 --> 00:18:50.400
+So I guess that's our target audience.
+
+327
+00:18:50.400 --> 00:18:55.680
+But anyway, so the other interesting thing about this
+
+328
+00:18:55.680 --> 00:19:01.360
+is that notice this diagram, I had many users
+
+329
+00:19:01.400 --> 00:19:05.520
+looking at the same screen or many users looking at the same agent.
+
+330
+00:19:05.520 --> 00:19:09.520
+And so we added this kind of Figma like ability to have multiple mouse cursors.
+
+331
+00:19:09.520 --> 00:19:13.840
+And so you can actually start collaboratively
+
+332
+00:19:14.240 --> 00:19:18.760
+like multiple humans can basically pair on the same agents desktop.
+
+333
+00:19:18.760 --> 00:19:21.560
+And they can join in and they can they can both interact with it.
+
+334
+00:19:21.560 --> 00:19:24.560
+And one of those humans might be at the gym on their iPhone.
+
+335
+00:19:25.040 --> 00:19:25.840
+Anyway,
+
+336
+00:19:26.880 --> 00:19:29.240
+I'll go quickly.
+
+337
+00:19:29.240 --> 00:19:32.640
+The next thing that we found was really important
+
+338
+00:19:32.640 --> 00:19:34.600
+and actually stopped us using it.
+
+339
+00:19:34.600 --> 00:19:37.120
+Remember I was saying we wanted to have the snake eat its own tail.
+
+340
+00:19:37.120 --> 00:19:40.240
+We wanted to dog through this to make it build itself.
+
+341
+00:19:42.800 --> 00:19:45.120
+The next pain point we hit was it takes 20.
+
+342
+00:19:45.120 --> 00:19:48.720
+Sorry, it took 40 minutes to build our stack from scratch in Docker,
+
+343
+00:19:49.200 --> 00:19:53.800
+and there's really no point being able to spawn
+
+344
+00:19:53.840 --> 00:19:58.920
+agent sandboxes rapidly if those agents are going to take
+
+345
+00:19:58.960 --> 00:20:01.840
+40 minutes before they can do any useful work,
+
+346
+00:20:01.840 --> 00:20:03.400
+because they actually want to be able
+
+347
+00:20:03.400 --> 00:20:07.520
+to test and QA the application that they're changing themselves.
+
+348
+00:20:07.560 --> 00:20:11.960
+So we did some quite interesting things
+
+349
+00:20:11.960 --> 00:20:16.640
+with with ZFS as a filesystem
+
+350
+00:20:16.640 --> 00:20:23.280
+to make clones of the most development environments are in Docker.
+
+351
+00:20:23.320 --> 00:20:26.640
+That's our kind of working assumption. And
+
+352
+00:20:27.960 --> 00:20:28.800
+Doctor and Docker can
+
+353
+00:20:28.800 --> 00:20:32.560
+actually go 16 levels deep, which is crazy.
+
+354
+00:20:32.560 --> 00:20:36.520
+But we don't go 16, but we go like I think three.
+
+355
+00:20:36.560 --> 00:20:41.520
+But that means that you can give each agent its own Docker environment,
+
+356
+00:20:41.520 --> 00:20:46.440
+but we also prime the data directory in that Docker environment
+
+357
+00:20:46.440 --> 00:20:49.520
+with the latest version of the startup script running
+
+358
+00:20:49.520 --> 00:20:51.200
+against the latest main commit.
+
+359
+00:20:51.200 --> 00:20:55.560
+So every time an agent starts up, it's got a really fresh,
+
+360
+00:20:55.560 --> 00:20:59.360
+fully cached Docker environment to start up from.
+
+361
+00:20:59.360 --> 00:21:02.880
+And so this is how we use
+
+362
+00:21:04.160 --> 00:21:07.000
+this, how we use helix to build helix.
+
+363
+00:21:07.000 --> 00:21:12.000
+So here we've got an example of
+
+364
+00:21:12.000 --> 00:21:16.280
+a task I added which was can you review this external contribution.
+
+365
+00:21:16.440 --> 00:21:18.640
+We had
+
+366
+00:21:19.760 --> 00:21:20.960
+another
+
+367
+00:21:20.960 --> 00:21:25.760
+like lots of other tasks that are in progress
+
+368
+00:21:25.760 --> 00:21:29.280
+like we're doing notion integration for one user.
+
+369
+00:21:29.440 --> 00:21:33.600
+The desktops shut themselves down after an hour of being idle.
+
+370
+00:21:33.760 --> 00:21:37.200
+So I can start this one back up and then interact with it.
+
+371
+00:21:37.200 --> 00:21:41.360
+And I think I speed up the video here.
+
+372
+00:21:41.360 --> 00:21:47.040
+But basically everything we do now is done inside the tool.
+
+373
+00:21:47.040 --> 00:21:51.000
+And so we've achieved that goal of kind of the snake eating its own tail.
+
+374
+00:21:51.480 --> 00:21:56.480
+And most of my day now when I'm doing technical work
+
+375
+00:21:56.480 --> 00:22:01.120
+is that I'm reviewing these specs, and I find the two lines in the spec
+
+376
+00:22:01.120 --> 00:22:05.160
+where the agent got it wrong, or is making a poor design decision, or
+
+377
+00:22:05.320 --> 00:22:10.360
+is unaware of some other area of the code, and you just comment on those two lines,
+
+378
+00:22:10.360 --> 00:22:13.640
+and then it then becomes fairly mechanical
+
+379
+00:22:13.640 --> 00:22:17.640
+for the agent to get the code change all the way through to
+
+380
+00:22:19.200 --> 00:22:22.320
+to being close to being ready to merge.
+
+381
+00:22:22.880 --> 00:22:27.400
+So and then the pull requests that come out of it are quite nice,
+
+382
+00:22:27.400 --> 00:22:30.520
+because we put quite a lot of effort into telling the agent
+
+383
+00:22:30.520 --> 00:22:34.120
+to take screenshots of changes that it's made.
+
+384
+00:22:34.120 --> 00:22:36.800
+So I quite often review pull requests
+
+385
+00:22:36.800 --> 00:22:39.440
+now by just looking at whether I like the change.
+
+386
+00:22:39.440 --> 00:22:41.720
+And that's quite powerful.
+
+387
+00:22:41.720 --> 00:22:45.360
+And you can also link, we also link automatically to the spec
+
+388
+00:22:45.400 --> 00:22:49.440
+that was used to to construct it.
+
+389
+00:22:49.720 --> 00:22:55.200
+Now I want to talk briefly about token costs, privacy and Donald Trump.
+
+390
+00:22:55.640 --> 00:22:59.520
+The total costs are exploding.
+
+391
+00:22:59.520 --> 00:23:02.280
+We spent a lot of money now on tokens,
+
+392
+00:23:02.280 --> 00:23:05.960
+which as a bootstrap startup is kind of painful.
+
+393
+00:23:06.080 --> 00:23:09.080
+But we also have one of these machines,
+
+394
+00:23:09.800 --> 00:23:14.880
+these open weights models like GLM 5.1 and so on, and can now
+
+395
+00:23:14.920 --> 00:23:19.840
+do pretty much 80% of the work that you need to do.
+
+396
+00:23:19.840 --> 00:23:20.920
+And so
+
+397
+00:23:22.080 --> 00:23:22.560
+if you
+
+398
+00:23:22.560 --> 00:23:26.760
+take as a meaningfully sized organization kind of your next three month
+
+399
+00:23:26.760 --> 00:23:30.760
+token budget and instead invest in some hardware with like eight
+
+400
+00:23:31.000 --> 00:23:35.320
+RTX six K pros in it, and then you use something
+
+401
+00:23:35.320 --> 00:23:36.680
+or you build something that allows you
+
+402
+00:23:36.680 --> 00:23:40.840
+to easily switch between different agents and different models.
+
+403
+00:23:40.840 --> 00:23:45.320
+Then you can avoid getting locked into, like the OpenAI anthropic ecosystem,
+
+404
+00:23:45.320 --> 00:23:49.560
+but you can still kind of burst out to like Claude
+
+405
+00:23:49.560 --> 00:23:53.440
+opus 4.8 if you've got something really hard.
+
+406
+00:23:53.480 --> 00:23:57.160
+But for all of the tedious stuff, you should be using local models
+
+407
+00:23:57.160 --> 00:24:00.440
+where you just have to pay for the electricity, in my opinion.
+
+408
+00:24:00.600 --> 00:24:03.520
+Now, the very last thing I'll say
+
+409
+00:24:03.520 --> 00:24:07.240
+is that I'm intrigued by this idea of building a self improving business.
+
+410
+00:24:07.680 --> 00:24:11.520
+At the bottom layer, you've got a self improving code base,
+
+411
+00:24:11.520 --> 00:24:14.720
+which is what you can kind of already do here
+
+412
+00:24:14.720 --> 00:24:19.000
+by putting software issues into a Kanban board.
+
+413
+00:24:19.200 --> 00:24:23.200
+If you then plug that into agents that deal with product
+
+414
+00:24:23.200 --> 00:24:28.160
+and support roles, then you can start automatically
+
+415
+00:24:28.160 --> 00:24:31.320
+improving the product based on user feedback.
+
+416
+00:24:31.320 --> 00:24:33.440
+And then if you also add agents that can do
+
+417
+00:24:33.440 --> 00:24:36.480
+sales and marketing and finance and legal things, as well as kind of
+
+418
+00:24:36.520 --> 00:24:40.000
+the founder level stuff of like what's the hypothesis, what's
+
+419
+00:24:40.440 --> 00:24:43.440
+what's what's the direction of the market and so on.
+
+420
+00:24:43.480 --> 00:24:45.920
+Then all of this is with humans in the loop.
+
+421
+00:24:45.920 --> 00:24:48.960
+But you can start like going a lot faster
+
+422
+00:24:48.960 --> 00:24:52.040
+with fewer people than you could before, which was really interesting.
+
+423
+00:24:52.040 --> 00:24:57.600
+And so the very last thing I'll show you is we also use this to log into LinkedIn.
+
+424
+00:24:57.600 --> 00:25:01.240
+And it's fun because you're collaborating with the agent.
+
+425
+00:25:01.520 --> 00:25:05.600
+And so the agent can be like, oh, can you do two factor author, please?
+
+426
+00:25:05.640 --> 00:25:10.360
+Now LinkedIn thinks I'm a human and I kind of am.
+
+427
+00:25:10.400 --> 00:25:11.280
+I'm a human.
+
+428
+00:25:11.280 --> 00:25:14.760
+That's like using an agent,
+
+429
+00:25:14.800 --> 00:25:18.240
+kind of like a mechanical suit, to do
+
+430
+00:25:18.240 --> 00:25:21.840
+a lot more LinkedIn outreach than I would normally have the patience for.
+
+431
+00:25:21.840 --> 00:25:24.280
+And so I got it to build me a list of 200 people
+
+432
+00:25:24.280 --> 00:25:25.400
+I wanted to reach out to
+
+433
+00:25:25.400 --> 00:25:28.440
+when I was visiting the Bay area recently, and I actually got
+
+434
+00:25:28.440 --> 00:25:29.720
+a bunch of good meetings.
+
+435
+00:25:29.720 --> 00:25:33.560
+I wouldn't have had the patience to do that by hand,
+
+436
+00:25:33.560 --> 00:25:37.880
+so it's a pretty useful coming up to time.
+
+437
+00:25:37.880 --> 00:25:41.600
+So just to recap, we've looked at the design space of systems that run agents.
+
+438
+00:25:41.600 --> 00:25:44.080
+I hope that this has provided some useful ideas.
+
+439
+00:25:44.080 --> 00:25:47.360
+Talked about local versus centralized.
+
+440
+00:25:47.360 --> 00:25:50.400
+Obviously my opinion is that we should go centralized.
+
+441
+00:25:50.440 --> 00:25:53.120
+My opinion is that we still need an IDE task.
+
+442
+00:25:53.120 --> 00:25:56.280
+Scaling seems to be the most appropriate place to start,
+
+443
+00:25:56.280 --> 00:25:59.920
+but I think the org shapes are interesting.
+
+444
+00:25:59.960 --> 00:26:05.720
+Spec-driven development is a must make things mobile multiplayer.
+
+445
+00:26:05.800 --> 00:26:08.360
+Get your dev environment set up sorted.
+
+446
+00:26:08.360 --> 00:26:12.400
+Think about how you can reduce token costs, because if it's not hurting
+
+447
+00:26:12.400 --> 00:26:14.080
+now, it's going to be hurting soon.
+
+448
+00:26:14.080 --> 00:26:17.560
+And also think about how you can apply this beyond software engineering.
+
+449
+00:26:17.880 --> 00:26:20.040
+So thank you very much. That's me.
+
+450
+00:26:24.520 --> 00:26:27.920
+If you'd like help doing some of this then please reach out to me.
+
+451
+00:26:27.920 --> 00:26:29.360
+That's my LinkedIn.
+
+452
+00:26:29.360 --> 00:26:32.200
+Or if you'd just like to compare notes, I'd love to chat.
+
+453
+00:26:32.200 --> 00:26:34.160
+So thank you so much. Incredible luck.
+
+454
+00:26:34.160 --> 00:26:35.880
+Thank you very much.
+
+455
+00:26:35.880 --> 00:26:38.880
+Do we have any questions from anybody?
+
+456
+00:26:39.320 --> 00:26:42.880
+Oh, we've got two so far.
+
+457
+00:26:42.880 --> 00:26:43.600
+Lovely assistant.
+
+458
+00:26:43.600 --> 00:26:46.600
+Could get the mic and run it down for you.
+
+459
+00:26:47.040 --> 00:26:50.040
+We've got one this side and one this side.
+
+460
+00:26:51.440 --> 00:26:52.720
+Do you just raise your hand again?
+
+461
+00:26:52.720 --> 00:26:53.920
+Okay.
+
+462
+00:26:53.920 --> 00:26:56.920
+Thank you.
+
+463
+00:26:58.760 --> 00:26:59.320
+Cool.
+
+464
+00:26:59.320 --> 00:27:01.480
+Hello? Yes.
+
+465
+00:27:01.480 --> 00:27:02.640
+All right. Yeah.
+
+466
+00:27:02.640 --> 00:27:03.960
+That was a really, really cool talk.
+
+467
+00:27:03.960 --> 00:27:07.200
+And yeah, I think one of the things that
+
+468
+00:27:07.200 --> 00:27:11.160
+I was interested in is the kind of security aspect.
+
+469
+00:27:11.160 --> 00:27:15.040
+So obviously agents can do lots of things
+
+470
+00:27:15.040 --> 00:27:18.560
+and you just let it log into your LinkedIn and play around in there. Yes.
+
+471
+00:27:19.040 --> 00:27:23.800
+What have you got any guardrails and security things in there and to what?
+
+472
+00:27:23.840 --> 00:27:25.480
+To what extent have you got it there?
+
+473
+00:27:25.480 --> 00:27:29.720
+Because I find one of the hard things is letting agents run wild
+
+474
+00:27:29.920 --> 00:27:34.000
+versus making them secure, but then having to have lots of input manually.
+
+475
+00:27:34.040 --> 00:27:34.920
+So yeah.
+
+476
+00:27:34.920 --> 00:27:36.600
+Well, I think my first argument there is
+
+477
+00:27:36.600 --> 00:27:40.480
+that we're already doing better than like open floor on your on your Mac mini.
+
+478
+00:27:40.600 --> 00:27:44.000
+When I saw the open claw one password extension I was like.
+
+479
+00:27:44.000 --> 00:27:47.800
+So by just
+
+480
+00:27:47.800 --> 00:27:51.040
+logging into one website, it's only got one login.
+
+481
+00:27:51.040 --> 00:27:53.800
+It can't go and log into everything else. So that's step one.
+
+482
+00:27:53.800 --> 00:27:58.600
+And then you can also configure on a per project basis what MCP servers you expose.
+
+483
+00:27:58.680 --> 00:28:02.080
+But I think there is definitely a need for
+
+484
+00:28:02.120 --> 00:28:04.880
+and I think Ivan's working on something interesting in this space.
+
+485
+00:28:04.880 --> 00:28:09.920
+Like I definitely need for tooling that helps
+
+486
+00:28:09.920 --> 00:28:14.280
+you lock down what you're what you're giving permission to and what you're not.
+
+487
+00:28:14.280 --> 00:28:17.280
+It's not something
+
+488
+00:28:17.280 --> 00:28:20.280
+we necessarily want to try and bite off as well.
+
+489
+00:28:20.280 --> 00:28:21.920
+I think we'd rather partner with people
+
+490
+00:28:21.920 --> 00:28:26.080
+who are doing good things in that space, but it's definitely a need.
+
+491
+00:28:26.080 --> 00:28:31.000
+And the more people who ask me for like a governance for their agent control
+
+492
+00:28:31.000 --> 00:28:34.520
+plane, I'm like, oh, we need to put a governance panel in our thing.
+
+493
+00:28:35.320 --> 00:28:36.840
+So yes, definitely.
+
+494
+00:28:37.840 --> 00:28:40.840
+Thank you.
+
+495
+00:28:43.360 --> 00:28:44.040
+I'm just really.
+
+496
+00:28:44.040 --> 00:28:50.440
+Curious about how like what sort of structure you're running the GUI VMs.
+
+497
+00:28:50.520 --> 00:28:52.440
+Like how how's that working?
+
+498
+00:28:52.440 --> 00:28:54.640
+Because I'm quite fascinated. Yeah.
+
+499
+00:28:54.640 --> 00:28:57.480
+So it's pretty interesting.
+
+500
+00:28:57.480 --> 00:29:00.400
+The.
+
+501
+00:29:00.400 --> 00:29:03.960
+The way it works is that we run mutter,
+
+502
+00:29:03.960 --> 00:29:08.240
+which is the gnome compositor
+
+503
+00:29:08.440 --> 00:29:13.920
+inside a Docker container and, well, a Docker container.
+
+504
+00:29:13.920 --> 00:29:18.960
+And then we use a stream of plugins to we actually.
+
+505
+00:29:19.440 --> 00:29:23.040
+So there's this project called Wolf that does this for the gaming community
+
+506
+00:29:23.040 --> 00:29:24.400
+that is written in C++.
+
+507
+00:29:24.400 --> 00:29:27.160
+And for a long time they tried to use that.
+
+508
+00:29:27.160 --> 00:29:29.440
+And then we found it.
+
+509
+00:29:29.440 --> 00:29:32.800
+Honestly, I got really bored
+
+510
+00:29:32.840 --> 00:29:36.880
+of trying to write C++ and it was pretty flaky.
+
+511
+00:29:36.880 --> 00:29:41.880
+It ran the whole thing in, in like
+
+512
+00:29:41.920 --> 00:29:45.480
+one process for all of the different containers.
+
+513
+00:29:45.480 --> 00:29:47.320
+So when it crashed, it brought everything down.
+
+514
+00:29:47.320 --> 00:29:49.520
+So we ended up just taking the core pieces of that,
+
+515
+00:29:49.520 --> 00:29:54.680
+which is this rust plugin for handling Nvidia Cuda stuff in particular.
+
+516
+00:29:54.680 --> 00:29:57.320
+And this is all on our GitHub if you want to go and have a look.
+
+517
+00:29:57.320 --> 00:30:00.280
+But yeah, also feel free to ping me on.
+
+518
+00:30:00.280 --> 00:30:02.400
+I can tell you more about it. Great.
+
+519
+00:30:02.400 --> 00:30:04.240
+I think we've got one more question just here.
+
+520
+00:30:06.320 --> 00:30:06.960
+Thanks.
+
+521
+00:30:06.960 --> 00:30:08.000
+That was great.
+
+522
+00:30:08.000 --> 00:30:12.720
+You talked about still wanting an. IDE
+
+523
+00:30:13.880 --> 00:30:15.480
+early on.
+
+524
+00:30:15.480 --> 00:30:17.720
+What do you find you want to do with that?
+
+525
+00:30:17.720 --> 00:30:20.720
+I'm assuming that it doesn't need to look like
+
+526
+00:30:20.720 --> 00:30:23.720
+VS code from 2020.
+
+527
+00:30:23.720 --> 00:30:27.480
+So. So can you say a bit about what what it does look like?
+
+528
+00:30:27.800 --> 00:30:28.200
+Yeah.
+
+529
+00:30:28.200 --> 00:30:32.640
+I mean we just embedded Zed, which is a really nice idea
+
+530
+00:30:32.680 --> 00:30:35.640
+written in rust that I like because it's fast.
+
+531
+00:30:35.640 --> 00:30:37.360
+And also when you're running
+
+532
+00:30:37.360 --> 00:30:38.600
+hundreds of these things on a machine,
+
+533
+00:30:38.600 --> 00:30:41.120
+you care about the memory, use the memory footprint more.
+
+534
+00:30:41.120 --> 00:30:44.320
+I really like just being able
+
+535
+00:30:44.320 --> 00:30:47.880
+to watch the agent zip around between different files.
+
+536
+00:30:47.960 --> 00:30:52.800
+And also I find that watching
+
+537
+00:30:53.280 --> 00:30:57.040
+like a follow of the agent doing the work,
+
+538
+00:30:58.200 --> 00:31:00.320
+just sort of you ambient
+
+539
+00:31:00.320 --> 00:31:03.920
+absorb more knowledge about the code base
+
+540
+00:31:03.920 --> 00:31:07.960
+as it's doing that versus the black box that is Claude code these days.
+
+541
+00:31:07.960 --> 00:31:12.000
+And and then when something gets difficult
+
+542
+00:31:12.200 --> 00:31:17.040
+and the agent actually needs help, then you've already got a decent IDE
+
+543
+00:31:17.160 --> 00:31:20.960
+that you can search for things and, and look around.
+
+544
+00:31:21.440 --> 00:31:26.280
+So my take is you need an IDE on the inside,
+
+545
+00:31:26.280 --> 00:31:30.320
+but you also need the meta IDE, which is like the control plane for all
+
+546
+00:31:30.320 --> 00:31:34.200
+of the different agents you've got running and the higher level view of them.
+
+547
+00:31:34.680 --> 00:31:35.720
+I think we're at time.
+
+548
+00:31:35.720 --> 00:31:38.200
+You are at time. Thank you very much.
+
+549
+00:31:38.200 --> 00:31:39.600
+Please give it up for love.
+
+550
+00:31:39.600 --> 00:31:42.000
+Give us. Great. So

@@ -1,0 +1,1163 @@
+[00:00:00.000] We wanted to be living in the future. And so we said, cool, let's try this.
+[00:00:02.280] Let's pull requests. But like, we'll just say like, cool.
+[00:00:04.240] If you read the plan like the code is not as important.
+[00:00:06.400] Yeah, we did this experiment.
+[00:00:07.280] We ran this for like 4 or 5 months before we realized, like, oh,
+[00:00:10.640] this code base is actually unusable now.
+[00:00:12.320] Like, it became slower and slower.
+[00:00:13.760] The change over here cause a regression over here.
+[00:00:15.400] And then we decided, no, this is bad.
+[00:00:16.720] And then we literally rebuilt the whole product from scratch.
+[00:00:18.960] And the first two weeks of that, I co-founder Kyle was literally in VS code
+[00:00:23.880] typing every not even cursor like typing every character by hand
+[00:00:27.240] to plumb out the data architecture for the new version.
+[00:00:32.800] The AI Native Dev is a podcast for developers
+[00:00:35.240] and engineering leads at the cutting edge of AI and agentic coding.
+[00:00:39.480] Join your hosts, Guy Podjarny and me, Simon Maple,
+[00:00:42.440] every week as we chat with the most exciting voices in AI
+[00:00:46.120] and tackle the biggest questions facing developers today.
+[00:00:50.040] This is the AI Native Dev.
+[00:00:55.400] Yesterday you were writing code.
+[00:00:57.520] Today you're prompting agents.
+[00:00:59.600] Tomorrow you'll be running a software factory.
+[00:01:02.560] Agentic coding is moving fast enough to give anyone whiplash.
+[00:01:06.240] This June, AI DevCon London sold out.
+[00:01:10.320] Hundreds of developers, engineering leads and VP's packed in to hear speakers
+[00:01:13.360] from Anthropic, OpenAI, Netlify, and GitHub,
+[00:01:16.680] cut through the hype and get to what actually works.
+[00:01:19.840] This November, we're bringing it back to New York.
+[00:01:22.680] Bigger, bolder, and full of people actually building the agentic future.
+[00:01:27.280] Three days of real talks, real tools, real answers.
+[00:01:30.920] Whether you're directing the agents, building the loops themselves,
+[00:01:34.080] leading the teams, or setting the strategy.
+[00:01:37.320] Our early bird pricing ends on September 30th,
+[00:01:39.880] so make sure you lock in your place before prices increase.
+[00:01:43.200] As a podcast listener, you can get 15% off your ticket using promo code POD15.
+[00:01:50.080] We have so much planned and we can't wait to have you
+[00:01:52.760] join us in New York.
+[00:01:59.360] Hello everyone!
+[00:02:00.040] Welcome back to the Native Dev.
+[00:02:02.120] Thanks for tuning in.
+[00:02:03.240] Today we have a really fun
+[00:02:04.360] conversations about software factories and how to do them or not do them.
+[00:02:07.840] And how did we think and we didn't think and all that.
+[00:02:10.600] And to sort of dig into the timeline and sort of really kind of
+[00:02:14.520] informed opinions about this.
+[00:02:15.680] We have Dex Horthy, who is the CEO and co-founder of HumanLayer.
+[00:02:19.360] Hi, Dex. Thanks for tuning in here.
+[00:02:22.240] Talk to be here.
+[00:02:23.760] Dex, you've done a lot of super interesting things beyond
+[00:02:26.160] HumanLayer on it, but I think there were these sort of 12 factor
+[00:02:30.400] agents that you wrote before trying to codify and explain
+[00:02:33.200] how do we should we build agents on it today?
+[00:02:35.360] I think you're sort of starting to refer to like 12 factor factories on it.
+[00:02:39.840] It's a bit of.
+[00:02:40.320] Oh, you got that already? Well, we just sort of know that you've done it.
+[00:02:43.000] I actually don't know.
+[00:02:43.800] Maybe we'll dig into that a little bit on it.
+[00:02:46.280] And, and I think also what's sort of super interesting
+[00:02:48.920] is that you've been sharing kind of strong opinions,
+[00:02:52.200] loosely held a little bit or maybe like, changing over time.
+[00:02:56.240] They were strongly held, but pride out of your hands.
+[00:02:59.480] Yeah. Over time on it.
+[00:03:00.800] Which which I think
+[00:03:01.720] makes for sort of sort of good insights and conversations to have. So,
+[00:03:06.760] thanks for tuning in.
+[00:03:07.720] And maybe I'll, I'll kind of dig into it straight away, which is
+[00:03:12.560] you've you've sort of changed your mind substantially and declaratively around
+[00:03:17.640] kind of the way to do a gentle development of it.
+[00:03:21.400] You know, really around specifically the kind of lights off development.
+[00:03:24.320] Right, versus versus not.
+[00:03:26.200] So what happened there?
+[00:03:28.520] Like, what did you believe before and what's the what's the turnabout?
+[00:03:33.120] Yeah.
+[00:03:33.400] I mean,
+[00:03:33.600] the journey kind of starts around, you know, around when opus four came out,
+[00:03:38.960] and when they launched opus for, they also launched the Claude Agent SDK,
+[00:03:42.440] which means you could use it was it had a very small interface at that point.
+[00:03:45.840] Right now, the Claude CLI is basically like the JVM of of agent coding.
+[00:03:50.040] It's got like 200 flags on it or.
+[00:03:53.040] Yeah, it's a freaking battleship.
+[00:03:55.800] But, but it was the first time you could use Claude like small
+[00:04:00.040] agent loops as part of a broader, more deterministic piece of software.
+[00:04:03.920] So we were building like
+[00:04:05.040] terminal multiplexers
+[00:04:06.320] for Claude Code of like, hey, what would it look like to build a tool
+[00:04:08.720] where you can manage
+[00:04:09.360] a bunch of sessions in parallel or like manage, get an inbox of like,
+[00:04:14.240] what are all the approvals waiting on you and things like that.
+[00:04:16.240] And we spent a lot of time trying to get
+[00:04:18.360] how how do we get these agents to work for longer?
+[00:04:21.240] It's very interesting.
+[00:04:22.400] The, the biggest change between summer of 2025 and now is actually like
+[00:04:29.200] the planning metagame.
+[00:04:32.600] I don't think a lot of people realize this.
+[00:04:34.120] A lot of people just write plans because they put plan mode in the thing,
+[00:04:36.680] or they read something online and they found some skills
+[00:04:38.600] and hey, we're going to make a plan.
+[00:04:41.040] And I think
+[00:04:42.320] depending on where you are in your journey and like
+[00:04:45.000] how the models have changed in retrospect, I realize that, like
+[00:04:48.520] writing a plan file in the summer, in like July of 2025,
+[00:04:53.200] the number one most high leverage thing that that got you.
+[00:04:56.440] Was it was a really reliable way to get a model to work for longer.
+[00:05:01.840] Yeah.
+[00:05:02.320] Well, okay, we're going to do everything on this plan.
+[00:05:04.080] And to kind of follow instructions I think a little bit at the time. Right.
+[00:05:06.720] It was well, it didn't always follow instructions,
+[00:05:08.920] but you had also had things like a spec kit,
+[00:05:12.000] for instance, who though was trying to like really micromanage
+[00:05:16.200] the, the agent and sort of like say, okay, not only is this the plan, but at any
+[00:05:19.960] time, just come back to me at the end of this step
+[00:05:21.640] and I will spit out the precise set of additional plans that you're going to do.
+[00:05:26.280] But I think it got them.
+[00:05:27.720] Yeah, it got them to sort of kept things a little bit on track,
+[00:05:31.520] or at least more than it was if you didn't plan.
+[00:05:34.400] And it was a way to like also like make the work a little presumable.
+[00:05:37.560] Right.
+[00:05:37.920] It was, it was,
+[00:05:39.120] it was the first version of like first the compaction of intent of like, hey,
+[00:05:43.920] I'm going to take this whole thing that I want to build,
+[00:05:45.480] which could be specified as like every line of code I want to write.
+[00:05:48.200] Or you could put it into this file, a couple of hundred lines of markdown.
+[00:05:50.840] It's like, here's what we're going to do.
+[00:05:52.280] And then you could keep that up to date with what was done, what changed.
+[00:05:54.920] And so you could resume from a clean context window later, which again
+[00:05:59.520] also in July of 2025, like the models were not that good at long context.
+[00:06:03.320] I coined
+[00:06:03.840] the term called the dumb zone or whatever it was, which at that time was around
+[00:06:07.680] 100,000 tokens.
+[00:06:08.760] If you went over 100,000 tokens, you got way worse results.
+[00:06:11.160] Obviously, that number is higher now. Yeah.
+[00:06:13.320] Although there is probably still a dumb zone, like there's still a
+[00:06:15.840] there's still a spot in which, like I said, like I reuse that term and
+[00:06:18.840] I feel like it has a, it has an element of like,
+[00:06:22.160] you know like too much focus is no focus, right.
+[00:06:24.680] You know, when you have sort of too much information in it, then finding
+[00:06:27.680] the area of attention is still something where if you're intentional about it
+[00:06:30.760] by yourself, making the decisions around what's in the context and what's not,
+[00:06:35.080] then you can you're more likely to achieve the goal that you're trying to achieve.
+[00:06:39.600] Yeah.
+[00:06:40.080] So anyways, getting back to like our journey is like
+[00:06:42.480] we had just come away from Sean Grove had given this really interesting talk.
+[00:06:45.800] I recommend watching it.
+[00:06:46.760] He was a researcher at OpenAI at the time, and he was talking about basically like
+[00:06:50.080] the spec is the new code.
+[00:06:53.520] And this idea that like the way we think about assembly
+[00:06:56.560] now is the way we're going to think about code in the future,
+[00:07:00.480] and the spec will be the thing that is verifiable and executable
+[00:07:04.400] and compiles into code and that like checking in the code.
+[00:07:10.680] He made this he this really good analogy of like,
+[00:07:12.360] hey, you write a bunch of Java code and then you compile the, the jar, right?
+[00:07:17.040] And the jar goes into production or whatever, whatever your compiled asset is.
+[00:07:20.000] Right. And then you commit the code to the repo.
+[00:07:22.400] It says in the future, like you'll basically just commit the specs.
+[00:07:27.080] But right now, all of the interesting stuff
+[00:07:29.600] from how people were using coding agents in June of 2025 was basically,
+[00:07:34.520] you send a bunch of prompts
+[00:07:35.880] and then you get your results out, and then you commit that,
+[00:07:38.600] and then you push that and that becomes part of production. Yeah.
+[00:07:41.040] But like that, all of the interesting, useful,
+[00:07:45.280] more high leverage stuff is actually all the prompts you sent in that conversation
+[00:07:49.400] that should be recorded somehow and that like having a long chat
+[00:07:53.760] with an agent
+[00:07:54.360] and then throwing away the chat and shipping
+[00:07:56.560] the code is going to be the new version of like, what if we wrote,
+[00:08:00.360] you know, a bunch of Java code and then compiled the jar and checked
+[00:08:03.600] in the compile jar and threw away the code that we wrote, right?
+[00:08:07.200] Yeah, yeah,
+[00:08:08.040] I think, I mean, I very much kind of remember that it needs to be sort of held,
+[00:08:13.560] frankly, like this conversation is not just sort of past tense.
+[00:08:15.680] Right? Like, I think today there's a lot to be claimed.
+[00:08:18.280] And I know this is very much in your world, which is like,
+[00:08:20.640] those are the very artifacts that you're supposed
+[00:08:22.520] to be reviewing and discussing and preserving on the,
+[00:08:26.560] at the time, but I think so.
+[00:08:28.520] So, so you were like, touting, okay, we want to do, like,
+[00:08:33.560] context engineering and kind of capture
+[00:08:35.440] all of these sort of intense on it, but I guess what was the
+[00:08:38.160] what was the advocacy then like
+[00:08:39.800] at the time when you were guiding people to say, hey, be amazing
+[00:08:43.320] with sort of agentic development, like, what is it that that you should do?
+[00:08:48.240] And I'm interested because, like, I, I know that you kind of
+[00:08:51.360] went from like almost it feels like you went from like a context engineering
+[00:08:54.560] kind of advocate to, to almost like a, you know, an antagonist
+[00:08:58.400] to the, to the group on it that it's like a little bit more like
+[00:09:01.600] you really need to be a more, more defined and more reviewing.
+[00:09:06.760] And I've heard you say now that you should review the code for now.
+[00:09:09.160] So I guess what's the
+[00:09:11.800] what has changed?
+[00:09:13.560] Yeah.
+[00:09:13.800] I mean, this thing happens with models as new models come out and get smarter.
+[00:09:16.280] You never know when the singularity is.
+[00:09:19.480] And the only way to like, stay ahead is like, try to live in the future.
+[00:09:22.880] And so I said, okay, this is the thing people are saying might work.
+[00:09:25.080] And people in the lab, you know,
+[00:09:26.920] I think there was a thing that was happening last year a lot
+[00:09:28.960] where it's just like the labs have way more alpha than any of us.
+[00:09:32.040] So if they say, this is a thing you should do, then you should go do it.
+[00:09:35.800] And so the OpenAI said, oh, this is working for us.
+[00:09:38.120] Then, then we wanted to try it.
+[00:09:40.240] We wanted to be living in the future. And so we said, cool, let's try this.
+[00:09:42.480] Let's try like WhatsApp pull request, but like we'll just say like, cool.
+[00:09:46.040] If you read the plan like the code is not as important.
+[00:09:48.760] Ton of ton of issues with that.
+[00:09:50.560] First of all, the plans contained all of the code that was going to be written.
+[00:09:54.280] And so you read this plan of every, every single.
+[00:09:56.800] It was literally like in-line diffs.
+[00:09:58.840] Read the plan and then you would go you would go write the code.
+[00:10:01.920] And then if you didn't read the code, you would basically,
+[00:10:04.120] if you wanted to also review the code because there was drift or you, you know,
+[00:10:07.440] you were larger.
+[00:10:08.000] We were three person startups, so we could have this kind of option.
+[00:10:10.520] We were market fit.
+[00:10:11.640] It was like, okay, go, go go go go.
+[00:10:13.960] But we kind of recommended this to some larger teams, even teams
+[00:10:16.560] like 50 developers.
+[00:10:17.640] Then they would say, yeah, we were at the plans
+[00:10:19.200] and then the person went and did the implementation
+[00:10:20.960] and then the implementation would drift.
+[00:10:22.400] And so they would have to review the code to
+[00:10:24.040] they weren't ready to let go of reviewing the code, which good for them.
+[00:10:28.200] But it was actually they were actually doing more work.
+[00:10:29.920] They were reviewing basically the same, almost the same shape of code twice.
+[00:10:33.960] Yeah.
+[00:10:34.280] Depending on the sort of the, like, the detail level of the sort of the spec.
+[00:10:37.040] But either way and combined with like some sort of sense of discomfort
+[00:10:40.560] because now you're reviewing someone else's code
+[00:10:42.160] and so you're kind of a familiarity and control over it.
+[00:10:45.320] It's oftentimes like harder to apply your opinions
+[00:10:49.560] when editing than it is when you kind of write it in the first place.
+[00:10:53.120] Right? Once.
+[00:10:53.880] Yeah, once.
+[00:10:54.440] Once the code is written, you're kind of committed to a path.
+[00:10:57.160] And it's like much more work to change it to the point
+[00:11:00.360] where sometimes it just makes sense to throughout the implementation,
+[00:11:03.440] like drop a new prompt in or a new or redo your plan and then and then go again.
+[00:11:09.120] But, yeah, we did this experiment.
+[00:11:11.200] We ran this for like 4 or 5 months before we realized, like, oh, this is
+[00:11:15.040] this code base is actually unusable now.
+[00:11:16.680] Like, it became slower and slower.
+[00:11:18.120] There was like, every single change caused,
+[00:11:20.400] you know, change over here, cause of regression over here.
+[00:11:22.280] I think this is also one of the things we're like,
+[00:11:24.200] what if we let the model own the system architecture too, like human in the loop
+[00:11:28.960] reviewing it was like, hey, how would you solve this?
+[00:11:30.680] Well, well, make a Golang daemon.
+[00:11:32.080] And then I would use a Unix socket and then I would connect these things.
+[00:11:34.440] And then when we run the mic piece and we ended up with this
+[00:11:37.120] like system of like six different services where you have like a desktop app
+[00:11:40.640] that talks to a socket over Rust and then that that's like a Golang daemon
+[00:11:44.280] on the back end, which then launches and manages Claude Code sessions,
+[00:11:47.400] which then launch MCP servers to handle the approval system.
+[00:11:51.320] And then those MCP servers call back to the front end
+[00:11:54.360] and like put things in a SQLite database via Unix socket.
+[00:11:57.520] And then that shows in the end, the user approves
+[00:11:59.240] something that goes back to the MCP,
+[00:12:00.640] back to Claude, back to the Golang daemon, and back to the UI.
+[00:12:03.040] It was just like this incredibly complex system that the models developed. Are
+[00:12:08.480] we if you if you let them decide how it should be architected.
+[00:12:11.640] How much is that, though?
+[00:12:13.080] How much is it that the models don't know how to do it
+[00:12:16.360] versus you just sort of saying like, hey,
+[00:12:18.000] figure out an architecture, like how much of that can be prompted?
+[00:12:21.280] And I know we're sort of still in a little bit of like a past ten.
+[00:12:23.800] So maybe some of this, like we need to talk about like current perspective on it.
+[00:12:27.600] But I think there's a difference between saying, hey, models
+[00:12:30.400] can't architect and models can't architect yet, or they can't architect
+[00:12:33.960] if you don't give them enough guidance.
+[00:12:39.200] Yeah.
+[00:12:39.800] And I think, I think like fast fast forwarding a little bit.
+[00:12:42.800] So like we ran this experiment and then we decided no, this is bad.
+[00:12:45.480] And then we literally rebuilt the whole product from scratch.
+[00:12:47.760] And the first two weeks of that, my co-founder Kyle was literally
+[00:12:51.320] in VS code typing every, not even cursor like typing every character by hand
+[00:12:56.280] to plumb out data architecture for the new version.
+[00:13:00.320] Yeah, exactly.
+[00:13:02.320] But I'm really glad.
+[00:13:03.280] Like those those patterns have stayed really, really solid.
+[00:13:05.880] And like, especially for starting a new project,
+[00:13:07.520] the decisions you make early on just constantly cascade into the future.
+[00:13:11.000] And we've we've changed some basic things, but the core ideas behind
+[00:13:14.760] it are still really strong.
+[00:13:16.160] And we built on like ElectricSQL and durable streams and have this kind of
+[00:13:19.840] directional data flow where like clients don't have to like
+[00:13:23.440] there's no signaling logic from the back end
+[00:13:25.680] and there's no like, signal receiving logic on the front end.
+[00:13:28.440] That's all just handled by the sink engine.
+[00:13:31.400] Which which was a much better way to do it.
+[00:13:33.840] And I think any, any piece of software built today should use like a real time
+[00:13:37.400] sink database where clients can just, like, connect and get updates live.
+[00:13:42.240] But, anyway, so we basically were like,
+[00:13:45.400] okay, we need to read the code, we need to understand the architecture.
+[00:13:47.600] And then also like, there's so many slop patterns that get in
+[00:13:51.000] and that these models will, left
+[00:13:53.200] unattended, will create a system, I don't know, there was this thing,
+[00:13:55.640] I think it was Donald Knuth or one of these like OG like C language
+[00:13:59.600] guys had this, had this, had this sort of principle that was like,
+[00:14:05.480] in order to debug code,
+[00:14:07.760] you need to be like much smarter than you were when you wrote it.
+[00:14:12.240] And so if you write code that is like the smartest code,
+[00:14:15.000] the most clever thing that you can come up with,
+[00:14:17.760] you are by definition not smart enough to debug it.
+[00:14:21.200] And so the thing you're building always has to be more simple than,
+[00:14:24.160] than, than than your actual peak.
+[00:14:27.280] Peak intelligence, which I don't know, I think just in the news
+[00:14:31.080] last week was like Steve, who spent the last year running around
+[00:14:34.760] every podcast on the internet and saying, like, hey, and I love Steve.
+[00:14:38.480] Steve's
+[00:14:39.960] brilliant guy.
+[00:14:41.200] Huge fan.
+[00:14:42.680] But I am going to call him out for going running around the internet
+[00:14:45.320] and telling everyone, hey, if you're still trying to read the code,
+[00:14:47.360] you're not going to make it.
+[00:14:48.520] And, like, just let the models cook kind of thing.
+[00:14:53.280] And then last week kind of said, hey, I used fable to build this thing,
+[00:14:56.160] and fable made a system so complicated that it itself could not debug it.
+[00:14:59.960] And you really have to
+[00:15:00.800] keep an eye on these things and, like, understand the system you're building.
+[00:15:04.800] So, so sort of the.
+[00:15:06.160] Counterargument to this, like I, I kind of understand and I relate
+[00:15:10.520] and we sort of
+[00:15:11.000] still have like a Tessl as we sort of build
+[00:15:12.640] and we are sort of a team of sort of 20 odd people on the engineering side.
+[00:15:16.280] So, you know, we do need some sort of supervision, by the way.
+[00:15:18.960] Like, still compliance systems require
+[00:15:21.000] kind of a name to every sort of code review and all that.
+[00:15:23.280] So we have a lot of like,
+[00:15:26.080] AI system
+[00:15:27.200] code review and some changes are allowed to sort of go autonomously
+[00:15:31.560] and there's some supervision of complexity, etc., etc..
+[00:15:34.720] So I wouldn't sort of say, hey, entirely lights off.
+[00:15:37.400] But I think the counterargument to reviewing the code is,
+[00:15:41.400] is that you're stuck, that, you know, when you when you review the code
+[00:15:46.160] and you apply a change, right, or you sort of
+[00:15:50.200] give more specific instructions or open vs code and actually kind of handcraft
+[00:15:54.480] some sort of portion of it, then what you're not doing is
+[00:15:57.400] you are not building a mechanism or a system or an automation
+[00:16:01.400] that enables the creation of code that is, that is to your preferences, right?
+[00:16:06.080] That is when you talk about those specs, like I, I always think of specs
+[00:16:09.840] as this kind of this slider
+[00:16:12.840] between determinism and adaptability.
+[00:16:15.440] You know, it's sort of like how many degrees of freedom do you want to give the,
+[00:16:20.720] the, the, the LM the agent
+[00:16:23.280] to, to build with like these are the decisions that you have made
+[00:16:26.920] and within those you should be allowed to play or like
+[00:16:30.440] where you're enabling the agent to play.
+[00:16:32.320] And you need to define the sort of the outcomes
+[00:16:34.440] that you want to see out of it.
+[00:16:35.480] And you should be comfortable with sort of not caring as long as the outcomes
+[00:16:39.720] are, are achieved.
+[00:16:41.600] And so if you're if you're kind of building towards that,
+[00:16:45.240] you would like to achieve that
+[00:16:48.080] result, you have to codify your intent.
+[00:16:51.080] And the way that you would do that is not by reviewing the code,
+[00:16:54.200] but rather by continuously interacting with the system.
+[00:16:59.160] There's like a balance to it, like this idea of like plan before you build.
+[00:17:03.280] Like the only reason to do planning or alignment or whatever it is,
+[00:17:06.720] whether it's you in the model or you in the model in your team is like,
+[00:17:11.400] because you have this factory and this is a I. Right?
+[00:17:13.680] But there's all these pieces and I've talked about this before,
+[00:17:15.840] so I'm not going to go in depth on this.
+[00:17:17.240] But you have people making stuff
+[00:17:18.560] and then someone builds it and then you have a review thing
+[00:17:21.440] and then you have a rollout and you have monitoring and you have all this stuff.
+[00:17:23.840] But basically this idea here is like what people learn 30, 40, 50
+[00:17:27.680] years ago is that this build step is like can take hours or days,
+[00:17:32.120] and the review step can also take hours or days.
+[00:17:34.960] And so we as humans before AI, we're like okay, we're going to talk about
+[00:17:37.680] the architecture, we're going to do this sprint planning thing.
+[00:17:39.400] We're going to align with everybody on the team
+[00:17:40.840] to make sure that this is at least directionally correct, in the hopes
+[00:17:45.160] that we can decrease the chance of rework and reduce the review time,
+[00:17:49.120] because if we talked about it ahead of time and we've all done this,
+[00:17:51.120] everyone's read a perfect PR where they're like,
+[00:17:52.800] yeah, we talked about this for an hour,
+[00:17:54.400] and now this thing is 1000 or 2000 lines of code, but I,
+[00:17:57.840] I it's, it's following our patterns and everything is correct.
+[00:18:00.760] So it's easy to review when people say we are drowning in pairs.
+[00:18:03.640] We have too many pairs.
+[00:18:04.640] My pushback is like, no, you don't have too many pairs,
+[00:18:07.360] you have too many bad PR because you're letting people turn off their brands
+[00:18:11.640] when they're coding.
+[00:18:13.600] And so like the the
+[00:18:14.520] other side of this though, is like, you don't want to over plan, right?
+[00:18:17.560] So like I can yolo a two sentence prompt and there's a 50% chance
+[00:18:21.560] I'll have to rework it.
+[00:18:22.760] When I say rework, I'm in like I'm going to go back and forth with the model
+[00:18:25.720] a couple more times.
+[00:18:26.680] Please don't yolo a two sentence prompt
+[00:18:28.360] and not read the code and send it to someone else to review.
+[00:18:30.320] I'm assuming you're going to actually polish it.
+[00:18:33.920] Or you could like handwrite a detailed spec.
+[00:18:35.680] You could sit there in a meeting and spend a bunch of time and spend
+[00:18:38.320] five hours writing a spec,
+[00:18:39.880] and maybe now there's a 10% chance you may still have to change some stuff.
+[00:18:43.200] But, but like, it's it's less.
+[00:18:45.640] Or you could do the extreme of, like, write all the code by hand and then, well,
+[00:18:50.560] this is a 0% chance you'd have to rework it
+[00:18:52.600] because of something the agent got wrong because you wrote it.
+[00:18:55.160] You may still have to rework it.
+[00:18:56.280] And we've had code review for 30, 40 years, but,
+[00:19:00.360] it's you're not going to have to change it because of something to agent
+[00:19:03.160] because you left the agent some, some, some leeway to,
+[00:19:07.440] to, to make decisions on some of the smaller details.
+[00:19:10.640] And I think about this in terms of expected pain, like,
+[00:19:13.600] what is the chance you'll have to change something later?
+[00:19:17.360] And how painful is that?
+[00:19:18.520] Like, I never argue with a model about like how
+[00:19:24.240] what color a button is going to be or something like that, because I know that
+[00:19:27.480] if it's not the color I like, I'll just send one prompt and it will fix it.
+[00:19:30.920] But if like the database schema is wrong,
+[00:19:33.080] then we're probably going to have to throw it out and start over.
+[00:19:35.160] And so I want to get aligned on that first. Yeah.
+[00:19:37.840] And so the idea is like you have to build this intuition
+[00:19:39.960] of like based on the size of the thing and the complexity of the code base
+[00:19:43.040] and how good the code is today and how many bad patterns are in there
+[00:19:46.400] that the model might follow, like where do you want to land on this curve?
+[00:19:49.960] And that's that's what I think about like today, planning is all about leverage.
+[00:19:54.240] How do you find the sweet spot for the going to get it wrong?
+[00:19:57.560] Sometimes. That's why I say like get a lot of reps.
+[00:19:59.400] But this is this is kind of how I think
+[00:20:01.040] I think I think it's similar to what you said,
+[00:20:02.360] but just kind of visualize in terms of like what our plans for
+[00:20:07.360] is to, is to kind of
+[00:20:09.400] at every stage of your accumulator, we have a bunch of different
+[00:20:12.600] planning workflows.
+[00:20:13.520] We have, like just do a design dock and then go ship it.
+[00:20:16.240] We have like design and then the order we're going to do it.
+[00:20:18.400] We have like a PR flow
+[00:20:19.600] that's like 3 or 4 stages, but depending on the size of the feature,
+[00:20:22.480] you want to have one or more stages where you are just like slicing off
+[00:20:26.640] 50% of the potential bad outcomes, you're narrowing
+[00:20:30.200] the outcome space in a way that is like a good use of your time.
+[00:20:34.320] Yeah.
+[00:20:34.960] I think, well, I have a whole bunch of like, thoughts on it.
+[00:20:37.840] Like, I think direction, we're sort of aligned on it.
+[00:20:39.640] Like you have to control the a little bit
+[00:20:40.960] the or you have to decide what do you want to control for
+[00:20:43.560] and what do you not want to control for on it?
+[00:20:45.840] One I have a set of questions here.
+[00:20:47.960] One is like how much of that planning is around
+[00:20:51.840] kind of guiding the decisions versus expressing your intent?
+[00:20:55.680] Because I think when you're when you're
+[00:20:57.320] when you're planning, you say, well, I want the architecture to be like that
+[00:21:00.200] and implicitly as well, because I want to make sure that it,
+[00:21:03.320] you know, scales cheaply.
+[00:21:05.000] I want to make sure that it is, you know, resilient to like a additional
+[00:21:10.160] kind of a whatever data fields on it, you know, whatever it is.
+[00:21:14.400] But you don't say that.
+[00:21:15.160] You sort of say, I want the architecture to be like that.
+[00:21:18.680] And so you're, you're
+[00:21:19.720] you're sort of limiting to your own creativity of how you would implement,
+[00:21:22.600] but you actually never capture your, your kind of actual intent of
+[00:21:27.360] why is it it's one of these, you know, ask why 17 times
+[00:21:32.000] to to get to it.
+[00:21:32.840] So I guess when you're when you're going through that planning,
+[00:21:35.560] how much are you trying to extract and do you separate the,
+[00:21:40.280] what do you want to achieve versus
+[00:21:42.920] how the implementation should look?
+[00:21:46.200] I mean, I think there's a reason why Matt Pocock skills
+[00:21:50.200] and specifically like the grill me skill has
+[00:21:54.080] the most it's in like the top
+[00:21:55.880] 25 stars on any GitHub repo of all time.
+[00:21:59.160] And it's like the top three stars on GitHub for repos that like mostly just
+[00:22:03.600] contain skills is because like, people are bad at specifying their intent
+[00:22:09.920] and and I think the the a good AI assisting
+[00:22:14.480] assisted planning process involves like having the model
+[00:22:18.320] get enough context to understand what's going on and enabling a user.
+[00:22:21.680] The fastest way to get a good description of your intent
+[00:22:24.520] is to just like off the cuff, say kind of what you want.
+[00:22:28.080] I'll turn on voice mode and I'll ramble for 60s and the things I know I want,
+[00:22:32.040] like, oh, okay, we're going to this has to scale to end users or
+[00:22:35.120] this cannot use this pass that has to use this like has to use reading
+[00:22:38.400] and not the Postgres database because I know the speed
+[00:22:40.640] like anything, you know you should specify.
+[00:22:42.520] But the, the, the onus of like, hey, I need to sit there and just like
+[00:22:46.560] think for six hours and decide exactly what I want can it's it's
+[00:22:51.080] much easier and much faster to be able to take a very rough
+[00:22:55.680] like large, unspecified thing under specified thing
+[00:22:59.360] and use AI to, you know, relentlessly interview the user
+[00:23:04.320] as, as to, hey, look, here's what you asked for.
+[00:23:06.920] Like, here's some alternatives.
+[00:23:07.960] Are you sure you don't want these?
+[00:23:09.080] Or like, hey, you asked for this, but there's a ton of open questions.
+[00:23:12.520] They're like, here's what I think they are.
+[00:23:13.800] And like walking down that decision tree. Yeah.
+[00:23:16.120] So I think when.
+[00:23:16.680] You're when you're
+[00:23:17.560] so I think we're in agreement over there that you like, it's hard to extract
+[00:23:20.840] sort of things out of it.
+[00:23:21.880] But when you, when you think about like reviewing the code and,
+[00:23:25.560] and the likes, I guess what I, what I struggle with a bit is this okay,
+[00:23:29.520] like if you extracted the intent correctly
+[00:23:33.120] and you have defined your kind of verifications correctly, right?
+[00:23:37.160] You know what you're looking for, which are are both big ifs.
+[00:23:40.280] They're both hard to do on it.
+[00:23:43.640] Do you still need it?
+[00:23:44.560] Like the models are getting pretty good, you know, let's put aside you know
+[00:23:48.280] that is hard to do. Let's put costs aside for asset. Right.
+[00:23:50.920] Let's assume you can kind of iterate
+[00:23:52.200] and you can define because you define what good looks like on it.
+[00:23:55.720] Like do you think like is it what's the limitation over here.
+[00:23:59.440] Is it is it actual like models or just not good enough
+[00:24:04.000] yet in your view?
+[00:24:05.040] Or is it a I don't know if you have like a guess as to like
+[00:24:09.040] when would they be or is it a or is it more or is it something else.
+[00:24:14.680] You know that it's like a that, that is sort of
+[00:24:18.880] that like that causes you not to sort of say like what you really need
+[00:24:22.120] to do is like invest in the capturing of the intent and the verifiers,
+[00:24:25.880] and instead you're saying you should review the code.
+[00:24:29.600] I, I.
+[00:24:33.120] There's like this
+[00:24:34.240] there was this post from the Haskell community, like six months ago
+[00:24:38.280] that was like a sufficiently detailed spec. Is code indistinguishable?
+[00:24:42.120] Same thing we have.
+[00:24:42.640] Yeah, but those are like
+[00:24:43.560] there are implementation specs like these are
+[00:24:45.200] they're talking about cases in which I am dictating an algorithm to you.
+[00:24:48.640] Right. Yeah.
+[00:24:49.920] And so yeah, if you give
+[00:24:51.160] I mean, the reason why I think specs are so powerful and people maybe
+[00:24:54.320] get a little bit like one shot by a good spec with verification is like
+[00:24:57.760] if you give the model a good way to get feedback on what it's doing
+[00:25:02.760] and to like hill climb against some objective
+[00:25:05.800] that it itself can measure, whether it's qualitative or quantitative.
+[00:25:08.800] Yeah.
+[00:25:10.320] It will move mountains for you.
+[00:25:11.760] And it's again, just like plans were a great way to get a model to work
+[00:25:15.160] unattended for longer.
+[00:25:16.720] A good spec and good. We call it like back pressure.
+[00:25:19.320] Right, is how do you give the model the ability
+[00:25:21.080] to get feedback on what it did without a human having to do that part?
+[00:25:24.360] Yeah.
+[00:25:25.160] You can get a lot more done and you can do more in parallel
+[00:25:28.080] because that thing's going to go work for two hours and go kick off another one.
+[00:25:31.240] Right.
+[00:25:32.240] I think the so I think I think that I'm entirely aligned with.
+[00:25:35.280] So like I think the difficulty as I interpret what you've sort of said
+[00:25:38.320] and sort of maybe like a bit of like
+[00:25:40.160] to my sort of self view over here as well, which is like in a perfect world,
+[00:25:43.560] you'd be able to express intent very well and you will to express
+[00:25:48.280] your verifiers right of like, how is it that you would verify that it's right?
+[00:25:52.000] Very well. And when you do, you don't need to review the code.
+[00:25:54.160] Like if you're if you're able to do that, then you will achieve
+[00:25:58.160] something in which you can allow autonomy, right.
+[00:26:00.040] Like what is the level in which you'll allow?
+[00:26:02.400] Like what do you need to see to be able to allow autonomy?
+[00:26:07.560] Yeah.
+[00:26:09.040] I mean, I think it's a great way to kind of like, prototype and understand
+[00:26:13.120] what's possible.
+[00:26:13.960] Like, I'm working right now.
+[00:26:15.080] I'm just a little experiment, and I don't actually think this is like a good.
+[00:26:18.480] There are.
+[00:26:19.040] I'm working on a, like, code search harness basically.
+[00:26:22.680] And I know like just more film built a custom
+[00:26:25.960] model just optimized for code search, called warp crap.
+[00:26:29.600] But what I have been working on is like a code search harness for Jeff.
+[00:26:35.240] So, like, can you get Jeff to select the next correct action,
+[00:26:39.240] like basically using Jeff's classifiers as tool calls of like, cool.
+[00:26:42.480] Next, I want to read this file or the final answer like, hey, yeah,
+[00:26:45.200] now we have enough context to answer the question or whatever it is.
+[00:26:48.360] And the problem is Jeff only has a 32 K or 60 4k like input context window.
+[00:26:53.320] I forgot I think 60 4k is.
+[00:26:54.600] Yeah, it's some asterisks on it.
+[00:26:57.880] But that means that you cannot put an entire code base in there.
+[00:27:03.680] Right.
+[00:27:04.600] Or you cannot say, here's all the information we have so far.
+[00:27:06.920] And so you have to get really creative about how you split things up
+[00:27:09.480] and how do you merge them back together.
+[00:27:11.160] And so I'm kind of taking like an evolutionary algorithms
+[00:27:14.320] sort of approach of like,
+[00:27:15.600] hey, cool, go do a bunch of subjects, have them try different things,
+[00:27:18.040] try them hill climb different dimensions of the Pareto frontier for cost and speed
+[00:27:22.760] and accuracy, and 45 different code search evals right now.
+[00:27:26.880] And more coming.
+[00:27:29.240] I'm not reading any of that code.
+[00:27:32.240] And if it actually works and it seems good, then I will probably like,
+[00:27:36.440] take the, like root of it and be like, cool, like explain this algorithm to me.
+[00:27:41.080] It turned that into a spec
+[00:27:42.680] and then re-implement that with actual like clean architecture
+[00:27:45.720] because there's just slop everywhere right now.
+[00:27:47.280] Like the code is just like doing all this crazy regex matching and splitting and,
+[00:27:51.960] so I think, I think not reading the code
+[00:27:54.880] in order to prove what's possible and to prototype is, is very feasible.
+[00:27:58.920] But, I mean, I think everyone says, I don't know, there was this thing
+[00:28:03.000] that people said in like the sonnet 3.5 opus for kind of Days,
+[00:28:06.840] which was like, yeah, sure, the code is slot,
+[00:28:08.760] but I'm not going to read it because like, by the time
+[00:28:11.120] I need to fix it, that'll be GPT seven's problem.
+[00:28:15.080] And the challenge is, is like, folks, we're at six.
+[00:28:18.240] And every really good builder I know has mentioned that like
+[00:28:21.920] like, you know, Astro got much better at computer use.
+[00:28:24.800] It got better at video game slop.
+[00:28:27.240] It got much better at blender, but it didn't actually
+[00:28:30.320] get that much better at writing code that is maintainable.
+[00:28:34.200] And I think this is because, to train
+[00:28:37.000] a model at something, you need RL environments for it.
+[00:28:40.360] And to have a good RL environment, you need a oracle.
+[00:28:43.840] You need a thing that can verify whether the the product meets
+[00:28:47.440] the needs of, of the user and maintainability.
+[00:28:51.200] You don't find out something as unmaintained until two months later.
+[00:28:54.920] There's no fast oracle for software maintainability.
+[00:28:58.680] I think as I was riffing about this with Addy Osmani,
+[00:29:01.040] who was at Google for a while.
+[00:29:03.080] And that was kind of his take is like, yeah, maintainability has no fast oracle,
+[00:29:06.680] and it doesn't seem like there was this benchmark.
+[00:29:09.200] Have you heard of Slop Code Bench?
+[00:29:10.760] I'll give you the very high, very high level, which is like
+[00:29:13.600] you give a model of code base, you give it a challenge, you say, hey, go,
+[00:29:16.720] go write this feature and then you have the code base and then you say, cool.
+[00:29:19.640] Now go write this feature and it has to inherit its code base at every step.
+[00:29:23.000] And it's like, now go write this feature.
+[00:29:24.400] And like basically what the benchmark shows is one is very under saturated.
+[00:29:27.720] Like I think GPT 5.5 in May got a 14.8%.
+[00:29:33.000] And they're getting ready to publish the results for Astra.
+[00:29:35.800] I think I was helping them run it with some inference and stuff, but like,
+[00:29:41.240] it's not my benchmark, by the way.
+[00:29:42.360] This is like a lab out of University of Wisconsin.
+[00:29:44.640] But we've been like, you know, providing providing runs and doing stuff like this.
+[00:29:48.440] And Astro got in the first run we did was like 16.3%.
+[00:29:53.600] So like the models are getting better in this dimension of like,
+[00:29:57.680] can they maintain a code base over time?
+[00:30:00.640] But not as fast as everyone thinks.
+[00:30:03.120] Like I said, we said GPT seven would solve all of this.
+[00:30:05.600] We're GPT six and like we are getting, we are RL ING and hill
+[00:30:09.400] climbing and other domains.
+[00:30:10.640] But like the frontier of like model, maintaining code base
+[00:30:13.720] over time does not appear to be getting better that quickly.
+[00:30:18.240] Hey everyone! Hope you're enjoying the episode so far.
+[00:30:21.240] Our team is working really hard behind the scenes to bring you the best guests,
+[00:30:25.320] so we can have the most informative conversations about agentic development,
+[00:30:29.560] whether that's talking about the latest
+[00:30:31.160] tools, the most efficient workflows, or defining best practices.
+[00:30:35.000] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:30:38.840] If you're enjoying the podcast and want us to continue to bring you
+[00:30:41.920] the very best content, please do us a favor and hit that subscribe button.
+[00:30:45.720] It really does make a difference and lets us continue to improve
+[00:30:49.000] the quality of our guests and build an even better product for you.
+[00:30:53.480] All right, back to the episode.
+[00:30:55.400] I love this conversation.
+[00:30:56.640] I think about this all the time.
+[00:30:58.240] I feel like the counterargument, to an extent,
+[00:31:02.000] is sort of this notion of sort of of maintenance agents.
+[00:31:05.960] Right. And I, I think in general, like through the Tessl journey. Right.
+[00:31:08.920] We started talking about sort of spec centric software development, spec
+[00:31:11.680] driven software development,
+[00:31:12.800] and then we moved into this sort of context and skills.
+[00:31:15.600] And to me, the the sort of the premise of that evolution was that
+[00:31:20.560] is maybe the acceptance
+[00:31:21.560] that when you think about an amazing developer on your team,
+[00:31:25.000] they're not amazing just because they know
+[00:31:26.560] what you are building, but also because they understand how you are building.
+[00:31:30.400] And really, to me, context is sort of the breadth of it, right?
+[00:31:32.920] I think like you look at skills,
+[00:31:34.480] for instance, they will have, I think three primary categories.
+[00:31:37.360] They will have
+[00:31:39.120] specs which are more about like how does your product
+[00:31:41.680] or another product work on it so they can build it.
+[00:31:43.680] They will have
+[00:31:47.760] workflows around how do you want to sort of perform some action on it?
+[00:31:51.320] And then they will have opinions, they will have policies,
+[00:31:53.400] best practices and like choices where it's not necessarily correct or incorrect.
+[00:31:57.600] It's just your choice.
+[00:31:58.600] We got in the room and we agreed this is our security policy, right?
+[00:32:01.400] This is our sort of a balancing act.
+[00:32:03.840] Or we say, I don't know, we had a couple of these at Sprout Social,
+[00:32:06.920] my first, my first gig out of college and they called.
+[00:32:09.720] They just had a list of things.
+[00:32:10.680] It was like,
+[00:32:11.280] do not wrap APIs in other APIs, exactly like minimize code traversal depth.
+[00:32:16.200] And my boss at the time, this guy Allen,
+[00:32:19.200] crazy smart dude, he had this thing of like three.
+[00:32:22.120] He called it three copies.
+[00:32:23.240] Press hard is like at the top of your end point.
+[00:32:26.520] You always have like a okay, log a thing and then send a metric
+[00:32:30.760] and then do another thing.
+[00:32:32.200] And every engineer wants to like collapse
+[00:32:34.080] those into a function like an abstraction, like send metrics.
+[00:32:38.040] And his take is just like, no,
+[00:32:39.640] just duplicate the three lines of code everywhere.
+[00:32:41.520] Because as soon as you put an abstraction over it,
+[00:32:43.640] it ends up like leaking a bunch of stuff and it becomes very complex
+[00:32:46.840] and it gets a bunch of responsibilities.
+[00:32:48.400] Just call the three different methods in line,
+[00:32:50.320] and this is what you do when you go to the car shop or the car mechanic, right?
+[00:32:53.800] You, you they say three copies pressed hard, you write down, you sign the thing,
+[00:32:58.400] and then one goes to management and one goes to, one goes to processing.
+[00:33:02.440] And one, one you keep.
+[00:33:04.560] And they've just figured this out that it's like,
+[00:33:06.280] no, we're not going to take one thing and then like make copies of it or whatever.
+[00:33:09.080] It's just like, yeah, it seems a little weird in archaic and like, okay,
+[00:33:12.080] you could be smarter about it.
+[00:33:13.360] Anyways. Yeah.
+[00:33:13.840] These are the kinds of opinions that, like, are very hard,
+[00:33:16.880] this taste that engineers have over five, ten, 20 years.
+[00:33:20.920] Yeah.
+[00:33:21.640] We haven't figured out how to put that in a model yet.
+[00:33:23.840] We just haven't figured out how to give models that that taste.
+[00:33:26.760] So I guess I guess what I'm asking is, okay, so you can't put that in the model.
+[00:33:30.480] And I don't know if they ever will because like models,
+[00:33:32.400] almost by definition they are generic intelligence.
+[00:33:34.520] The one you use, then the one I use are the same.
+[00:33:37.120] And so even if they are. More.
+[00:33:38.600] Or less smart, they're, they're, they're the same opinion.
+[00:33:41.760] You know, they will they will run.
+[00:33:43.480] You know, design is probably the easiest examples of that.
+[00:33:45.640] You know, like like you might like dark mode or you might hate dark mode, right?
+[00:33:48.760] Like, you know, you might sort of choose that.
+[00:33:50.120] And so
+[00:33:51.440] but but you can't put it into the model but you can put it into context.
+[00:33:54.720] And so you can define and if you've captured
+[00:33:56.800] and that to me is another planning aspect, right.
+[00:33:58.640] Like you've planned how you want to build.
+[00:34:01.080] And now you can run a whole bunch of
+[00:34:03.520] maintenance agents that would run on that code base,
+[00:34:06.240] that would review code that was created by an implementer agent
+[00:34:10.520] who took in more like feature requirements.
+[00:34:13.040] Right? Like sort of requests on it.
+[00:34:14.480] And it will ensure and you codify your taste, your preferences, I guess.
+[00:34:18.920] Why isn't that the way to achieve
+[00:34:23.200] a non or a low slop code
+[00:34:26.800] and kind of invest in
+[00:34:28.080] that path versus reviewing the code?
+[00:34:31.960] Yeah, I mean, I could see I could see a world where, I mean,
+[00:34:34.960] the way this usually starts is people just add one end up adding
+[00:34:39.080] one after another after another of like bullet points into their cloud empty.
+[00:34:42.360] Other agents MD of like always do this and never do this.
+[00:34:45.040] And then you end up with a bunch of instructions
+[00:34:46.480] and like most of them, don't get followed because it's too much context.
+[00:34:49.720] And so like, yeah, you could probably I mean,
+[00:34:51.520] so we do this thing internally at HumanLayer where we have,
+[00:34:54.640] deterministic detectors for some of them,
+[00:34:58.080] some of them are non-deterministic but very simple of like,
+[00:35:00.720] we don't like this pattern.
+[00:35:02.120] The desired end state looks like this. Yeah.
+[00:35:04.520] There's a bunch of code that looks like that. Yeah.
+[00:35:06.480] Whether it's like react doctor deterministically pulling warnings out
+[00:35:10.080] or oxlint pulling warnings out, it's like every night we have 4 or 5 different,
+[00:35:16.640] people call them agents.
+[00:35:17.640] It's the same harness with a different user message, basically like five agents.
+[00:35:22.480] If you if you if you must.
+[00:35:23.920] Have sort of a skill powered workflows or sort of prompt power workflows.
+[00:35:28.240] Exactly.
+[00:35:28.880] And they run on crons and GitHub actions.
+[00:35:31.000] And every morning we wake up to five pull requests
+[00:35:33.600] that make our codebase a little bit better along some dimension.
+[00:35:37.440] Yeah.
+[00:35:39.200] I think the challenge is, is like,
+[00:35:42.160] you have to know exactly like you said, you have to know exactly what you want.
+[00:35:44.480] You have to codify all of your opinions somewhere.
+[00:35:47.160] You probably can't be in your agents empty. Maybe you can put them in a scale,
+[00:35:49.920] or you can break them up into a set of skills.
+[00:35:51.560] But the the more opinions that you have, the more clever you have to be.
+[00:35:54.920] This is context engineering.
+[00:35:55.960] This is always the thing is, like the more clever you have to be about
+[00:35:58.440] like splitting them up and parallelizing and kind of like orchestrating
+[00:36:02.640] multiple different things to go do this. Yeah.
+[00:36:05.000] So I get the point around sort of the needs
+[00:36:06.720] to review the codes today because of the limitations.
+[00:36:10.040] And as I mentioned in Tessl, we still sort of review the code,
+[00:36:12.880] but to an extent,
+[00:36:13.760] sort of the bet that we're making in our own internal software factory
+[00:36:17.440] is that really it's all about extracting correctness out of observations.
+[00:36:21.320] And so what we do is we take today
+[00:36:24.160] maybe some amount of sort of a risk or burden
+[00:36:27.960] that really forces the process of not writing
+[00:36:31.520] the code and sort of reviewing the code, and then you interact with the systems.
+[00:36:35.240] There's exceptions to that.
+[00:36:36.040] There's asterisks next to it, but by default
+[00:36:38.720] it has to be kind of a feedback that you provide about what is wrong,
+[00:36:43.160] you know, as part of pull requests, as part of systems
+[00:36:47.280] and sort of these sort of continuously,
+[00:36:50.560] improving skill powered workflows.
+[00:36:52.680] So like these feedback loops that, that really help feed back into the system.
+[00:36:59.240] And I think there's a good case to be made that today we are
+[00:37:04.080] maybe making more effort
+[00:37:05.800] in sort of in sort of investing and honing those skills
+[00:37:10.080] on the, on the sort of the bet, which is always TBD
+[00:37:14.360] that it will it will set us up
+[00:37:16.840] better, and we're sort of seeing some compounding speed out of that.
+[00:37:19.920] So I don't know how how you think about that
+[00:37:23.320] and how does that align or conflict with like reviewing the code.
+[00:37:27.240] Yeah, I mean, we are very bullish on this compounding thing.
+[00:37:29.720] I think probably like the anti-pattern, I've seen a lot of orgs
+[00:37:33.760] and most of them are probably larger than yours or mine is
+[00:37:36.880] is someone gets excited and they say, I'm going to build the software factory.
+[00:37:40.040] And they kind of throw everything out and they say, cool,
+[00:37:42.240] let me design this whole thing from scratch, and it's
+[00:37:43.800] going to have this compounding thing,
+[00:37:44.920] and we will never have to read the code and whatever it is.
+[00:37:46.800] And like, I think that's like any piece of software,
+[00:37:50.080] the big design upfront is like is always going to lose to the like, iterate fast
+[00:37:55.360] and get 1% better every single day, or even 1% better every single week.
+[00:37:59.800] So I think like the idea of having having a process
+[00:38:03.720] thing is, is like, you cannot
+[00:38:04.760] afford to put slop code in your code base because every,
+[00:38:07.760] every time you let bad code in, you are making the entire system worse.
+[00:38:12.280] People talk about software. Yeah.
+[00:38:14.480] Yeah, people talk about software factories.
+[00:38:16.480] But the there is a big difference between a traditional factory
+[00:38:20.440] and a software factory.
+[00:38:21.480] And that like in a factory, if a car comes out at the end of the line
+[00:38:24.480] and it's bad, like, that's cool, whoever was going to buy
+[00:38:27.680] that car or whatever is going to is going to deal with it.
+[00:38:29.800] But like if you ship bad code in your software factory,
+[00:38:34.000] it degrades every future piece of work that goes through that factory,
+[00:38:38.240] because there's more bad patterns for the model to see. So like,
+[00:38:42.320] you do
+[00:38:43.160] want to continually being making progress towards,
+[00:38:47.040] you have to want to have some ramp
+[00:38:48.240] where you can make the factory better every single day or every single week.
+[00:38:52.320] But it's like the number one priority is like,
+[00:38:54.680] stop the stop the bleeding or stop the,
+[00:38:58.080] you know, close the windows on the house before you start conditioning.
+[00:39:01.040] You have to.
+[00:39:02.000] Yeah. Yeah, exactly.
+[00:39:04.680] But no, this idea of, like, cool.
+[00:39:06.480] You know,
+[00:39:07.040] we have humans in the loop whose job it is to make sure that the code is good
+[00:39:10.520] and that nothing goes into prod or into the code base.
+[00:39:12.760] That is like going to make the quality worse and going to make future
+[00:39:16.120] quality worse, because the agent will see that and think it's okay.
+[00:39:19.440] But a byproduct, the kind of like exhaust of that process
+[00:39:23.400] is you get a ton of like real examples that you can use
+[00:39:28.120] to feed improving the factory and make it a little bit better.
+[00:39:30.960] Like anytime a human has to put a comment on an agent written PR and say, hey,
+[00:39:34.720] this is wrong, we don't do it this way, agent goes to fix it, it's fine.
+[00:39:38.120] You need to be like siphoning that off every time someone sends.
+[00:39:41.440] Even in a prompt, you should be reviewing the session traces.
+[00:39:44.400] Maybe not reading them verbatim, but analyzing the session traces
+[00:39:47.920] of everyone on your team and saying, where are people getting frustrated?
+[00:39:50.920] Where are they telling the model they did something wrong,
+[00:39:53.360] and then figuring out how to improve the entire system, whether it's
+[00:39:57.080] the base skills, whether it's the code review skill, whether whatever it is,
+[00:40:01.600] so that, you know, if you're not getting better, then you're getting worse.
+[00:40:04.480] And so, yes, I 100% agree on this idea of compounding engineering or,
+[00:40:08.360] or whatever you want to call it, of you.
+[00:40:10.720] You do always want to be working on the thing that builds the thing.
+[00:40:13.960] And if you do a good job of this, then you're sliding scale
+[00:40:16.760] of like you're spending less and less time actually reviewing individual code
+[00:40:19.840] and more and more time doing things that are going to improve you.
+[00:40:23.480] You're basically shifting
+[00:40:24.280] from like caring about your position to caring about your velocity.
+[00:40:27.400] Yeah, yeah. From kind of building the car to building the factory.
+[00:40:30.040] Right. You're sort of producing that.
+[00:40:31.960] And how so? So that's a really good point, though.
+[00:40:34.440] I think one takeaway from what you're saying
+[00:40:35.920] is like, yes, you should improve the sort of the context
+[00:40:39.880] that guides the factory and the production,
+[00:40:42.560] but you should also remember that
+[00:40:45.640] one of the primary,
+[00:40:46.520] if not the primary context that eventually guides
+[00:40:48.520] the factory is the actual existing code base.
+[00:40:50.600] And so if that code base is full of slop, then then the reality is that
+[00:40:55.480] that will be a pattern because the agents
+[00:40:57.360] somewhat legitimately default to mimicking the,
+[00:41:01.160] the, the patterns that they see, that they see within the code.
+[00:41:05.000] And so if you if you let that go sideways too much
+[00:41:08.880] and it's sort of a counter, a counter view to, to
+[00:41:13.080] to saying that tech debt is deflationary
+[00:41:15.320] and that you can accumulate that today.
+[00:41:19.120] I mean, that would maybe be true if literally every pull request
+[00:41:22.960] that you're creating, you don't take in any code,
+[00:41:25.400] you just sort of produce it from scratch.
+[00:41:28.440] But that is not realistic because you don't actually have that. So,
+[00:41:32.440] yeah. So really good point. Maybe.
+[00:41:34.480] So going a little bit more future, looking a little bit
+[00:41:37.800] and think about what are the artifacts that might stick around.
+[00:41:41.360] So like how long do you think code will still be the source of truth.
+[00:41:45.960] Like we're talking about rebuilding, replacing, editing increasingly,
+[00:41:49.600] but we still end up kind of capturing the actual decisions in the code.
+[00:41:54.320] Do you foresee that two years from now that is that is still the case,
+[00:41:59.280] or do you think new artifacts emerge that are the primary
+[00:42:03.240] and the code is more like the bytecode that you've produced, right?
+[00:42:09.040] Yeah. I don't I don't want to predict the timeline.
+[00:42:10.720] I think a lot of people's predictions have been
+[00:42:13.840] either way too way too conservative or way too liberal.
+[00:42:16.960] And, you know, a lot of work
+[00:42:20.080] with, you know, fortune 500 companies, publicly traded companies.
+[00:42:23.080] You know, large private companies.
+[00:42:24.360] And like the, the, the
+[00:42:26.520] the reason why they love working with us is because we're like, cool.
+[00:42:30.680] Like do not mortgage or code base for the future.
+[00:42:34.200] Like, yes.
+[00:42:34.920] Like there may be like a 1% chance that you miss out on,
+[00:42:38.880] you know, some crazy, crazy upside.
+[00:42:41.880] But we are going to let you move as fast as possible
+[00:42:45.040] without without giving up control or giving up taste.
+[00:42:49.360] I was at a dinner in San Francisco probably six weeks ago.
+[00:42:52.000] And, you know,
+[00:42:53.200] we were talking about software factories and loops, engineering or whatever
+[00:42:56.160] we were calling it back then.
+[00:42:57.240] And this question was like, cool, raise your hand of AI.
+[00:42:59.960] Is writing 100% of your code like,
+[00:43:01.400] everybody hand up, raise your hand if you're still reading the code.
+[00:43:04.520] And it was like 50% of the people.
+[00:43:06.200] The other 50% have been like, no, I made 70 linter rules custom by hand,
+[00:43:09.760] and I caught every single anti-pattern and whatever,
+[00:43:12.240] whatever your approach is, that gives you the confidence to ship it.
+[00:43:16.080] But then the question came is like, how long until we don't review the code?
+[00:43:19.600] And I was like, yeah, maybe one two years.
+[00:43:21.600] It's possible that that could be the case.
+[00:43:24.600] And then there was a really interesting question.
+[00:43:26.240] I was like, do you ever think there will be a time
+[00:43:29.040] when you don't review anything at all?
+[00:43:32.200] And, one of the founders there,
+[00:43:35.160] who is a veteran of a lot of this stuff,
+[00:43:38.040] kind of said one of the most interesting things that I think about almost every day
+[00:43:42.360] now, which is like there will probably always be alpha
+[00:43:45.960] in reviewing something.
+[00:43:48.960] We don't know what it is.
+[00:43:50.440] I can't say what it's going to be.
+[00:43:51.400] It's probably going to change over the next two years.
+[00:43:53.520] But if you don't review anything,
+[00:43:56.360] then you're just letting the AI cook and then you're going
+[00:43:59.520] to get the same product, the same email,
+[00:44:02.920] the same company that everybody else gets.
+[00:44:06.800] And so there has
+[00:44:07.560] there will always be something if you want to rise above the median.
+[00:44:12.080] And not just I think I think like the, the generic like token form of
+[00:44:16.880] just like, hey look, yeah,
+[00:44:17.720] we spend tokens and we create value is like very undifferentiated.
+[00:44:21.040] So I think, I think there will always be a place for smart, creative,
+[00:44:24.640] thoughtful, caring humans to be reviewing something.
+[00:44:28.960] For now, I think it's still the code, but eventually it might be something else.
+[00:44:31.280] I don't know when or what it's going to look like,
+[00:44:32.960] but there will always be something to review,
+[00:44:34.480] and there will always be a thing that you can add to the add to the picture.
+[00:44:38.360] Yeah, yeah, I think we're sort of seeing a lot of that with the with like a Claude
+[00:44:42.320] presentations, you know, for a while, like,
+[00:44:45.480] you know, everybody was amazed by how, how, how great it was that Claude like,
+[00:44:49.320] at the breakthrough, like it was creating these good looking presentations.
+[00:44:52.400] And now every single presentation looks like a Claude presentation.
+[00:44:55.920] And you,
+[00:44:56.520] you just sort of yearn for for something that looks a little bit different.
+[00:45:00.760] But how.
+[00:45:03.240] So so I agree with that.
+[00:45:04.280] I think I think you have to differentiate.
+[00:45:07.080] You have to capture those.
+[00:45:08.240] I do muse, though, about a better way to capture preferences.
+[00:45:12.960] And I,
+[00:45:14.480] I think a lot about sort of outsourcing.
+[00:45:16.680] Right.
+[00:45:16.840] You have a lot of like great companies that have sort of outsourced
+[00:45:20.560] their whether it's their sort of
+[00:45:23.800] sort of software stacks or even more so, like a lot of manufacturing companies
+[00:45:27.280] that they don't actually manufacture everything they design
+[00:45:30.160] the thing that will be manufactured, someone else is producing it.
+[00:45:33.640] And so they they really kind of define
+[00:45:36.440] the outcomes, but they work with these entities.
+[00:45:39.320] I guess, does that analogy kind of resonate with you, which is like
+[00:45:43.840] create artifacts that document
+[00:45:47.200] preferences, opinions, taste?
+[00:45:50.200] And, and for the most part,
+[00:45:52.440] outsource implementation to the agents.
+[00:45:56.880] Yeah.
+[00:45:57.160] So two things.
+[00:45:57.680] Yeah, I think I think absolutely like people say, oh, the new mode is taste.
+[00:46:02.280] I think that's really blurry.
+[00:46:03.200] But like I do think it's safe to say like the most you can have
+[00:46:06.840] is understanding the problem better than anyone else.
+[00:46:09.960] Like knowing what features to ask the factory for.
+[00:46:12.200] Understanding your customers better than anyone else is incredibly valuable still.
+[00:46:17.680] And that's again, that's that's where your you can context engineer
+[00:46:21.480] the agent in a way that none of your competitors can.
+[00:46:23.800] If you understand the problem better.
+[00:46:25.120] I'm about taste like part of me feels that taste
+[00:46:28.400] is just a preference that you haven't bothered writing down.
+[00:46:31.960] You know, it's just like a know it when I see it type of thing.
+[00:46:35.640] Is, is,
+[00:46:37.440] is something that just okay, like
+[00:46:38.960] get the agent to see it often enough and it will capture it.
+[00:46:43.400] It's still it still is a differentiator.
+[00:46:46.480] Like it is still the case that if your written down taste
+[00:46:49.960] is better than my written down taste for some purpose.
+[00:46:55.080] And so for those purposes, your product or your output will be better than mine.
+[00:46:59.080] And so there's still there's still value in it.
+[00:47:01.320] I still think taste should be codified.
+[00:47:02.720] And I think still it is still think that it is the differentiator.
+[00:47:06.880] But it is it's not this elusive human versus AI difference.
+[00:47:11.280] It's just a voice choice piece.
+[00:47:15.920] Well, what what about you, man? Like what?
+[00:47:17.920] What do you think the future of reviewing things or building or factories?
+[00:47:23.600] Like what what what spicy takes to you have or or mild takes?
+[00:47:27.520] I don't know, like,
+[00:47:28.880] I think there's, there's, there's the market for spicy
+[00:47:31.080] takes his way to frothy right now.
+[00:47:32.680] And I actually love a more middle of the road of like
+[00:47:35.720] look yes
+[00:47:36.160] I think this is directionally correct, but actually like it's not as crazy as
+[00:47:39.440] everyone says it is because everyone is incentivized to,
+[00:47:42.120] you know, engagement farm on the internet and you can actually you get paid money
+[00:47:45.640] if you get people excited about something,
+[00:47:47.280] regardless of regardless of whether it's true or not.
+[00:47:49.960] But what are your spicy or or otherwise takes on, like where this is going?
+[00:47:54.520] I've got a fairly kind of a skill or context centric view of the of the world.
+[00:47:59.160] Like, I think the fact that, like, I think software engineering is a creative
+[00:48:04.880] profession.
+[00:48:05.360] Like, you are creating software and the fact that it has engineering in
+[00:48:09.160] the name is a mistake of history.
+[00:48:10.440] Like it just happens to be that that you had to be an engineer.
+[00:48:13.760] You have to be an engineer to be able to create those.
+[00:48:16.440] And really what we want is to be able to capture taste
+[00:48:20.080] and preferences and balances.
+[00:48:23.880] And I think those will be the kind of units of code,
+[00:48:26.520] if you will, that you are, that you are building.
+[00:48:29.600] I said, this is my definition of what secure is, of what
+[00:48:33.000] good design is, of what even the specifics of subsequent like.
+[00:48:36.120] You can still get granular or not in terms of its preference
+[00:48:40.160] and even even some elements of like how controlling you are, whatever.
+[00:48:43.240] Whether you're Apple and like you want to design everything
+[00:48:45.440] down to the sort of the last bit and gram, or whether you're sort of
+[00:48:49.400] fine with some more sort of generic OEM component in there.
+[00:48:53.280] And so those are your choices, and those units will still be developed
+[00:48:56.600] in the sense that you still need to know that
+[00:48:59.800] which ones you are using and which ones depends on what.
+[00:49:02.640] And you still need evals and tests to be able to know that when you modify them,
+[00:49:06.560] they do not regress
+[00:49:07.800] and it's still need to observe them and sort of
+[00:49:09.560] see how they work and duplicate them and align them when you have multiple
+[00:49:13.280] team members creating them.
+[00:49:14.480] And so like,
+[00:49:15.160] I guess my belief is that software development would revolve around skills
+[00:49:18.720] and that the role of code will be will diminish
+[00:49:22.880] over time, that it has to be sort of duplicate.
+[00:49:24.840] I don't know when it goes away.
+[00:49:26.920] It's more about, we've referred to at the beginning of Tessl,
+[00:49:30.360] we've had the sort of the notion of a spec and a shadow spec,
+[00:49:33.200] sort of the spec being the thing that you create
+[00:49:34.880] and this sort of shadow spec being the capturing of the decisions.
+[00:49:38.320] What is the difference between the shadow spec and code?
+[00:49:40.840] I don't know, it's like degrees of freedom for it.
+[00:49:45.360] And today you already do that, right?
+[00:49:47.120] You already use Java and you're delegating garbage collection.
+[00:49:49.880] And it happens in different ways on different systems.
+[00:49:52.520] And you don't care because you trust that it is good enough.
+[00:49:55.960] And so so I think it's sort of going into into that world.
+[00:50:00.120] And the conversation we have right now is really about what is the journey.
+[00:50:04.200] Towards it.
+[00:50:04.760] Right. You know, and what should you build today.
+[00:50:07.240] So you're not, you know, left stranded for tomorrow,
+[00:50:10.760] but that still actually gets you somewhere today.
+[00:50:13.440] That balance has been tough. Yeah.
+[00:50:16.480] And so I won't I won't say software engineer.
+[00:50:18.720] Maybe I'll just say builder.
+[00:50:19.640] But like, as a builder, as a person who wants to create things of value,
+[00:50:24.000] I think right now your, your two biggest bottlenecks are
+[00:50:28.400] how do I let the model pull as,
+[00:50:31.640] as efficiently and easily and like, mentally like pleasant for me the human.
+[00:50:35.960] How do I enable the model to brain drain me as quickly as possible
+[00:50:39.760] on all the things that are my tastes and preferences and things?
+[00:50:43.480] And then I think, I think we're in alignment there.
+[00:50:45.560] And then if you're if you're still reading the code,
+[00:50:47.280] there's like a corollary of what is the fastest, most efficient,
+[00:50:51.600] most visually effective way for a model to tell me what it has done.
+[00:50:56.840] Like, yeah, maybe I might not read every line of code.
+[00:51:00.040] But, between if I'm reading every line of code now
+[00:51:03.560] and someday I'm reading a spec
+[00:51:05.000] like between there, there will be, you know, ladders up of like, cool.
+[00:51:08.880] Don't tell me the code, but give me, give me something that is,
+[00:51:10.960] you know, 50% faster or 80% faster than reading every line of code.
+[00:51:15.080] That gives me almost as much confidence or almost as much understanding.
+[00:51:18.600] How can you what are the like patterns where we can leverage?
+[00:51:22.440] How do humans think and understand things
+[00:51:25.240] to both get that into the model's context as quickly as possible,
+[00:51:29.120] and then let the model context engineer the human of like,
+[00:51:31.520] what's the fastest way that I can explain to this person
+[00:51:34.080] what has been done so they can be confident that it works?
+[00:51:36.880] Yeah, yeah. No, that's that's well said.
+[00:51:39.240] So maybe one last question a bit along those veins.
+[00:51:42.920] I think the, the advice you give today is different than the advice you gave
+[00:51:46.160] 12 months ago.
+[00:51:47.000] Right.
+[00:51:47.240] Sort of seeing the the evolution of the surrounding.
+[00:51:50.960] What's your bet
+[00:51:51.680] on what aspects of your advice will change 12 months from now?
+[00:51:55.720] Yeah, that's a great question.
+[00:51:57.800] And there are some things that we got right almost, almost 18 months ago
+[00:52:02.160] that I have not changed. Right.
+[00:52:03.200] Like the context engineering thing I think will always be true first,
+[00:52:06.640] as long as we're using, as long as we're using transformer based LLMs.
+[00:52:09.800] That's just like the math of how they work.
+[00:52:11.520] And you will get better quality if you use less context.
+[00:52:14.040] So you'll always be able to like engineer things
+[00:52:16.880] to get engineer things to get better results.
+[00:52:20.280] Will change in the next 12 months, I think.
+[00:52:25.760] I spent a lot of time thinking about infrastructure.
+[00:52:28.840] I think the entire software factory, this is going to be like AI advice,
+[00:52:32.840] but I think the, like, entire software factory stack will decompose
+[00:52:36.920] into good interfaces and open components, kind of like what we saw happen
+[00:52:40.400] in the Kubernetes world in the last, like, you know, ten the last decade of like
+[00:52:44.880] basically like the more open and portable you can make these ideas,
+[00:52:49.800] the more likely they are to get broad adoption,
+[00:52:53.480] and you need a certain amount of momentum
+[00:52:56.640] to actually become the default solution.
+[00:52:59.840] Just like what happened to VMware, just like what happened with AWS,
+[00:53:03.040] what happened with Kubernetes?
+[00:53:05.680] And so I, I think a lot of these
+[00:53:07.880] like walled garden, like you can build a software factory entirely on Claude.
+[00:53:11.800] You can use Claude Code as the harness.
+[00:53:13.280] You can use Claude automations as your orchestrator.
+[00:53:15.600] You can use Claude's managed code sandboxes,
+[00:53:18.560] managed agents, whatever they call it, as your runtime environment.
+[00:53:22.760] And you can kind of do this whole vertical stack.
+[00:53:24.720] And I just I think that the advice I will keep
+[00:53:27.960] giving people today is like,
+[00:53:31.160] I think dev tools and dev tools stacks are probably going to stay
+[00:53:34.760] or become even more open, open source, open protocols,
+[00:53:38.280] whatever it is.
+[00:53:41.360] And so I would
+[00:53:42.280] I would encourage people to prepare for that.
+[00:53:45.640] And you can build anything now,
+[00:53:49.480] don't, don't totally know about on the code,
+[00:53:52.240] especially if you're building critical systems.
+[00:53:54.200] Amen to that.
+[00:53:54.800] In terms of the sort of the open composable systems, I had a,
+[00:53:58.480] early on on the podcast,
+[00:53:59.960] we had Matt from Netlify, the founder of Netlify, and
+[00:54:04.120] he was kind of making this passionate case, which I relate to,
+[00:54:06.880] which is that the web, you know, like had elements of it
+[00:54:10.200] that was sort of closed that eventually the sort of the open web one.
+[00:54:13.080] And I think we're all better off for it.
+[00:54:14.520] And I think similarly, in the kind of the world
+[00:54:15.960] of agents, the closed echo systems are very tempting
+[00:54:20.040] because they they naturally align and all the different pieces
+[00:54:22.920] can come together on it.
+[00:54:23.920] But, you know, sort of this belief that eventually open and composable
+[00:54:27.360] leads to greater innovation and greater flexibility for organizations.
+[00:54:31.600] And so I think this composability will will win over the ordering.
+[00:54:36.680] That's a that's a whole different ball game.
+[00:54:39.320] Yeah.
+[00:54:39.680] What what's what which chips are going to fall in what order.
+[00:54:42.080] Or dominoes I suppose. And
+[00:54:45.320] yeah.
+[00:54:45.560] How how much of, how much of a lead do these sort of frontier?
+[00:54:49.480] The factories, the devons, the OpenAI, the Anthropic of the world.
+[00:54:54.160] How much of a lead do they actually have?
+[00:54:57.520] And how how it's like
+[00:54:59.960] for them, it's like they are they're going to war every single day.
+[00:55:02.840] Because I think that open is catching up faster than anyone is
+[00:55:07.920] ready to notice yet.
+[00:55:10.880] Dex, thanks a lot for the great conversation here.
+[00:55:13.320] Super, super fun. And, you know, deep insights.
+[00:55:15.720] Also things in general for like sharing the whole journey here
+[00:55:18.800] and the learnings and the practices along the way on it.
+[00:55:20.760] I think we will learn as a community.
+[00:55:22.160] And you're definitely sort of a chief amongst the educators over there.
+[00:55:25.120] And that as much appreciated. Oh, and thank you man.
+[00:55:27.840] I am huge fan of of of you and the team.
+[00:55:30.880] And you guys were super early to this game.
+[00:55:32.560] And you have I mean Patrick is like been a fan
+[00:55:35.760] boy of his since he invented DevOps days in like 2009 or whatever.
+[00:55:40.200] So you guys clearly have a really good squad.
+[00:55:42.080] And like I'm excited to see what you guys are cooking.
+[00:55:44.160] Thanks and thanks everyone for tuning in and I hope you join us for the next one.
+[00:55:49.080] Yeah.
+[00:55:49.440] Native dev is brought to you by the package manager for Skills and Context.
+[00:55:53.760] Your hosts are Guy and me, Simon Maple.
+[00:55:56.880] Our producer is Tom Dowler.
+[00:55:58.680] The AI native.
+[00:55:59.560] Dev is not just a podcast, it's a community.
+[00:56:02.080] And we host monthly meetups at the Tessl offices in central London.
+[00:56:05.760] Visit Tessl IO forward slash community to learn more and I hope to see you there.

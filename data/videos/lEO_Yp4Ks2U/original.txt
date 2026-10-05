@@ -1,0 +1,617 @@
+[00:00:01.160] So imagine you are a software engineer and,
+[00:00:03.720] you are maintaining a code base, and you developed a new context.
+[00:00:08.160] I don't know, a Claude Code skill, for example.
+[00:00:10.200] How do you know if it's effective?
+[00:00:11.760] How do you test it?
+[00:00:23.240] So, yeah, I'm.
+[00:00:23.840] I, research engineer at Tessl.
+[00:00:26.240] And I'm building, evaluation platform for agents.
+[00:00:30.080] What it means is, basically, we want to allow to
+[00:00:33.320] evaluate the performance of any agents, of any model
+[00:00:37.080] in different code bases, in any code base, basically with any context,
+[00:00:41.520] make it an appropriate, proprietary code base or open source code base,
+[00:00:45.360] making it evolves, available for anyone so that you can build, benchmarks.
+[00:00:49.880] And my talk will be about
+[00:00:51.720] the main concepts, like the main building blocks of such platform,
+[00:00:55.560] in case you want to develop something like this yourself.
+[00:00:59.400] Or reuse some of those blocks.
+[00:01:01.960] And why, why it's art.
+[00:01:04.200] And what are the main challenges?
+[00:01:05.680] And so on specifically, we'll cover like in three things.
+[00:01:11.360] First of all, why vaults matter today?
+[00:01:13.040] Because it's a very hot topic.
+[00:01:14.360] Every Frontier Labs talk is,
+[00:01:15.840] evolves second again, like, what are the core concepts?
+[00:01:19.760] What are the main building blocks?
+[00:01:21.320] And third, how we approach these tasks now, because you're such a platform
+[00:01:25.920] and how can you use it, and integrate in your code base if you're interested.
+[00:01:30.480] Cool.
+[00:01:30.840] But before we dive into specifics, I want to make sure that we are all
+[00:01:35.280] team page, and we all understand what does it mean to evaluate an agent.
+[00:01:39.760] So I want to have a quick please,
+[00:01:41.720] please raise your hand if you know or think you know.
+[00:01:45.080] What does it mean to evaluate an agent?
+[00:01:49.440] Okay.
+[00:01:49.960] Opinions split.
+[00:01:51.000] Most people decided not to raise a hand.
+[00:01:52.840] That means that my next slide will be super useful, because it's,
+[00:01:55.840] actually a definition more formally, evaluation or evaluated,
+[00:02:00.760] means that it's a test for your agent system.
+[00:02:05.360] A test means input a task like a prompt.
+[00:02:08.480] A genetic system, in our case, will be always the agent, like cloud code
+[00:02:12.360] or codex or whatever, which takes this prompt at task runs.
+[00:02:17.200] It generates a solution.
+[00:02:18.600] It might be a file, it might be a full application.
+[00:02:21.560] But then on top of it, there is a grading logic,
+[00:02:24.160] like verification or test unit tests or rubrics
+[00:02:28.440] or alabamas a judge which decides whether it's a good solution or not.
+[00:02:32.200] So you get a signal whether your, input was successfully processed
+[00:02:37.320] and you get a meaningful result or something.
+[00:02:39.560] You know, it doesn't matter.
+[00:02:41.280] Well, it's important to, to know
+[00:02:45.440] that evals is the core concept of machine learning applications in general.
+[00:02:50.040] But no one cares about this before there off the LM,
+[00:02:52.880] it was only in the research, environment on the care.
+[00:02:56.920] Only the people who, who worked on papers,
+[00:03:00.600] but now immediately like Frontier Labs markets, they are new models
+[00:03:05.800] based on the results of the evolves, it becomes a hot topic.
+[00:03:09.760] And every, every time we see something is released,
+[00:03:12.880] big labs main the the benchmarks and evaluations.
+[00:03:17.440] And I'm talking right like recent GPT 5.4 when they released the new model,
+[00:03:22.720] the first thing which was on their main page was comparison of the new model
+[00:03:26.960] with the previous one
+[00:03:28.320] against some of the benchmarks where they said, hey, we improve the capabilities.
+[00:03:34.080] Again, I'm not drawing.
+[00:03:35.160] So that's 4.6.
+[00:03:36.160] When it was dropped, they launched like 20.
+[00:03:39.080] That's just like, a quick preview of benchmarks showing our new model
+[00:03:44.880] is better than our previous generations, but it's also better than other, vendors.
+[00:03:49.640] And we've done in previous talk like mentioned that, Google recently
+[00:03:53.400] dropped, Android benchmark to specifically assess the capabilities
+[00:03:56.600] of how agents perform in their, in, in the Android applications.
+[00:04:02.280] So evaluations are driving opinions about how good are the models,
+[00:04:06.600] how capable they are.
+[00:04:07.840] And sometimes, define whether the people will use the model or not.
+[00:04:12.920] But that's a different story.
+[00:04:15.960] But the next thing, the next important thing is that.
+[00:04:18.920] Okay.
+[00:04:19.680] Big labs marketing or,
+[00:04:23.400] you know, promote their models through for these, benchmarks.
+[00:04:28.200] But like, for me, as a consumer of the model, does it
+[00:04:31.880] matter like, does it matter to have a customer?
+[00:04:34.200] Well, if I ask you, like, imagine
+[00:04:37.560] you had a benchmark specifically for your code base.
+[00:04:40.960] Does it resonate with you?
+[00:04:42.120] Do does it like, feel like it's something which you would value?
+[00:04:45.480] And it's not that time for another quiz.
+[00:04:47.080] Like to raise a hand if you think so. Yes or no?
+[00:04:49.800] Please respond.
+[00:04:52.800] Okay.
+[00:04:53.040] Actually, most of the people are convinced that it's true, but I have another slide
+[00:04:57.160] to convince even further, depending on what role, you have
+[00:05:01.160] in your team, their reason for why you've matter for you
+[00:05:05.000] in your day to day might be different.
+[00:05:06.440] So imagine you are a software engineer and,
+[00:05:09.600] you are maintaining a code base, and you developed a a new context.
+[00:05:14.280] I don't know, a Claude Code skill, for example.
+[00:05:16.320] How do you know if it's effective?
+[00:05:17.880] How do you test it? Right.
+[00:05:19.320] So the reason, the only way to do it reliably, without wipes, is
+[00:05:23.760] to actually have some reproducible events, like let's go into the next level.
+[00:05:28.680] If you're a VP of engineering and you're caring
+[00:05:31.200] not about one code base, but about your whole organization,
+[00:05:33.840] you want to understand where the agents are failing, right?
+[00:05:36.800] To understand like what are the main bottlenecks
+[00:05:39.920] and, what are the main like problems with agents?
+[00:05:43.120] So you're caring about the whole aggregation.
+[00:05:45.840] And the only way to know how to do this is you know, get evals.
+[00:05:49.520] even further.
+[00:05:50.280] For example, a new Chinese lab,
+[00:05:53.520] dropped a super capable open source model, and it's cheaper.
+[00:05:57.440] It's faster because it's open source. And you're making the decision.
+[00:06:00.120] Do you want to swap, your expensive vendor model, with this or not?
+[00:06:06.120] To answer this question, the only way to do it is like, do some reliable tests.
+[00:06:10.480] Okay?
+[00:06:11.040] Assuming I convince you that you've never, we will continue
+[00:06:15.440] with these further.
+[00:06:16.840] In the in the talk, the next piece of the talk will be about.
+[00:06:20.200] Okay, what are the main building blocks, how to build such evaluation platform.
+[00:06:25.160] And the very first building block of it is,
+[00:06:29.040] to decide which, school of thought do you accept?
+[00:06:33.040] Are you on the going
+[00:06:35.920] with the VIP's group who are like, every time new model
+[00:06:39.000] is released, every time someone writes something and right, it decides to.
+[00:06:42.480] Okay, I will jump to a new solution or you're already into a systematic,
+[00:06:47.240] you know, evaluations and studies and monitoring.
+[00:06:50.560] So you're ready to invest into,
+[00:06:53.520] into,
+[00:06:54.960] analyzing how the models perform over the time.
+[00:06:58.280] So it's a fundamental question, because if you're in the first team,
+[00:07:01.520] then probably it's
+[00:07:02.320] okay for short term solutions when you're just like in the developer.
+[00:07:06.720] But when you're talking about the organizations and, long term investment
+[00:07:10.880] into the agents, it's hard to, to drive your decisions based on on the vibes.
+[00:07:15.960] Anyway, people are doing this.
+[00:07:18.360] The second thing is to understand the purpose of your eval.
+[00:07:23.080] You've also unique because they try to assess specific aspects and you as the
+[00:07:28.440] the person who wants to create such evaluation suite needs to understand
+[00:07:31.920] what what will be your goal.
+[00:07:33.400] Again, it depends on what's your target.
+[00:07:35.920] But, I have like a couple of potential goals depending again on the role.
+[00:07:40.120] If you're like, then probably you're interested in the degree of automation
+[00:07:44.560] and complexity of the features which your agent can do.
+[00:07:48.120] And that's why you develop lots of context like skills.
+[00:07:51.080] And you want to measure, how good they are.
+[00:07:54.480] And, the only input data you need for this is to create this skill
+[00:07:59.480] and then have some greenfield environment where you can run your agent,
+[00:08:04.320] with access to the skill to solve the problem.
+[00:08:06.960] If you're like, want to have a general understanding
+[00:08:10.520] of how agent performs in the code base, then probably you want to use the
+[00:08:14.280] historical commit data to derive the tasks and see the performance.
+[00:08:18.760] By replaying the historical commits, it will give you a high level overview
+[00:08:22.200] of how complex features in your code base are, or if you want to.
+[00:08:26.040] Again, like monitor the org level, interactions of engineers with agents,
+[00:08:32.960] probably you can use the logs and derive the actual
+[00:08:36.000] edge cases from the human logs, of how people are interacting.
+[00:08:40.200] So now you define.
+[00:08:41.960] So the next thing is to actually build the civil,
+[00:08:45.000] and building the wall means that you need to have some structure,
+[00:08:48.640] some unified format, of your tasks, and how to run them.
+[00:08:54.320] The format of the task usually will include at least three things.
+[00:08:57.560] One is the, the prompt itself, like what you need to build
+[00:09:01.200] the second some Dockerfile environment
+[00:09:02.880] where you define some installed dependencies.
+[00:09:05.160] And what is available for the agent in the beginning.
+[00:09:09.200] And then tests like how to test it, and then you need to wrap it
+[00:09:14.040] up to, to be able to run it in a reproducible way.
+[00:09:17.440] The Docker containers are usually, the easiest way to do it,
+[00:09:21.720] but they're optional.
+[00:09:23.440] Cool.
+[00:09:23.760] So now you have, goal of the, the benchmark.
+[00:09:27.120] Now you have like task, and now you can run the agent against this task.
+[00:09:31.680] The core, the key part is to understand how to judge the solutions
+[00:09:35.680] and the truth is there is no one single answer.
+[00:09:38.160] Instead, there are a couple of options, depending on your like capacity
+[00:09:42.240] and the size of your evaluation, you can go with one of three routes.
+[00:09:45.760] Usually, one is having a verifiable graders
+[00:09:48.480] where you just have unit tests which measure deterministically
+[00:09:51.840] whether agent does the work you want to do,
+[00:09:55.120] or not through unit tests, through some, you know, like, running
+[00:09:59.880] after the execution, something deterministic to verify.
+[00:10:03.080] It's fast, cheap, reproducible.
+[00:10:05.760] But it's hard to design because it will require you
+[00:10:08.160] to manually review a lot of edge cases, and it's hard to scale.
+[00:10:12.720] The opposite of this would be to replace
+[00:10:15.360] the unit test with other agents or with other models.
+[00:10:19.680] So where another reviewer agent will look at your task and try to,
+[00:10:24.760] derive whether it's a good solution or not, it's super scalable, right?
+[00:10:29.080] Because you can like run thousands of agents in parallel,
+[00:10:32.240] and do like lots of other lemmas or judges,
+[00:10:34.240] but it of course expensive and it's not non-deterministic.
+[00:10:37.840] And another problem, it's like you need calibration.
+[00:10:40.400] You need to give a lot of, a lot of context,
+[00:10:44.080] a lot of, understanding how to judge the solution.
+[00:10:47.160] Otherwise it will just, you know, randomly output.
+[00:10:50.160] This is good. This is bad.
+[00:10:51.600] And the third approach will be a human graders,
+[00:10:53.560] which is infeasible at all for large scales.
+[00:10:56.640] But it's, I think, super important in the, in the early stages where in the you're
+[00:11:00.640] just prototyping curve, I'll just understand
+[00:11:03.000] just to see that your evaluation will do what you want in general
+[00:11:06.760] and you're like moving in the right direction.
+[00:11:08.800] So for you to eyeball at what happens
+[00:11:12.360] and encode your preferences, is, is super essential.
+[00:11:16.800] Once you're happy with this, the next step
+[00:11:19.920] is to balance between, verifiable graders and model graders.
+[00:11:24.960] Cool.
+[00:11:25.360] Now, you can, have you have to ask you have agent to run the task.
+[00:11:29.400] You have agent to, or whatever to, to solve, and judge.
+[00:11:34.320] The next thing is to actually build trust in your course.
+[00:11:37.240] And here I have a very interesting anecdotal example.
+[00:11:41.320] So it's, running of the terminal bench across
+[00:11:44.480] different agents and different models.
+[00:11:46.320] And you see at the bottom, the worst performing mini
+[00:11:50.160] suite agent, it's at 200 lines, agent, which only has access to read, files,
+[00:11:56.080] and write files with Sinatra 4.5, and it has 42.5 percentage.
+[00:12:01.360] Score.
+[00:12:02.440] But look at the error bars how big they are.
+[00:12:05.320] In the most optimistic case, this tiny agent will perform around 50%,
+[00:12:11.520] meaning it will match the Codex CLI performance.
+[00:12:14.920] Right?
+[00:12:15.560] Just because the error bars are so huge, you can't make conclusions.
+[00:12:19.800] That means suite agent is worse than a close based solution.
+[00:12:24.120] So, trusting your scores, make sure that you're not over optimize into the noise
+[00:12:29.280] and that, you you can trust what you see from the metrics call
+[00:12:34.800] and just wrap, all components in one feature.
+[00:12:39.040] You have Agent Harness, which in this case your cloud code codex
+[00:12:42.680] or whatever you have model which you select based on the provider.
+[00:12:46.200] You have a collection of those tasks
+[00:12:48.960] again, like tasks are prompt, instructions and so on.
+[00:12:52.040] You run those tasks, they generate the solutions,
+[00:12:54.040] you grade them, they generate scores, and you aggregate them somehow.
+[00:12:57.360] And, derive, you know, a feedback based on this.
+[00:13:01.320] There are many more
+[00:13:02.040] things which we don't cover, just because we don't have time for this.
+[00:13:06.000] But again, in practice, there are a lot of, things
+[00:13:09.360] which you need to care about, like, updating the evaluation benchmark.
+[00:13:13.840] Right?
+[00:13:14.040] Because your code base evolves,
+[00:13:16.320] that means that your benchmark should evolve as well.
+[00:13:18.800] You need to care about how to run it at scale.
+[00:13:20.560] You you have 100 tasks.
+[00:13:21.800] It's infeasible to run it on your laptop.
+[00:13:23.800] It will just die. And. Yeah, like what?
+[00:13:26.640] If you want to support more agent and models, and so on, like,
+[00:13:29.920] how to how to handle this all, it's it's it's a hard
+[00:13:33.720] things, but, we don't cover it here.
+[00:13:37.880] And my opinion slash observation is that it's
+[00:13:41.400] actually it feels complicated to build, such platform on your own.
+[00:13:44.720] And I don't imagine that, like, I can't imagine that any company
+[00:13:48.400] will decide to build their own, but at the same time,
+[00:13:53.600] there are lots of pain points that can be clustered and addressed in reusable way.
+[00:13:58.760] And what we hear from our customers that they are pain points are
+[00:14:03.080] usually, clustering can mean in two main cases.
+[00:14:06.800] And that's why we built we recently dropped
+[00:14:09.480] two evaluation approaches, which I will talk in the next slide.
+[00:14:13.200] So the first one is task rivals.
+[00:14:16.320] Basically it's
+[00:14:18.880] a perfect choice for you if you have standalone context
+[00:14:22.400] like for example a cloud code skill or API documentation for a framework.
+[00:14:27.120] And you want to understand how agent works with this.
+[00:14:30.080] So tasks about tasks evals are perfect for this
+[00:14:33.240] because they're just like standalone things.
+[00:14:36.120] How it works.
+[00:14:36.880] We take your context, we try to analyze it with our,
+[00:14:40.040] engine and derive a realistic, realistic scenarios of how this,
+[00:14:44.440] context will be used in the real set up.
+[00:14:47.880] Those scenarios are like just basically tasks.
+[00:14:51.680] And then we run those tasks in two scenarios.
+[00:14:54.160] One vanilla agent where agent doesn't have access to this context,
+[00:14:58.440] which you created, and another set up where agent has access to this context.
+[00:15:02.760] And then we compare this course and see
+[00:15:05.920] whether there is an uplift or or instead,
+[00:15:09.720] like the scores downgraded or where there is no uplift at all.
+[00:15:13.560] If there is an uplift, then of course it means that your context brings
+[00:15:17.080] something valuable and agent doesn't know how to do the task without your context.
+[00:15:21.720] But if the scores are actually degrading, then probably there is
+[00:15:24.520] something controversial and also important for you to look into.
+[00:15:28.480] I will show,
+[00:15:31.680] the specific, realization of how it looks.
+[00:15:35.640] Okay.
+[00:15:36.000] I can't do it. I will do it
+[00:15:37.680] after after the presentation, because, I mean, the presenter mode.
+[00:15:41.520] Yeah. Okay, let's go
+[00:15:46.080] to the next slide.
+[00:15:48.160] Can I?
+[00:15:51.360] Okay.
+[00:15:51.840] The next slide is project evals.
+[00:15:54.000] So, these this type of evals, is best suitable for you
+[00:15:59.240] if you are working with existing codebase and you're shipping the features
+[00:16:03.960] inside this code base, for example, your maintainer of the hugging face,
+[00:16:07.560] and you want to implement something inside it.
+[00:16:09.880] And you just want to understand in general how
+[00:16:12.160] agent performs on the tasks specific to this repo.
+[00:16:16.320] How would you do this?
+[00:16:17.440] Well, project evals is one way to do.
+[00:16:20.320] To do so, we analyze the history of the commits, on this, in this repo,
+[00:16:25.320] we try to derive those commits which are relevant to your goal.
+[00:16:28.800] For example, you're curious about the performance of some specific aspects.
+[00:16:33.480] Depending on your setup, you can provide additional context.
+[00:16:36.800] And then we also evaluate with context and without basically replaying
+[00:16:41.040] those historical commits and seeing what's the performance in general of the agent.
+[00:16:45.360] Is it bad then it means like agent on its own probably won't be able to,
+[00:16:50.200] solve the problem as it was done by a real, real maintainer.
+[00:16:55.800] If the score is a high, that means like the degree
+[00:16:58.800] of automation of your, agent is probably good.
+[00:17:02.480] So this is a second type of eval.
+[00:17:05.480] And, yeah, basically that was the last big thing, which I wanted to say.
+[00:17:10.080] We are, jumping into the conclusions, today we covered three main things.
+[00:17:15.600] One, the first one is like, why evolves method to date just beyond the,
+[00:17:19.800] beyond the Frontier Labs, but for you as well,
+[00:17:22.440] because they give you clear guidance how to improve
+[00:17:25.440] autonomy, decrease of your agents in your code base even further.
+[00:17:29.280] Second is like in case you want to build it from scratch,
+[00:17:32.120] what are the main blocks, what to think about?
+[00:17:35.600] And third, like how we do it in case you don't want to do it
+[00:17:39.040] from scratch, here is like a one click production solution
+[00:17:42.440] which is ready for you, which we are building a DSL.
+[00:17:47.160] Yeah.
+[00:17:47.640] Thank you very much.
+[00:17:48.560] Let's stay in touch.
+[00:17:49.440] Here is, core code for LinkedIn.
+[00:17:51.840] Let's connect.
+[00:17:52.880] And yeah, another before we wrap up,
+[00:17:56.920] we're hiring your code for the open positions and.
+[00:17:59.760] Yeah, also a QR code for the AI native conference, in case you're interested.
+[00:18:03.720] Cool. That's it for me.
+[00:18:05.240] Thank you very much.
+[00:18:06.120] Ready to answer any questions?
+[00:18:07.400] Thanks.
+[00:18:12.440] I just go back to.
+[00:18:14.040] Building skills.
+[00:18:14.800] Now I tasks and functions as well.
+[00:18:17.720] Yeah. Cool.
+[00:18:19.760] Just before we have questions like can I actually quickly, quickly
+[00:18:22.840] demo what I wanted to demo.
+[00:18:24.840] Because I have the link. Okay.
+[00:18:26.560] So the last thing which we dropped was the one of the last thing
+[00:18:30.360] which we dropped was this task labels.
+[00:18:32.160] So basically what it means you can upload your content,
+[00:18:35.440] your skill, and we will generate those synthetic cases.
+[00:18:38.720] Here the example was from 11 lab skill.
+[00:18:42.120] They have a skill for working with the API for text to speech.
+[00:18:45.640] And we doing some like overall review and the quality of the skill.
+[00:18:50.160] How impactful the the skill comparing to have no skills are.
+[00:18:54.040] Also see that we have landed the security checks but specifically about the evals.
+[00:18:59.240] Here you can see those synthetic cases and the performance of the agent
+[00:19:04.400] in each scenario with and without having access to, to the context.
+[00:19:10.320] So depending on the complexity and uniqueness of your,
+[00:19:14.480] we see like here, for example, without context, agent wasn't able
+[00:19:18.360] to do anything reasonable at all, depending on the uniqueness
+[00:19:21.480] and the complexity of your specific context.
+[00:19:24.640] The value of it will be even more because agent doesn't know about this.
+[00:19:28.840] But you want to have some, you know, some confirmation that that actually helps.
+[00:19:33.800] So, yeah, that's what I wanted to showcase.
+[00:19:36.000] Now I'm ready to answer questions.
+[00:19:37.360] Thank you for thinking that all of the,
+[00:19:40.920] Eagles, all the rubrics and everything are all in there as well.
+[00:19:43.800] So it's not just you know, zeros and hundreds.
+[00:19:46.840] The all the text that describes.
+[00:19:48.720] Yeah I see that there as well.
+[00:19:50.640] I think you score on the right hand side as a tree view with the Eagles.
+[00:19:55.000] I thank my yeah. Cook.
+[00:19:57.840] Yeah. You can read.
+[00:20:01.200] Thank you.
+[00:20:02.400] When you see a, model grade, is it important
+[00:20:07.120] to use a different model from the one that, originally generated the page?
+[00:20:11.840] Yeah.
+[00:20:12.200] So it's a very good question because there are lots of biases.
+[00:20:15.120] Right?
+[00:20:15.440] So if you're doing them where there's a judge like,
+[00:20:19.240] with a model which solves the problem and then the, the same model grades it
+[00:20:23.760] like different agent, but, same model by nature.
+[00:20:27.400] There will be biases.
+[00:20:28.640] The, the, the different ways how to handle it.
+[00:20:32.240] What we saw that
+[00:20:33.920] anthropic models are less biased, less biased comparing to others.
+[00:20:37.680] So it's more of a concern to, to other models beyond the anthropic one.
+[00:20:44.120] But basically you can shuffle, you can try to again, like
+[00:20:48.040] take the frontier model of one provider and generate the specific aspects
+[00:20:52.600] with this model, to, to make it unbiased.
+[00:20:56.040] So yeah, like there are no silver bullet for this.
+[00:20:58.800] You always have trade offs.
+[00:21:00.240] But yeah, that's a risks.
+[00:21:02.680] That's why you ideally want to combine two both signals.
+[00:21:06.080] One is the signal from the verifiable,
+[00:21:09.440] I don't like running unit tests and running some deterministic checks
+[00:21:12.680] and also like alarms a judge, because alarms, a judge will usually
+[00:21:16.480] give you more nuanced insights.
+[00:21:19.280] And if you can provide additional feedback
+[00:21:22.880] into the LMS, a judge, the verifiable feedback.
+[00:21:27.120] Right.
+[00:21:27.480] So like results of how the tests were running,
+[00:21:29.560] then you are reducing this bias as well because it will pay attention to them.
+[00:21:33.600] To, to to the results of running the tests rather than making
+[00:21:37.560] its own decisions.
+[00:21:38.680] So like lots of ways how to deal with this bias.
+[00:21:42.680] Thank you. Cool.
+[00:21:44.520] And I think, thank you.
+[00:21:46.440] Question, evolves on our grade, but they're just giving you
+[00:21:50.000] a snapshot of what is currently happening.
+[00:21:53.920] So my question is, have you played with any optimizer
+[00:21:57.360] like G and or anything like that?
+[00:22:00.920] I know that it's more, let's say, focus on text.
+[00:22:05.760] Something.
+[00:22:06.240] But yeah. So
+[00:22:09.000] yeah. Absolutely.
+[00:22:09.960] Like even
+[00:22:10.680] just like capturing what you have in your code base at the current, shape.
+[00:22:14.760] That's why one of the big problems with evolve and challenges
+[00:22:17.840] is to build, a pipeline where you can evolve in time.
+[00:22:21.000] So your, your evolves, evolve with your code base,
+[00:22:25.200] but also like you need to have this optimized mechanism
+[00:22:27.880] ideally, blocked into your pipeline as well.
+[00:22:31.320] So we are testing like or for not only the evolution but also like optimized loop.
+[00:22:36.520] So based on the feedback from you also generate some recommendations.
+[00:22:40.080] But what can you do.
+[00:22:41.440] How can you improve your context, to reduce the errors.
+[00:22:46.040] So the short answer is like, yeah, we're playing with our own optimizers.
+[00:22:49.400] We didn't use like external solutions,
+[00:22:51.560] because we're developing like our for, for loop ourselves.
+[00:22:59.160] Sorry.
+[00:22:59.680] Yeah.
+[00:23:00.920] Thank you. Thank you very much. Rex.
+[00:23:02.800] I just wanted to, quickly ask,
+[00:23:06.400] you see, all these evolves, but I think what you have was basically,
+[00:23:10.080] the this spinning combination of getting the skill to got the code base.
+[00:23:14.960] Using, as you mentioned, like using like block entities.
+[00:23:17.760] If you containerize these engines, are you using something like the Claude's
+[00:23:21.520] agents SDK under the hood to like, this all together in the training
+[00:23:25.200] calling cloud code by the client pop up telling it to to go do something.
+[00:23:29.880] Yeah.
+[00:23:30.240] So basically, we're, we're using agents in autonomous mode, right?
+[00:23:35.040] So they are, we're spinning them up in the isolated environment
+[00:23:39.800] where everything's prepared.
+[00:23:40.920] It's like, not risky to if if they crash something.
+[00:23:44.160] And we're like, we're mixing basically like,
+[00:23:47.760] they're like different agents pre-installed with those different modes
+[00:23:50.800] and depending on them, a specific aspect we are like can use the SDK.
+[00:23:56.880] For example, when we want to
+[00:23:58.400] track the activation rates, we actually want to stop early.
+[00:24:02.920] If we realized that the agent decided not to pick up a skill and we can
+[00:24:07.880] we can derive this information from the SDK because SDK,
+[00:24:10.720] you know, you can you can control everything.
+[00:24:13.280] What happens and terminate the process if you realize that the agent doesn't,
+[00:24:17.920] pick up the skill.
+[00:24:19.080] So, yeah, we are like, combining, all the things.
+[00:24:24.680] It's just going to ask,
+[00:24:26.000] with, like, model gradients,
+[00:24:28.720] when you run a lot of model based emails, it feels like it gets pretty expensive.
+[00:24:33.600] Exactly.
+[00:24:34.640] I want to know if you have any, like, treats for the same thing or cost I guess.
+[00:24:40.240] Yeah. So,
+[00:24:43.040] during the
+[00:24:45.800] like prototyping phase when we're like prototyping
+[00:24:49.720] how we would look like we're not caring about cost reductions at all.
+[00:24:54.520] We want to do as many experiments as we can,
+[00:24:57.440] with additional agent reviewers on top of the evals
+[00:25:01.720] to distill those, you know, runs into some meaningful, bar plot.
+[00:25:06.640] So during R&D phase, we don't care during the,
+[00:25:10.800] that, like, when we ship it to the customer, we have cash.
+[00:25:15.080] Basically, we don't run out if something if the code base didn't change.
+[00:25:19.720] Right.
+[00:25:19.960] So you only rerun scenarios which are probably affected by the code,
+[00:25:24.960] by the changes in the code base or like the feature commit or whatever.
+[00:25:28.840] So, yeah, like, mainly we try to avoid
+[00:25:31.560] regenerating what doesn't change, what doesn't happen.
+[00:25:34.920] You know, like what doesn't touch the previously, in the integrated context.
+[00:25:41.600] But yeah, it's very expensive.
+[00:25:43.200] That's that's totally true.
+[00:25:44.760] That's why it's so, compelling
+[00:25:48.000] to switch to open source model, rather than pay vendors.
+[00:25:51.880] So, yeah.
+[00:25:54.000] Cool.
+[00:25:55.080] I have a question about translating science agents.
+[00:25:57.400] So the very open ended agents that can solve,
+[00:26:00.480] you know, problems we don't know the solution for,
+[00:26:02.720] so I have, you know, multiple agents,
+[00:26:06.360] and I want to compare them only at solving this science problem.
+[00:26:09.840] So it's an open ended one that I don't really have a verifiable.
+[00:26:12.960] Yeah.
+[00:26:13.960] So I need to use it as a judge of problems that.
+[00:26:17.840] Yeah, it's clear to use because I don't know the answer myself.
+[00:26:21.600] Exactly.
+[00:26:23.280] I get trajectories from two agents of many
+[00:26:27.200] thousands of tokens.
+[00:26:28.320] Yeah, I, I don't even know what you know.
+[00:26:30.680] How would you go about like, what criteria exactly?
+[00:26:33.520] It's an amazing question I don't have like, well, I swear to you,
+[00:26:37.040] because, like, if we don't know, like, what's the actual
+[00:26:40.040] what should be the ideal response, then I think there is a combination of us
+[00:26:44.880] looking into the problem
+[00:26:46.080] and like trying to analyze the, I don't know, like the formula which
+[00:26:49.320] the science agent figured out and trying to, see
+[00:26:52.440] if it resonates with our feelings and how it should, how it should work,
+[00:26:56.640] or like, spinning in parallel, like lots of additional agent reviewers,
+[00:27:01.000] which we biased towards some, some preference, which we have, like,
+[00:27:04.880] because we ideally want observe some pattern.
+[00:27:07.800] Right.
+[00:27:08.280] And probably, we prompt the new reviewer agents with this specific goal.
+[00:27:13.960] It will be able to handle this, or at least, reduce this search space
+[00:27:18.440] for us, as a humans, in terms of, like what to validate,
+[00:27:23.000] that's one piece of, how to respond to this.
+[00:27:26.320] The second, part of the response would be probably there is still a way
+[00:27:31.320] to introduce, checkpoints or milestones into the trajectories.
+[00:27:35.160] So you, can validate that the least agent
+[00:27:39.040] did something which you expected it for me to do, like some,
+[00:27:43.000] I don't know, so that the solution didn't diverge completely.
+[00:27:46.960] Right.
+[00:27:47.200] So it's not nonsense, but it's something which follows your intuition.
+[00:27:50.920] And you can like you can you can encode those preferences for sure.
+[00:27:55.680] Not completely, but at least like, again, reduce
+[00:27:58.600] the search space, and filter out very bad solutions.
+[00:28:02.120] Yeah.
+[00:28:02.480] That's, my, my only like, if I were to do something like this, I
+[00:28:06.280] would do it this way.
+[00:28:09.120] Cool.
+[00:28:09.440] And then is,
+[00:28:13.240] I was interested in, stories and, because,
+[00:28:18.000] it's important
+[00:28:20.560] for what is going on now in the program.
+[00:28:25.320] Yeah.
+[00:28:26.960] What do you explain the sums or maybe proportion?
+[00:28:32.440] Between, expenses, tokens and expenses, conference,
+[00:28:37.640] expenses on what?
+[00:28:39.080] Expenses?
+[00:28:40.440] Expenses on tokens and expenses on federal.
+[00:28:43.560] Okay.
+[00:28:45.520] Yeah,
+[00:28:47.280] yeah.
+[00:28:53.400] And, yeah.
+[00:28:55.560] So what are the what's the proportion of.
+[00:28:58.280] It's like one one, 210 or maybe 121.
+[00:29:03.720] What is going on.
+[00:29:04.960] I think it's worth you.
+[00:29:09.080] Yeah.
+[00:29:09.960] I think like economics is for, for us it's, it's a big journey to understand
+[00:29:14.080] what's the, how the economics how to make the economics work.
+[00:29:18.480] One way to think about this is that, like every evaluation
+[00:29:24.800] will be unique depending on what benchmark you have, like what
+[00:29:28.440] code base you have and what complexity of the task you're dealing with.
+[00:29:32.080] For example, if you're working with UI applications,
+[00:29:34.760] then testing UI applications is actually more expensive
+[00:29:38.160] because agent would spend a lot of effort to spin up the application, then
+[00:29:43.400] introduce some visual vision model to, you know, review that,
+[00:29:46.920] it does something meaningful.
+[00:29:48.400] So it will be more expensive if it's like simple, like algorithmic challenges, then
+[00:29:52.560] probably they will be off on a different, you know, like scale, of course.
+[00:29:57.480] But so far, my experience was that,
+[00:30:00.000] like, on average, the task will be roughly beyond 2
+[00:30:04.000] or $3 per task, for, for an agent to, to run and solve it.
+[00:30:08.520] And beyond $1 to grade the solution.
+[00:30:11.400] So based on this, you can probably and these are the numbers with frontier
+[00:30:15.240] models.
+[00:30:16.120] Based on this, probably can calculate how much it will cost you to run it
+[00:30:19.920] 1000 times, 21 days a month,
+[00:30:24.040] in case you were
+[00:30:25.000] to do something new every, every, every day.
+[00:30:29.680] But yeah, like, that's that's so far
+[00:30:31.560] my my answer.
+[00:30:34.600] Is it's more like
+[00:30:38.680] 5050 all tokens
+[00:30:41.600] takes more than a barrel.
+[00:30:44.640] So. So,
+[00:30:47.040] I think it's a, I
+[00:30:49.200] think I was, yeah,
+[00:30:53.280] I, yeah, I understand the question.
+[00:30:55.800] I think it's a number. I don't think it's something.
+[00:30:58.320] Yeah, yeah.
+[00:30:59.880] Cool.
+[00:31:00.280] Any more questions for us from the public?
+[00:31:13.200] I don't stop to
+[00:31:14.040] to do the, He hasn't done anything interesting.
+[00:31:17.280] So, you know, we.
+[00:31:18.640] Why he takes questions, and it's,
+[00:31:22.120] it also fits into the SDLC.
+[00:31:25.680] So I think that would be good to see.
+[00:31:28.160] So to do you think it's a if I asked him too much in my code base,
+[00:31:32.760] with on my team is that
+[00:31:35.440] that is the same thing like where I, I like to to push engineers
+[00:31:38.880] to, to understand some coverage, from, according to your providers.
+[00:31:42.720] Like, how was I talking, in an engineering chain?
+[00:31:46.640] So the
+[00:31:46.920] question is like, how would you combine,
+[00:31:50.680] like engineers with, engineers with results of agents work
+[00:31:56.760] or maybe I.
+[00:32:03.360] Yeah.
+[00:32:04.080] So basically, what I heard recently from one of our design partners
+[00:32:08.160] that they integrated the evolution in the CI CD pipeline.
+[00:32:11.360] So whenever they ship some skill, they automatically trigger
+[00:32:16.840] our eval to just validate the, the skill, bring something.
+[00:32:21.160] Right.
+[00:32:21.480] So like a, like a task eval for example, doesn't obviously, degrade
+[00:32:27.360] and they don't observe like obvious like failures.
+[00:32:31.240] That's one story, one anecdote I heard.
+[00:32:34.160] Another would be
+[00:32:37.160] which this the set up which we currently, prototyping
+[00:32:41.040] is collaborative, development where engineer is still in the loop
+[00:32:45.800] and an engineer is guiding what the task will be and reviewing,
+[00:32:51.360] what the agent decided to implement and verifies
+[00:32:55.560] whether they like, you know, the outcome of intermediate steps.
+[00:33:00.240] And basically engineers are,
+[00:33:03.840] like in the, in the chat mode decided,
+[00:33:07.480] discussing with them, and with an agent who works on task.
+[00:33:11.520] Well, some aspects like, do I like it, does it capture enough information?
+[00:33:16.960] Do I like the unit tests?
+[00:33:18.200] So it's basically becomes a combination where you, as the engineer
+[00:33:21.720] don't write anymore, but you just validate that it doesn't
+[00:33:25.320] that, it doesn't, you know, like, diverge,
+[00:33:27.840] the agent doesn't diverge and doesn't come up with a sophisticated,
+[00:33:32.120] contrived task, but rather something really sticks.
+[00:33:34.960] So you are in the loop to help to create a real scenario without writing any code.
+[00:33:40.080] You just monitor that?
+[00:33:41.600] It does something reasonable, because sometimes just a couple of
+[00:33:44.880] corrections is enough to help it to go from the dead loop, basically.
+[00:33:50.160] Wonderful.
+[00:33:51.000] Thank you very much for your questions. And thanks, Max.
+[00:33:53.520] Fantastic talk at number 15.

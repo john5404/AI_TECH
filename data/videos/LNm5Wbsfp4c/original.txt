@@ -1,0 +1,1023 @@
+[00:00:00.080] Ultimately, the identity question is how do I ensure that
+[00:00:04.320] when an agent does make a mistake, it doesn't do something catastrophic
+[00:00:07.560] I didn't intend.
+[00:00:08.520] This thing is built on like a probabilistic distribution.
+[00:00:11.280] The feature is that it can reason and it can guess over large amounts of data.
+[00:00:15.080] Right.
+[00:00:15.520] And that it is non-deterministic.
+[00:00:17.680] That's the feature.
+[00:00:18.800] The bug from a security perspective is that it's non-deterministic
+[00:00:22.280] and that is still the feature.
+[00:00:24.040] So the feature and the bug are the same.
+[00:00:25.440] And the final question is how do I know that an agent is performing
+[00:00:30.160] actions aligned with the intent of whoever set that agent to do something.
+[00:00:35.240] The AI Native Dev is a podcast for developers and engineering
+[00:00:38.520] leads at the cutting edge of AI and agentic coding.
+[00:00:41.840] Join your hosts, Guy Podjarny and me, Simon Maple.
+[00:00:44.840] Every week as we chat with the most exciting voices in
+[00:00:48.040] AI and tackle the biggest questions facing developers today.
+[00:00:52.440] This is the AI Native Dev.
+[00:00:57.680] We just
+[00:00:58.080] wrapped up two amazing days at AI Native DevCon in London.
+[00:01:01.280] But the great thing is that
+[00:01:02.360] we get to do it all over again in New York City this November.
+[00:01:06.200] You're absolutely right.
+[00:01:07.320] We're going to be back in the city that never sleeps on November 3rd and
+[00:01:11.200] 4th for more amazing sessions, really engaging hands-on workshops and much more.
+[00:01:16.600] Yeah, all that great networking, partying, eating and
+[00:01:19.640] drinking that you've come to expect from AI Native DevCon.
+[00:01:22.640] We think we have one of the best hallway tracks in the business,
+[00:01:25.640] and it's the perfect complement to our incredible speakers and presenters.
+[00:01:30.120] We'll both be in person and virtual,
+[00:01:32.240] with live streamed access to all mainstage keynotes and talks.
+[00:01:36.080] Sign up right now for our Super Blind Bird ticket for just $100.
+[00:01:39.800] Only available for a limited time.
+[00:01:41.960] We're really excited to be headed back to the Big Apple, and we hope
+[00:01:45.640] to see you all there.
+[00:01:52.720] Hello, everyone.
+[00:01:53.360] Welcome back to the AI Native Dev.
+[00:01:54.760] We are in kind of an ad hoc office over here.
+[00:01:58.120] You know, actually sort of Ian's hometown, or like.
+[00:02:01.440] Current home.
+[00:02:02.600] Base at the moment here in San Francisco as part of the AI Engineer event
+[00:02:06.680] and really kind of enjoying a lot of AI conversations on it.
+[00:02:10.440] And today we're going to dive in to identity.
+[00:02:13.840] Identity.
+[00:02:14.320] If you've been sort of exploring the security realm of agents,
+[00:02:18.040] identity really has been the top topic of it.
+[00:02:23.400] Everybody appreciates that.
+[00:02:24.800] It is a foundational aspect of how do you get these agents
+[00:02:27.880] to actually be secure and kind of work and give them some autonomy.
+[00:02:31.280] And so to kind of demystify this whole domain and understand how to tackle that,
+[00:02:36.280] we've got Ian Livingstone, who is the co-founder of Keycard. Yep.
+[00:02:40.080] That is a sort of a really exciting company in the identity space.
+[00:02:46.040] But also really, Ian is really sharp
+[00:02:49.080] and deep around explaining things as a whole and specifically identity.
+[00:02:52.840] Known him from Snyk days, and his sort of past companies
+[00:02:56.080] that he's founded on it.
+[00:02:57.080] So we'll we'll learn about identity, learn about what you can do.
+[00:03:01.360] And we will hear a little bit about Keycard.
+[00:03:03.920] Super excited as well. Yeah.
+[00:03:05.800] For coming on. Thanks for having me.
+[00:03:07.240] I'm super excited to talk about identity and agents and security
+[00:03:10.520] and this whole bundle of things together today and really help
+[00:03:13.720] people understand sort of one is like, what's the problem?
+[00:03:16.760] Why this is a hot topic.
+[00:03:18.400] Like, why is it, like, identity is like kind of boring or a snoozefest?
+[00:03:21.560] It's been for years, you know.
+[00:03:23.240] But why is this hot again?
+[00:03:24.520] And why are people thinking about it and how that actually changes the way
+[00:03:28.400] that we actually think, by the way we build systems
+[00:03:30.080] and also how autonomous these systems can become. Yeah. Yeah.
+[00:03:32.920] Well, let's not back over here.
+[00:03:34.240] So let's, let's get started.
+[00:03:35.800] Just tell us a little bit about what are the, the problems or sort of the,
+[00:03:40.320] you know, give us a bit of a structure for thinking about identity and agents.
+[00:03:43.800] Absolutely.
+[00:03:44.240] So I think I think the first step we have to think about is like,
+[00:03:46.440] why is identity even a thing we talk about?
+[00:03:48.400] Like if we were to step back and like identity
+[00:03:50.720] has been a part of computing for as long as it's existed, right.
+[00:03:52.840] The minute you had a mainframe. And then I want to have multiple users.
+[00:03:55.720] Now you have a new problem, which is like, what files or programs on
+[00:03:59.240] the system are Guy's programs and files and what files and systems are Ian's,
+[00:04:03.080] and how does Guy get access to all of Ian's stuff, or does he have access?
+[00:04:06.960] Like, it's been like every wave of computing introduces this question of,
+[00:04:10.880] well, who can do what, when and where. And who.
+[00:04:12.920] Can access. Exactly. Like, in high school,
+[00:04:15.920] hacking, getting into all sorts of information systems
+[00:04:18.120] that I was not supposed to be in? Not exactly.
+[00:04:20.400] And, you know, in the rise of the internet
+[00:04:21.840] brought about, like, when we initially, it was like TLS brought about commerce.
+[00:04:25.840] And so every wave of computing comes with that net new security challenges
+[00:04:28.920] we have to solve because the like the interaction patterns change
+[00:04:32.720] when we introduce new paradigms, look the rise of the cloud and then etc.,
+[00:04:36.040] you know, with IAM and identity for cloud vendors and GCP and secret sprawl.
+[00:04:41.080] We've always had these problems.
+[00:04:42.600] And so agents like many things, as we introduce new functionality
+[00:04:47.120] and capability, like platform shift, we have to reassess our security model.
+[00:04:50.880] And the core crux of the identity problem when it comes to agents is
+[00:04:55.520] this thing is built on like a probabilistic distribution.
+[00:04:58.280] It's a statistical training, right?
+[00:05:00.280] It's beautiful.
+[00:05:01.280] The feature is that it can reason and it can guess over large amounts of data.
+[00:05:05.520] Right.
+[00:05:05.960] And that it is non-deterministic.
+[00:05:08.120] That's the feature.
+[00:05:09.240] The bug from a security perspective is that it's non-deterministic
+[00:05:12.720] and that is still the feature.
+[00:05:14.480] So the feature and the bug are the same.
+[00:05:15.880] And the final question is how do I
+[00:05:19.600] know that an agent is performing
+[00:05:21.480] actions aligned with the intent of whoever set that agent to do something, right,
+[00:05:25.480] which is like the foremost question of
+[00:05:28.680] this generation, and there's many different parts of that.
+[00:05:32.080] Right? You've got supply chain security as a part of it.
+[00:05:34.400] Data security is a part of it.
+[00:05:36.040] But identity is very foundational.
+[00:05:38.240] And thinking through how do I have a secure agent?
+[00:05:41.680] It's also foundational to think of through how do I enable an agent
+[00:05:44.800] to be autonomous.
+[00:05:45.920] Right.
+[00:05:46.600] And the more autonomous an agent becomes, or the more autonomous you want
+[00:05:51.400] agent to be, the security equation becomes much more difficult to solve.
+[00:05:55.600] And the systems that used to work
+[00:05:57.640] in the last, last era start to stop working as much in the new era.
+[00:06:01.480] Right.
+[00:06:01.680] And that's I think that's a fundamental sort of thing to understand.
+[00:06:04.720] And then ultimately, the identity question is how do I ensure
+[00:06:09.000] that when an agent does make a mistake, it doesn't do something catastrophic?
+[00:06:12.920] I didn't intend. Right.
+[00:06:14.360] And so today, if you have paid attention or have read, there's
+[00:06:18.440] lots of different problems associated with identity that people talk about.
+[00:06:22.560] One of them would be
+[00:06:23.520] you have supply chain attacks
+[00:06:24.560] that result in database passwords and keys being leaked, like the most recent LLM
+[00:06:28.880] and attacks where the actual attack vector was, how do I take long
+[00:06:31.760] lived API keys off of disk and use those to exfiltrate data?
+[00:06:34.840] But there's other problems of how do I,
+[00:06:39.120] you know, when I use an agent, if I ask an agent to do something?
+[00:06:42.560] This was very common six months ago.
+[00:06:45.640] Ask the agent to optimize a database.
+[00:06:48.840] A potential path to optimizing a database would actually.
+[00:06:51.240] Be, delete the data. Exactly, right.
+[00:06:52.720] And so that does make it snappy. But that.
+[00:06:55.160] Would be deeply unaligned with what the actual user wants that agent to do.
+[00:06:58.480] And so that's fundamentally a question of authorization and access.
+[00:07:03.720] And the difference between what we've had and what with agents is
+[00:07:08.440] I actually want to give agents access to different things depending upon the job
+[00:07:12.280] I've assigned them to do or the task of something to do.
+[00:07:14.440] And that's a very different model we've had previously. Yeah, yeah.
+[00:07:17.000] So I think there's there's basically a few aspects that you,
+[00:07:20.000] that you have on over there.
+[00:07:20.920] So one aspect of it is, is is the non-determinism.
+[00:07:26.200] Right.
+[00:07:26.520] The safety is like, how likely is the agent to sort of choose to do a thing
+[00:07:31.520] that is not a thing that would have otherwise kind of been
+[00:07:34.720] consented or allowed on it.
+[00:07:36.120] So I guess there's sort of a broader safety element.
+[00:07:38.040] And some of that comes down to, you know, harnesses and context
+[00:07:41.280] and all that of, of, of, of trying to sort of steer
+[00:07:44.480] the agents to understand where the lines are
+[00:07:46.640] and I guess that's that's not really identity.
+[00:07:48.400] Those are like agent workflows.
+[00:07:50.200] But then next to that,
+[00:07:51.120] I think we have sort of two aspects of identity that you touch on there.
+[00:07:54.880] One is, you know, who is the agent, you know,
+[00:07:58.760] what is the sort of entity, right, that I'm assigning it.
+[00:08:03.080] And the second is the the permissions.
+[00:08:05.920] You know, I guess we talk about authentication and authorization and identity.
+[00:08:09.880] So I guess how do you am I kind of dividing that correctly over here?
+[00:08:17.080] And maybe if we put safety as a massively interesting topic on its own,
+[00:08:21.400] but do you think they're intertwined or, and, or do you just need to worry
+[00:08:25.280] about all of them?
+[00:08:26.800] I think, I think if, when a business, when you step back and ask, is it safe?
+[00:08:32.480] Or another way to think is, do I trust an agent to be able to perform this action?
+[00:08:37.160] Yeah.
+[00:08:37.840] You know, identity and access, delegation, all these things
+[00:08:41.160] are vital components of that, as they are in every other era of computing.
+[00:08:44.640] And, you know, to a certain extent
+[00:08:47.720] when it comes to identity and access, there
+[00:08:50.880] you you'll have deterministic controls around what agents can do.
+[00:08:53.880] And you'll have non-deterministic controls.
+[00:08:55.240] And, like, a good example is
+[00:08:56.200] safety work often is about how do I bias a model into that
+[00:09:01.680] it is, it is not affected, or, you know, does what I want.
+[00:09:05.120] So it's not going to do the bad thing or has less probable to do the bad thing.
+[00:09:08.600] But for from a security equation you want to say,
+[00:09:11.120] well, there's a set of things that I just want to never happen.
+[00:09:13.360] I want to guard, like, I don't want a guardrail, I want
+[00:09:15.680] I want a hard boundary around what it can do.
+[00:09:18.000] And it's part of this is also the reason why
+[00:09:19.440] things like sandbox is very popular right now.
+[00:09:21.360] It's like, I can never 100%
+[00:09:24.360] know the model may not do this.
+[00:09:26.200] So, but I need, in order for me
+[00:09:27.760] to put this into production, for this type of workload or perform
+[00:09:30.240] this type of task,
+[00:09:31.320] I need to ensure that it has a hard boundary so it can never happen.
+[00:09:34.600] So I can say as a business, yes.
+[00:09:37.000] You know, the worst case scenarios that I worry about
+[00:09:39.360] have actually been removed from the equation.
+[00:09:40.680] And then the rest of the things that are left, it's like kind of okay,
+[00:09:43.600] if that happens, like it's not great if it does something weird,
+[00:09:46.200] but it's not going to
+[00:09:47.240] destroy the business or result in lost customer data or on and on and on it goes.
+[00:09:51.320] So there's one aspect of defining the sandbox,
+[00:09:54.520] and you're saying, I know that these things won't happen.
+[00:09:57.640] Exactly.
+[00:09:58.160] You know, if I want the agent to do useful things,
+[00:10:00.560] it might not delete all of my inbox, but I'm still getting it as an email.
+[00:10:03.520] Exactly.
+[00:10:03.840] It can still do unsafe things over there, but if it doesn't have access to my
+[00:10:07.560] records, it's not going to send.
+[00:10:09.280] Me outside. Okay.
+[00:10:11.120] So so there's we're we're talking now
+[00:10:13.080] a little bit more about that sort of boundary zone. Exactly.
+[00:10:15.320] So what are the types of agent identity conversation that we have.
+[00:10:19.840] Yeah I think I think there's one is sort of where we're coming from.
+[00:10:22.920] Right.
+[00:10:23.160] And if you look at sort of the identity systems of last generation,
+[00:10:26.000] like the way I would give
+[00:10:27.000] a piece of software access to something is I would give an API key, it would maybe
+[00:10:31.360] be a service account, or represent a service account, potentially
+[00:10:33.560] it would maybe represent a user because it was a user's
+[00:10:35.680] API key or personal access token.
+[00:10:37.440] It was like we built a world based on shared secrets
+[00:10:41.080] and the issue with shared secrets
+[00:10:45.680] is they're often bound strictly to a specific identity, and they're bound
+[00:10:48.840] strictly to a set of permissions associated with that long lived secret.
+[00:10:52.000] And the more important thing is, if that secret were leaked, anyone
+[00:10:55.400] who got access to that shared password also could do that thing.
+[00:10:58.480] And now the the fundamental challenge is okay
+[00:11:02.400] knowing that that's where we came from.
+[00:11:04.400] How do we move to a world where I want.
+[00:11:07.680] I'm Guy.
+[00:11:08.720] I really want this agent to operate over a very long period of time
+[00:11:12.240] on my behalf,
+[00:11:13.160] because it's going to have access to my Gmail or have access to my Google Drive.
+[00:11:16.440] But if at any point it needs to perform a write action.
+[00:11:20.160] So, send an email on my behalf, I should probably get to approve it, right.
+[00:11:22.640] And like fundamentally,
+[00:11:24.280] the process of going through is as we go up the autonomy curve.
+[00:11:27.000] So we go from, I'd love to use a self-driving car
+[00:11:29.240] analogy as we go from level zero, which is deterministic software,
+[00:11:33.240] GPT to Copilots, which is like level one to something
+[00:11:37.960] that's like slightly, or tab complete from Cursor, to sort of like
+[00:11:41.040] Cursor agents and Claude Code agents, which are like level two.
+[00:11:44.360] Is a human still involved?
+[00:11:45.920] How do we actually go from a world where, like as we go up that autonomy ladder,
+[00:11:49.640] I, I'm retaining security over what that thing is doing.
+[00:11:52.920] And if, you know, currently if you were to use Cursor or Claude
+[00:11:57.400] when it goes into a tool call, oftentimes they're saying, hey Guy.
+[00:12:01.520] Do you want to do that? Do you always want to do that?
+[00:12:03.920] No, you don't want to do it on everything.
+[00:12:05.880] And so the question is you can't have autonomy
+[00:12:07.800] when the human has to constantly be in the loop,
+[00:12:09.680] which is where these access systems come in, which is saying as I go
+[00:12:13.760] up the autonomy ladder.
+[00:12:14.680] So as we want to get to this sort of self-driving car analogy,
+[00:12:17.360] there's a trust and safety equation that is with that,
+[00:12:20.560] which is how do I keep this thing driving on the road
+[00:12:22.680] instead of driving off the road, off the cliff or whatever it may be?
+[00:12:26.000] And that's at the crux of it, what we're actually all talking about, right?
+[00:12:29.160] Yeah.
+[00:12:29.520] So I feel like the word identity is like can be a little bit confusing here
+[00:12:33.840] because there's like one question is
+[00:12:35.320] I've got this agent, it's running on my behalf.
+[00:12:37.680] Can I know that it is the agent.
+[00:12:40.960] So, like, I feel when I hear identity, I think primarily who is it that is acting
+[00:12:45.040] and that might be, you know, is it me talking or is it my agent talking?
+[00:12:49.320] So can the system separate the two of us?
+[00:12:51.360] It might be.
+[00:12:52.360] Is my agent talking
+[00:12:53.440] to another agent to perform actions on behalf of agents all the way down.
+[00:12:57.440] Right.
+[00:12:57.680] They they cascade down.
+[00:12:59.280] So that's one aspect.
+[00:13:00.680] But a lot of the attention you draw is actually to, to the kind of
+[00:13:06.000] to its decisions. Right.
+[00:13:07.440] Like, you know, as it comes along, it might be it's around
+[00:13:12.160] the communication of when I delegate a task. Yes.
+[00:13:15.160] What is not just the the knowledge that it is my agent,
+[00:13:19.320] but rather what is its scoped permissions right now within this one,
+[00:13:22.760] like you can compose the email, but you are not allowed to send the email.
+[00:13:27.040] Exactly.
+[00:13:27.560] So is that, I guess people, like, again, the word identity is used for the market
+[00:13:31.560] on it.
+[00:13:31.880] How do you separate this sort of authentication from authorization?
+[00:13:35.840] Yeah.
+[00:13:36.400] So this is interesting because if you look at in the identity
+[00:13:39.000] world, the cloud. When we were getting to the cloud, it was really about, can I verify
+[00:13:44.000] that Guy is in fact Guy Podjarny.
+[00:13:47.120] When Guy goes to Google Drive, like, that
+[00:13:49.040] the basis of cloud was really focused on that.
+[00:13:51.240] And authorization didn't really fall into the problem space.
+[00:13:54.600] And that's because at the time,
+[00:13:56.360] we didn't
+[00:13:56.800] really have to solve authorization, and we didn't have to solve authorization,
+[00:14:00.120] because if I could identify that it's Guy and I trust Guy,
+[00:14:03.880] then I can give Guy really broad based access, because implicitly
+[00:14:08.600] we've we've done the background check.
+[00:14:12.200] We called all the references.
+[00:14:13.880] He, you know, isn't isn't a sociopath, right.
+[00:14:17.880] Like it turns out.
+[00:14:19.520] Well yeah. You did hide it. Well.
+[00:14:21.360] It turns out that Guy really cares about how people think about him.
+[00:14:25.440] And he wants to do a good job.
+[00:14:26.440] And it turns out that if he got fired from the job, that'd be devastating.
+[00:14:28.560] So the implicitly, we can
+[00:14:29.880] we can trust that Guy is going to operate with high intent and not be malicious.
+[00:14:33.880] Right?
+[00:14:34.080] The part is because it's the same Guy that will sort of come in to the next task.
+[00:14:37.720] Exactly.
+[00:14:38.200] Yeah.
+[00:14:38.920] Well, the agents are basically a brand new creature.
+[00:14:41.480] Exactly. A brand new creature every time with different context.
+[00:14:43.880] And they don't have, they have no sense of is this good or wrong?
+[00:14:48.520] Like they're not malicious. Yeah, right.
+[00:14:50.720] They just don't know. And there isn't a way for them to say it.
+[00:14:53.560] Do I know or do I not know? Right.
+[00:14:55.760] That's authoritative in a way that a human can be.
+[00:14:57.920] And so from that perspective, agents
+[00:15:01.240] really change that equation where it used to be that, okay.
+[00:15:04.520] If I just know it's a human
+[00:15:05.560] and I trust that human, once it's all configured, it kind of works.
+[00:15:09.320] Now it's based on the thing that I've assigned them and the data
+[00:15:13.480] that they have about that thing.
+[00:15:15.240] I'm going to give them different levels of access based on
+[00:15:17.520] what's in that context window, and so much about this next generation.
+[00:15:21.280] It is about authorization, which is, what things can this do?
+[00:15:25.400] But it's also about what things has this agent seen or done.
+[00:15:28.920] So I know that it is in a well bounded box
+[00:15:31.920] on whether it should have access to that.
+[00:15:33.240] And if I can't call that judge, if I can't make a decision, like a system
+[00:15:36.040] can't make the decision, the system can also be like,
+[00:15:38.200] you know what, actually,
+[00:15:38.720] maybe I need to go talk to Guy and be like,
+[00:15:40.120] hey Guy, can you review this thing that the agent wants to do before it goes
+[00:15:43.240] and does it?
+[00:15:43.720] And so much of if if what we're trying to do is to basically
+[00:15:47.640] turn software into the Waymo experience, so much of it is like,
+[00:15:50.920] how do we, as the models improve, how do we, over time,
+[00:15:53.960] give them more autonomy but with the same substrate system?
+[00:15:56.680] Because there's going to be certain tasks that you assign an agent
+[00:15:59.400] you're going to say, you know what, it's totally summarization.
+[00:16:02.400] Where I'm pulling in a bunch of context, I'm summarizing a document for you.
+[00:16:05.720] You should have it's okay, read access to everything.
+[00:16:08.000] That's totally fine.
+[00:16:08.520] But the minute you want to go and do a high,
+[00:16:10.440] maybe a transaction that costs over $500, definitely.
+[00:16:14.240] That's maybe that's when a human has to say, you know what?
+[00:16:16.600] I don't trust agents to make decisions on my behalf.
+[00:16:18.600] Over $500. Or an organization
+[00:16:20.560] may say I don't trust agents to have access to customer data at all.
+[00:16:24.840] Like there are different trust equations, and every person and organization,
+[00:16:28.760] depending upon the context of what
+[00:16:30.360] the agent is, who's using it, and what things it's asking
+[00:16:34.840] will have a different trust equation about what they think is okay for them.
+[00:16:38.920] Yeah, yeah.
+[00:16:39.680] Interesting.
+[00:16:40.280] So really what you want is you want the the identity.
+[00:16:43.920] I really like this identity plus authorization bundle.
+[00:16:47.920] Exactly. Task based.
+[00:16:49.440] Yes. I'm performing a task.
+[00:16:50.960] This task should have a set of permissions. Exactly.
+[00:16:53.280] So I think within that world it feels there are two,
+[00:16:57.000] two, simplifying a little bit, two ways in which sort of agents work.
+[00:17:00.520] Right.
+[00:17:01.160] One is an agent as in an agent workflow.
+[00:17:04.560] And so I'm running it.
+[00:17:05.440] And so, you know I can choose
+[00:17:06.440] sometimes it's doing broad things, sometimes it's doing narrow things.
+[00:17:09.680] But I think within that world it feels quite kind of manageable to say
+[00:17:14.960] I'm giving it a delegation.
+[00:17:16.320] We'll come back a little bit to how do I define which permissions.
+[00:17:19.160] Yeah, that's a different
+[00:17:20.080] problem, that is sort of a hard problem, but, but at least I know
+[00:17:24.080] like this bundle, this sort of this sort of this process here that is executing.
+[00:17:27.920] It's, it's
+[00:17:28.640] kind of executing the same thing or like this assigned action again.
+[00:17:32.560] Again.
+[00:17:33.280] And then I've got, like, my kind of Claude Code or Codex or Gemini
+[00:17:37.240] running locally. Yes.
+[00:17:39.080] And I don't know, like, probably like my
+[00:17:41.920] in my IDE, or like Claude that I'm running on my stuff,
+[00:17:45.320] I don't, it doesn't do one thing. Like, I do one thing and then I come back.
+[00:17:48.520] This is like, yeah, I've got this other one.
+[00:17:50.120] And oftentimes just sort of run in like one long session
+[00:17:53.520] that I walk around and, you know, if I just approve of things like,
+[00:17:58.000] okay, I just performed an action and said,
+[00:17:59.480] can I delete this file and delete this file?
+[00:18:02.040] And this was like, final, and delete all, like, yes, always approve.
+[00:18:05.760] And then I come along and do something else
+[00:18:07.280] and you know, that goes away.
+[00:18:09.200] Is that a lost cause.
+[00:18:10.640] Like, is that, that it's like, hey Guy, just stop using the agent like that,
+[00:18:14.920] like use it in a more methodical fashion and to do that, or
+[00:18:19.760] is there a better model that have to.
+[00:18:21.480] There's definitely a better model,
+[00:18:23.040] like what we want to get to as a world where agents you can assign agent
+[00:18:27.000] a task, a task, maybe something, hey, do, like, survey the internet and every day
+[00:18:31.440] come back to me. Or survey all of my assets,
+[00:18:33.680] all of my inbox, and come back to me and tell me what happened, right?
+[00:18:37.000] And that's like, that's a long live process where you definitely don't
+[00:18:40.040] want every morning to wake up and have to click a consent screen, right.
+[00:18:43.160] You actually just like I've assigned you, I've given I've delegated authority
+[00:18:47.400] to you to perform things
+[00:18:48.360] on my behalf. And in order for me to delegate to this agent and that agent.
+[00:18:52.640] Actually, this is where identity comes in.
+[00:18:54.000] We have to be able to identify the agent, right?
+[00:18:55.680] So it's like, I've given Foobar agent
+[00:18:58.680] for the context, for this task, this authority.
+[00:19:01.440] And when I sent it a different task, I wanted to give it different authority.
+[00:19:04.440] But that's the first basis.
+[00:19:05.600] It's like this is why we talk about identity is okay.
+[00:19:08.040] Well, in order to give something
+[00:19:09.640] your authority to do something on your behalf,
+[00:19:11.320] you both have to be able to have to be able to identify that thing.
+[00:19:13.920] And then the thing that the downstream systems that are saying,
+[00:19:17.080] hey, is this random request that's coming into my system,
+[00:19:20.720] does it have the permissions?
+[00:19:22.400] Like, has it been given the authority to do the thing it's asking to do?
+[00:19:25.400] Well, I have to both know.
+[00:19:26.680] Well, oh, Guy did in fact give Foobar access to do this thing,
+[00:19:31.280] but I have to actually be able to identify both Foobar and Guy.
+[00:19:34.400] And certainly those systems want to treat an access request
+[00:19:38.280] or request based from Guy differently than they do from Foobar.
+[00:19:42.160] Because, when you think, I love to give the example of, like, credit card
+[00:19:47.800] chargebacks here, because if you ask your agent to perform
+[00:19:51.800] a transaction on your behalf and then you say, hold up a second,
+[00:19:56.480] I didn't give it access to do that. Yeah.
+[00:19:59.320] How does the intermediary be like?
+[00:20:01.480] Well, actually, no, we have a record, in fact, that you did tell Foobar
+[00:20:06.200] to go and do this thing and that you said it could spend up to $500
+[00:20:09.920] and it did do that thing.
+[00:20:10.640] So we're actually not going to process
+[00:20:11.920] that chargeback, because you did do it with today's identity systems.
+[00:20:15.800] What we built in the last generation, you can't differentiate between
+[00:20:20.400] what did Guy give Foobar that access for, this
+[00:20:23.400] specific task or a different task, or where's Foobar in the mix?
+[00:20:26.440] None of that.
+[00:20:26.920] None of that existed
+[00:20:28.080] because we actually didn't have to build that for last generation security posture.
+[00:20:31.600] And now we we do. Yeah.
+[00:20:33.760] So I guess I'm going back a little bit and we'll get a little bit to solutions.
+[00:20:37.720] I'm hearing three levels here.
+[00:20:40.680] One is separate me from my agent.
+[00:20:44.240] So use identities that are specific for.
+[00:20:46.320] Two, is have a set of authorizations that is,
+[00:20:51.160] that is aligned to the task that you've just given the agent.
+[00:20:55.640] And I guess three, which relates a little bit to the two, is
+[00:21:00.360] if you're within like the second one is easy when you've defined the task
+[00:21:05.000] upfront and it's not a long lived agent, but when it's a long lived agent.
+[00:21:08.800] Am I right in understanding that you're saying there's
+[00:21:12.640] another kind of bucket of, like, ephemeral entity, the sort of entity
+[00:21:17.080] that comes along, which is what is the current task being done?
+[00:21:20.880] Exactly?
+[00:21:21.680] That is like kind of like gathered out of the moment in time,
+[00:21:26.720] the last few messages,
+[00:21:28.240] whatever it is, you know, the last message that the user has provided where it is.
+[00:21:32.080] Yeah.
+[00:21:32.440] And I guess that type of activity,
+[00:21:36.560] you know, it really isn't a place in which the human will engage.
+[00:21:40.760] So that probably needs to itself be more kind of inferred or decided.
+[00:21:45.960] Is that right?
+[00:21:46.560] So that's right.
+[00:21:47.360] The first one and the second one are a scale problem
+[00:21:51.120] of a thing that we had before. We had a system.
+[00:21:53.240] We gave the system a task.
+[00:21:54.320] We had to give it a, we had to give. It.
+[00:21:55.920] A permission set.
+[00:21:58.160] But this third one, that's a new creature. Totally.
+[00:22:00.360] And if you were to go and read current literature, you will find that
+[00:22:04.600] what you and I are talking about,
+[00:22:05.600] like I think task was very understandable
+[00:22:07.200] for us to think about, is like, hell yeah, I assigned this thing a job or a task
+[00:22:10.360] to go do, and it went and did it on behalf.
+[00:22:12.000] And maybe that task
+[00:22:12.920] is repeated every 30 days, or it takes a long time to do that task.
+[00:22:16.520] In literature, it's called
+[00:22:17.640] a mission. It's like, often in standards that are starting to emerge.
+[00:22:20.640] This concept of a mission and a mission is over time, as users
+[00:22:26.000] or other people give assigned work for these things to do,
+[00:22:30.600] you're going to think about here are the missions
+[00:22:32.320] or the quests I've assigned to this thing, and I, as a user,
+[00:22:36.280] will update what that mission is as we learn things.
+[00:22:39.560] And really what that mission is, is about.
+[00:22:42.160] Describing the user's intent as a concrete thing.
+[00:22:46.560] It's like,
+[00:22:46.880] I intend for this agent to be able to, you know, complete this type of task.
+[00:22:50.920] And that allows another system like an authorization system
+[00:22:55.440] to understand, hey, this user or this company, right?
+[00:23:00.640] Somebody has assigned a mission to this agent.
+[00:23:03.560] That mission is something I can measure their access
+[00:23:07.120] requests against and say, is this aligned with human intent?
+[00:23:10.320] So that gives us a way to think about how the concept
+[00:23:15.280] of an agent's identity and the tasks they're working on travels across systems.
+[00:23:20.040] Right.
+[00:23:20.400] Which is the issue that doesn't exist at all today. Is, if you go to Uber
+[00:23:24.320] and you ask your agent to book on your behalf, Uber
+[00:23:27.400] has actually no way to know whether you, what the action
+[00:23:31.760] that the agent is performing was aligned with what your initial request was at.
+[00:23:35.400] All, right.
+[00:23:35.880] And so part of this is like, we have this new concept, as in delegation, is this
+[00:23:42.440] what is it that this thing has been assigned to do,
+[00:23:45.520] so that I can then judge whether the thing it's asking to
+[00:23:48.640] do is aligned with a thing it was assigned to do.
+[00:23:51.760] Right?
+[00:23:52.080] So this is like a so we have human identities.
+[00:23:54.840] We have non-human identities.
+[00:23:56.280] And is there now a mission identity there? There is.
+[00:23:59.120] And typically this is there's there's in
+[00:24:02.920] you can think of these concepts inside identity.
+[00:24:05.360] There's this concept of session for a long time. Right.
+[00:24:07.480] It's like, I log into a website, that creates a session, often from 1990 to 2000.
+[00:24:13.440] Web. It's a cookie in your browser, and that represents some session.
+[00:24:16.520] And that session helps identify who you are.
+[00:24:18.400] And now it's not just, a session isn't just who you are.
+[00:24:24.160] It's who are you acting on behalf of.
+[00:24:26.480] And it is also for what purpose?
+[00:24:29.960] Yeah, right.
+[00:24:30.600] And that's the three layers that we now have to think about.
+[00:24:33.720] And that purpose gives you access to do what things.
+[00:24:37.760] And that's those are the layers of complexity.
+[00:24:39.800] And if you if you think of it from that perspective,
+[00:24:41.560] that's how the layer of the complexity of identity systems have that,
+[00:24:45.640] that agents force, for us to be able to solve a lot of these safety
+[00:24:48.680] concerns across system.
+[00:24:49.840] Yeah.
+[00:24:50.080] Okay.
+[00:24:50.320] Cool, I love the session analogy because it's something you can kind of relate to.
+[00:24:54.200] And sessions are interesting.
+[00:24:55.320] Sessions are things that they might get invalidated and require a new.
+[00:24:59.080] A bunch of triggers.
+[00:25:01.040] Most common time,
+[00:25:02.160] you know, that's been idle for a while, or maybe just sitting there.
+[00:25:06.000] Sometimes it's an action that has been performed
+[00:25:08.480] that kind of requires a, a variety of those.
+[00:25:12.040] So maybe let's sort of go into indeed a little bit of the solution.
+[00:25:15.520] Absolutely.
+[00:25:16.080] So what are
+[00:25:16.680] what are the types of sort of tools or new capabilities that are out there?
+[00:25:20.040] I know Keycard is kind of one of those on it,
+[00:25:22.160] but give us a little
+[00:25:22.960] bit of the families of ways to tackle this sort of new challenge.
+[00:25:27.000] Yeah.
+[00:25:27.200] I think there's there are many different
+[00:25:31.160] sort of solutions on market that kind of message to, to this type of thing.
+[00:25:34.920] But I think like the step back and think about
+[00:25:36.560] what are the new technologies or protocols that are emerging to start solving this.
+[00:25:39.840] And then we can kind of discuss about different ways.
+[00:25:42.560] So I think there's really, if I'm sitting in the chair
+[00:25:47.280] as a security person, I'm thinking about two things.
+[00:25:49.200] One, I'm thinking about how do I find my shadow agents or my shadow AI.
+[00:25:53.360] It's always a conversation.
+[00:25:54.280] Security is what are the things that are happening that I don't know about, right.
+[00:25:57.800] So I can quantify. You're obsessed with shadows.
+[00:26:00.520] Shadows. It's like, yeah, can I see a shadow?
+[00:26:02.800] Is a user doing something I didn't intend or was a system misconfigured
+[00:26:05.960] or whatever? Right. This is this is governance.
+[00:26:08.000] And there's a lot of money
+[00:26:09.080] made in governance and security, which is quantifying effectively risk.
+[00:26:13.040] And then there's the golden path, right.
+[00:26:15.320] And in all security solutions, in all dynamics, you always have.
+[00:26:19.680] Hey, here is how we're going to find all the risk.
+[00:26:23.280] Well, once we've identified risk, because a lot of the risk
+[00:26:25.840] is not people doing the wrong thing, they don't have the wrong intention.
+[00:26:28.640] They just don't know how to do the right thing.
+[00:26:30.160] That is like the secure pathway.
+[00:26:31.680] And then you have your solutions that are, what are the secure pathway.
+[00:26:34.400] Exactly.
+[00:26:35.000] And so you always in most markets and in most problem spaces
+[00:26:38.040] you have, let's go find and quantify all the risk.
+[00:26:40.240] And then you have, okay, here's the place we, we go, and, you know, over time
+[00:26:43.720] as markets consolidate they often tend to be the same thing but.
+[00:26:46.200] Moved on from the shadow to the road. Exactly.
+[00:26:48.280] But and the road is typically the infrastructure part.
+[00:26:51.040] Right.
+[00:26:51.240] And we saw that with the rise of social on the web,
+[00:26:54.360] with the rise of OAuth, do things like Auth0 come along?
+[00:26:57.080] Made it really easy for developers to build social login on their website
+[00:27:01.160] and user management, which turned out to be a really hard problem.
+[00:27:03.440] And so a lot of people, that's why that market exists.
+[00:27:05.320] And then
+[00:27:05.640] of course, we had for internal workflow, we had, like, things like Okta that rose
+[00:27:09.720] and it made real easy,
+[00:27:10.560] have a golden pathway for me to log into stuff.
+[00:27:12.680] And then you, of course,
+[00:27:13.960] had all your governance functionality that came as well. Right?
+[00:27:15.960] These are all kind of examples of places where you would sort of centrally define.
+[00:27:19.800] Exactly or sort of identity Europe in the case of the system, but
+[00:27:22.720] then you'd be able to kind of plug that in places.
+[00:27:26.080] And even with the rise of cloud, we had things like HashiCorp Vault
+[00:27:29.960] in Terraform that allowed me to configure
+[00:27:31.720] IAM systems, or provide a place for me to store long lived secrets. And so much.
+[00:27:35.040] The last era was about, where do I, where's the golden path? Right now
+[00:27:39.680] with the change, with the rise of agents, agents
+[00:27:45.320] basically break a lot of assumptions of how all those things work together,
+[00:27:48.440] because they kind of work across different systems.
+[00:27:50.720] They can work on behalf of your customers.
+[00:27:52.960] They can work on behalf of yourself. They can work on.
+[00:27:55.600] They can just be pieces of code that are running in your stack,
+[00:27:58.560] maintaining your software factory, deploying, debugging things.
+[00:28:01.840] You have all these different interactions that are no longer human driven,
+[00:28:05.200] but they do exist. And how do you manage that?
+[00:28:07.920] But the fundamental issue is what are the new technologies
+[00:28:12.560] or techniques that are coming out to help do the session mission attestation.
+[00:28:17.360] And so in OAuth
+[00:28:19.240] you have some movement there that's trying to, trying to take over OAuth.
+[00:28:23.280] Some of the stuff that Okta came up with is called Cross App Access.
+[00:28:25.800] It solves some of the problems with it, but it doesn't solve all things.
+[00:28:29.320] So that's ID-JAG for those that are watching.
+[00:28:31.640] And then on there's a.
+[00:28:34.440] Net new protocol called Agent Auth, written by Dick Hardt,
+[00:28:37.640] who has a net new approach on a protocol to try and solve these,
+[00:28:42.400] these mission session orientation, and move away from long lived secrets.
+[00:28:46.040] So those are some of the protocols that are emerging.
+[00:28:48.440] And then the different approaches today are, you're going to, is how do I find
+[00:28:52.280] and quantify
+[00:28:53.440] what risk I have, whether it's on my endpoint
+[00:28:55.200] and my production stack or my cloud accounts.
+[00:28:57.040] And then you sort of have your golden path things
+[00:28:59.080] of how do I actually enable my developers or my customers or my employees
+[00:29:03.960] to be able to find, build and use agents successfully in sort of the golden path?
+[00:29:08.720] Yeah. Okay.
+[00:29:09.400] So let me kind of echo back some, a little bit of that.
+[00:29:12.840] So like the old so you have the sort of broader challenges.
+[00:29:15.760] One of the projects around OAuth, it's about sort of allowing agents
+[00:29:19.840] identifying as agents, not masquerading as humans, to use today.
+[00:29:24.640] I guess we would have all seen hey,
+[00:29:26.320] ran the login and sort of opened up your browser.
+[00:29:28.240] You're making a film on it.
+[00:29:29.320] This is you authenticating as a human, then giving that key now to the agent instead.
+[00:29:34.320] Can we sort of create a protocol that allow the agent, allows the agents
+[00:29:38.120] to sort of authenticate as an agent and sort of have the appropriate. Yes.
+[00:29:42.160] Okay. So that makes sense.
+[00:29:43.000] And that's like a bit more of a sort of like a technical path
+[00:29:47.240] with some of the price identity, but it doesn't solve the sort of the, the,
+[00:29:50.680] the mission. Exactly problem.
+[00:29:52.760] Exactly.
+[00:29:53.400] Before, I guess the sort of the second bucket
+[00:29:55.160] is more around that sort of mission identity. Exactly.
+[00:29:57.480] And for the mission identity, like, where is the point in time in which
+[00:30:02.640] and who is involved in saying, fine, there's a mission, you've done it.
+[00:30:07.800] But like, what are the permissions that are allowed over here?
+[00:30:12.280] It seems untenable that that would be a human
+[00:30:14.800] that will come along every time and say, okay, fine.
+[00:30:17.840] I figure it out that what you're trying to do is compose an email.
+[00:30:20.320] You'll have these permissions versus, you know, you're optimizing a database.
+[00:30:24.000] So maybe you are allowed to modify an index. Exactly.
+[00:30:26.520] I think there's there's two parts to to this.
+[00:30:29.400] One is everybody individuals and companies,
+[00:30:33.560] more companies and individuals are going to have things that just say,
+[00:30:36.240] you know, no agent can do this without me being involved, right?
+[00:30:39.320] For me personally, it's probably spending over a certain amount of money
+[00:30:42.320] or deleting data, right?
+[00:30:43.600] Those are like if you're deleting I want to I want to make that decision.
+[00:30:46.320] Right. Because I care.
+[00:30:47.120] Or if you're sending an email, I actually do care deeply or.
+[00:30:50.240] Those are reasonable.
+[00:30:50.880] Those are not mission decisions though.
+[00:30:52.840] Like just ground rules.
+[00:30:54.560] Yeah, they're just ground rules.
+[00:30:55.920] Now when it comes to mission decisions, this is really where patterns like LLM
+[00:31:00.640] as a judge start to, start to emerge because you're, you're using,
+[00:31:03.400] you know, a reasoning engine to reason about whether something is reasonable.
+[00:31:06.600] And then ostensibly you basically based on this,
+[00:31:09.680] does the system think this is reasonable? Okay.
+[00:31:11.600] If it's not reasonable, now who decides what we do as a result? Is that
+[00:31:15.640] no, absolutely not, because it's hit some deterministic guardrail.
+[00:31:18.320] We say no, we'd never let delete.
+[00:31:19.880] Oh, it's trying to do X, right.
+[00:31:21.880] Should this go to the security team?
+[00:31:23.480] The security team
+[00:31:24.400] then has like a system that reviews it or should actually go back to the person
+[00:31:28.240] that's operating on behalf of and says, hey, this agent tried to do this thing.
+[00:31:32.440] Yeah.
+[00:31:32.760] Is this aligned with your what you were trying to get done right?
+[00:31:35.560] And the biggest challenge we have today when it comes to agent
+[00:31:38.880] security is how do we actually not end up with consent fatigue, right.
+[00:31:41.840] Like, the worst part about the yes, no, allow always dialog
+[00:31:45.400] is you just click yes because I'm not going to read it.
+[00:31:49.560] Right.
+[00:31:49.840] And that's always been one of the biggest challenges
+[00:31:51.360] in security is how do I have a security system
+[00:31:53.720] that only sounds the alarm when appropriate, relevant?
+[00:31:57.880] Exactly. Otherwise you lose all the signals.
+[00:32:00.000] So the mission componentry, one part of it is getting all the protocols
+[00:32:05.320] and the functionality in place so that you can sort of federate out.
+[00:32:08.960] What is it that this person said this thing's supposed to be doing?
+[00:32:11.960] And then the second component
+[00:32:13.680] is the system around that that can actually make judgment calls.
+[00:32:16.800] And the better the system around it is that making judgment calls,
+[00:32:20.720] the more, like, the less interrupts the users will have, right?
+[00:32:25.360] And a lower risk profile decision we made.
+[00:32:27.800] And that's more trust and a pathway to higher autonomy.
+[00:32:30.320] Yeah, yeah. Makes sense. Okay.
+[00:32:31.800] So you have to do that.
+[00:32:32.640] So, again, agents all the way down, something into it.
+[00:32:35.440] So you need the infrastructure.
+[00:32:36.800] We have these two open protocols that I guess are forming, right.
+[00:32:40.160] Like standards. Take a moment. Yes.
+[00:32:42.000] And, and then you have, I guess, kind of two new concepts,
+[00:32:46.960] which is you have these missions, you have to give them an identity
+[00:32:50.640] which is already like a little bit hard to sort of.
+[00:32:53.400] Wrap your head around. Yeah.
+[00:32:54.680] But then also you need to figure out what is the authorization,
+[00:32:57.160] what are the permissions, which will be a subset of the overall agent identity.
+[00:33:01.360] Exactly. So what are the.
+[00:33:02.680] Let's sort of get down then to the tools themselves that are available.
+[00:33:06.280] Right.
+[00:33:06.480] If I am
+[00:33:08.400] building agents and I'm sold, you know, like this is a problem.
+[00:33:12.040] This is a concern. Yes, I have this.
+[00:33:14.600] What are the tools available to me?
+[00:33:16.120] Yeah.
+[00:33:16.520] You know, today
+[00:33:18.440] there's this big battle in the ecosystem that I'm sure Guy has talked to
+[00:33:21.480] about with somebody.
+[00:33:22.000] There's this battle between CLI versus MCP, right?
+[00:33:25.000] And so we kind of have, you know, you have CLI tools
+[00:33:28.720] which very much have not, don't have any really auth system built into them.
+[00:33:32.360] And then you have MCP,
+[00:33:33.240] which, the nice thing about MCP is it comes out of the box with, like, OAuth support.
+[00:33:36.200] So in order to be an MCP you have to have OAuth support.
+[00:33:39.040] And that OAuth support gives a pathway for saying
+[00:33:43.800] is does this thing actually support some of the concepts that I talked about.
+[00:33:46.520] Right.
+[00:33:46.960] And there's there's two broad ecosystems where there are solutions
+[00:33:50.880] that only work for MCP.
+[00:33:52.240] And then there's some solutions that only work for CLIs.
+[00:33:54.920] And the question really is is that sufficient?
+[00:33:58.000] Because what we know is there's a set of agents, computers,
+[00:34:01.600] agents, specifically coding agents, that CLI tools are their bread and butter.
+[00:34:05.080] Right. They're just really good at it.
+[00:34:06.800] And that makes them fast.
+[00:34:07.840] And it's one of the reasons that, like, Opus and GPT-5
+[00:34:12.960] really were the breakthrough models on these computer
+[00:34:15.200] use things and led us to new level of autonomy.
+[00:34:17.400] And then you have sort of MCP only.
+[00:34:19.400] And the question is to think about what is the agent,
+[00:34:24.120] what type of tools is the agent need to have access to,
+[00:34:28.120] and what type of agent should have running in my ecosystem to do that?
+[00:34:31.840] And how do I integrate that if if it's an agent that is operating inside
+[00:34:35.920] my company, I probably want that to integrate with my IDP
+[00:34:39.600] and I want but I want to think of the IDP slightly
+[00:34:43.520] differently for agents and for users, because they're actually slightly
+[00:34:46.440] different problem statements, broadly speaking.
+[00:34:49.240] And then the tools on the market tend to be like an IDP solution.
+[00:34:54.840] There's some tools in the market that look like an MCP gateway,
+[00:34:57.040] which is a common topic, very much designed for MCP.
+[00:35:00.600] It's a giant proxy.
+[00:35:02.080] And there's other things that are designed
+[00:35:04.000] specifically for solving this sort of agent
+[00:35:05.960] agent communication in a federated manner.
+[00:35:08.040] And those are the two like landscape solutions at the moment.
+[00:35:10.560] And then, of course, you have your traditional last generation
+[00:35:14.120] sort of vendors like your Privileged Access Management.
+[00:35:17.160] That was very, very hot topic.
+[00:35:18.680] So how do I give a human access to like a Postgres running in my Amazon or my GCP?
+[00:35:24.320] Very big important problem.
+[00:35:25.880] Things like a CyberArk, that was bought by Palo Alto, was a good example of that.
+[00:35:30.120] And those are sort of the buckets.
+[00:35:31.880] And then of course you have your I'm building an agent that someone uses.
+[00:35:36.280] And how does my agent or my MCP or whatever
+[00:35:39.240] allow users to authenticate so it can carry down identity and access.
+[00:35:42.480] And those are the broad buckets of problems.
+[00:35:44.520] So like
+[00:35:44.800] everything that you described right now is very like enterprise solutions for it.
+[00:35:48.640] So in the organization you figure out
+[00:35:50.640] how do I represent agent identities in my IDP? Yes.
+[00:35:54.080] How do I sort of systematically control access to my systems by routing.
+[00:36:00.280] Kind of, or blessing, some sort of access granter.
+[00:36:03.160] Yeah, exactly.
+[00:36:05.440] Exactly.
+[00:36:06.080] Having it be accessed via CLI or SDK and run along.
+[00:36:10.680] So those are very like enterprise wide.
+[00:36:13.400] Are the solutions all, like, some of the problems that you've described
+[00:36:16.360] are things that I might as an individual or as a team also say, well,
+[00:36:20.280] within, within my sort of processes that I'm running here,
+[00:36:23.400] I want some sort of mission identity, mission permissions, definitions on it.
+[00:36:27.560] Are there solutions that also work within, within that resolution?
+[00:36:31.840] I mean, certainly that's something we're trying to do with
+[00:36:33.600] Keycard, is trying to empower teams to be able to just quickly and easily
+[00:36:36.520] pick up agents, but also quickly and easily build their own agents
+[00:36:38.920] where they're not constrained, whether it's MCP or CLI or a specific scale.
+[00:36:42.920] We're trying to build it across.
+[00:36:44.680] And so we sort of look at it's it's actually not
+[00:36:49.040] MCP or CLI, it's both, but it's also not PAM.
+[00:36:53.240] It's all three combined.
+[00:36:54.440] And how
+[00:36:55.480] you bring these different identities
+[00:36:57.160] and these different postures into one system
+[00:36:59.480] that's really easy to adopt and build with is how we think about the problem.
+[00:37:02.680] And that's where we're coming from.
+[00:37:04.080] And, you know, I think the challenge.
+[00:37:05.800] Tell us a little bit more about that, which is how would you.
+[00:37:08.040] So if you were to use Keycard. Yeah.
+[00:37:10.120] What does that entail.
+[00:37:11.400] You know, if I'm and if you well I guess you sort of choose
+[00:37:15.080] whether that sort of like if I'm a, you know, the big boss kind of
+[00:37:18.880] kind of system or if I'm a developer. Developer.
+[00:37:20.920] Yeah.
+[00:37:21.080] But what does it sort of feel like, you know, like, what am I doing?
+[00:37:25.000] Yeah, absolutely.
+[00:37:25.640] So, the way we've architected our solution is
+[00:37:29.040] if I'm, you know, using Claude Code, I want to give access to some things.
+[00:37:32.280] I download the Keycard CLI, I can now run Claude or Cursor
+[00:37:38.160] or Pi or insert your, your harness of choice, with Keycard.
+[00:37:42.360] We integrate with the hook system.
+[00:37:44.000] We then, you basically tell Keycard, hey, this agent can access these things
+[00:37:48.560] and it could be a set of MCPs,
+[00:37:50.000] or it could be a set of CLI tools or tool calls on my behalf.
+[00:37:54.320] And then we make, from that point on, no longer do you actually have to. Yes.
+[00:37:59.120] No, allow always consent dialog. Keycard makes those determinations for you.
+[00:38:02.520] And then you get to say you know what?
+[00:38:04.880] If it's a delete, I should probably review.
+[00:38:07.040] And that thing, whether that thing
+[00:38:08.240] is running on my local device or if it's running in a sandbox
+[00:38:12.160] someplace or it's cloud, it works the same way across all.
+[00:38:15.120] So one insertion point to allow your to allow your agent to evolve
+[00:38:19.160] into a software factory and have autonomy.
+[00:38:21.200] And then if you're on the flip side, I'm
+[00:38:23.040] trying to build a service, I'm trying to build an agent or a tool
+[00:38:26.320] that agents can talk to
+[00:38:27.520] with the latest, greatest protocols without having to be an auth expert.
+[00:38:30.000] You can use our SDKs, which then allow you to build those types of things
+[00:38:34.240] that your agents can.
+[00:38:35.280] With this.
+[00:38:35.640] Well, and so in that context, you are providing a means of some sort
+[00:38:40.160] of central definition of logic, I guess, or sort of like the decision making.
+[00:38:45.720] Yeah. And then you are connecting that.
+[00:38:49.200] Exactly like the two, the two value propositions are one.
+[00:38:53.000] Hey, here's like a smart engine that can make good decisions
+[00:38:55.640] about who should approve what, and is able to take your input.
+[00:38:58.560] The second is, hey, I kind of handle the proliferation of agents.
+[00:39:01.920] You have many, many agents.
+[00:39:02.840] You have the same kind of logic applied at various places.
+[00:39:06.680] Exactly.
+[00:39:08.480] And from there, connect that up to like some
+[00:39:11.080] the parent system of, you know, how does a, how does sort of a central platform team
+[00:39:17.040] convey down some of those decisions into different desktops?
+[00:39:20.760] Exactly.
+[00:39:21.280] So, how does, we really are focused on how do we enable that individual developer
+[00:39:24.960] to find lots of success, then how we let them graduate from that
+[00:39:28.400] to a team of people going together across, independent of the harness.
+[00:39:32.080] Right? Yeah. Access.
+[00:39:33.920] What resources and what circumstance.
+[00:39:35.400] And over time, how does that give sort of that
+[00:39:37.440] centralized security team, the platform team, both the enablement
+[00:39:39.960] function of how do I roll this out across the entire organization,
+[00:39:42.240] but also has a security team get the confidence to say, you know what,
+[00:39:45.480] we can say yes to this high, high degree of autonomy
+[00:39:49.200] because we feel like we have the security in place that we require to do it.
+[00:39:53.120] Yeah. Hey everyone!
+[00:39:54.920] Hope you're enjoying the episode so far.
+[00:39:57.200] Our team is working really hard behind the scenes to bring you the best guests,
+[00:40:01.080] so we can have the most informative conversations about agentic development,
+[00:40:05.400] whether that's talking about the latest
+[00:40:07.040] tools, the most efficient workflows, or defining best practices.
+[00:40:10.840] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:40:14.760] If you're enjoying the podcast and want us to continue to bring you
+[00:40:17.800] the very best content,
+[00:40:19.080] please do us a favor and hit that subscribe button.
+[00:40:21.560] It really does make a difference and lets us continue to improve
+[00:40:24.920] the quality of our guests and build an even better product for you.
+[00:40:29.360] All right, back to the episode.
+[00:40:31.400] Yeah. And so, cool.
+[00:40:32.560] So I love that. And I love the sort of the dev
+[00:40:34.440] taste of sort of, sort of the Keycard stuff on it.
+[00:40:36.920] And it is,
+[00:40:37.360] you know,
+[00:40:37.520] like I'm a believer in the bottom up, although with the it's not necessarily
+[00:40:40.040] bottom up, but that sort of developer experience clearly.
+[00:40:42.440] Also the world has a lot of sort of a passion for,
+[00:40:46.400] for central control systems to come along.
+[00:40:48.920] And I guess that's the tension that sort of plays out.
+[00:40:51.040] Neither is like right or wrong.
+[00:40:52.640] It's just about what is the emphasis at a different time?
+[00:40:55.040] How much do you indeed kind of define the guardrails in a broad, broad sense.
+[00:40:59.400] But I think a key, a key takeaway,
+[00:41:02.280] you know, the many, many, many kind of interesting things
+[00:41:04.840] and kind of all this description and things for outlining that.
+[00:41:07.160] But this notion of these mission identities
+[00:41:10.440] and agentically decided permission set for that.
+[00:41:16.920] From there, the ability to define those, enforce them properly,
+[00:41:20.320] observe them, improve them over time, reason around them, and enforce them.
+[00:41:24.400] All of those are probably evolutions of the system.
+[00:41:27.440] Over time, that core new mission identity and permissions are sort of a new entity.
+[00:41:32.200] Exactly.
+[00:41:32.640] That's the final thing that we're focused on at Key
+[00:41:35.040] card is, how do you understand what agents are doing?
+[00:41:38.280] Yeah.
+[00:41:38.520] How do you allow agents to do things without having to artificially define
+[00:41:42.440] all the strict, long lived policy?
+[00:41:44.360] And that's what we do.
+[00:41:46.360] You get there by being able to describe high level, like, you know what,
+[00:41:49.920] these are the situations where I'm really not okay with an agent doing something.
+[00:41:53.160] For me, it's a lot about deletion.
+[00:41:54.640] And in all other circumstances, I'm okay with a system
+[00:41:58.400] making the judgment call on my behalf.
+[00:42:00.200] But whether it's allowed.
+[00:42:01.000] And that's how we can have this sort of high degree of how we can move towards
+[00:42:04.440] high degree, higher degree of autonomy without bad downstream things happening.
+[00:42:08.280] And one of the biggest challenges with that, talking to a lot of,
+[00:42:12.880] in the enterprise, we're using individual devs, is this is great.
+[00:42:16.880] Like conceptually it's great, but how do I roll this out?
+[00:42:18.920] And that's where like high level
+[00:42:20.840] policy combined with, like, the LLM as a judge feature helps people see.
+[00:42:24.880] Oh, okay. So I'm not sitting there. Yeah.
+[00:42:28.200] Artificially defining hundreds and hundreds
+[00:42:30.000] and hundreds of lines of policy files, which was what we learned.
+[00:42:33.600] I think there are a lot of security tools.
+[00:42:34.920] And last generation is that that's where deployment went wrong and failed.
+[00:42:38.000] Yeah. Yeah, yeah.
+[00:42:39.040] Because it's not like when it came to humans, we were good.
+[00:42:42.240] Exactly.
+[00:42:43.720] Like. No, we were bad. Yeah.
+[00:42:45.280] It's like a bad problem. Yeah.
+[00:42:47.280] And I think the reality of of, of kind of many,
+[00:42:51.200] many aspects of technology is the problems that were a nuisance.
+[00:42:54.760] But we can kind of kind of get by with in the pre agent era.
+[00:42:58.720] But they were not great. The best teams handled them.
+[00:43:01.360] You know, those are now intolerable. Exactly.
+[00:43:04.000] The agent.
+[00:43:04.720] I often I often say to people that the best practices of cloud
+[00:43:08.000] are now base requirements for, for agents.
+[00:43:11.040] And we certainly seen those sandboxes and cloud environments and everything
+[00:43:13.880] and still true about.
+[00:43:15.080] All we're good before, but, and the same was true for like waterfall to, to cloud.
+[00:43:18.600] That's true as well.
+[00:43:20.080] Yeah. Yes.
+[00:43:21.080] So I guess
+[00:43:22.040] kind of before we close off here, I'll ask one foolish thing, which is the future.
+[00:43:26.160] I love it.
+[00:43:26.640] I love to predict the future. I do this all the time. Yeah.
+[00:43:29.280] So I mean, one aspect of it is with all this identity and evolutions of it,
+[00:43:33.360] you know, what is the transition period to it
+[00:43:35.360] and what is immediately caring and all that.
+[00:43:37.080] But if we if we leapfrog all of that and we say like three years from now,
+[00:43:40.480] yeah, feels like a lifetime. Away.
+[00:43:42.680] What do you think will be the sort of the state
+[00:43:46.120] of, of the ecosystem when it comes to how do we define these identities.
+[00:43:50.440] Yeah, I think I think there's a couple of things.
+[00:43:51.880] One is, first and foremost, new protocols will actually have been deployed.
+[00:43:57.320] Right.
+[00:43:57.560] And so right now we're really sitting on last generations
+[00:43:59.760] like OAuth-like implementations.
+[00:44:01.400] And it turns out most of them are not very good.
+[00:44:02.840] And we're seeing a lot of that when, you know, you go using MCP
+[00:44:06.040] from some of your favorite providers, you're like, well, why does this not work
+[00:44:09.120] the way that I actually thought it would work?
+[00:44:10.640] Why does this require all this?
+[00:44:11.720] I think, I think the future of the internet and such, agents will make everything
+[00:44:16.280] feel pluggable, and interoperability will be incredibly important.
+[00:44:19.200] And you'll see lots of companies really want
+[00:44:22.360] because they want to have an agent forward experience.
+[00:44:25.240] They'll really make interoperability across agent clients a high priority,
+[00:44:29.000] which means that, like most people
+[00:44:30.400] will be focused on actually building up net new auth components to support this.
+[00:44:34.520] And that will then, from an end user perspective, make actually pulling
+[00:44:37.680] a bunch of tools together so much easier and so much better.
+[00:44:40.960] I think that on the flip side, what we'll see is specifically in the
+[00:44:44.880] enterprise, we're going to see people move where there used to be a lot of silos,
+[00:44:49.040] and those silos are driven by how hard it was to write policy to less silos
+[00:44:53.000] and higher degrees of productivity and higher degrees of context sharing,
+[00:44:56.400] both because there's huge promise, but also because the identity and access
+[00:45:00.400] systems will upgrade to the point where allows that interoperability
+[00:45:03.000] and the enterprise will allow these things to communicate to each other,
+[00:45:05.480] while the security team will have the things that they need to say
+[00:45:08.520] to keep the company secure, which is often been part of the reason
+[00:45:11.560] that those systems didn't connect, because they didn't
+[00:45:13.240] have a good way to actually manage information sharing.
+[00:45:15.480] Yeah. That's like a very optimistic view of the future.
+[00:45:18.000] I know the protocols will be like it's not a given that standards
+[00:45:20.720] will be defined in three years on it, and the sort of the system will do it.
+[00:45:24.240] So that is definitely the sort of the aspiration
+[00:45:25.800] which is these systems will, will, and I guess I guess kind of the, the, the,
+[00:45:30.480] the driver is the belief that just like agents are making sufficiently
+[00:45:34.040] forcing function, that we have no option but to. Exactly.
+[00:45:36.880] And that's certainly been the history of identity and access for the last
+[00:45:40.000] 30 years is like, it's not the consumer that is really forced the evolution.
+[00:45:45.000] It's excluding online shopping with TLS, it really has been the enterprise
+[00:45:49.840] that has driven the requirement because what they want
+[00:45:51.560] is a productivity gains, or they have the security requirements
+[00:45:53.920] and they go out and say to all their vendors, yeah, you really need
+[00:45:57.320] you have to implement this, like for me to keep spending my $25 million with you.
+[00:46:02.720] And of course, the vendors say, well, we're not turning that money away.
+[00:46:05.520] We really need that revenue. So we're going to go implement it.
+[00:46:08.040] And also because all over enterprise folks are asking for it.
+[00:46:10.080] And I think what's unique about this era of of agents
+[00:46:14.280] specifically is we're seeing agents at work
+[00:46:17.840] be adopted much faster, with much higher degrees of ROI than agents at home.
+[00:46:23.040] And, you know, that's an inversion of some things
+[00:46:25.880] we've seen previously, but it's certainly true now.
+[00:46:28.880] And so I think as a result of that,
+[00:46:30.600] that will force like the the security stack, the next generation
+[00:46:34.400] security stack to evolve much faster than I would have typically suggested.
+[00:46:38.520] Yeah. I think that's a good look.
+[00:46:40.240] I think I relate to that.
+[00:46:41.560] Maybe it's like a little bit optimistic on it, but I think nothing is better.
+[00:46:44.840] Like, it's a strong forcing function,
+[00:46:46.480] that it is definitely well fueled from a VC.
+[00:46:49.440] The main of it in terms of funding the transition,
+[00:46:52.120] probably because of this sort of urgency. Exactly.
+[00:46:54.120] Yeah, yeah.
+[00:46:55.080] Thanks a lot for coming in and demystifying,
+[00:46:57.720] kind of helping us understand identity on it.
+[00:47:01.000] Looking forward to seeing,
+[00:47:02.280] you know, Keycard, and in general kind of just rolled out, mature for it.
+[00:47:06.440] Absolutely. So thanks a lot for coming in. Thanks for having me.
+[00:47:08.520] And if you're interested in Keycard, you can find us at keycard.ai.
+[00:47:11.520] And we'd happy to show you a demo and help
+[00:47:13.120] you see how you can adopt coding agents and build your own agents at scale.
+[00:47:16.480] Very cool.
+[00:47:17.320] And thanks everybody for tuning in and I hope you join us for the next one.
+[00:47:21.960] The AI Native Dev is brought to you
+[00:47:23.640] by Tessl, the package manager for skills and context.
+[00:47:26.680] Your hosts are Guy Podjarny and me, Simon Maple.
+[00:47:29.840] Our producer is Tom Dowler.
+[00:47:31.640] The AI Native Dev is not just a podcast, it's a community.
+[00:47:35.000] And we host monthly meetups at the Tessl offices in central London.
+[00:47:38.680] Visit tessl.io/community to learn more and I hope to see you there.

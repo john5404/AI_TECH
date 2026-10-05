@@ -1,0 +1,1564 @@
+[00:00:00.000] Agent is actually a wrapper around your
+[00:00:02.880] LLM. So, imagine you are starting your
+[00:00:04.960] session and asking Claude code to
+[00:00:06.720] develop something and all of this
+[00:00:08.320] information goes into the context and
+[00:00:10.480] every time Claude code tries to fix the
+[00:00:12.480] bug, it actually sends this information
+[00:00:14.560] to the context window. So, all these
+[00:00:16.000] trace logs, trace backs, all this goes
+[00:00:18.160] into the context. We are in the era
+[00:00:19.800] where we can just populate in plain
+[00:00:21.720] language a huge document describing how
+[00:00:24.120] something complex should work and agent
+[00:00:26.120] will come up with a roughly working
+[00:00:27.600] solution on its own. Usually, it won't
+[00:00:29.480] be exactly what you want and you will
+[00:00:31.120] need to anyway like manual interventions
+[00:00:33.200] and fixes to validate that. But again,
+[00:00:35.080] it's not a bug, it's a feature because
+[00:00:37.040] we are underspecifying stuff. What's a
+[00:00:38.920] good way to be able to eval an agent's
+[00:00:41.400] capability as let's say code generation?
+[00:00:43.960] >> So, it's a huge topic.
+[00:00:47.340] [Music]
+[00:00:53.440] Before we jump into this episode, I
+[00:00:55.000] wanted to let you know that this podcast
+[00:00:56.680] is for developers building with AI at
+[00:00:59.360] the core. So, whether that's exploring
+[00:01:01.440] the latest tools, the workflows, or the
+[00:01:04.120] best practices, this podcast for you. A
+[00:01:06.680] really quick ask, 90% of people who are
+[00:01:09.000] listening to this haven't yet
+[00:01:10.320] subscribed. So, if this content has
+[00:01:12.040] helped you build smarter, hit that
+[00:01:13.880] subscribe button and maybe a like. All
+[00:01:16.200] right, back to the episode. Hello and
+[00:01:18.720] welcome to another episode of the AI and
+[00:01:21.120] Native Dev. I'm super excited about this
+[00:01:23.000] episode. We're going to go uh we're
+[00:01:24.520] actually going to talk about uh agents
+[00:01:26.280] and we're going to do a kind of like a
+[00:01:27.640] little 101 uh with agents. I know there
+[00:01:30.400] are a ton of people who have absolutely
+[00:01:33.800] gone deep with agents, tried every
+[00:01:35.360] single agents. But actually, do you know
+[00:01:36.840] what? There are a huge number of
+[00:01:38.600] developers as we found out at various
+[00:01:40.320] conferences recently that when we talk
+[00:01:42.280] about agents, we actually need to do
+[00:01:44.960] more content which is more about 101.
+[00:01:47.680] Let's talk about why agents are useful,
+[00:01:50.720] what are the constituent parts of
+[00:01:52.160] agents, how can we best use them, what
+[00:01:53.600] are they good for, what are they not,
+[00:01:55.320] and also what is the difference between
+[00:01:57.000] agents and other types of AI uh
+[00:02:00.480] you know pieces like a
+[00:02:01.960] like an assistant or perhaps a bot or
+[00:02:04.840] something like that. Joining me today uh
+[00:02:07.360] is is Max Shaposhnikov uh who is going
+[00:02:10.360] to be talking uh about all of these
+[00:02:12.760] wonderful agent 101s. Uh Max is a
+[00:02:15.440] research engineer at uh Tessel. Max,
+[00:02:18.120] welcome to the podcast. How are you? Hi,
+[00:02:20.040] thank you very much for this great
+[00:02:21.120] introduction. Yeah, I'm happy to be
+[00:02:23.320] there and happy to talk about agents 101
+[00:02:26.400] and share some some insights, some
+[00:02:27.840] details about that. So, yeah, let's dive
+[00:02:29.440] in. And this is the kind of thing Max is
+[00:02:31.000] a Max is uh a very humble but very very
+[00:02:33.960] smart uh person. So, while we're going
+[00:02:36.200] to try and fit this into an episode,
+[00:02:37.840] this may be a part one of seven or
+[00:02:40.400] eight. We will see. Uh but but Max, what
+[00:02:42.920] do we actually what Max, will you tell
+[00:02:44.240] us a little bit about yourself first? Um
+[00:02:46.560] what you've been working on, what your
+[00:02:47.640] passions are in the in the AI space.
+[00:02:49.800] It's my first experience like working
+[00:02:51.120] with code gen uh here at Tessel. Um I
+[00:02:53.760] work as a research engineer as I
+[00:02:54.840] mentioned. Our focus here on like making
+[00:02:57.920] agents reliable and be able to produce
+[00:03:00.200] uh robust code such that whenever your
+[00:03:02.240] agent develop you something, you can be
+[00:03:03.880] confident and sure that it develop
+[00:03:05.920] something good, something which you can
+[00:03:07.480] trust and you don't need to, you know,
+[00:03:08.880] expend hours verifying the results. So,
+[00:03:11.240] that's the thing which we're building
+[00:03:12.920] here at Tessel. Um beyond that, my
+[00:03:15.280] previous experience was a lot uh about
+[00:03:17.600] pre-training of the LLMs.
+[00:03:19.840] I worked at a big tech and uh again like
+[00:03:22.720] I was in the pre-training team in the
+[00:03:24.520] foundational LLM team where we focused
+[00:03:27.080] on
+[00:03:28.200] figuring out how to how to train
+[00:03:30.400] large-scale models uh that could be
+[00:03:32.200] later fine-tuned for specific tasks uh
+[00:03:34.440] and again like coding is one such task.
+[00:03:36.720] I didn't uh work with that before
+[00:03:38.800] Tessel.
+[00:03:39.800] Uh my specification was like natural
+[00:03:41.320] language processing, text-to-speech, and
+[00:03:43.600] other more common multimodalities.
+[00:03:45.960] Interesting, very cool. And and I think,
+[00:03:48.200] you know, when we think about think
+[00:03:49.160] about agents, there's a bunch that's
+[00:03:50.280] kind of, you know, similar across
+[00:03:52.160] irrespective of what the agent's trying
+[00:03:53.520] to do or what it's trying to whether
+[00:03:54.560] it's trying to generate code or not. And
+[00:03:56.160] let's kind of first of all position an
+[00:03:58.880] agent with other AI entities. So, I
+[00:04:01.880] mentioned at the start, you know, we
+[00:04:02.840] have assistants and that's really where
+[00:04:05.360] when we think about AI code generation,
+[00:04:08.280] typically the the early stage co-pilots
+[00:04:10.600] of of the year were very much assistants
+[00:04:13.920] to us. What makes the difference between
+[00:04:16.799] an agent, an assistant, and a and even a
+[00:04:19.200] bot? I think um
+[00:04:21.799] the right answer would be like uh
+[00:04:24.680] there are like
+[00:04:25.840] couple of these types of entities as I
+[00:04:28.640] mentioned and uh actually never thought
+[00:04:30.760] about that co-pilot thing, but I think
+[00:04:32.480] it's a fourth uh such modality. So, in
+[00:04:34.920] my picture, there are like bots,
+[00:04:37.000] co-pilots, AI assistants, and AI agents.
+[00:04:39.800] So, that's like a more complete picture.
+[00:04:42.000] Uh I would say like the bots is the the
+[00:04:45.200] oldest type of these um
+[00:04:48.400] uh you know, in this space. Uh usually,
+[00:04:50.720] they are automating super simple
+[00:04:52.400] scripted tasks.
+[00:04:54.000] Uh they don't include
+[00:04:55.920] uh multi-turn conversations. They are
+[00:04:58.200] having like a predetermined dialogue
+[00:05:00.400] tree like or dialogue flow and you know
+[00:05:03.720] and you can forecast and understand like
+[00:05:05.440] in advance in which position, in which
+[00:05:07.680] node the the bot will be.
+[00:05:10.400] Um so, you script all the logic. In some
+[00:05:12.880] specific cases, there might might be
+[00:05:14.320] like ML models applied, but again like
+[00:05:16.520] they are super simple like
+[00:05:17.760] classification tasks, named entity
+[00:05:19.280] recognition. That's it. And we're
+[00:05:21.640] talking about typical bots, website bots
+[00:05:23.640] that we love to hate. Yeah, yeah, I get
+[00:05:25.760] you. Yeah. At some point like I think in
+[00:05:28.120] that that trend about building bots
+[00:05:29.960] started since uh Alexa, maybe like 2015,
+[00:05:33.080] right? Like when first version of Alexa
+[00:05:34.880] was released and Siri was released. So,
+[00:05:37.360] there was like a lot of hope that bots
+[00:05:39.160] will be the future.
+[00:05:41.040] Uh well, uh apparently, we're still not
+[00:05:42.800] there.
+[00:05:43.920] Uh bots are still not able to do lots
+[00:05:45.960] of, you know, cool stuff. Uh again like
+[00:05:48.640] they are super simple in the nature in
+[00:05:50.280] their nature. They are prescriptive.
+[00:05:52.320] They have like specific patterns about
+[00:05:54.240] how how to perform specific tasks and
+[00:05:56.840] they are very limited. They don't have
+[00:05:58.240] an environment and environment is a very
+[00:06:00.280] key like important word which we'll talk
+[00:06:02.200] later. Um
+[00:06:03.600] so, moving next, I think that the next
+[00:06:05.480] in this uh hierarchy is the co-pilots.
+[00:06:07.840] Uh co-pilots are like auto-complete.
+[00:06:11.080] Uh usually, we treated uh as
+[00:06:12.680] auto-complete models which help you to
+[00:06:16.120] assist in finishing the specific context
+[00:06:20.840] uh which you are working with. So, in
+[00:06:22.320] terms of code, imagine you are like
+[00:06:24.080] typing some function, it gathers the
+[00:06:26.160] local context, for example, the previous
+[00:06:27.920] information which is already in the
+[00:06:29.120] file, the future information um
+[00:06:31.880] and that's already enough for it to just
+[00:06:34.360] complete a small piece in the middle uh
+[00:06:36.680] for the function which you work. But
+[00:06:38.040] again like the scope is very small, it's
+[00:06:39.920] super local, and the key feature for
+[00:06:42.760] co-pilot models is that they should be
+[00:06:44.360] like instant, super fast such that
+[00:06:47.240] uh you know, you can press a tab and it
+[00:06:49.040] work like an auto-complete. And
+[00:06:51.000] actually, when when we were talking in
+[00:06:52.560] the early stages of our podcast when we
+[00:06:54.360] were talking with people like uh Tabnine
+[00:06:56.560] in the early days when we they were
+[00:06:58.040] saying some super interesting things
+[00:06:59.400] about how the speed at which uh an
+[00:07:02.320] auto-complete basically a co-pilot like
+[00:07:04.360] you say, the speed at which that
+[00:07:05.880] delivered an answer
+[00:07:07.360] massively like talking split seconds
+[00:07:09.920] massively changed the user the developer
+[00:07:12.000] experience with those whether people
+[00:07:13.840] would want to use them or not. And
+[00:07:15.720] typically, it's because they provide
+[00:07:17.680] small responses. They're short responses
+[00:07:20.160] that I as an individual know what I
+[00:07:22.280] should expect and know what I I can
+[00:07:25.160] actually type it myself most likely cuz
+[00:07:27.000] I'm not asking it to do something huge.
+[00:07:28.800] It's just a single line or something
+[00:07:30.360] that is
+[00:07:31.280] very often based on the very local
+[00:07:33.040] context of the of the method, etc. Yeah,
+[00:07:36.000] I think like in the early days, these
+[00:07:38.000] co-pilot models, the the requirement for
+[00:07:40.120] it to be super fast was extremely
+[00:07:42.200] important because they were just not
+[00:07:44.640] able to deliver complex stuff and that's
+[00:07:47.080] why people were very picky and serious
+[00:07:49.400] about the speed of it. Now, there's a
+[00:07:51.040] relaxation of this requirement and I
+[00:07:52.680] think people are ready to wait more if
+[00:07:54.920] this uh co-pilot models could, you know,
+[00:07:57.600] achieve like or
+[00:07:59.360] really execute a very complex scenario.
+[00:08:01.600] I can think of a actual scenario where
+[00:08:04.240] you are defining, let's say, a class and
+[00:08:06.360] you're writing a docstring for a class.
+[00:08:08.640] Um so, the docstring can be quite
+[00:08:10.560] complex, right? It can include a lot of
+[00:08:12.120] details about like your intentions, how
+[00:08:14.360] this class will look like, what it will
+[00:08:15.880] do. And I think now that agents are so
+[00:08:19.040] sorry, not agents like assistants,
+[00:08:20.400] co-pilots are so smart, people are okay
+[00:08:23.560] to wait couple of more seconds
+[00:08:25.800] um and the tolerance to wait uh is now
+[00:08:28.880] like growing. That that like literally
+[00:08:30.840] literally fine because they their
+[00:08:32.240] capabilities just growing up. Uh that's
+[00:08:33.960] our um
+[00:08:35.440] uh co-pilots. Again like their core
+[00:08:37.880] feature, usually, they are small, they
+[00:08:39.479] are instant in response. The next
+[00:08:41.760] generation of the models is AI
+[00:08:43.560] assistants
+[00:08:44.880] uh and this is the first moment I think
+[00:08:46.800] where the agentic capabilities are
+[00:08:50.400] already uh presented.
+[00:08:52.680] Uh maybe not in the full picture, but
+[00:08:54.240] still like a lot of them already there.
+[00:08:56.600] So, their purpose is to assist with user
+[00:08:58.960] tasks and this is the first moment where
+[00:09:01.680] user task can be actually anything. It
+[00:09:04.240] can be code generation, but it can be
+[00:09:06.440] planning, it can be searching for and
+[00:09:09.400] doing them doing the market research.
+[00:09:10.920] Like the purpose of the assistant can be
+[00:09:13.080] different. The capabilities the core
+[00:09:15.040] capabilities for uh this assistant is to
+[00:09:17.960] respond to the user requests. So, like
+[00:09:21.080] as assistant word means like uh
+[00:09:23.680] it waits for your for your response, it
+[00:09:26.160] outputs you uh it you know, like result
+[00:09:29.080] of execution and it further waits for
+[00:09:31.560] for another clar- clarifications or
+[00:09:33.680] another commands. So, it um it iterates
+[00:09:37.440] with it interacts with you in a chat
+[00:09:39.680] chat way.
+[00:09:40.800] Uh it doesn't generate like a long plan,
+[00:09:42.960] it doesn't focus on the long horizon
+[00:09:44.480] tasks. It's focused specifically on what
+[00:09:46.400] to do what you want to do right now. And
+[00:09:48.520] I think like the core another important
+[00:09:51.200] uh detail is that uh user makes the
+[00:09:53.480] decisions. So, user is always in the
+[00:09:55.440] loop uh and that's what is the
+[00:09:57.040] differentiator factor for
+[00:09:59.000] between the agent and the system. And
+[00:10:01.240] nowadays, I think like yes, definitely
+[00:10:03.680] like AI agents are growing and becoming
+[00:10:06.280] massively adopted, but still in
+[00:10:08.080] practice, people are mixing
+[00:10:10.800] the term AI agent with AI assistant. And
+[00:10:14.160] if you're using a cursor with a top
+[00:10:16.480] interactive tab open on the right, then
+[00:10:18.280] you're using using AI assistant because
+[00:10:19.960] you're always there to chat with the
+[00:10:21.720] model and fix it. And even if you're
+[00:10:23.840] using cloud code, which is technically
+[00:10:26.240] AI agent, you're still very likely use
+[00:10:28.240] it as a system because you're typing
+[00:10:29.960] commands, you validate the results, and
+[00:10:32.840] if you're unhappy, then you ask it to
+[00:10:34.240] redo something. So, so would you say
+[00:10:35.920] they are
+[00:10:37.440] they have that agentic capability, but
+[00:10:39.560] typically the way we use them is as an
+[00:10:41.520] assistant.
+[00:10:42.720] So, the the difference between a the
+[00:10:44.720] difference between an agent or an
+[00:10:46.920] assistant
+[00:10:48.440] is almost the way we use it versus
+[00:10:50.520] capabilities. Maybe it's different
+[00:10:53.040] versions or not versions, but different
+[00:10:56.040] implementations and offerings will be
+[00:10:58.200] better at certain things versus other,
+[00:11:00.200] whether it's
+[00:11:01.839] the longer term more autonomous tasks
+[00:11:04.400] versus the other, but it's typically
+[00:11:06.640] how we interact. Correct. So, I think
+[00:11:09.560] if we want to highlight the border, then
+[00:11:11.640] like assistants they're again like
+[00:11:13.480] interacting with the user, waiting for
+[00:11:15.080] the response. And
+[00:11:17.960] the user makes the decisions. But for AI
+[00:11:20.040] agents, usually they can be treated as
+[00:11:22.560] proactive
+[00:11:23.960] tasks, like assistants which can do like
+[00:11:27.240] long horizon, very challenging,
+[00:11:29.839] multi-step complex tasks,
+[00:11:32.520] sometimes not requiring human in the
+[00:11:34.560] loop. That's the definition of the AI
+[00:11:36.520] agent, at least in this taxonomy which
+[00:11:39.680] we introduced of four core entities. AI
+[00:11:42.680] agent is like on the top because AI
+[00:11:45.000] agent can technically
+[00:11:46.880] do not require human to be there to
+[00:11:48.839] achieve the task. And let's go into
+[00:11:50.760] agency a little bit deeper in terms of
+[00:11:53.240] the way we use them. Um you mentioned
+[00:11:56.480] cursor, you mentioned code code. Very
+[00:11:58.720] different usage patterns in terms of one
+[00:12:01.360] uses a terminal UI, one uses a more
+[00:12:03.960] classical IDE.
+[00:12:06.200] If we look at others, in fact, quite a
+[00:12:08.560] few have almost favored either IDE or
+[00:12:12.160] terminal, but there are a surprising
+[00:12:13.720] number that favor terminal these days.
+[00:12:16.720] Is there a best way to use an agent? Is
+[00:12:19.720] there a way that is you know, easier for
+[00:12:22.520] us to give an agent information or
+[00:12:24.680] context? Or is it really up to the user
+[00:12:27.640] depending on how the user prefers to
+[00:12:29.839] interact with that agent?
+[00:12:31.000] >> Yes, I think
+[00:12:32.600] the interactivity is the differentiator
+[00:12:35.120] factor. Like when you're using an IDE
+[00:12:37.640] with a extension like a cursor
+[00:12:41.600] being like visible to you, then you are
+[00:12:45.040] like agreeing to to the scenario where
+[00:12:47.760] you are in the loop. You're always
+[00:12:49.800] checking what happens, and you're just
+[00:12:51.800] doing this interactively. So, UI
+[00:12:53.360] elements like simplify
+[00:12:55.920] and
+[00:12:57.560] you know, like accelerate the onboarding
+[00:12:59.440] for you as a developer. It doesn't
+[00:13:01.480] replace you as a developer. It's just
+[00:13:03.000] like here on the side exist to help you
+[00:13:06.360] with achieving like specific tasks like
+[00:13:08.560] executing helping you to write a
+[00:13:10.920] specific code file or specific unit test
+[00:13:13.320] and so on. And be very helpful in the
+[00:13:16.640] sense that there is a UI. You don't need
+[00:13:18.520] to know any commands because there are
+[00:13:20.440] buttons, and
+[00:13:22.440] it's just like a box for you to type the
+[00:13:25.120] text and execute. So,
+[00:13:27.200] I think like the cool
+[00:13:29.920] part of the cursor or WinServe is that
+[00:13:32.360] they are
+[00:13:33.560] giving you this IDE
+[00:13:35.960] with a
+[00:13:37.560] with lots of UI elements to help you
+[00:13:40.280] onboard to using these tools more like
+[00:13:43.480] proactively and in your everyday use
+[00:13:45.760] case. While for AI agents like with
+[00:13:47.920] terminal, by definition, like you don't
+[00:13:49.960] need like
+[00:13:51.480] buttons, right? Like complex things
+[00:13:54.120] complex things can be done just with the
+[00:13:55.760] combination of the of the of the of the
+[00:13:58.760] keys
+[00:14:00.040] or the commands. So, terminal is like
+[00:14:02.000] for more advanced users
+[00:14:04.080] for those who are ready to accelerate
+[00:14:06.480] even further because they don't need to
+[00:14:09.880] have have a visualization. They are okay
+[00:14:12.680] just like living in the terminal and
+[00:14:15.400] manipulating all the commands in the
+[00:14:16.839] terminal. Because if you're at some
+[00:14:18.360] point advanced the Vim or Nana or
+[00:14:21.480] whatever editor
+[00:14:23.079] or a Git, you actually don't need UIs,
+[00:14:25.079] right? You can just do and achieve very
+[00:14:27.040] hard scenarios with terminal directly,
+[00:14:29.800] and it saves you time. But again like
+[00:14:32.079] it's just like a bit harder because it's
+[00:14:33.920] less interactive because it's easier to
+[00:14:36.160] to lose what happens.
+[00:14:38.760] And I think the
+[00:14:40.839] the amount of the generated information
+[00:14:42.880] sometimes maybe overwhelming, so it's
+[00:14:44.520] hard to navigate for the terminal just
+[00:14:46.760] because there's so many things that are
+[00:14:48.200] happening, and it requires some skill to
+[00:14:50.440] learn how to use it properly. Yeah,
+[00:14:52.120] absolutely. And I think things like
+[00:14:53.880] cursor, for example, where you see the
+[00:14:55.720] the the changes and you can flip from
+[00:14:57.959] file to file very very easily. You
+[00:15:00.240] obviously miss that from the from the
+[00:15:02.000] terminal point of view. But I don't know
+[00:15:03.680] what it is about, you know, just being
+[00:15:05.240] on a terminal that actually just makes
+[00:15:06.880] me feel faster, more productive at the
+[00:15:08.839] terminal.
+[00:15:10.280] And of course, when you're at the
+[00:15:11.440] terminal, you get the power of the
+[00:15:13.160] terminal, right? It's it's it tell us a
+[00:15:15.240] little bit about how you can effectively
+[00:15:17.640] use the terminal beyond just code code.
+[00:15:20.920] Yeah, that's true. And another super
+[00:15:23.200] advantage of the terminal solution is
+[00:15:24.880] that like
+[00:15:25.920] it gives you a better way to run your
+[00:15:28.839] agent in the background, right? Like you
+[00:15:31.280] can run the cloud code code X terminal
+[00:15:34.360] CLI in the non-interactive mode
+[00:15:37.600] just for a CLI giving a prompt what you
+[00:15:39.839] want to, you know, what you want from
+[00:15:41.880] this agent to to do, and it will spawn a
+[00:15:44.680] background process and fully on its own
+[00:15:47.079] start executing
+[00:15:48.560] this complex request which you asked it.
+[00:15:51.240] But I think nowadays actually like any
+[00:15:53.680] AI system tools like such as cursor,
+[00:15:55.920] they are also moving in this direction,
+[00:15:57.640] and they're adding more and more
+[00:15:58.720] capabilities. For example,
+[00:16:00.720] a couple of months ago cursor couldn't
+[00:16:03.600] have access to a terminal. So, you if
+[00:16:05.520] you run something, you need to you
+[00:16:07.240] needed to copy and paste directly in the
+[00:16:10.440] in the text box
+[00:16:12.320] of the of the cursor
+[00:16:14.200] the error message, for example. But now
+[00:16:15.760] it actually has access to a terminal, so
+[00:16:17.760] it has access to the information which
+[00:16:19.680] you are in the terminal like
+[00:16:22.520] using. So, that's one thing. And now
+[00:16:25.120] there's that cursor also launched their
+[00:16:27.200] own agent, which can be also
+[00:16:28.959] non-interactive or CLI. So, they are
+[00:16:32.040] covering this space as well.
+[00:16:34.880] You know, they want to get both sides
+[00:16:36.839] and both people like who are who want to
+[00:16:38.320] interact who want to have more
+[00:16:39.400] interactivity and who who want who are
+[00:16:41.120] okay to
+[00:16:42.480] work just with CLI. It's fairly how
+[00:16:45.240] I think we're fairly familiar you and I
+[00:16:47.200] with trying out a bunch of these, and I
+[00:16:49.120] think everything that we've mentioned so
+[00:16:50.400] far I've definitely played with, I'm
+[00:16:52.079] sure you have. And there's obviously a
+[00:16:54.160] bunch of others, Gemini CLI. I think you
+[00:16:55.959] actually maybe mentioned Gemini. Code X
+[00:16:57.720] is another. Where would you say like for
+[00:17:00.160] for those listening who are kind of like
+[00:17:01.920] on the you know, trying to trying to
+[00:17:03.480] follow this 101 working out well, where
+[00:17:06.160] do I actually start? Where would you say
+[00:17:08.040] is like a good place to start? Is there
+[00:17:11.040] is there one good place or is it really
+[00:17:12.720] depending on where where a user is most
+[00:17:14.959] consistently, you know, doing those
+[00:17:17.280] tasks? Should they try and find an agent
+[00:17:19.199] in that environment? What would you
+[00:17:21.120] recommend? I think it depends on the
+[00:17:23.280] level of experience and maybe on the
+[00:17:25.480] role of the person in the company if
+[00:17:27.079] we're talking about some some technical
+[00:17:29.120] people because definitely there are no
+[00:17:31.280] code solutions, right? Like Lovable, for
+[00:17:34.040] example, that
+[00:17:35.600] that provides your
+[00:17:37.440] live coding platform for developing
+[00:17:39.679] backends and frontends instantly without
+[00:17:42.160] any knowledge of the code. So, it
+[00:17:43.720] requires you zero knowledge. It just
+[00:17:45.280] requires you to be there to validate and
+[00:17:47.480] approve the the the content generated by
+[00:17:50.320] the AI
+[00:17:52.320] assistant or whatever.
+[00:17:54.400] And the more the the closer you are to
+[00:17:56.480] the code
+[00:17:57.840] and the more scale you need,
+[00:18:00.640] then the more advanced tools you need to
+[00:18:02.800] use,
+[00:18:04.080] which require potentially a lot of
+[00:18:07.040] manual resolution
+[00:18:08.840] of the problems. So, for example, if you
+[00:18:10.920] are like a software engineer and you're
+[00:18:14.000] writing and your your goal is to develop
+[00:18:16.120] a lot of software tasks and a lot of
+[00:18:18.679] manipulations with the code, then you're
+[00:18:20.400] okay to start with first of all a
+[00:18:22.240] copilot just to see if your if the
+[00:18:25.240] copilot models are helping you to at
+[00:18:28.159] least accelerate your productivity
+[00:18:31.760] as a as a developer. So, does it help
+[00:18:33.800] you to write a better faster code? If
+[00:18:36.040] you're happy with the copilot, then
+[00:18:37.440] you're going to the next extension and
+[00:18:39.360] go with a cursor IDE when you're
+[00:18:41.800] starting using these complex assistants
+[00:18:45.280] as your companions helping you achieve
+[00:18:47.280] the task. And now the scope of autonomy
+[00:18:52.800] and what assistants can do grows. So,
+[00:18:55.200] you can delegate it to change not just a
+[00:18:57.240] function, but entire files. And once
+[00:18:59.679] you're okay with that, then you can can
+[00:19:01.880] move to the top of this hierarchy and
+[00:19:04.200] start using cloud code and cursor or
+[00:19:06.000] Gemini CLI
+[00:19:08.120] directly in the terminal because now you
+[00:19:10.600] know the strong sides of these. Now you
+[00:19:13.120] know what you can delegate it, and
+[00:19:14.720] probably you're already like familiar
+[00:19:16.040] with a core capabilities and familiar
+[00:19:18.840] with how these
+[00:19:20.520] tools are working. So, you can delegate
+[00:19:22.880] even more scope in a fully autonomous
+[00:19:25.800] pipeline or setup. So, I think the
+[00:19:28.560] the reasoning should be like that.
+[00:19:30.919] Start with something super simple which
+[00:19:32.440] doesn't require any knowledge of code,
+[00:19:34.240] and if you already have a knowledge,
+[00:19:35.679] then progress further
+[00:19:37.560] and
+[00:19:38.840] go into more and more advanced
+[00:19:41.280] tools. I think it's a really really good
+[00:19:43.480] advice in terms of it's not just
+[00:19:45.520] actually about Well, there's two things
+[00:19:47.400] I think here. One one is that there's a
+[00:19:49.040] trust implication, and it's important to
+[00:19:52.520] be in control like when we start
+[00:19:54.200] learning how to drive, we don't jump
+[00:19:55.720] into a Ferrari and try and try and try
+[00:19:57.680] and drive that Ferrari. It's about do
+[00:19:59.920] you know taking small steps.
+[00:20:02.240] Once we're comfortable with it, once we
+[00:20:04.160] trust ourselves as well as the tools
+[00:20:05.640] that we have, we go on to the next step.
+[00:20:07.600] And and this growth in autonomy is is
+[00:20:09.920] all about that growth in trust. I I
+[00:20:11.520] absolutely love that. And I and I like
+[00:20:13.280] the the focus there as well in terms of
+[00:20:16.600] you know, sticking to where you're most
+[00:20:18.920] familiar in that sense of if you're if
+[00:20:21.000] you're familiar with an IDE, well, maybe
+[00:20:23.080] let's let's start you know, what when
+[00:20:25.320] you go from there maybe GitHub Copilot
+[00:20:27.280] or something like that in the IDE is the
+[00:20:28.640] best place. And then maybe cursor if you
+[00:20:30.440] want to stay with IDE. If you love
+[00:20:32.120] terminals, maybe dip into something else
+[00:20:34.360] from from from that. Really really like
+[00:20:36.800] that advice. Some some of our listeners
+[00:20:39.000] may have heard of subagents before. What
+[00:20:40.520] what's the difference between an agent
+[00:20:41.920] and a subagent? Some like subagents is
+[00:20:44.520] basically an instance
+[00:20:46.760] uh like another instance of an agent
+[00:20:49.600] just spawned and controlled by the main
+[00:20:52.280] agent. And you usually use that when
+[00:20:56.040] your task is so complex that one agent
+[00:20:59.400] is not enough to tackle it. And when
+[00:21:02.400] there are different options or different
+[00:21:05.560] paths that can be explored. Uh so I
+[00:21:07.880] think like yeah two two scenarios where
+[00:21:09.640] the the problem is so complex that it
+[00:21:11.280] needs to be split into smaller parts or
+[00:21:14.080] when you need to make a search to like
+[00:21:17.080] just explore the space and
+[00:21:19.800] to just one of one of the options. So
+[00:21:22.760] like yeah these two scenarios. But
+[00:21:24.440] basically subagent is just like another
+[00:21:26.720] instance of uh of a main agent which is
+[00:21:30.440] asked to solve a specific problem.
+[00:21:33.440] So uh you can think of it as a master
+[00:21:35.560] slave architecture. Uh right like if you
+[00:21:38.000] are for example interacting with a
+[00:21:39.400] master agent with with the one which is
+[00:21:41.400] you have access in your terminal.
+[00:21:43.600] Uh and you ask it to develop a um a
+[00:21:47.040] service that has a front end and a back
+[00:21:48.960] end, then it's a great candidate for
+[00:21:51.400] splitting uh and spawning a subagents.
+[00:21:54.120] One subagent will be working on the back
+[00:21:56.440] end, another agent will be working on
+[00:21:58.120] the front end.
+[00:21:59.320] Um and they will be doing their like
+[00:22:01.400] pieces independently. And then at some
+[00:22:03.440] point they will go back to the master
+[00:22:06.360] uh agent to communicate back the result.
+[00:22:09.120] And the master will decide are they okay
+[00:22:11.800] or like is the result is fine? Does it
+[00:22:13.560] satisfy the overall goal? And if not,
+[00:22:15.960] then it will circle back the the
+[00:22:18.040] information to them and give a feedback.
+[00:22:20.240] And they like continue iterating or
+[00:22:22.280] refining uh based on the feedback which
+[00:22:24.280] they received to improve this back end
+[00:22:25.800] and front end. That's a
+[00:22:27.640] uh example of how to use subagents for
+[00:22:30.440] coding assistance, for tasks beyond
+[00:22:33.440] coding where you need like exploration.
+[00:22:35.840] Uh subagents might be just like a
+[00:22:37.520] parallel instances of the same agent
+[00:22:40.440] which are just exploring the problem
+[00:22:42.320] from different angles. For example, you
+[00:22:44.040] want to search
+[00:22:45.480] um
+[00:22:46.600] for some information like to answer some
+[00:22:49.080] specific question. And then you can make
+[00:22:51.440] a search with one type of query in the
+[00:22:53.679] Google, you can make a search over the
+[00:22:55.640] articles in the Wikipedia, you can do a
+[00:22:57.560] search over the information available in
+[00:23:00.160] your I don't know like local database.
+[00:23:02.240] And for all that scenarios, they all
+[00:23:04.400] about the search of the information in
+[00:23:07.000] different sources, but they are done by
+[00:23:08.560] just like a different agents.
+[00:23:10.280] Technically speaking,
+[00:23:12.520] uh in in some future there won't be need
+[00:23:15.400] uh in subagents because the master agent
+[00:23:18.560] will be so smart and will be knowing how
+[00:23:21.760] to
+[00:23:22.800] um how to resolve any challenging
+[00:23:24.679] problem uh on its own. So it won't it
+[00:23:27.679] won't you know, lose and won't forget
+[00:23:29.880] about the context. It will know how to
+[00:23:31.679] navigate in this complex structure on
+[00:23:33.800] its own. And technically it won't need
+[00:23:35.560] to have spawning subagents. Um but
+[00:23:39.360] another reason for another motivation
+[00:23:40.960] for the subagents is just like speed.
+[00:23:42.679] All we we know that agents are super
+[00:23:44.360] slow. If you try to paralyze them and
+[00:23:47.080] subagents is one way of doing this, you
+[00:23:49.000] just get the result faster. You just get
+[00:23:50.960] like 10 implementations of the same
+[00:23:53.000] thing and maybe one or two of them are
+[00:23:54.840] good and working and doing what you were
+[00:23:56.679] expecting. So it's just like um like you
+[00:23:59.600] know, like latency
+[00:24:01.400] um and throughput
+[00:24:03.280] uh versus idling time.
+[00:24:05.400] Um
+[00:24:05.960] yeah. I think like the time that you
+[00:24:08.520] mentioned there and the parallelization
+[00:24:10.040] as well as the context are both really
+[00:24:11.560] good reasons to use them. Um in terms of
+[00:24:14.920] in terms of the cons the the the the the
+[00:24:18.240] negatives that that they can that they
+[00:24:20.640] provide, is it just is is it like
+[00:24:22.800] burning tokens more or anything anything
+[00:24:24.679] that we need to be cautious of? Yeah, I
+[00:24:27.560] mean like for sure like costs will grow
+[00:24:30.280] uh linearly, right? Like with more
+[00:24:31.640] agents you will cost like spend more. Um
+[00:24:35.280] And sometimes there might be a situation
+[00:24:37.400] where you again like spawn the these all
+[00:24:40.040] agents, but they actually didn't
+[00:24:41.280] converge to anything. Um
+[00:24:44.120] And another disadvantage is that there
+[00:24:46.760] are different ways how to spawn how to
+[00:24:48.840] launch the subagents. One is the your
+[00:24:51.960] main agent can launch
+[00:24:54.280] subagents on its own because like Claude
+[00:24:56.360] Code actually now gives this capability.
+[00:24:58.960] You can ask explicitly saying explicitly
+[00:25:01.360] in the prompt, use parallel agents to
+[00:25:03.360] analyze this complex document, right? So
+[00:25:05.320] you can explicitly state it in the
+[00:25:07.280] prompt and it will on its own spawn like
+[00:25:09.560] multiple versions of the agents. But the
+[00:25:11.720] thing is is that you can
+[00:25:14.280] you might want to have specialized some
+[00:25:17.120] subagents, right? So instead of like
+[00:25:19.400] general search subagents, you want to
+[00:25:21.560] have subagents focused on a specific
+[00:25:24.480] access or a specific angle of a problem.
+[00:25:27.240] And here you need like to have extra
+[00:25:28.960] customization. You need to work you need
+[00:25:31.920] to uh carefully design instructions for
+[00:25:35.720] uh for that subagent in order to get
+[00:25:38.320] best you know, get get great result. So
+[00:25:41.240] the downside that you know, like
+[00:25:42.960] speaking of downsides, the time for
+[00:25:45.640] designing the subagents. It's also like
+[00:25:48.360] uh an art and you need to make an
+[00:25:50.280] effort. If you don't do it, then
+[00:25:53.600] probably um main agent will do it on its
+[00:25:56.160] own. But the quality of the subagents
+[00:25:58.400] might be different because it might just
+[00:25:59.760] like miss uh some
+[00:26:02.040] some some important bits uh in in in the
+[00:26:05.480] instruction to the subagent.
+[00:26:06.720] >> Yeah. And and in terms of the agents
+[00:26:08.920] like other than being able to customize
+[00:26:11.360] an agent and be able to a subagent
+[00:26:13.320] rather. And and be able to say how I
+[00:26:15.480] want you to use this subagent when
+[00:26:16.840] you're when you're doing these types of
+[00:26:18.160] things
+[00:26:19.240] uh or allow it to choose the the the
+[00:26:20.880] appropriate kind of subagent to do those
+[00:26:22.720] tasks. I presume the main agent is the
+[00:26:25.040] is pretty much entirely the the the
+[00:26:28.080] communicator across subagents. There's
+[00:26:30.800] no human interaction between
+[00:26:33.800] uh that that that bypasses the main
+[00:26:35.440] agent. Yeah, I mean like it depends on
+[00:26:37.280] the design of your system and I think in
+[00:26:39.000] Claude Code it's very hard to control
+[00:26:40.520] it. Like usually the subagents are
+[00:26:43.040] launched on the background. So you don't
+[00:26:44.920] actually have access directly to see
+[00:26:46.880] what they are doing. You only can see it
+[00:26:48.679] in the logs. So if you open the
+[00:26:51.040] um Claude uh JSONL file to see what were
+[00:26:54.040] the commands, you will see that agents
+[00:26:55.760] were doing something on the background,
+[00:26:57.480] but you won't necessarily see it in your
+[00:26:59.840] terminal.
+[00:27:01.040] Uh you won't necessarily see the the
+[00:27:02.960] thinking process, the the path, the
+[00:27:05.320] planning for each of the subagents. So
+[00:27:07.720] yeah like again and maybe another like I
+[00:27:10.440] don't know disadvantage or even
+[00:27:11.920] advantage of this is that like you trust
+[00:27:14.240] it even more. So you need to believe in
+[00:27:16.880] in the fact that it will come up with
+[00:27:18.280] something uh meaningful even more if you
+[00:27:21.080] are entering the world of subagents.
+[00:27:23.280] Cool. You mentioned context management
+[00:27:25.240] which I think is actually a really
+[00:27:26.280] important part of subagents. Well, first
+[00:27:29.240] of all we should talk about the problems
+[00:27:30.760] of you know, context within agents and
+[00:27:34.240] when they compact why they compact
+[00:27:36.800] context and and how perhaps subagents
+[00:27:40.440] can alleviate at least some of that by
+[00:27:42.920] running in their in their own little
+[00:27:44.160] domains. Talk us through a little bit
+[00:27:46.360] about the the need and the problems of
+[00:27:49.080] context or over context for an agent.
+[00:27:51.520] >> Yeah, so um
+[00:27:54.400] behind the scenes We're going to jump
+[00:27:55.920] into the second half of our
+[00:27:56.880] conversation. But first, a quick
+[00:27:58.679] shout-out to AI Native DevCon. Two days
+[00:28:01.240] of hands-on sessions, deep dives, and
+[00:28:03.679] honest conversations about what it means
+[00:28:05.760] to build AI native software. November
+[00:28:07.960] 18th and 19th in New York or join
+[00:28:10.280] virtually from anywhere. Tickets and
+[00:28:12.200] details at ainativedev.io/devcon.
+[00:28:16.240] See you there. Behind the scenes of all
+[00:28:18.160] the agents there are LLMs, right? Like
+[00:28:20.200] large language models and they are
+[00:28:21.679] trained with some fixed uh or maximum uh
+[00:28:26.360] context length. And this context length,
+[00:28:29.080] one of the main limitation I'll talk
+[00:28:30.200] about the other one.
+[00:28:31.640] Uh but like it usually has some like max
+[00:28:36.240] max size. Like 256k tokens or 1 million
+[00:28:39.840] tokens. So so there is a limit of how
+[00:28:42.120] much information can be used in the
+[00:28:44.280] context to the
+[00:28:45.320] uh to your LLM. And when we like
+[00:28:48.800] starting talking about agents, agent is
+[00:28:51.400] actually a wrapper around your LLM which
+[00:28:54.640] has which constantly adds something
+[00:28:57.560] appends something new to the context.
+[00:28:59.919] Right? So imagine you are starting uh
+[00:29:02.240] your session and asking Claude Code to
+[00:29:04.200] develop something,
+[00:29:05.640] uh it creates like you I don't know like
+[00:29:07.200] a bunch of files and all of this
+[00:29:08.720] information goes into the context. So it
+[00:29:10.960] already occupies some thousands of the
+[00:29:14.120] tokens in the context window.
+[00:29:16.560] And every time Claude Code tries to fix
+[00:29:19.440] the bug,
+[00:29:20.640] uh it actually also like uh adds appends
+[00:29:24.000] this information to the context window.
+[00:29:25.400] So all these trace logs, trace backs,
+[00:29:28.400] all this goes into the context. And it's
+[00:29:31.919] crazy how fast you can you know, like
+[00:29:34.520] reach the limit of the context memory.
+[00:29:36.880] Um
+[00:29:38.440] And uh that's
+[00:29:40.400] one you know, like place where subagents
+[00:29:42.919] can help because different instances
+[00:29:46.640] uh of the like different sub agents will
+[00:29:48.640] have their own context window
+[00:29:50.960] and that's that's how you like you know
+[00:29:53.640] increase the amount of the available
+[00:29:56.040] context because every every single sub
+[00:29:58.960] agent will maintain its own
+[00:30:01.640] context window
+[00:30:03.240] just
+[00:30:04.280] pre-filled with the information it
+[00:30:06.280] gathered from the main agent about the
+[00:30:08.480] instruction about the task which it
+[00:30:09.800] needed to accomplish but the rest of the
+[00:30:12.560] the rest of the context won't be
+[00:30:13.640] affected it's Which I think when you
+[00:30:15.960] talked about research so a sub agent
+[00:30:18.080] that does an amount of research on a
+[00:30:19.920] topic if it did a ton of research and
+[00:30:22.080] actually only 10% of that was valid the
+[00:30:24.320] 90% wouldn't actually go back to the
+[00:30:26.160] main
+[00:30:27.360] to to to the main agent it actually only
+[00:30:29.920] report that 10% which it thinks is most
+[00:30:31.920] valid and then the agent the main agent
+[00:30:34.720] can go right I've got exactly the
+[00:30:36.120] information I need and my context window
+[00:30:38.320] isn't isn't overwhelmed with nonsense
+[00:30:40.640] >> Thanks for clarifying and and making it
+[00:30:42.800] like clearly understandable so yeah like
+[00:30:45.560] out of this thousands of tokens which
+[00:30:48.000] sub agent could generate only a small
+[00:30:50.080] bit of it like super super like small
+[00:30:52.600] part the the result will go into the
+[00:30:54.960] memory of the main agent to proceed with
+[00:30:56.920] the main task
+[00:30:58.840] and the rest of the memory will be
+[00:30:59.840] cleared yeah like the capacity the the
+[00:31:02.160] limit of the memory goes away pretty
+[00:31:04.560] quickly that's why we need to have some
+[00:31:06.520] tools for compressing and
+[00:31:09.160] they are implemented like compression
+[00:31:11.280] tools are implemented
+[00:31:12.880] in most of the
+[00:31:14.840] modern agents but that's actually like a
+[00:31:17.080] pretty challenging task because it's not
+[00:31:19.240] always obvious what information is no
+[00:31:21.400] more no longer useful and what is
+[00:31:23.480] actually still valid because like you
+[00:31:26.880] could
+[00:31:28.040] put in the memory the information about
+[00:31:30.080] like
+[00:31:31.240] initial state of the file at some point
+[00:31:34.640] in the beginning of your session but
+[00:31:36.680] then during your
+[00:31:38.720] interaction you were
+[00:31:40.640] like completely like talking and asking
+[00:31:42.360] the agent to solve a different problem
+[00:31:43.680] and then refer back to this information
+[00:31:45.840] which you put in in the beginning
+[00:31:47.920] and it could be already outdated because
+[00:31:49.600] of some other reasons so agent need to
+[00:31:52.520] know why this happened and it needs to
+[00:31:55.240] like spend extra tokens to understand it
+[00:31:57.400] okay my context is actually become
+[00:31:59.160] outdated I need to clear it it's
+[00:32:02.080] it's you know like safe to clean it
+[00:32:04.760] and remove the information so it does
+[00:32:06.600] some extra work for making this
+[00:32:09.360] compression so compression is a
+[00:32:11.880] a separate challenging task I would say
+[00:32:14.280] And that problem could happen again and
+[00:32:15.960] again and again every single time you
+[00:32:18.280] get your context window high enough that
+[00:32:19.760] it has to really redo that compression
+[00:32:21.920] correct
+[00:32:22.880] let's talk a little bit about agents and
+[00:32:25.080] what they're good at and what they're
+[00:32:26.280] not good at cuz I think we've talked a
+[00:32:27.720] lot about you know
+[00:32:30.240] how they do some of their some of their
+[00:32:32.000] things but
+[00:32:33.480] as users as let's maybe focus on
+[00:32:35.200] developers since this is a developer
+[00:32:37.200] podcast let's get let's say you know
+[00:32:39.280] what what what I what should I expect an
+[00:32:41.640] agent to be
+[00:32:43.320] really good at most of the time and
+[00:32:45.520] actually not be surprised if it if it
+[00:32:48.560] struggles with other tasks Very very
+[00:32:50.720] good question
+[00:32:52.880] if you can like explain in a very
+[00:32:55.040] thorough details the problem which you
+[00:32:56.720] are trying to solve so if we are talking
+[00:32:58.360] about a coding problem if you write a
+[00:33:01.280] very careful specification capturing all
+[00:33:04.040] the necessary aspects of your
+[00:33:07.560] of your product or your decisions all
+[00:33:09.560] the requirements there you can expect
+[00:33:12.760] that it will come up with a prototype
+[00:33:14.960] that will be at least very close to what
+[00:33:16.800] you want so I I mean like that's already
+[00:33:20.040] like a surprising right like we are in
+[00:33:21.560] the era where we can just populate in
+[00:33:23.880] plain language a huge document
+[00:33:25.880] describing how something complex should
+[00:33:27.960] work
+[00:33:29.120] and agent will come up with a roughly
+[00:33:31.160] working solution on its own so this is
+[00:33:34.280] where we are in terms of what agents can
+[00:33:36.560] do there there are lots of caveats to
+[00:33:39.320] that is that like usually it won't be
+[00:33:41.080] exactly what you want and you will need
+[00:33:43.080] to anyway like manual intervention and
+[00:33:45.120] fixes to validate that like
+[00:33:47.720] fix it and correct where it made some
+[00:33:50.160] wrong decisions
+[00:33:51.800] so human in the loop still essential
+[00:33:55.600] but again it's not a bug it's a feature
+[00:33:57.800] because our requirements are always
+[00:34:00.760] loose and we are under specifying stuff
+[00:34:03.320] and since we under specified
+[00:34:05.440] the LLM has a choice to decide on its
+[00:34:08.280] own if the content is under specified
+[00:34:10.440] how to proceed with it if you didn't say
+[00:34:12.399] in your specification which database to
+[00:34:14.640] use like post person or it's up to
+[00:34:17.919] the LLM to come up with what it thinks
+[00:34:21.720] but it's not a problem of an LLM it's
+[00:34:23.440] just because you under specified right
+[00:34:25.280] so
+[00:34:26.120] I would say like to sum to sum to sum up
+[00:34:28.480] if you give like a very clean
+[00:34:30.040] instruction a very detailed information
+[00:34:31.840] about how you see your solution should
+[00:34:33.679] work
+[00:34:34.679] and what things it should include then
+[00:34:37.600] it's already good enough at instruction
+[00:34:39.640] following to develop you a prototype
+[00:34:42.320] which matches your expectations both in
+[00:34:44.600] back end and front end I would say
+[00:34:47.399] There might be some
+[00:34:49.280] again like limitations of the solution
+[00:34:51.200] which it will come up with but that can
+[00:34:53.560] be because you were under specified in
+[00:34:55.960] the spec or because the task was I don't
+[00:34:58.720] know it sometimes it can come up with
+[00:35:00.640] non-efficient like unefficient solution
+[00:35:03.280] which which it won't be scalable and you
+[00:35:05.160] will anyway need to refactor it but
+[00:35:06.600] usually it comes also because of your
+[00:35:08.560] loose specification so yeah like
+[00:35:11.720] for sure like in one shot in few shot
+[00:35:14.840] you can come up with a working game
+[00:35:17.520] which works in your browser you can come
+[00:35:19.640] up with a
+[00:35:21.000] server which can be hosted locally and
+[00:35:23.200] sometimes I think you can even go beyond
+[00:35:25.359] that and
+[00:35:26.880] do even a
+[00:35:28.720] you know a deployment also fully
+[00:35:30.520] autonomously that's what at least
+[00:35:31.880] lovable offers right they like
+[00:35:34.120] fully maintain the life cycle of the
+[00:35:35.960] development of a front end and back end
+[00:35:37.880] and serving this for you and you don't
+[00:35:39.320] need to you don't need to make any
+[00:35:41.040] decisions about this so agents are that
+[00:35:43.280] powerful Yeah absolutely
+[00:35:45.720] and but let's now talk about
+[00:35:48.240] mentioning deployment let me think about
+[00:35:50.680] something that we can that we are happy
+[00:35:52.960] to push to production something that we
+[00:35:55.200] as professional developers now want to
+[00:35:58.359] want to
+[00:35:59.800] want to use and
+[00:36:01.280] build with in fact why don't we why
+[00:36:03.240] don't we think first about the actual
+[00:36:05.640] development environment that we that we
+[00:36:07.359] as professional developers need to use
+[00:36:09.440] there's certain things like you know
+[00:36:11.160] security issues for example if I'm if I
+[00:36:13.000] want to use cloud code locally
+[00:36:15.600] you know it's going to have full access
+[00:36:16.760] to my system if I want to run things
+[00:36:18.160] locally okay what's happening now what
+[00:36:20.960] where do I need to kind of first of all
+[00:36:22.760] think from a from a professional point
+[00:36:24.960] of view of locking down my system a
+[00:36:26.480] little bit more Yeah absolutely so like
+[00:36:28.640] basically if you're
+[00:36:31.040] working on your like local version of
+[00:36:32.640] the repo and you're giving a full access
+[00:36:34.480] to the cloud code to work on it at some
+[00:36:36.640] point it can do rm minus rf
+[00:36:40.280] accidentally and if you do don't do a
+[00:36:42.040] checkpoint then you're in trouble
+[00:36:44.080] and there are lots of stories on the
+[00:36:45.240] Reddit where cloud code like went that
+[00:36:47.080] crazy and did that
+[00:36:48.960] and in order to you know like
+[00:36:51.160] accelerate the professional development
+[00:36:53.160] experience there are like
+[00:36:54.880] different approaches how to do that
+[00:36:57.200] one which you can do on your own you can
+[00:37:00.280] spawn cloud codes always in the isolated
+[00:37:03.440] environments so you can
+[00:37:05.600] like create a separate docker container
+[00:37:07.920] which will have a replica of your repo
+[00:37:10.640] and you will you know send the commands
+[00:37:12.760] to this docker container and
+[00:37:14.960] agent will in this isolated environment
+[00:37:17.120] will be working on a replica and
+[00:37:18.920] actually that's one branch of a
+[00:37:21.880] solving these issues with the
+[00:37:23.320] permissions and with the scare of being
+[00:37:26.840] of being scared to remove something so
+[00:37:29.480] isolated environments that's that's
+[00:37:31.440] where you can
+[00:37:32.640] solve you know
+[00:37:34.200] some of the issues another type of
+[00:37:36.320] problem with the security for example
+[00:37:38.240] related to the API keys for example what
+[00:37:40.560] if you are asking your agent to write
+[00:37:44.440] another agent right like for example you
+[00:37:47.240] are a company which develop develops
+[00:37:48.880] like agents for some reason and to test
+[00:37:51.720] this agent
+[00:37:53.320] it might need to have access to the API
+[00:37:56.359] token
+[00:37:57.480] right and if you provide this API token
+[00:37:59.560] then it can go crazy there because it
+[00:38:01.880] can start doing infinite tasks basically
+[00:38:05.200] burning your budget
+[00:38:07.200] and um
+[00:38:09.200] this this is
+[00:38:10.680] for these types of the you know like
+[00:38:13.280] issues that's much more hard like much
+[00:38:15.320] harder to come up with something some
+[00:38:17.480] some security solution
+[00:38:19.880] unless you cut off the internet
+[00:38:21.760] completely
+[00:38:23.200] but yeah like that's a type of the
+[00:38:26.520] security concern but yeah like speaking
+[00:38:28.640] of the main approach the sandboxing
+[00:38:30.560] environments that's what um
+[00:38:32.880] allows you to solve most of the problems
+[00:38:35.920] Another way of solving is a solving
+[00:38:38.560] these types of problems is like again
+[00:38:40.240] like limiting the available tools for
+[00:38:43.840] the agents for example agent cannot
+[00:38:46.640] write
+[00:38:47.920] or edit
+[00:38:49.359] files under specific directories so you
+[00:38:52.240] are as the user in the loop can create
+[00:38:55.800] these rules and this will prohibit agent
+[00:38:58.120] from making like dangerous actions from
+[00:39:02.200] very sensible
+[00:39:04.080] you know like libraries or directories
+[00:39:06.400] where there's a lot of sensitive
+[00:39:07.520] information and yeah like some tools for
+[00:39:10.240] example Gemini CLI comes with a sandbox
+[00:39:13.080] solution available out of the box so if
+[00:39:15.760] you start a Gemini session with a
+[00:39:17.359] sandbox from your current directory then
+[00:39:19.359] it will make a clone of your repo in the
+[00:39:21.720] isolated docker container and you can
+[00:39:23.920] also specify which commands or which
+[00:39:26.520] tools are available so you can you can
+[00:39:28.440] disconnect it from the internet for
+[00:39:30.000] example and then
+[00:39:33.359] it will just like start working in the
+[00:39:35.280] isolated environment and you don't need
+[00:39:37.080] to do
+[00:39:38.200] any manual spawning of
+[00:39:45.040] >> Yeah.
+[00:39:47.280] Yeah, that's one way to to look at this.
+[00:39:50.080] Yeah, very interesting.
+[00:39:52.440] And what about memory and memory
+[00:39:53.720] management? Is this is this something
+[00:39:55.200] that's kind of like similar
+[00:39:57.920] similar controls that we would have? So
+[00:40:00.120] basically some providers
+[00:40:02.840] like again like Gemini CLI also works on
+[00:40:04.920] the tools which help you to
+[00:40:07.520] have a fine-grained control over the
+[00:40:09.720] memory of the agent so you can make a
+[00:40:11.840] checkpoint, you can make a snapshots of
+[00:40:14.560] the context that was at some point in
+[00:40:17.840] the memory of the agent. Once you
+[00:40:19.960] snapshot it, you can finish the session,
+[00:40:22.040] you can close the terminal, and you can
+[00:40:23.520] restart it the other day and resume from
+[00:40:26.560] a specific context
+[00:40:28.520] from a specific you know point in in
+[00:40:30.680] time where you were developing. And
+[00:40:32.840] Which I think is super valuable, right?
+[00:40:34.560] Because with with particularly when
+[00:40:36.560] you're thinking about professional
+[00:40:37.680] development environments, you you you
+[00:40:39.960] want them to work in certain ways. And
+[00:40:43.160] and it's about it's about retaining that
+[00:40:45.920] information so I don't need to say again
+[00:40:47.720] and again and again like you know you're
+[00:40:49.640] speaking to a child.
+[00:40:51.480] Don't do this, do this, don't do this,
+[00:40:52.960] do this. Sometimes like you are also as
+[00:40:55.440] a developer you're not sure about the
+[00:40:57.280] solution which you want to see in the
+[00:40:58.960] end so you are communicating and
+[00:41:00.440] chatting with an agent to propose you
+[00:41:02.520] multiple implementations, right? And
+[00:41:05.280] then you snapshot each of these and at
+[00:41:07.920] some point in the future like you want
+[00:41:09.600] to decide to come back to a specific one
+[00:41:11.440] which you like the most and you want to
+[00:41:13.480] revert your context to the specific
+[00:41:15.920] point in time to the approach which you
+[00:41:18.120] like. So that's
+[00:41:19.800] like it just makes your environment
+[00:41:22.080] clean and
+[00:41:25.160] clean and easy to control so it's no
+[00:41:27.480] longer messy. You don't need to remember
+[00:41:29.440] where you did you commit your
+[00:41:32.240] changes to a specific branch such that
+[00:41:34.120] you never lose the information which
+[00:41:36.080] agent already generated or so you you
+[00:41:38.560] just like
+[00:41:40.400] you just eliminate from your brain
+[00:41:42.600] context some information which is
+[00:41:45.640] maybe not useful
+[00:41:47.120] because you have access to explicitly
+[00:41:48.800] store
+[00:41:49.840] snapshots of the memory. And yeah,
+[00:41:52.040] that's what that's that's a super cool
+[00:41:53.520] feature for especially professional
+[00:41:55.160] development developers or working with
+[00:41:56.840] many branches or working with many
+[00:41:58.560] features
+[00:41:59.880] at scale. I'm working within an
+[00:42:01.720] organization as well where there's
+[00:42:03.240] probably a bunch of shared knowledge.
+[00:42:05.160] And I guess you know perhaps there are
+[00:42:07.920] organizational policies
+[00:42:10.640] or organizational styles, ways of
+[00:42:12.840] working, things that you know the
+[00:42:15.160] platform team want you to do or don't
+[00:42:16.920] want you to do. Can we can we
+[00:42:20.600] allow this knowledge to be shared
+[00:42:22.440] through
+[00:42:24.240] through context management as well,
+[00:42:25.840] organizational context management? Yeah,
+[00:42:27.880] so I think
+[00:42:29.400] um
+[00:42:30.280] most of the tools are focusing on the
+[00:42:32.320] context which is local which is
+[00:42:34.400] available like in the local environment
+[00:42:37.000] and uh
+[00:42:39.400] for example you can you can for sure
+[00:42:41.320] have a Gemini MD or Claude MD or agent
+[00:42:44.960] MD file where you explicitly say
+[00:42:48.080] and refer to other
+[00:42:50.320] markdown files to other documentation to
+[00:42:53.760] such that when agents will be started
+[00:42:55.920] will be triggered it will have all the
+[00:42:57.360] information about your security
+[00:42:59.120] guidelines, the code guidelines and so
+[00:43:00.760] on. There's a
+[00:43:02.560] some problem with that is that
+[00:43:05.000] again if you overload the context with
+[00:43:06.840] so many instructions the agent can be
+[00:43:08.680] just confused and can just you know get
+[00:43:11.280] lost
+[00:43:12.360] into this
+[00:43:13.800] terabytes like
+[00:43:15.680] flow of information
+[00:43:17.320] plus sometimes the instructions can be
+[00:43:19.880] overwhelming and conflicting and it's
+[00:43:22.560] unclear what to do in this case.
+[00:43:24.640] So I would say that's a great
+[00:43:27.600] not just a research topic but a product
+[00:43:29.400] topic and many companies will try to
+[00:43:32.440] solve this for sure because how to
+[00:43:35.720] introduce the tribal knowledge of your
+[00:43:38.160] company and knowledge about the
+[00:43:41.120] security guidelines efficiently the
+[00:43:44.080] coding guidelines and so on efficiently
+[00:43:46.440] such that you could your agent could
+[00:43:47.880] benefit and use it all the time for your
+[00:43:51.120] when you're doing like coding and never
+[00:43:52.800] forgets about this and always respected
+[00:43:54.320] it.
+[00:43:55.560] That's an open problem. I don't think
+[00:43:57.560] like any of the existing
+[00:44:01.280] like providers or vendors of the agents
+[00:44:03.160] solve this explicitly but there are like
+[00:44:05.120] definitely like approaches for that. For
+[00:44:07.120] example Gemini CLI gives you access to
+[00:44:09.600] directly write some memories into the
+[00:44:12.480] into the agent's memory. I think it's
+[00:44:14.080] called flash memory update
+[00:44:16.480] and a prompt. It will attend your prompt
+[00:44:19.920] to the Gemini MD and refresh the Gemini
+[00:44:22.400] MD in the memory in the context memory
+[00:44:24.320] of the agent. So that's one way to
+[00:44:26.440] introduce
+[00:44:28.280] super recent information directly into
+[00:44:30.480] the context.
+[00:44:31.920] Or Claude code which introduced this
+[00:44:34.080] concept of skills, right? Where you have
+[00:44:37.640] um
+[00:44:39.120] bunch of
+[00:44:40.760] like independent things like skills
+[00:44:43.359] which can be dynamically fetched
+[00:44:45.880] in the context memory depending on
+[00:44:47.520] what's the situation is.
+[00:44:49.920] So that's that's a way like that these
+[00:44:51.560] are the approaches for for for the from
+[00:44:54.040] the vendors to tackle this complex
+[00:44:55.800] problem of respecting your specific
+[00:44:58.120] choices and decisions. And of course
+[00:44:59.760] Tessal
+[00:45:00.920] are kind of leading into this space as
+[00:45:02.640] well, right? In and around context
+[00:45:04.120] management of of of holding
+[00:45:06.440] organizational data a little bit as well
+[00:45:08.800] as various open source
+[00:45:12.800] kind of usage specs I guess as well as
+[00:45:14.680] proprietary. Tell us a little bit about
+[00:45:16.440] how that kind of can level up your
+[00:45:18.520] agents I suppose in in more professional
+[00:45:20.640] environment. Yeah. So this the concept
+[00:45:23.280] of the usage specs is that like
+[00:45:26.440] it's the easiest to explain it in the
+[00:45:29.160] in the example of third-party dependence
+[00:45:31.520] third-party dependencies. So imagine you
+[00:45:33.680] are working with a
+[00:45:36.000] library with some framework and it has
+[00:45:38.880] many dependencies.
+[00:45:40.280] And if you want to implement in your
+[00:45:42.680] library a feature related to this
+[00:45:45.160] dependency, right? Then you need to make
+[00:45:48.920] sure that the agent the code agent has a
+[00:45:51.640] lot of capabilities and lots of
+[00:45:53.440] knowledge about this dependency.
+[00:45:55.600] But imagine this is not a very popular
+[00:45:57.600] library. Imagine that's like something
+[00:45:59.359] which was just released recently and it
+[00:46:02.480] was not a part of the training data for
+[00:46:05.160] the Claude code or for any foundational
+[00:46:07.280] LLM so
+[00:46:08.920] LLM just doesn't know how the API of
+[00:46:12.080] this dependency looks like.
+[00:46:14.480] And the only way to solve it is either
+[00:46:16.600] to have a access to the source code
+[00:46:18.480] which is super inefficient, right?
+[00:46:19.680] Because it will require the agent to
+[00:46:21.520] clone the the repo to navigate through
+[00:46:25.040] thousands of the files and so on or it
+[00:46:27.520] can just like try to import this
+[00:46:30.440] dependency and try to test this the
+[00:46:33.840] functionality available in this repo in
+[00:46:35.640] the dummy script which again is also
+[00:46:37.920] inefficient in terms of turns, right?
+[00:46:40.240] Like agent will spend lots of time just
+[00:46:42.320] understanding how to work with this
+[00:46:44.840] library. So why would you do that?
+[00:46:48.720] No reasons. You want to be efficient,
+[00:46:51.200] right? You can use usage specs. Usage
+[00:46:53.720] specs is a compressed
+[00:46:57.120] representation of the API of this
+[00:47:00.120] library which can be consumed by your
+[00:47:02.359] agent from the Tessal registry or from
+[00:47:05.240] your private registry because Tessal is
+[00:47:07.080] also working on the having registries
+[00:47:09.320] for for for companies. And if you
+[00:47:12.760] consume this you know usage specs, it's
+[00:47:15.080] just like a bunch of the documents which
+[00:47:17.320] show how the
+[00:47:19.840] API is designed for this specific
+[00:47:21.920] package, then agent has direct access to
+[00:47:25.840] the very clear
+[00:47:29.600] knowledge of how to how to work with
+[00:47:32.520] with this specific library. It doesn't
+[00:47:34.280] need to scan thousands of files. It has
+[00:47:36.760] everything stored in a very nicely
+[00:47:39.800] formatted and easily accessible
+[00:47:42.640] for you like directly here. So it's very
+[00:47:45.040] token efficient
+[00:47:48.280] turns efficient and working because like
+[00:47:51.520] we made a big effort to make that these
+[00:47:54.480] usage specs valuable and containing lots
+[00:47:56.760] of information. So
+[00:47:59.440] usage specs not only show the API
+[00:48:01.640] methods and the definitions but also how
+[00:48:03.520] to use them. What are the best
+[00:48:04.920] scenarios? What are the underlying
+[00:48:07.359] implications of using this specific
+[00:48:10.000] API? So that's
+[00:48:12.240] one you know way how to look into the
+[00:48:14.640] usage specs
+[00:48:15.960] as a way to
+[00:48:18.359] learn
+[00:48:19.520] to
+[00:48:20.400] to give you know to give your agent a
+[00:48:23.120] knowledge about some library which was
+[00:48:26.359] never part of the pre-training data or
+[00:48:28.560] which is not popular or which is a
+[00:48:30.280] private, right? Which was
+[00:48:32.560] you know like agent just doesn't know
+[00:48:34.280] about this. Yeah, awesome. Let's wrap
+[00:48:36.720] this section up by talking about evals
+[00:48:39.640] cuz I think when we talk about
+[00:48:41.720] professional development, we need to
+[00:48:43.520] know we need to be able to test. We need
+[00:48:45.240] to be able to say okay these agents are
+[00:48:47.280] best because
+[00:48:48.720] they can do these particular things
+[00:48:50.640] really well. I will use these other
+[00:48:52.200] agents because they can do these other
+[00:48:53.960] things particularly well maybe reviews
+[00:48:55.680] or tests or whatever. How do we
+[00:48:58.280] what's a good way to be able to eval an
+[00:49:01.200] agent's capability as let's say code
+[00:49:04.000] generation? So it's a huge topic because
+[00:49:06.760] like there are so many ways to This is a
+[00:49:08.520] podcast episode by itself but let's try
+[00:49:10.400] to cover it in the in 5 minutes.
+[00:49:13.400] So yeah, eval is just like super complex
+[00:49:16.080] topic on its own like it's a very
+[00:49:18.160] complex like how to eval LLMs in general
+[00:49:20.680] like because they can do literally so
+[00:49:22.640] many things but how do you eval this?
+[00:49:24.359] And it becomes more and more challenging
+[00:49:26.640] even if you try to limit the scope just
+[00:49:29.120] to code generation because apparently
+[00:49:31.040] code generation is also like a super
+[00:49:32.560] complex
+[00:49:33.800] you know task and uh
+[00:49:35.800] evaluating the capabilities of the agent
+[00:49:38.040] specifically in this domain is also
+[00:49:39.480] challenging. So, I would say the most
+[00:49:43.200] common way to do this now in the
+[00:49:45.360] community and in the research
+[00:49:48.520] environment and in academia is to use
+[00:49:51.480] like
+[00:49:52.400] popular benchmarks such as SWE-bench,
+[00:49:56.240] specifically a verified variant of it,
+[00:49:58.600] which was popularized by OpenAI. So, the
+[00:50:01.600] way these evals are working
+[00:50:03.760] in a sense in some sense they are
+[00:50:05.320] reflecting their real development
+[00:50:07.000] process. They are taking your repository
+[00:50:11.200] in the state before some feature was
+[00:50:13.440] implemented.
+[00:50:15.200] Then it asks you to implement the
+[00:50:17.160] specific feature, right? It gives you a
+[00:50:19.080] repo before the feature was there. It
+[00:50:20.840] gives you requirements about what how
+[00:50:23.120] the feature should look like. It gives
+[00:50:24.800] you some maybe information about the API
+[00:50:27.120] and how
+[00:50:28.680] how it is intended to be implemented.
+[00:50:31.840] Then you launch your agent, your coding
+[00:50:34.600] assistant, which that does the work to
+[00:50:36.920] implement the missing files, the
+[00:50:39.360] missing feature. And once it generated
+[00:50:42.400] this patch, right? Like this update,
+[00:50:45.680] it is evaluated against a commit which
+[00:50:48.840] has real tests, which has real unit
+[00:50:51.000] tests approved by the human, so which we
+[00:50:53.680] can treat as a ground truth. And if your
+[00:50:56.480] agent proposed patch passes this test,
+[00:50:59.680] then you can think of it as a success
+[00:51:01.640] and ooh, your agent implemented
+[00:51:03.760] everything properly. So, it works as
+[00:51:05.680] expected.
+[00:51:07.000] So,
+[00:51:07.880] that's
+[00:51:08.680] the most common way how to how to test
+[00:51:11.240] it. Of course, it's very hard to design
+[00:51:13.920] such benchmark, right? Like because
+[00:51:16.360] in reality you can't just go to GitHub
+[00:51:19.200] and clone any package, pick a PR and use
+[00:51:23.400] this
+[00:51:24.880] PR
+[00:51:26.160] as a as a, you know, like a source for
+[00:51:28.440] your
+[00:51:29.520] evaluation because many PRs are lacking
+[00:51:32.520] of documentation. They don't declare any
+[00:51:35.200] any information about like design
+[00:51:36.880] choices and so on. So, you need to
+[00:51:38.680] filter the data very aggressively to
+[00:51:41.520] just include
+[00:51:42.960] those data points where your agent has
+[00:51:45.920] theoretically like a chance to solve
+[00:51:47.800] this problem, right? Like because
+[00:51:50.320] your your PR description, the issue
+[00:51:52.840] description should be enough and should
+[00:51:55.120] contain enough information for the agent
+[00:51:56.800] to solve the problem.
+[00:51:58.480] And if it misses the definitions of the
+[00:52:00.600] API, if it misses some assumptions that
+[00:52:02.880] agent just like theoretically doesn't
+[00:52:04.400] have chances to come up with
+[00:52:06.160] uh, with the right solution. So,
+[00:52:08.680] SWE-bench alike evaluations is the most
+[00:52:12.560] common approach, but
+[00:52:14.800] again, like it's very limited. If you
+[00:52:16.840] look into into the SWE-bench pro
+[00:52:20.840] tasks, then they are usually touching
+[00:52:22.800] only one file. Rarely they touch two
+[00:52:25.080] files. And again, like that's not real
+[00:52:28.280] software development experience, right?
+[00:52:29.600] Like usually when you ship a feature,
+[00:52:31.600] you're shipping like
+[00:52:33.200] five or six files. You're making changes
+[00:52:35.600] in many places
+[00:52:37.520] and you need to be super accurate in
+[00:52:39.840] imports, in unit tests and so on. So,
+[00:52:42.520] the real PRs are much more challenging
+[00:52:45.320] than what we have in
+[00:52:46.920] SWE-bench pro. So, that's why we need
+[00:52:48.800] like
+[00:52:49.800] a new benchmark.
+[00:52:52.240] It can be It can be of the same format,
+[00:52:53.800] but it needs to be a next level
+[00:52:56.000] requiring the agent to make changes not
+[00:52:58.160] in one file, but in a collection of
+[00:53:00.000] files. So, more of a guideline or a
+[00:53:03.760] a signal versus something that's more
+[00:53:05.800] complete in terms of will will
+[00:53:07.920] absolutely relate to your exact
+[00:53:09.320] experience. Exactly. And also this type
+[00:53:12.280] of eval, I think it focuses mainly on
+[00:53:14.800] the software engineering backend tasks,
+[00:53:17.320] but what if we go to the
+[00:53:20.200] agents which are
+[00:53:21.800] which can produce
+[00:53:24.000] UI, right? Like how do you evaluate the
+[00:53:26.160] UI? Or what if you are developing an
+[00:53:29.120] agent which interacts with a database
+[00:53:31.440] and can change the state of the
+[00:53:32.960] database, right? Like it's a different
+[00:53:35.080] type of eval and it's it's a different
+[00:53:37.040] type of a complexity and community is
+[00:53:39.360] now working on a specific like dedicated
+[00:53:41.840] benchmarks for assessing these
+[00:53:43.240] capabilities as well. Like if your agent
+[00:53:46.800] generated a UI, how you evaluate that it
+[00:53:49.200] is like matching the
+[00:53:52.880] the request in the in the user prompt.
+[00:53:55.400] How like how can we trust that what it
+[00:53:57.600] came up with actually matches the
+[00:53:59.280] expectations? Yeah. Yeah, so that's like
+[00:54:03.040] a pick of an iceberg.
+[00:54:05.359] Absolutely. Let's Let's wrap up with I
+[00:54:07.840] guess what's next for agents or what
+[00:54:09.720] what what are the what are the things
+[00:54:11.320] that you're most looking forward to in
+[00:54:14.000] whatever this next generation of agents
+[00:54:16.280] AI agents looks like. One of my
+[00:54:18.480] expectation is that like agents should
+[00:54:20.880] at some point learn how to write a
+[00:54:23.040] better code
+[00:54:24.320] because
+[00:54:25.600] now nowadays the quality of the code
+[00:54:28.000] they produce
+[00:54:29.560] sometimes it's like just like a garbage.
+[00:54:31.359] It's like
+[00:54:32.320] you can feel that it's a one-time
+[00:54:34.320] script.
+[00:54:35.800] It's really not something which you will
+[00:54:38.640] enjoy to come back at some point like
+[00:54:41.240] later in the timeline and work on top of
+[00:54:43.720] that. A lot of the code which LLM
+[00:54:46.560] generates that's super garbage, messy,
+[00:54:48.880] not scalable. So, um,
+[00:54:52.160] and of course you can deal with it by
+[00:54:54.240] having more guidelines about how to
+[00:54:56.280] write the code, but still I think it's
+[00:54:58.359] an open challenge to improve the quality
+[00:55:01.440] of the generated code
+[00:55:04.600] in general for the agent. So, that's my
+[00:55:06.480] one expectation. Second is of course
+[00:55:08.960] like improving the
+[00:55:11.200] UI capabilities. So, like most of the
+[00:55:14.240] existing agents they are struggling
+[00:55:17.000] with creating a really nice UIs
+[00:55:20.160] following your specific instructions.
+[00:55:22.200] So, I expect the core models to get
+[00:55:25.120] improvement over there.
+[00:55:26.880] And
+[00:55:28.280] I think
+[00:55:29.440] I would love to see like we talked a
+[00:55:31.520] little bit about the SWE-bench eval. So,
+[00:55:34.200] I want to see
+[00:55:36.040] a new version of the a more challenging
+[00:55:38.320] version of SWE-bench and people are
+[00:55:40.840] working on that. For example, SWE-pro.
+[00:55:44.080] That's a much more complex and
+[00:55:46.040] challenging variant of the SWE-bench
+[00:55:47.920] where agent is just like
+[00:55:50.480] facing harder tasks, which again like
+[00:55:52.960] require it to make changes in multiple
+[00:55:55.040] files and accuracy falls dramatically,
+[00:55:59.280] which makes all the claims that agents
+[00:56:01.440] can execute long horizon tasks kind of
+[00:56:04.280] not valid. So, um,
+[00:56:07.800] really having very complex PRs, having
+[00:56:12.280] making agents solving really complex
+[00:56:13.920] tasks which require changes in multiple
+[00:56:15.920] files, this is the way to
+[00:56:19.000] make it able to solve long horizon
+[00:56:20.800] tasks.
+[00:56:22.120] So, I'm expecting
+[00:56:24.200] to again like have more
+[00:56:27.120] more of an input from the academia, from
+[00:56:29.120] the people and investment in the better
+[00:56:31.000] benchmarks about how how can we trust,
+[00:56:34.200] how can we make sure that it is able to
+[00:56:36.720] generate complex code,
+[00:56:38.480] but also like improving the of course
+[00:56:39.960] definitely the the accuracy on these
+[00:56:41.920] benchmarks.
+[00:56:43.120] And that's a great way to wrap up with a
+[00:56:46.800] tell me I'm a research engineer without
+[00:56:48.800] telling me I'm a without saying I'm a
+[00:56:50.120] research engineer without talking about
+[00:56:51.880] evals.
+[00:56:52.880] So,
+[00:56:53.880] Max, this has been this has been
+[00:56:55.240] extremely interesting and thorough.
+[00:56:57.800] Really, really appreciate all your
+[00:56:59.720] knowledge and experience here in
+[00:57:01.400] chatting about agents. I'd love to kind
+[00:57:03.560] of hear what our audience thinks in
+[00:57:05.160] terms of more sessions like this, more
+[00:57:07.160] of the kind of the 101, let's go let's
+[00:57:09.320] go deeper into certain agents and other
+[00:57:11.800] AI
+[00:57:13.000] technologies. We can absolutely do that.
+[00:57:15.400] So, let us know. Max, massive thank you.
+[00:57:17.680] Thank you for joining us and thank you
+[00:57:19.080] for sharing. Yeah, thank you very much
+[00:57:20.480] for having me and yeah, we'll be happy
+[00:57:22.280] to come back and talk more about
+[00:57:24.000] >> Absolutely, absolutely. This is one of
+[00:57:25.880] 20 in a series that we're doing now,
+[00:57:28.480] Max. That's fun. Amazing. Thanks very
+[00:57:30.680] much, everyone. Really appreciate you
+[00:57:32.280] joining and tune in for the next
+[00:57:33.680] episode.

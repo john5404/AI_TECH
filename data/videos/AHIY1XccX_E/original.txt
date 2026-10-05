@@ -1,0 +1,617 @@
+[00:00:01.080] All right. Thank you for coming.
+[00:00:03.240] Really cool session coming up just now.
+[00:00:06.920] We've got Peter Wilson and Davide Eynard.
+[00:00:10.520] They are going to be talking to you about CQ Stack Overflow for agents.
+[00:00:16.360] I don't know if you've seen contributions to human.
+[00:00:20.520] Stack overflow basically plummeted
+[00:00:23.640] after ChatGPT came out, which is really sad for all of us.
+[00:00:27.160] Hopefully these two can do something about it.
+[00:00:29.760] Give them a round of applause, please.
+[00:00:33.960] Take it away.
+[00:00:36.160] Thank you.
+[00:00:36.680] Thank you so much.
+[00:00:37.360] Very one.
+[00:00:38.040] So I'm David. He's Peter.
+[00:00:41.120] We're both from Mozilla.ai.
+[00:00:42.560] The first thing I wanted to start with was Mozilla.
+[00:00:45.680] Because the first thing they usually people tell us
+[00:00:48.400] is, are you the Firefox guys or are you the browser guys?
+[00:00:51.600] We don't want the AI in the browser and things like that.
+[00:00:53.880] Or we're very happy to have AI the browser.
+[00:00:55.880] This doesn't happen that often though.
+[00:00:57.680] So I left an exercise for you for after the talk.
+[00:01:01.480] If you have the Firefox application installed on your laptops,
+[00:01:05.400] try and connect to moz://a.
+[00:01:09.520] This is kind of a Fakhri, but the browser folks can do anything they want with it.
+[00:01:13.760] So you just connect to that and it will open the Mozilla manifesto,
+[00:01:19.360] which is a manifesto that has been set up like 20 years ago when the internet was
+[00:01:25.520] at, let's say it's very beginning, at least from the user perspective.
+[00:01:29.440] It kind of began even 25 more, more years earlier.
+[00:01:33.680] So in that manifesto, you find some principles
+[00:01:36.880] that are all about the internet, the web as a resource that was open,
+[00:01:42.000] that should have remained open and they should have, and
+[00:01:45.560] where people should be able to drive the experience they have of the web,
+[00:01:51.360] where security is important and were open code
+[00:01:56.000] and the standards and interoperability are very important.
+[00:01:59.560] So the next step in the exercise is your play a regular expression.
+[00:02:03.680] And you substitute the internet with AI and try and see
+[00:02:07.800] if this makes sense to you.
+[00:02:09.200] And I did this exercise before applying for Mozilla AI, and I was mind blown
+[00:02:14.920] at how actual this principle could be, even if you just moved the internet to AI.
+[00:02:19.720] And this is exactly the same exercise that the Mozilla Foundation folks
+[00:02:23.600] did a few years ago.
+[00:02:24.760] It's five years ago, before the big AI boom, when they decided they wanted
+[00:02:29.960] to fund a startup company to work on AI, not specifically in the browser.
+[00:02:34.320] So something separate from the Mozilla Corporation working on Fifo,
+[00:02:39.280] but something that was only directed towards promoting open source AI.
+[00:02:44.000] So it's as we are not the browser guys, we love the browser
+[00:02:47.520] guys, we talk to them, we are siblings, we are just focusing on open source AI.
+[00:02:53.080] So first thing when you talk about open source AI is a comparison.
+[00:02:57.600] I see done very often in terms of user experience.
+[00:03:00.760] Very often people take open weights models and then try and evaluate them
+[00:03:05.160] and see how they work for their tasks and then compare them to commercial
+[00:03:09.000] AI services.
+[00:03:10.200] But what often they don't think about is that a commercial AI service
+[00:03:13.920] is not just an LLM, it's an agent code plus tools, plus engineering,
+[00:03:19.840] plus thousands of engineers working on more engineering.
+[00:03:23.200] And to me, the comparison is a bit unfair and creates a gap between the perception
+[00:03:27.760] that users have of close AI services versus open source AI.
+[00:03:32.560] So our mandate is to try and make this gap smaller, but making OpenAI,
+[00:03:38.240] sorry, open source AI more accessible to users and something
+[00:03:44.080] where their experience is very similar to the one of commercial services.
+[00:03:49.480] The first thing
+[00:03:50.000] we want to work on or we want to talk about is context.
+[00:03:53.080] And here I have two very simple examples.
+[00:03:55.720] If you are here, you probably all know that context is king and context
+[00:03:59.160] is important and it's important, but from the bad or negative point of view
+[00:04:03.840] and from the positive point of view, this is the negative example.
+[00:04:07.200] We have a tool that's called agents that allows you
+[00:04:10.480] to play with agents in your browser, connecting to a local LLM.
+[00:04:14.240] And one problem we gave
+[00:04:15.440] it was try and connect to this website, which is the Mozilla AI.
+[00:04:19.120] I think it was the any-agent repository.
+[00:04:21.680] Yes, the any-agent project and tell us how many stars it has.
+[00:04:25.440] And the first times I tried this tool I was like, man, I did something wrong
+[00:04:29.360] because it's just returning me the manual to any agent.
+[00:04:33.440] What's happening and what I realized later.
+[00:04:36.320] At the time, I was still using the default context size was 4K,
+[00:04:40.640] and my tool was downloading stuff from the web and getting way more tokens
+[00:04:44.560] that were available in the context that was made available by alarm.
+[00:04:48.560] So at the time, the full choice for K nothing shown because logs
+[00:04:52.840] were not apparent to the user.
+[00:04:54.720] Usually great user experience because if you have a very small context size,
+[00:04:58.680] the LM is going to work on your system, but the context is cut.
+[00:05:03.680] The model forgets the the question that it's been asked,
+[00:05:07.560] and it will just take the page and summarize it to you to some extent.
+[00:05:11.040] So this is the bad example.
+[00:05:13.200] A good example instead is this one.
+[00:05:14.960] We were playing with any agent,
+[00:05:16.400] which is another open source tool that we're building.
+[00:05:18.760] And we were trying to answer simple questions.
+[00:05:21.800] I very much like naive, super simple examples.
+[00:05:25.400] This one is about my birthday.
+[00:05:27.120] I asked Claude what my birthday was and he said, oh, I don't know this David.
+[00:05:31.440] I asked what my name was.
+[00:05:33.640] It was a bit harsher.
+[00:05:34.600] It said David, I didn't know, but it doesn't appear anywhere,
+[00:05:38.000] so I cannot really tell his birthday.
+[00:05:41.200] And then I tried to add a tool, a very simple one that had two functions.
+[00:05:46.000] It was browse this directory and open and read the contents of this file,
+[00:05:50.920] and then ask the same question to a local small model that kind of try
+[00:05:55.120] to open stuff and found a birthday file and then opened it.
+[00:06:00.120] Found that there were birthdays of very popular computer scientists.
+[00:06:03.720] You can see there's other Lovelace, Alan Turing and Charles
+[00:06:06.720] Babbage and me, and it answered properly.
+[00:06:10.720] And the nice thing is,
+[00:06:12.360] this is a positive example from a model that 0.8 billion large.
+[00:06:16.280] And again, you already know this.
+[00:06:17.840] You inject the proper context and the thing is going to work better
+[00:06:21.000] even than a commercial model to some extent.
+[00:06:23.600] Then, to be completely truthful, the zero 8 billion models took quite some attempts
+[00:06:28.720] to get this done properly, but still with very small local models.
+[00:06:32.880] Let's say for billions, nine billions you will see them.
+[00:06:35.880] This is not right.
+[00:06:36.840] This is a local agent answering your questions.
+[00:06:39.960] You will see it trying to open the directory,
+[00:06:43.000] seal the files, try and get a sense of what's there.
+[00:06:46.680] See there something called birthdays and detect that birthdays is a good file
+[00:06:52.000] name for something that might contain date words and automatically open this.
+[00:06:57.360] So we are
+[00:06:58.560] living in the context world
+[00:07:00.000] and something that we feel we are kind of missing from our contexts
+[00:07:04.120] is ways to solve issues
+[00:07:07.360] that the models have not experienced yet.
+[00:07:10.440] So this is a very frequent use case.
+[00:07:12.960] You have an LLM, you have a or a commercial model to.
+[00:07:15.720] In this case it was run with a cloud.
+[00:07:17.840] You ask it to solve a problem.
+[00:07:20.240] The model finds an issue.
+[00:07:22.000] Luckily it's an agent.
+[00:07:23.200] It will try and fix the issue, try other solutions.
+[00:07:26.880] But in some cases the solution is just not there.
+[00:07:29.560] It won't be able to find it unless you interrupt it and say, you know,
+[00:07:33.720] this thing should be done differently.
+[00:07:35.280] It will do the thing differently and from then on continue without any,
+[00:07:38.680] any problem.
+[00:07:39.680] So what if you could save this information and reuse it to some extent?
+[00:07:44.320] And I think Claude does this already.
+[00:07:48.120] It has memories.
+[00:07:49.360] And you might think that Claude probably is everything that you need to solve
+[00:07:53.040] this task.
+[00:07:53.920] I'm going to hand this out to Peter,
+[00:07:55.520] because he had a nice experience with Claude to tell you.
+[00:07:58.520] Yeah, I'm very good friends with Claude.
+[00:08:00.640] Here's an empty slide.
+[00:08:02.120] Yeah.
+[00:08:02.640] So, like David said, folks might say, yeah, but we've got agents MD and Claude.
+[00:08:08.280] We can just add rules and that solves it.
+[00:08:09.920] Or if you debunk that slightly, then
+[00:08:12.920] you say, oh, well, we've got memories now as well, so that will solve it. But
+[00:08:17.840] I've,
+[00:08:18.600] I've got enjoyed quite a lot of time with you in two seconds.
+[00:08:21.360] I'll keep that off the side for now.
+[00:08:22.960] But I guess the problem with that is that one, it's all it's stored locally.
+[00:08:27.040] You end up with everything stored in like a Claude.md file.
+[00:08:31.120] I mean, you can have your global one and you have a project one,
+[00:08:33.400] but all of that stuff
+[00:08:34.200] then also has to get loaded
+[00:08:35.320] into the context, which also means
+[00:08:37.080] that Anthropic and friends get to see what's in your context.
+[00:08:41.000] So you might not want all that stuff getting send up there.
+[00:08:43.920] So yeah, the memories thing
+[00:08:45.440] I feel like was intended to kind of like improve on the rules.
+[00:08:49.440] But sometimes, even with memory, Claude seems a little bit forgetful.
+[00:08:53.560] So I asked it click this question, which was saying, basically,
+[00:08:58.800] can you just go and have a little spy at all
+[00:09:00.480] these memory files you'd been writing and see,
+[00:09:03.080] like if there's basically duplication across them?
+[00:09:05.920] And Claude was very happy
+[00:09:07.160] and obliging and told me I was great and then came back and said,
+[00:09:10.400] yeah, nothing's the same, basically, because they're not byte identical
+[00:09:13.120] and they don't have the same file name, so they just must be completely different.
+[00:09:16.280] And I was like,
+[00:09:16.840] are you kind of took me a little bit too literally there, so past it, you know,
+[00:09:20.560] with a little bit of steering, maybe just check for the intent.
+[00:09:23.800] And then Claude on the wind did lots of things and then came back
+[00:09:27.160] and till the obvious that he said, oh, yeah, I've been writing the same memory
+[00:09:31.720] tons of times in different places and also just ignoring it.
+[00:09:35.560] So a little bit.
+[00:09:38.240] Yeah. I feel like this was a little bit of a therapy session.
+[00:09:40.200] So I will also share some things that happened
+[00:09:42.400] with me and Claude very quickly, which is to fight this Claude
+[00:09:46.160] not following the rules that it's been given and just doing what it wants.
+[00:09:49.320] Sometimes even when you say no to a prompt, doing what it wants,
+[00:09:52.520] stuff where it remembered things and kept relapsing.
+[00:09:56.400] And just once when it just told me it was confused.
+[00:10:00.720] So yeah, it's the good times.
+[00:10:02.520] Anyway.
+[00:10:03.120] So getting back to the topic, I guess CQ, the blog post that we put out
+[00:10:07.920] about this initially was describing it as Stack Overflow for agents.
+[00:10:11.800] That was a lot to do with me
+[00:10:14.080] having a very smooth brain, and it seemed like it made sense.
+[00:10:16.920] And disclaimer for this slide,
+[00:10:18.840] it doesn't exactly what guy this, but it just try and paint the picture.
+[00:10:21.840] But the idea being that you've got your agent running away runs into some errors.
+[00:10:26.560] Does that stuff that David
+[00:10:27.840] before finally figures out this is how you do this thing.
+[00:10:30.480] And then at that point, what it should do in our ideal world is propose.
+[00:10:34.600] That is what we call a knowledge unit to CQ.
+[00:10:38.240] So we've got CQ exchange at the bottom that if anyone can scan that,
+[00:10:41.760] if they want to go and see the
+[00:10:43.640] the kind of hosted version that we're running, but also the open
+[00:10:46.480] source CQ repo that Mozilla AI's got has got an open source
+[00:10:50.960] server component that you can run yourself locally in Docker or whatever.
+[00:10:55.520] And just check in the case I forget anything, so don't ever forget anything.
+[00:10:59.480] Yeah, that was just it was just a QR code I wasn't supposed to forget.
+[00:11:02.640] Okay, cool.
+[00:11:03.240] So what was the knowledge unit?
+[00:11:05.360] I spoiler alert we don't save them.
+[00:11:08.080] We just put them in JSON. But it looks pretty.
+[00:11:09.960] Maybe in YAML on a slide.
+[00:11:11.480] So the idea being that we have this schema for a knowledge unit,
+[00:11:14.800] that the agent's got a skill that explain this in a second how works.
+[00:11:18.320] But this is just basically what gets saved when it's run into a problem.
+[00:11:21.720] Like what?
+[00:11:22.800] Like what the domains were
+[00:11:23.880] that it thought it was working in, what the kind of insight was.
+[00:11:26.760] So what what like some reads got, what action had to take.
+[00:11:29.720] And then it gets like some metadata
+[00:11:31.120] so they can save around the languages it was using the frameworks.
+[00:11:34.520] It can save a little pattern I think for once as well.
+[00:11:37.480] Yeah.
+[00:11:38.040] And then this is kind of how it works on the
+[00:11:40.080] on the right hand side hits the problem, figures out to fix it.
+[00:11:43.320] Summarizes that stuff submitted to CQ when you're running in a remote mode
+[00:11:48.600] that gets approved by a human in the loop review took over in a second.
+[00:11:53.280] And then once that's been proposed and exists in the server
+[00:11:57.520] and has been reviewed than any other agent on the planet,
+[00:12:00.760] that's talking to our hosted CQ instance can get that via a query.
+[00:12:04.880] So the idea being that the skill itself will say,
+[00:12:07.680] before you start working on a new task, you should come query CQ for that domain
+[00:12:11.600] and see if there's something that might give you a hand.
+[00:12:14.000] So you kind of get like very targeted specific bits of information
+[00:12:17.760] rather than having to either load everything on the front
+[00:12:20.480] or figure it out, whatever. Yeah.
+[00:12:23.440] Okay. Cool. I'm still talking.
+[00:12:24.840] I'm going to hand it back to point just to keep it exciting.
+[00:12:27.560] So yeah.
+[00:12:28.000] So CQ, the skill is basically like a, there's a skill
+[00:12:32.360] which you can still plug in and then that runs an MCP server
+[00:12:35.320] because you've got to have an MC server to be cool, and then the server
+[00:12:40.600] to let you do this so you can query to see what has already got.
+[00:12:44.320] Let's see.
+[00:12:45.000] You can propose things once you find it, you know, non-obvious problem
+[00:12:49.160] that would save another agent time.
+[00:12:50.720] Once you once you get something from querying the guidance and the skills
+[00:12:54.600] like validate this thing first, don't just blindly use it.
+[00:12:57.600] But anyway, once it's checked and then it tries something out and says,
+[00:13:01.240] actually that did work, it should confirm it.
+[00:13:03.280] So you kind of build up this confidence scoring over time.
+[00:13:05.560] And similarly if there's something wrong like it's still guidance
+[00:13:08.000] or it's completely wrong, it can flag that thing as well.
+[00:13:10.920] There's also a kind of human trigger,
+[00:13:16.120] part of the skill in the plugin, which is that
+[00:13:17.800] at the end of a session, if you feel like it missed some stuff,
+[00:13:20.120] you can ask it to like reflect over the whole session
+[00:13:22.560] and kind of show you what it thinks might be like, summarize
+[00:13:26.000] knowledge units and then you can like approve them and edit them and stuff.
+[00:13:29.600] Yeah.
+[00:13:30.720] And so how it works I guess initially is this on the left is when you install
+[00:13:34.800] install the plugin by default it's you just kind of
+[00:13:39.280] you get like a little SQLite database locally.
+[00:13:42.400] So nothing goes anywhere as the default installation.
+[00:13:45.640] So anyone can just start using it on your own machine.
+[00:13:49.120] And that also means that anything
+[00:13:52.000] it creates and proposes is saved there.
+[00:13:54.520] There's no like, review process in this stage.
+[00:13:56.680] So any other agents are running on that machine automatically.
+[00:13:59.320] Just see that stuff straight away.
+[00:14:00.880] You can then configure it to connect to a remote tier.
+[00:14:04.040] So as mentioned before, you've got an OS server component of the the CQ repo.
+[00:14:08.880] And that kind of allows you to do almost have like a team level thing.
+[00:14:13.000] So you can add some users with using in passwords
+[00:14:15.080] and then everyone can propose them.
+[00:14:16.920] And at that point
+[00:14:17.960] you have to go through a review process, which I joked yesterday,
+[00:14:21.080] looks a little bit like Tinder.
+[00:14:22.120] I think it's got a screenshot to show you, but
+[00:14:24.080] and then also that there's a public commons,
+[00:14:26.960] which is for us, which is like Mozilla, I'm going to say curated.
+[00:14:32.560] But, you know, that kind of vibe where when this thing's
+[00:14:35.480] fully up and running, the idea is that, you can propose things up
+[00:14:39.320] through the chain.
+[00:14:39.920] And so if you've got even within your, like, private namespace on the
+[00:14:44.160] on exchange, you could actually this is something that applies to everyone.
+[00:14:47.560] And I want to nominate that to be graduated up to the Commons.
+[00:14:50.080] That's kind of that StackOverflow view of like once it's there
+[00:14:53.160] then it's something that everyone can see.
+[00:14:56.320] Yeah okay.
+[00:14:57.760] But but risks.
+[00:14:59.480] So yeah we've got to be honest about a lot of this stuff.
+[00:15:02.320] Said StackOverflow a few times.
+[00:15:04.440] And with that comes a bit of like,
+[00:15:06.280] oh, this feels a little bit like a social network in some ways.
+[00:15:10.680] There's a lot of potential
+[00:15:12.440] things that could go wrong with this, and we know about them.
+[00:15:15.240] We did talk with the security expert.
+[00:15:16.640] We've got like an old stride internally.
+[00:15:18.400] We've got this document we've tried to look at to ways
+[00:15:20.680] to mitigate these things, but we can't completely get rid of everything. So,
+[00:15:25.840] yeah, I'm sorry.
+[00:15:26.440] It says on the social media platform.
+[00:15:28.240] So basically you've got a variety of things
+[00:15:30.000] that could potentially go wrong with this.
+[00:15:31.560] So the actual coup could contain something that could make it do
+[00:15:35.520] something bad or sad times for enterprise.
+[00:15:38.640] And maybe there's personal data or something like that in the skill itself.
+[00:15:41.920] Again, there's some things on the front like front loaded on the skill,
+[00:15:44.960] which are supposed to mean that it was like a vibe check that we be.
+[00:15:49.840] So we've built into it now and we worked alongside someone for that,
+[00:15:54.040] which is intended to sort of like go through a series of checks
+[00:15:56.440] to try and filter out anything ending up in there.
+[00:15:59.200] And the protocol always says, I mentioned earlier, that should always validate K
+[00:16:03.000] before it tries to actually do what it tells it to do.
+[00:16:06.560] Obviously that's front loaded stuff, but there's still potential for other things.
+[00:16:10.480] When you look at the server side and the server side of
+[00:16:14.600] things like DDoS and identity spoofing and all the other stuff
+[00:16:17.360] that comes along with it.
+[00:16:18.640] So yeah, we're saying this
+[00:16:20.000] you kind of have the same assumptions that given the open internet, that this is
+[00:16:24.160] a free commons for everyone, but we have to be careful with that.
+[00:16:27.800] I'll stop talking in a second, I promise.
+[00:16:29.360] Wrap it up, Peter.
+[00:16:30.840] I give another time. Yeah.
+[00:16:32.360] So some of the stuff
+[00:16:33.080] we've got this idea of mitigation, as we mentioned before,
+[00:16:35.040] and some of the kind of the defense in depth is,
+[00:16:38.040] you might consider it like, what ways could we go about trying to improve this?
+[00:16:41.360] So, with the exchange platform we build in like some of the roadmaps to
+[00:16:45.400] at the end about was like we could use cryptographic signing maybe.
+[00:16:47.680] So you've got an API key.
+[00:16:49.840] So I guess very, very quickly when you sign in to CQ Exchange
+[00:16:53.400] or even the open source one, you get like a JWT token for yourself,
+[00:16:56.800] but then you can
+[00:16:57.400] then create short lived API keys, which you give to your agent,
+[00:17:01.160] so that actually
+[00:17:02.000] like delegating permission to your to the agent to act on your behalf.
+[00:17:05.720] And then we'll take one one step.
+[00:17:08.440] But then so you can't do control plane operations with an API key.
+[00:17:11.760] And then also the idea being that like that verifies
+[00:17:14.720] like who that person was or what that was acting on behalf of.
+[00:17:18.240] But then we could do signing of the actual knowledge unit.
+[00:17:21.320] You could potentially upload your public key into the
+[00:17:25.520] exchange and sort of opt into that sort of stuff.
+[00:17:27.400] We can then make sure that it came from your computer as well.
+[00:17:30.400] So it's like a layered mitigation there.
+[00:17:32.160] There's the idea of like layered
+[00:17:33.760] guardrails or guardrails pipeline, where we kind of pass
+[00:17:36.200] through a lot of stuff as it comes through.
+[00:17:37.720] So you could check for PII, you can check for stuff out.
+[00:17:40.400] We could be could run sandboxes for things.
+[00:17:43.040] And the human in the loop review stuff is something
+[00:17:46.720] that we'd we've talked about internally as well.
+[00:17:49.280] At some point, maybe we need to be able to get away from
+[00:17:52.040] that to like human on the loop, to be able to scale it much more.
+[00:17:55.920] But for now, we're very keen on making sure we do this right.
+[00:17:59.600] So we're doing human in the loop reviews for things
+[00:18:01.880] before they become available to other people.
+[00:18:03.760] And at the same, when you play with this yourself in the server.
+[00:18:07.120] Oh, here we go.
+[00:18:08.280] There's some screenshots,
+[00:18:09.160] so there's the Tinder one you can swipe left and right with that's
+[00:18:12.960] on the open source one,
+[00:18:14.400] and the CQ Exchange one that we just released last week.
+[00:18:17.200] It looks a little bit more sensible, but that's that.
+[00:18:20.720] And then I think I can give it back to David a
+[00:18:23.760] thank you.
+[00:18:24.480] Sorry. Thank you for your time.
+[00:18:26.760] So first of all, I need to say we didn't fix it for everyone or forever.
+[00:18:32.080] We fixed it for a very specific use case.
+[00:18:33.920] That was a very personal one.
+[00:18:35.920] I wanted to run the Joplin MCP.
+[00:18:40.000] So Joplin is an open source note taking tool, which I've been using since,
+[00:18:43.840] I don't know, 15 years ago or something like that.
+[00:18:46.000] So it has plenty of nodes
+[00:18:47.400] and I want to have my own, let's say LM wiki like experience.
+[00:18:51.160] I wanted it to make make it accessible to cloud.
+[00:18:54.680] So I just asked Claude, how can I add a new MCP server?
+[00:18:58.960] I know the configuration.
+[00:19:00.680] I know all the keys I have to add.
+[00:19:03.080] How should I do that?
+[00:19:04.160] It gave me some instructions.
+[00:19:07.160] I followed them and this was beginning of April.
+[00:19:10.240] So you will find some things which might not be super up to date
+[00:19:12.880] with the latest version of SQL, but they're definitely reflecting
+[00:19:16.880] the behavior of cloud.
+[00:19:18.080] So Claude tried to install and told me everything is fine.
+[00:19:22.880] You have your MCP server set up.
+[00:19:24.880] Then I started Claude again and I couldn't find it.
+[00:19:27.480] So I asked, what's the problem?
+[00:19:29.120] And I said, let me look into that.
+[00:19:30.800] And it continued for a while, trying to find more possible causes.
+[00:19:36.240] And eventually, after quite some time and tokens,
+[00:19:41.720] I decided to give it a suggestion like,
+[00:19:45.080] why don't you look for the up to date documentation on your own website?
+[00:19:49.160] And this is what Claude did.
+[00:19:51.080] It went and checked it out and eventually found a solution
+[00:19:54.280] that was like the configuration file has to be in another path
+[00:19:57.360] and fixed it and eventually told me, okay, now the problem is fixed.
+[00:20:01.960] So what I did with you after that was to explicitly say do, secure, reflect.
+[00:20:08.360] So reflect on what happened.
+[00:20:09.960] Go through your trace and find how you fix the issue.
+[00:20:13.840] And then it created its own knowledge unit.
+[00:20:16.800] We proposed it to the system and saved it.
+[00:20:19.320] In that case, it was still just a local.
+[00:20:22.040] This is why I say we didn't fix it for everyone yet,
+[00:20:24.400] because it was on the local setup that we had and once fixed
+[00:20:29.160] I could just restart Claude, The MCP was already there.
+[00:20:34.840] I just removed everything
+[00:20:35.960] and we started the process from scratch just to show that I could try again.
+[00:20:40.480] And then Claude Code automatically looked for relevant information in SQL.
+[00:20:45.160] It's found the solution to the problem, so it immediately
+[00:20:48.760] decided to use the proper configuration file.
+[00:20:52.160] So think about these.
+[00:20:53.680] I sold it for myself whenever I run the agent.
+[00:20:56.200] Again, not just with Joplin, but with other MCPs.
+[00:20:59.480] The configuration is going to be the good one, and I save time and tokens on that.
+[00:21:03.720] What if now I can share it with my team?
+[00:21:06.480] Or with what if I can share it with everyone else?
+[00:21:09.320] Like, what is the value that we add to the whole community
+[00:21:13.000] of people developing with the eye power tools?
+[00:21:15.040] And we want these tools to be in the hands of just one single corporation.
+[00:21:19.200] Or do we want these tools to be in the hands of many people,
+[00:21:22.200] potentially your own, your own corporation, or your own team?
+[00:21:26.640] If you want to be safe and just share the internal knowledge you have,
+[00:21:30.440] but possibly also with as a more general commons open to everyone else.
+[00:21:36.320] So what we learned.
+[00:21:38.240] Yeah. So yeah, it's been fun for a couple of months.
+[00:21:40.880] Then we only begin to June today.
+[00:21:42.480] Yeah.
+[00:21:42.680] So this kind of start we talked about late February
+[00:21:45.720] and then started trying to build this thing throughout April and May.
+[00:21:49.760] We learned a lot of things, I think.
+[00:21:51.480] And the, the interesting stuff I guess here summarized.
+[00:21:54.320] So skeletal frames, Tesla vibes.
+[00:21:57.800] It's a big fight for attention because we found a lot of issues
+[00:22:00.960] on trying to get the skill trigger at the right time,
+[00:22:02.960] because we didn't look like using hooks specifically
+[00:22:05.320] and just seeing if we could get the LM and the agent to know
+[00:22:08.720] when it should do something rather than ever before.
+[00:22:10.800] Every single call, for example,
+[00:22:12.040] because it's more like when a task starts, not before every call or whatever.
+[00:22:16.720] And so that was interesting.
+[00:22:17.920] And how you kind of do versioning and all that stuff, it kind of interesting.
+[00:22:21.720] It was why we're here. Yes. That was one thing.
+[00:22:24.040] We found the privacy for us.
+[00:22:26.520] Privacy first was like the right default a lot.
+[00:22:28.800] We've been talking a lot internally again about how we could do things
+[00:22:32.720] like Web of Trust and how you could sort of like open this thing up and use
+[00:22:36.640] like just rely on the protocol itself to do a lot of stuff for you.
+[00:22:41.400] Obviously one of the Mozilla Mozilla like principal things around choice
+[00:22:44.720] from privacy around the rest of it.
+[00:22:46.080] So it was like, how do we kind of make things more opt in?
+[00:22:48.480] So from default you can't see who who else who created a specific key.
+[00:22:53.200] You and I say opt into something and all that sort of stuff.
+[00:22:56.360] But the lesson we learned around that was it
+[00:22:58.920] kind of sometimes makes things a bit slower to
+[00:23:00.840] to get there, because you're always having to kind of keep
+[00:23:02.760] that in your mind when you're saying, we can build it this way, we can do that.
+[00:23:06.600] Well, we build it this way a little, enable us to get there later.
+[00:23:09.600] So it's like trying to dodge a lot of things.
+[00:23:12.640] The thing compounds.
+[00:23:14.720] So even if you use it offline, found that the more things it finds, it
+[00:23:18.520] actually becomes quite useful.
+[00:23:19.760] I did I've done some podcast, no live stream anyway.
+[00:23:25.080] Podcast, the live stream things recently where we did a demo
+[00:23:27.640] on the kind of initial demo for this thing was, trying to get it to write
+[00:23:31.960] some GitHub actions, and it always used to use versions of like two,
+[00:23:35.280] two major versions, our day, which might not be terrifying, but
+[00:23:39.320] ideally you want it to be accurate and, that sort of thing.
+[00:23:43.120] You find that it didn't matter how many times
+[00:23:44.760] if you didn't save stuff with CQ, would have still kept doing it
+[00:23:47.200] because it just goes off it's trading day and sort of like full Dunning-Kruger.
+[00:23:50.640] It claims it knows everything.
+[00:23:52.360] And then it's controversial thing at the end of the platform
+[00:23:55.560] before protocol thing, it was more of like a mindset thing, I guess.
+[00:23:58.760] So it was like, as Mozilla David said, we want to make sure that we're trying to
+[00:24:02.880] put something out there in the public domain.
+[00:24:04.640] We want to like, have have protocols, have schemas like try and help
+[00:24:09.080] steer that stuff. But actually
+[00:24:12.240] it's sometimes the way around.
+[00:24:14.160] Maybe you need to have a platform first
+[00:24:15.920] to be dog food and stuff to see what's like should be in a in a schema.
+[00:24:20.080] What doesn't need to go in there yet, what kind of you might want to leave out?
+[00:24:23.960] Maybe people might want to customize their own things.
+[00:24:27.000] So we want to get to protocols of our platforms,
+[00:24:30.280] but we're just trying to make sure that we kind of
+[00:24:32.040] we feel like we're doing it right.
+[00:24:33.560] I really just wrap this up. Yeah.
+[00:24:36.360] And so I think the last thing maybe from me is, I think that
+[00:24:40.480] maybe if CQ isn't for you, don't worry if it is, that's awesome.
+[00:24:44.040] But it feels like there's a lot of similar conversations
+[00:24:47.040] we're having with people that there's a lot of other people in this space as well.
+[00:24:50.240] So if we've got it wrong,
+[00:24:51.360] a lot of people have got it wrong, which is slightly reassuring.
+[00:24:55.280] So yeah.
+[00:24:55.760] Oh yeah. Quit the roadmap. Sorry. That was the thing. What was next?
+[00:24:58.720] So from a platform perspective on our exchange, we want to build
+[00:25:02.280] a kind of tenancy stuff for names for namespaces.
+[00:25:05.280] So it's not just individual contributor stuff.
+[00:25:07.200] It's all private and working on the nomination graduation pipeline.
+[00:25:11.240] So you can graduate stuff from all namespace to commons regardless.
+[00:25:15.880] Pipelines I mentioned before the signing server
+[00:25:17.520] mentioned before being able to export UK use.
+[00:25:19.640] So obviously to open schema.
+[00:25:21.480] So want to be able to take that stuff out and take it any way you want.
+[00:25:26.320] Yeah.
+[00:25:26.920] It's like that's like the crossover to the protocol one.
+[00:25:28.920] And then a protocol side, how do we look at things
+[00:25:30.800] like federation between other servers.
+[00:25:32.960] So if anyone else wanted to run their own server.
+[00:25:35.480] We've talked to some folks in this in the space who kind of were interested
+[00:25:40.200] in, like a working group around that sort of thing.
+[00:25:42.600] So there's a lot of stuff coming to watch this space,
+[00:25:45.680] and then that'll be me.
+[00:25:49.880] Okay.
+[00:25:51.120] Thank you.
+[00:25:51.600] So this is our usual ending slide.
+[00:25:54.360] And for that I recycled this image that comes from a 2006 publication.
+[00:26:00.280] It's a 20 years old image.
+[00:26:02.520] I was doing work on participative systems and CQ is going to be participative.
+[00:26:08.000] StackOverflow was and there was this power
+[00:26:11.200] law participation that I read about 20 something years ago.
+[00:26:14.760] And it shows how like which different type of engagement or participation
+[00:26:20.400] you can have with the platform that starts from the lowest effort ones
+[00:26:24.160] till the highest effort once, and also the ones that reward you
+[00:26:27.920] the more because you contributed the most to a given process.
+[00:26:30.760] So the links that we provide here are kind of following the same power law.
+[00:26:34.840] So you can just check out our Mozilla organization on GitHub.
+[00:26:38.560] There's plenty of projects.
+[00:26:40.240] There is something we call the choice first stack for AI development
+[00:26:44.360] that starts from agentic frameworks, goes to
+[00:26:48.200] routing, goes to
+[00:26:50.960] serving or local model serving and adding
+[00:26:54.120] guardrails and running encoders, everything like that.
+[00:26:57.560] So you will find an open source package for almost everything that you can do here
+[00:27:01.880] or try to change. This is super low effort.
+[00:27:04.720] You just try the website and see how it works for you.
+[00:27:07.760] You can clone the repo and try and play
+[00:27:09.760] with the actual code locally and see how that works for you to.
+[00:27:13.640] And after you've seen how these things work for you.
+[00:27:16.720] Open issues.
+[00:27:18.000] We super appreciate harsh comments.
+[00:27:21.440] We want to improve.
+[00:27:23.080] We want to make this thing something that people actually use. And
+[00:27:28.160] to my
+[00:27:29.560] desire, if other people want to contribute or want to fork
+[00:27:33.360] and have another project which is as open as what we want to build ours.
+[00:27:37.520] I just want an open project to to win over here and have these kind of
+[00:27:41.960] knowledge units being shared across people and not just owned by a single company.
+[00:27:46.720] Submitters, of course, if you want to collaborate with our code
+[00:27:50.680] instead of working and yeah, contribute nucleus, that's also, well,
+[00:27:55.640] probably not the highest effort thing, but maybe it's something
+[00:28:00.040] that you need to put some effort in before you create them
+[00:28:02.320] and you test the system on your own.
+[00:28:04.080] So I think that is really all from this.
+[00:28:06.840] Thanks a lot.
+[00:28:14.360] Thank you both so much.
+[00:28:16.320] That was really interesting.
+[00:28:17.680] And like touching on problems we're talking about every day as well.
+[00:28:21.640] We have exactly two minutes for questions.
+[00:28:25.080] Does anyone have a question they want to ask quickly? Yes.
+[00:28:33.560] Hello there.
+[00:28:35.480] How does it work when you have like you're in a big organization,
+[00:28:38.520] you have multiple repositories and different domains.
+[00:28:41.880] And if you're going to do DDT, you take bounded context or something like this.
+[00:28:45.400] Like I saw in the examples, it said like front end and things like this.
+[00:28:49.480] How does the retrieval work and all this sort of stuff?
+[00:28:52.800] And does it like leak incorrect information
+[00:28:55.880] and actually confuse the agent.
+[00:28:57.920] So you can try and answer this.
+[00:29:00.560] So yeah, it's the skill drives basically like a ton of this stuff
+[00:29:05.160] in terms of like it asks the agent to summarize things at us,
+[00:29:07.720] the agent to figure out what domains and stuff,
+[00:29:10.160] and it also tells it like to try and generalize things
+[00:29:13.080] and not to make them specific
+[00:29:14.400] to like, like, say like a specific project that it's working on.
+[00:29:17.720] Unless that project is like an open source tool,
+[00:29:20.600] for example, in that, in which case it would be allowed to.
+[00:29:23.000] So the domains, it's the way that it works and sort of thing before
+[00:29:27.520] like because it was up and down.
+[00:29:28.560] But you kind of like the domains almost like that,
+[00:29:30.840] kind of like it's trying to generalize so it can have as many domains as well,
+[00:29:34.160] I think, say as many as you said, a list of domains in or things isn't.
+[00:29:38.960] Back to my YAML. Yeah.
+[00:29:40.480] But you've also got like languages frameworks.
+[00:29:42.400] There's a there's a pattern that you can use as like a bespoke string as well.
+[00:29:45.840] So like the agent should be told via the skill.
+[00:29:49.160] Like a good way to try and use that.
+[00:29:53.080] In terms like what stops it from doing stuff
+[00:29:55.160] like once things are submitted to like upstream to a remote.
+[00:29:59.360] I guess at that point it sort of becomes more of like the guardrail stuff.
+[00:30:02.240] And then and then a human in the loop review to say whether something is
+[00:30:06.280] or isn't allowed into like the Commons or whatever.
+[00:30:09.600] But to add on these,
+[00:30:12.240] these, as you clarify, this is very much a retrieval problem, right.
+[00:30:15.800] So we have a first implementation.
+[00:30:18.400] We also hope we will make this better in time.
+[00:30:21.440] So I think there is a lot of effort that can be put here
+[00:30:25.320] into making things better and better.
+[00:30:27.080] And the more the knowledge base grows,
+[00:30:30.360] the more we want to have something that works efficiently.
+[00:30:33.520] Yeah, it's actually on that in the open source replayability
+[00:30:37.000] to see exactly how the server can work around
+[00:30:40.160] how it kind of gets those results
+[00:30:42.280] and scores them and then sends back like the the ordered by relevance.
+[00:30:46.080] There's a PR one of our colleagues is open
+[00:30:48.000] on the open source report to bring in some untick search and stuff.
+[00:30:50.640] So exactly that building off that.
+[00:30:55.000] Amazing.
+[00:30:55.720] Thank you so much guys. Really appreciate that.
+[00:30:58.600] Thank you all for coming.
+[00:31:00.160] In exactly ten minutes.
+[00:31:02.600] We will have our last session before lunch.
+[00:31:06.040] Everyone's favorite time slot.
+[00:31:09.040] So please come back for that and you can find these guys out and about today.
+[00:31:14.040] I hope you can ask them all the questions you like about CQ.
+[00:31:18.480] Thanks again. Thanks everybody. Thank you.

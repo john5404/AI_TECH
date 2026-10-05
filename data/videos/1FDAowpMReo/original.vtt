@@ -1,0 +1,429 @@
+WEBVTT
+
+1
+00:00:00.240 --> 00:00:04.720
+Hi, I'm Macy and I'm here with Amy from
+
+2
+00:00:02.879 --> 00:00:09.799
+the research team and we're going to be
+
+3
+00:00:04.720 --> 00:00:09.799
+talking about Tessle verifiers today.
+
+4
+00:00:10.320 --> 00:00:15.200
+So Amy, maybe before we get into what
+
+5
+00:00:13.280 --> 00:00:16.960
+exactly they are and how they work,
+
+6
+00:00:15.200 --> 00:00:18.560
+maybe you could talk to me a bit about
+
+7
+00:00:16.960 --> 00:00:20.720
+the problem we're trying to solve.
+
+8
+00:00:18.560 --> 00:00:23.840
+&gt;&gt; Yeah. So what we've seen is that as
+
+9
+00:00:20.720 --> 00:00:26.160
+agents write more code and people write
+
+10
+00:00:23.840 --> 00:00:29.840
+code faster, there's been a real problem
+
+11
+00:00:26.160 --> 00:00:32.239
+at the review end. So PRs kind of pile
+
+12
+00:00:29.840 --> 00:00:34.640
+up and engineers end up having to review
+
+13
+00:00:32.239 --> 00:00:37.440
+lots and lots of PRs. They're trying to
+
+14
+00:00:34.640 --> 00:00:39.360
+kind of steer the agents to know follow
+
+15
+00:00:37.440 --> 00:00:41.280
+conventions that they care about or kind
+
+16
+00:00:39.360 --> 00:00:43.600
+of consistently make a good user
+
+17
+00:00:41.280 --> 00:00:45.920
+experience. It gets pretty overwhelming
+
+18
+00:00:43.600 --> 00:00:47.200
+to stay on top of all the PR. So we
+
+19
+00:00:45.920 --> 00:00:49.600
+started from that point of kind of
+
+20
+00:00:47.200 --> 00:00:52.320
+realizing well how can we give more
+
+21
+00:00:49.600 --> 00:00:53.520
+tools for expressing what you want from
+
+22
+00:00:52.320 --> 00:00:55.120
+the [music] code, what expectations
+
+23
+00:00:53.520 --> 00:00:57.520
+you've got, what invariants you want to
+
+24
+00:00:55.120 --> 00:00:59.840
+fix. So
+
+25
+00:00:57.520 --> 00:01:01.359
+there are a number of ways I feel to
+
+26
+00:00:59.840 --> 00:01:03.680
+kind of improve the reviewer [music]
+
+27
+00:01:01.359 --> 00:01:06.400
+experience and and one of them is code
+
+28
+00:01:03.680 --> 00:01:07.760
+review. How are verifiers meaningfully
+
+29
+00:01:06.400 --> 00:01:10.560
+different from code review?
+
+30
+00:01:07.760 --> 00:01:12.640
+&gt;&gt; So it sits basically between code review
+
+31
+00:01:10.560 --> 00:01:14.640
+and linting which would be how you do
+
+32
+00:01:12.640 --> 00:01:16.320
+kind of deterministic checks. So
+
+33
+00:01:14.640 --> 00:01:17.439
+somewhere in between where we still have
+
+34
+00:01:16.320 --> 00:01:20.000
+something that needs a little bit of
+
+35
+00:01:17.439 --> 00:01:22.640
+judgment, but we can make it into a
+
+36
+00:01:20.000 --> 00:01:24.799
+really clear rule that a single judge
+
+37
+00:01:22.640 --> 00:01:26.720
+call could look at a file and say yes,
+
+38
+00:01:24.799 --> 00:01:28.640
+that rule is followed. So it feels more
+
+39
+00:01:26.720 --> 00:01:31.045
+like a checklist than it feels like an
+
+40
+00:01:28.640 --> 00:01:32.560
+open-ended ask to an agent to go and
+
+41
+00:01:31.045 --> 00:01:34.640
+[music] investigate. So we've seen it
+
+42
+00:01:32.560 --> 00:01:36.079
+sit alongside code review really nicely
+
+43
+00:01:34.640 --> 00:01:38.000
+because what you can find is that in a
+
+44
+00:01:36.079 --> 00:01:40.240
+code review, the agents might be finding
+
+45
+00:01:38.000 --> 00:01:42.079
+the same kinds of things over and over
+
+46
+00:01:40.240 --> 00:01:44.159
+again or your human reviewers might find
+
+47
+00:01:42.079 --> 00:01:46.079
+the same things. So they might keep on
+
+48
+00:01:44.159 --> 00:01:47.840
+having to say to an agent,
+
+49
+00:01:46.079 --> 00:01:49.200
+&gt;&gt; you know, remember this detail that I
+
+50
+00:01:47.840 --> 00:01:52.399
+told you before. Remember this detail
+
+51
+00:01:49.200 --> 00:01:53.920
+before. And we don't want to then rely
+
+52
+00:01:52.399 --> 00:01:55.680
+on the agent always remembering to find
+
+53
+00:01:53.920 --> 00:01:57.119
+that thing. We want to codify that rule.
+
+54
+00:01:55.680 --> 00:01:58.320
+We want to make sure it gets followed
+
+55
+00:01:57.119 --> 00:02:00.560
+consistently.
+
+56
+00:01:58.320 --> 00:02:03.119
+&gt;&gt; Maybe we can dig into like [music] what
+
+57
+00:02:00.560 --> 00:02:06.560
+exactly a verifier is kind of what the
+
+58
+00:02:03.119 --> 00:02:08.399
+form factor is. So these are rules about
+
+59
+00:02:06.560 --> 00:02:11.120
+invariance that you want [music] to have
+
+60
+00:02:08.399 --> 00:02:14.160
+followed in your codebase that we can
+
+61
+00:02:11.120 --> 00:02:15.360
+check using a model as a judge. If I
+
+62
+00:02:14.160 --> 00:02:17.680
+give a couple examples from our own
+
+63
+00:02:15.360 --> 00:02:19.760
+codebase, we've got one that says in our
+
+64
+00:02:17.680 --> 00:02:22.000
+front end [music] whenever we show an
+
+65
+00:02:19.760 --> 00:02:24.319
+error message, we should also show you
+
+66
+00:02:22.000 --> 00:02:26.239
+what to do next about it. [music] Or we
+
+67
+00:02:24.319 --> 00:02:28.720
+say that all of our userfacing text
+
+68
+00:02:26.239 --> 00:02:30.560
+should be in US English, not UK [music]
+
+69
+00:02:28.720 --> 00:02:33.040
+English, which we have a hard time with
+
+70
+00:02:30.560 --> 00:02:35.280
+because we're in London and we'd like to
+
+71
+00:02:33.040 --> 00:02:36.546
+stick the use in in different words. So
+
+72
+00:02:35.280 --> 00:02:37.440
+this is another big difference with
+
+73
+00:02:36.546 --> 00:02:39.519
+[music]
+
+74
+00:02:37.440 --> 00:02:41.440
+uh having multiple rounds of code review
+
+75
+00:02:39.519 --> 00:02:43.680
+for example because these are narrow
+
+76
+00:02:41.440 --> 00:02:45.519
+rules you can afford to run them on
+
+77
+00:02:43.680 --> 00:02:47.760
+every single commit in a CI [music] and
+
+78
+00:02:45.519 --> 00:02:50.400
+that's what we do. So we run tens of
+
+79
+00:02:47.760 --> 00:02:53.200
+thousands of judgments and the bill is
+
+80
+00:02:50.400 --> 00:02:55.200
+normally around what one or two code
+
+81
+00:02:53.200 --> 00:02:57.840
+reviews u will cost.
+
+82
+00:02:55.200 --> 00:02:59.519
+&gt;&gt; Oh wow that's really cheap.
+
+83
+00:02:57.840 --> 00:03:02.800
+&gt;&gt; It's really cheap. Yeah.
+
+84
+00:02:59.519 --> 00:03:04.800
+&gt;&gt; So how do I get started with verifiers?
+
+85
+00:03:02.800 --> 00:03:07.120
+So, the simplest way to get started is
+
+86
+00:03:04.800 --> 00:03:10.000
+if you've installed our CLI [music] is
+
+87
+00:03:07.120 --> 00:03:12.159
+to talk to the Tessle agent in the CLI.
+
+88
+00:03:10.000 --> 00:03:14.640
+You can either go into that and just ask
+
+89
+00:03:12.159 --> 00:03:15.920
+it open-ended. How would I set up
+
+90
+00:03:14.640 --> 00:03:18.400
+verifiers? [music]
+
+91
+00:03:15.920 --> 00:03:20.080
+Or it's got a couple of nice loops that
+
+92
+00:03:18.400 --> 00:03:21.519
+you might want to run off the bat. You
+
+93
+00:03:20.080 --> 00:03:23.200
+can trigger. So, one of them is review
+
+94
+00:03:21.519 --> 00:03:24.720
+my PRs and tell me what I could do about
+
+95
+00:03:23.200 --> 00:03:26.319
+them. So, if you run that, [music] you
+
+96
+00:03:24.720 --> 00:03:27.920
+might find it suggests skill
+
+97
+00:03:26.319 --> 00:03:30.239
+improvements or llinters, but it might
+
+98
+00:03:27.920 --> 00:03:32.879
+also suggest [music] verifiers. Thank
+
+99
+00:03:30.239 --> 00:03:35.519
+you so much for showing me all things
+
+100
+00:03:32.879 --> 00:03:37.840
+verifiers. Um, really cool. Sounds
+
+101
+00:03:35.519 --> 00:03:40.159
+really powerful. If you guys want to get
+
+102
+00:03:37.840 --> 00:03:42.319
+started with Tesla verifiers, you can go
+
+103
+00:03:40.159 --> 00:03:44.319
+to tesla.io/agent
+
+104
+00:03:42.319 --> 00:03:46.319
+and you can ask the Tesla agent all
+
+105
+00:03:44.319 --> 00:03:48.560
+about them. Or you can visit our docs
+
+106
+00:03:46.319 --> 00:03:52.760
+and get started that way. Thanks for
+
+107
+00:03:48.560 --> 00:03:52.760
+watching. See you next time.

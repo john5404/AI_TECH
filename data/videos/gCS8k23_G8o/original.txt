@@ -1,0 +1,568 @@
+[00:00:09.200] Next up, uh, we have Alex Gablescu, who
+[00:00:13.280] is going to give us a talk on Battlelog
+[00:00:15.440] MD. And I've seen Battlelog MD a number
+[00:00:17.520] of times now, and I love I love these
+[00:00:19.039] sessions. Uh I I don't want to go too
+[00:00:21.760] deep into it, but uh sorry to cover too
+[00:00:24.320] much of what you're going to be saying,
+[00:00:25.359] but uh Alex Alex pretty much entirely
+[00:00:28.080] spec uh built this uh this this tool and
+[00:00:32.480] I love seeing an equivalent of Jira at
+[00:00:35.520] the ter at the terminal. I don't know
+[00:00:37.040] why, but it's just fun to see. Uh Alex
+[00:00:39.040] is going to show you how uh what you
+[00:00:41.120] know what backlog MD is and perhaps give
+[00:00:42.879] us some tips in and around how to build
+[00:00:44.559] uh through specifications and and and
+[00:00:46.640] what you know how we break down these
+[00:00:48.079] complex tasks.
+[00:00:49.360] Ladies and gentlemen, please give it up
+[00:00:50.640] to for Alex Gabillescu.
+[00:00:54.365] [applause] Thank you everyone for being
+[00:00:56.239] here.
+[00:00:58.480] Um, so you heard backlog MD a couple of
+[00:01:02.000] times today. Um, the reason is because
+[00:01:05.439] it's a very simple tool. Uh, it can
+[00:01:07.840] really help you uh being structured with
+[00:01:10.560] AI. And today we're going to have quite
+[00:01:14.080] a hands-on um if uh the internet works
+[00:01:18.159] very well. Uh we're going to actually
+[00:01:20.159] see backlog working live and how you can
+[00:01:22.479] actually implement a task for
+[00:01:25.119] uh using backlog MD. So uh let's start
+[00:01:28.080] from myself. So I am Alex Gavile. I'm a
+[00:01:31.439] lead developer uh in Vienna, Austria. I
+[00:01:35.200] speak Romanian, Italian, English. So
+[00:01:37.360] when you see me uh like at the coffee
+[00:01:40.400] break, you can talk with me in any of
+[00:01:42.400] these languages. I have more than 13
+[00:01:44.720] years of ex professional experience. Uh
+[00:01:47.520] and my main job I work as a uh withnet,
+[00:01:51.360] kubernetes, vjs.
+[00:01:53.759] But uh backlog MD was the the tool that
+[00:01:56.159] I created for me to learn AI and
+[00:01:58.799] actually uh it became so popular that um
+[00:02:02.159] yeah now I'm here I'm uh talking to you
+[00:02:05.119] about it and I hope you will like it. Um
+[00:02:09.759] so what are we going to do today? So I'm
+[00:02:13.120] going to uh give you some context how I
+[00:02:15.599] got to build backlog MD and why. Um then
+[00:02:19.920] I'm going to show you the tool and then
+[00:02:22.000] we're going to use uh backlog MD to
+[00:02:24.319] actually build the feature live
+[00:02:26.239] hopefully again if everything works fine
+[00:02:28.800] and uh some questions open questions at
+[00:02:31.360] the end of like what what is going uh
+[00:02:34.239] going to happen next and at the end you
+[00:02:36.720] will have the qu code to these slides.
+[00:02:39.440] So how I how did I start with AI? Um I
+[00:02:43.680] started with just prompting. Uh this was
+[00:02:46.400] when cloud code was launched. Um I tried
+[00:02:49.760] to uh give him tasks and uh achieve some
+[00:02:53.360] some good results and the results were
+[00:02:56.239] not so great. They were like sometimes
+[00:02:58.160] good, sometimes bad. It felt like really
+[00:03:00.480] playing with a slot machine and not
+[00:03:02.239] really having successful results. So
+[00:03:05.599] this uh gave me more or less 50% success
+[00:03:08.560] rate. And by success rate, I mean um
+[00:03:12.239] tasks that I eventually manage to
+[00:03:14.239] implement successfully and I don't have
+[00:03:16.000] to throw away the whole code. So even if
+[00:03:18.000] I have to go back and forth a couple of
+[00:03:19.760] times for me, that's still a successful
+[00:03:21.519] task. Uh then I discovered the agent
+[00:03:25.440] instructions cloud MD agents MD. This
+[00:03:28.800] was very very uh powerful for for me
+[00:03:31.840] that allowed me to tell agents how I
+[00:03:34.239] want the linting, the formatting, the
+[00:03:36.319] testing to happen. And you saw in
+[00:03:39.360] previous talks why this is very
+[00:03:41.040] important to have the AI agents iterate
+[00:03:43.280] until it uh knows it uh succeed and I
+[00:03:47.680] got to a more or less 75% success rate
+[00:03:50.879] and I was still not satisfied with with
+[00:03:52.799] the result. So I was trying to
+[00:03:54.400] understand what am I doing wrong and the
+[00:03:58.159] the answer was like I'm not doing that
+[00:04:00.560] many things wrong. I'm just like playing
+[00:04:02.319] around with the agents which are very
+[00:04:03.920] nondeterministic
+[00:04:05.599] and I need to find a workflow a process
+[00:04:08.640] that would put more determinist
+[00:04:11.280] determinism in in my work uh in in
+[00:04:14.142] [snorts] the coding. So how how did I
+[00:04:17.440] achieve this? So first I realized that
+[00:04:21.199] uh running out of context window would
+[00:04:23.440] like completely destroyed the the
+[00:04:25.440] quality of the work. So I wanted to
+[00:04:27.919] split my big feature into like smaller
+[00:04:30.639] tasks uh that can fit in a whole context
+[00:04:33.600] window and always tell the AI agent the
+[00:04:37.360] why are we uh building this feature. So
+[00:04:40.160] he has a it has a background like uh
+[00:04:43.199] understanding of why are we doing even
+[00:04:45.120] this feature the what and the how.
+[00:04:48.960] And um I realized it's even better if we
+[00:04:53.199] ask AI to create this information for
+[00:04:55.680] us. This sort of like specifications
+[00:04:57.840] from our description uh because this way
+[00:05:00.880] a feature that I describe like I would
+[00:05:03.360] like to have drag and drop functionality
+[00:05:06.479] in in my uh backlog MD uh will be
+[00:05:10.080] translated by AI into what AI
+[00:05:12.479] understands from my requirements. So
+[00:05:14.000] it's already like a feedback step uh
+[00:05:16.880] that is very important.
+[00:05:19.120] And something that comes from my
+[00:05:21.120] day-to-day work uh have a clear
+[00:05:22.880] definition of done. Uh how many of you
+[00:05:25.280] have a definition of done that is
+[00:05:27.680] written somewhere documented?
+[00:05:30.720] Okay. Some Yeah, I think if you uh you
+[00:05:34.240] should look into this. This is uh a
+[00:05:36.639] common approach to align with your
+[00:05:38.720] teammates uh when something is done and
+[00:05:41.600] what it means to be done. So like tests
+[00:05:44.240] are done, documentation is written, um
+[00:05:47.440] some ch like some put the task into some
+[00:05:50.560] state that means it's done and so on.
+[00:05:53.120] And with AI agents is also very
+[00:05:54.800] important.
+[00:05:56.960] So um the next step was to have these
+[00:06:01.120] tasks in uh markdown files. So I imit
+[00:06:05.120] initially uh had a huge markdown file
+[00:06:07.680] with all of the tasks. Then I realized
+[00:06:10.000] that the uh the agent will like get
+[00:06:13.280] confused by so many things at once. So
+[00:06:16.000] splitting into smaller markdown tasks
+[00:06:18.000] was like what uh made it make it work
+[00:06:20.800] much better. And I created um
+[00:06:25.360] um like a template for these tasks so
+[00:06:28.080] that I always uh have the same
+[00:06:30.800] information in all tasks and I can also
+[00:06:33.039] use the agent instructions to say to
+[00:06:36.000] tell the agent what to expect. So what
+[00:06:38.240] to actually check and what to actually
+[00:06:39.759] implement.
+[00:06:42.000] Um and the those markdown files will be
+[00:06:45.120] committed in git so that I can also like
+[00:06:48.319] go in cloud and say at task one to three
+[00:06:50.960] and then please um start working on this
+[00:06:54.639] task.
+[00:06:56.240] So this makes the loop more predictable
+[00:06:59.919] less nondeterministic.
+[00:07:03.280] uh at the very beginning the AI agents
+[00:07:05.199] would read the tasks directly from the
+[00:07:07.280] files. So it was perfect. They would
+[00:07:09.680] have to implement the acceptance
+[00:07:11.120] criteria and
+[00:07:13.599] few months ago cloud was really bad at
+[00:07:16.240] uh maintaining a clear uh scope of what
+[00:07:18.800] you wanted to build. it would either uh
+[00:07:21.280] say I'm done but it will not be done or
+[00:07:24.080] implement extra features that you never
+[00:07:26.000] requested and with uh the acceptance
+[00:07:28.400] criteria as sort of checkboxes cloud
+[00:07:30.960] would actually say okay I'm done and
+[00:07:33.599] only when the checkboxes are all uh
+[00:07:36.400] flagged
+[00:07:38.479] and with a clear definition of done in
+[00:07:40.960] the agent instructions uh I can actually
+[00:07:43.280] tell cloud or any AI agent you are you
+[00:07:46.880] can only say that you're done when all
+[00:07:48.880] of these things are done including
+[00:07:50.400] testing, linting and so on. So this
+[00:07:54.400] resulted in uh greater than 95% success
+[00:07:58.080] rate. I was very happy with the results
+[00:08:00.879] and it was almost done. So I could stop
+[00:08:03.840] there but then I wanted something more
+[00:08:07.759] uh I wanted more structure like a tool
+[00:08:09.919] around it and unfortunately Kio was not
+[00:08:12.639] launched back then otherwise I would
+[00:08:14.319] probably have uh not built back MD. uh
+[00:08:18.560] but I had to build it because I I there
+[00:08:20.879] was not much uh nothing else in in May.
+[00:08:24.479] So this is an image generated with nano
+[00:08:26.800] banana. Uh a few weeks ago there was a
+[00:08:29.440] trend uh take your software and tell
+[00:08:32.479] nano banana to generate uh an image of
+[00:08:35.120] how it would look uh if it would be like
+[00:08:37.440] a CD in a um delivered in 1995. And
+[00:08:42.159] actually if you think about a comban
+[00:08:44.560] board in a terminal this could actually
+[00:08:46.800] have been implemented in 1995. So I I
+[00:08:49.519] think this image fits and I will use it
+[00:08:51.519] from now on everywhere. And
+[00:08:55.440] this is um backlog MD. So this is the
+[00:08:58.959] cam board that runs in your terminal. Uh
+[00:09:02.640] it runs in your terminal but also like
+[00:09:04.800] in the slide deck. So this is live. So
+[00:09:08.480] um it runs almost everywhere because you
+[00:09:11.279] can run a terminal in a slide deck with
+[00:09:14.160] T-Mox. And what do you have here? You
+[00:09:17.200] have your comban columns. You have like
+[00:09:19.279] to-do in progress done. You can
+[00:09:20.880] configure the columns as with as many
+[00:09:22.640] columns as you want. In my case, I want
+[00:09:24.800] to keep it simple because most of the
+[00:09:26.480] times the picker task
+[00:09:29.120] works on it in few minutes or like maybe
+[00:09:31.440] 1 hour and then it's done. So I don't
+[00:09:33.360] want to have too many status columns.
+[00:09:36.320] And here I have uh the possibility to
+[00:09:39.519] check the details of a task. So this is
+[00:09:42.480] uh how it looks with acceptance
+[00:09:44.080] criteria.
+[00:09:46.160] Uh
+[00:09:48.800] yeah. So uh this is like a t a task that
+[00:09:52.399] has been completed
+[00:09:54.640] and all of the acceptance criterias are
+[00:09:57.120] marked as done. So let me put back full
+[00:10:00.959] screen.
+[00:10:06.800] One sec.
+[00:10:08.959] Uh so why would you use uh backlog MD?
+[00:10:12.720] So uh this is not a replacement for G
+[00:10:15.839] linear or all of these very structured
+[00:10:18.160] tools. This is uh a tool that I made uh
+[00:10:21.680] for myself to work on my side project.
+[00:10:23.519] So it's something very simple but it's
+[00:10:25.519] as simple as uh getting good results
+[00:10:28.240] with it. And I think uh a lot of you at
+[00:10:31.200] least yesterday in the workshop told me
+[00:10:32.800] that you were very successful in in
+[00:10:35.040] getting good results. So I think this is
+[00:10:37.440] a good feedback and let me go back. So
+[00:10:43.519] uh what we're going to do today so uh in
+[00:10:47.440] uh the current board I don't have the
+[00:10:49.360] possibility to move tasks around. I can
+[00:10:51.760] just uh select a task and uh just see
+[00:10:55.839] the details. But what if I wanted to
+[00:10:58.240] move a task from to-do to in progress or
+[00:11:01.200] from in progress to done or like reorder
+[00:11:03.760] it? So I have my important tasks at the
+[00:11:06.000] top. So let's try to build it live. So
+[00:11:10.160] uh might be a bit challenging but let's
+[00:11:12.079] see if we if we can make it.
+[00:11:16.399] So before we can start uh it's very
+[00:11:20.480] important to know what we want to build.
+[00:11:22.000] So we need clear requirements
+[00:11:24.720] and in my case I would like to have a
+[00:11:26.959] new uh a button a command to toggle move
+[00:11:30.560] mode
+[00:11:32.240] and I want to see which task am I moving
+[00:11:35.680] and with the arrows up and down I will
+[00:11:37.839] reorder the tasks within the same column
+[00:11:40.560] and with left and right I will move it
+[00:11:42.320] between the status columns
+[00:11:45.200] and I can commit this change by pressing
+[00:11:47.600] M uh or enter or I can cancel and abot
+[00:11:51.120] and everything should return as before
+[00:11:52.959] we are pressing ask
+[00:11:56.160] uh and in the footer I don't know if you
+[00:11:58.480] noticed there are some uh instructions
+[00:12:00.800] how to use uh the current view so also
+[00:12:04.000] there we should see that we have this
+[00:12:05.600] new button available
+[00:12:08.000] right so [snorts] uh we have claude live
+[00:12:12.240] uh I just repeated here the the prompt
+[00:12:14.720] from the previous slide so hopefully if
+[00:12:17.519] this works yes he's He's connected. So
+[00:12:23.200] let's see what happens. So the first
+[00:12:25.360] thing that uh claude uh did uh it went
+[00:12:29.279] away. It read the backlog MD uh
+[00:12:32.480] workflow. So backlog MD is connected uh
+[00:12:35.440] to cloud via MCP and in the MCP I have
+[00:12:38.639] certain instructions
+[00:12:40.959] uh for for the agents how to use
+[00:12:43.279] backlog. So the first thing that it did
+[00:12:45.839] uh read how to how the whole backlog um
+[00:12:49.360] overflow worked and now if you just saw
+[00:12:51.839] it read the instructions for how to
+[00:12:53.600] create a task and then it run the soon
+[00:12:57.040] it will run the command to create the
+[00:12:59.040] task and the task is created. So so far
+[00:13:01.440] everything is fine. So uh it works. So
+[00:13:05.200] let's see the task.
+[00:13:10.800] Yeah I kn I knew this would happen. So
+[00:13:14.320] um
+[00:13:17.040] let me see
+[00:13:19.279] I will show you later at the end because
+[00:13:21.120] we have another step with the task. So
+[00:13:22.800] the task will be a markdown file uh with
+[00:13:26.560] certain sections. So there will be like
+[00:13:28.480] some metadata front matter there will be
+[00:13:30.399] a description and acceptance criteria
+[00:13:32.560] and at this point you can already review
+[00:13:34.399] if the agent uh understood your
+[00:13:36.560] requirement and proceed to the
+[00:13:39.360] implementation plan. The implementation
+[00:13:41.440] plan should be done right before you
+[00:13:43.519] start working on a task. So uh earlier
+[00:13:45.920] you could see in the uh to-do uh column
+[00:13:49.279] we had hundreds of tasks and we want to
+[00:13:52.720] check in a task, put it in progress and
+[00:13:54.560] create an implementation plan where we
+[00:13:56.639] tell we ask the agent to actually uh
+[00:14:00.000] come up with the plan. So what does it
+[00:14:01.519] mean? Understand the task requirements
+[00:14:04.399] uh from the description and acceptance
+[00:14:06.480] criteria.
+[00:14:08.079] check the documentation if we have any
+[00:14:10.240] documentation in the codebase
+[00:14:12.720] uh and come up with a plan to actually
+[00:14:14.800] implement the the feature. So let's have
+[00:14:19.120] code continue. So create an
+[00:14:20.560] implementation plan according to backlog
+[00:14:22.399] MD workflow for the task and fill the uh
+[00:14:26.160] implementation plan field in the task.
+[00:14:30.000] So while this is um proceeding u I will
+[00:14:34.800] explain few few other things. So how
+[00:14:37.519] does this process work? How do agents
+[00:14:39.600] know how to use backlog MD and why uh
+[00:14:42.560] they know immediately that what commands
+[00:14:44.959] to trigger? So uh I'm using MCP to again
+[00:14:49.920] to express this instructions.
+[00:14:52.720] The first instruction uh is about the
+[00:14:55.279] workflow in general like what is backlog
+[00:14:57.199] MD what the agent should expect from
+[00:14:59.279] backlog MD and then uh this is more like
+[00:15:02.320] a entry point where the agent is uh
+[00:15:05.120] being told hey if you want to create
+[00:15:06.959] tasks there will be task creation guide
+[00:15:09.600] if you want to uh work on a task there
+[00:15:12.000] will be the tax task execution guide and
+[00:15:14.800] when you think you're done please still
+[00:15:17.360] check the completion guide uh that gives
+[00:15:19.839] you some instructions of the definition
+[00:15:21.279] of done and some other important
+[00:15:23.760] information and then uh I'm also
+[00:15:26.720] exposing uh some tools um for managing
+[00:15:30.480] the tasks so that the AI agent can call.
+[00:15:33.600] So searching tasks, viewing task task
+[00:15:36.959] details, uh creating tasks and updating
+[00:15:39.360] tasks. Um in the workflow I usually tell
+[00:15:42.399] the agent to first search for an
+[00:15:44.880] existing task. So if I'm uh going to
+[00:15:47.440] work on uh for example move move mode uh
+[00:15:50.800] cloud will first search if there is
+[00:15:52.399] already a task about it if not is going
+[00:15:54.320] to create it and it works. So you you
+[00:15:58.240] saw earlier it's very successful. Uh
+[00:16:00.880] unfortunately the task is somehow the it
+[00:16:04.800] because it's very dynamic so everything
+[00:16:06.399] is happening live. Uh the slide didn't
+[00:16:09.199] pick up the task. So I will uh if we
+[00:16:11.199] have one minute at the end I will show
+[00:16:12.560] you exactly what Claude created. that
+[00:16:14.880] the task is there because we saw the
+[00:16:16.720] successful message
+[00:16:19.360] and the implementation plan should have
+[00:16:21.519] been uh at this point. And actually at
+[00:16:24.560] this point you have the most important
+[00:16:26.240] review step where you can see the the
+[00:16:28.880] specs plus the plan like the plan
+[00:16:31.759] represents the how and you as a
+[00:16:34.079] developer can verify if the agent is
+[00:16:36.800] going in the right direction. And at
+[00:16:38.240] this point, if everything uh is all
+[00:16:40.880] right and the plan to implement this
+[00:16:42.880] feature is correct, you can actually go
+[00:16:45.519] and ask the agent to to work on this
+[00:16:47.600] task.
+[00:16:49.279] So we want uh to have AI agents to write
+[00:16:53.279] the code for us. So pick any uh AI agent
+[00:16:57.680] that um that you prefer. So cursor,
+[00:17:01.120] cloud, codex, gemini, whatever. Um it
+[00:17:05.919] it's a nice to have if these agents have
+[00:17:07.839] MCP connection but if they don't there
+[00:17:10.079] is a fallback with using CLI commands.
+[00:17:12.240] CLI commands means just the agent runs
+[00:17:14.400] backlog task create backlog task edit uh
+[00:17:17.679] as you can also do from your terminal.
+[00:17:20.480] Uh but with MCP the agents have more
+[00:17:22.959] structured uh information about the
+[00:17:24.880] commands such as like this field is
+[00:17:26.799] required this field is optional and so
+[00:17:28.400] on. It's that's why I recommend usually
+[00:17:30.480] to use the MCP integration
+[00:17:33.760] and we want the agent to put the task
+[00:17:36.880] into done when it's really done.
+[00:17:40.000] So
+[00:17:41.679] um yeah let's see uh if we can actually
+[00:17:44.799] have the task implemented successfully.
+[00:17:47.039] So implement the task according to
+[00:17:48.400] backlog MD workflow. Usually you don't
+[00:17:50.320] have to say this. Just implement the
+[00:17:52.640] task should be enough. But for the sake
+[00:17:55.679] of like trying to not have problems
+[00:17:57.679] today, I I'm explicitly mentioning this.
+[00:18:01.280] So cloud is going to uh work for a
+[00:18:05.280] while. So in the meantime, let's go on
+[00:18:07.200] and have like a recap of what is backlog
+[00:18:10.240] MD.
+[00:18:11.840] So it's a CLI tool that both you as a
+[00:18:15.440] human and the agent can manage tasks and
+[00:18:18.400] that's it.
+[00:18:19.840] uh the actual implementation of the
+[00:18:21.600] tasks um happens by you going to the uh
+[00:18:25.360] cloud instance and asking a cloud or
+[00:18:28.000] whatever agents you use to actually pick
+[00:18:30.400] up a task and work on that task. So it's
+[00:18:32.240] not a sender center of command where you
+[00:18:35.039] can just delegate task directly to the
+[00:18:36.960] agents. It's it's really like a
+[00:18:39.760] JR/linear
+[00:18:41.520] uh in in your own repo and all of these
+[00:18:44.400] tasks are stored locally. So you can if
+[00:18:47.600] you wanted you can run backlog MD
+[00:18:49.520] completely offline as long as you have a
+[00:18:51.280] git repo on your computer and there is
+[00:18:54.080] also a web interface for who uh is
+[00:18:56.880] interested um back uh you you just have
+[00:18:59.679] to run black backlog browser and it's
+[00:19:01.840] going to spin up a local host uh web
+[00:19:04.320] interface with uh all of the tasks in a
+[00:19:07.280] nice web format.
+[00:19:10.400] So
+[00:19:12.400] let's recap what is Backlog MD.
+[00:19:15.760] It's an open-source uh CLI tool. It has
+[00:19:19.440] a terminal user interface, the one that
+[00:19:21.360] you saw earlier. Uh there is also the
+[00:19:23.760] web interface.
+[00:19:25.679] AI agents can interact with it uh with
+[00:19:28.160] backlog MD VS CLI or via native NCP
+[00:19:31.039] connection. It's crossplatform.
+[00:19:34.480] And the nice thing that I I uh I'm
+[00:19:37.039] getting uh told about Backlog MD is that
+[00:19:40.320] for people that just want some way to
+[00:19:42.720] structure their tasks. So I want to
+[00:19:44.400] build a small project and I already know
+[00:19:46.880] what I want to build and they want to
+[00:19:48.240] split this into smaller tasks. I don't
+[00:19:50.240] want to set up a GI account. I don't
+[00:19:51.840] want to set up databases or anything.
+[00:19:54.080] Just like backlog in it my repo and then
+[00:19:56.400] I start creating tasks either from the
+[00:19:58.400] CLI or I go to the AI agent and tell the
+[00:20:01.520] agent to create the tasks for me. So
+[00:20:04.000] it's it's very simple but it's very
+[00:20:05.919] effective and also I've been asked this
+[00:20:08.799] a lot. Yes, it syncs tasks between uh
+[00:20:11.840] branches. So if you and your colleagues
+[00:20:14.799] are working on the same repo, you would
+[00:20:17.440] see the tasks that other people create
+[00:20:19.360] in other branches as long as they push
+[00:20:21.360] to to some uh origin. Uh [snorts] and
+[00:20:24.559] this back backlog does it using git
+[00:20:27.200] commands under the hood. So it uses a
+[00:20:28.960] lot of git fetch and some other git
+[00:20:31.120] commands. So when you create a new task
+[00:20:33.600] and you push this to some uh
+[00:20:37.440] origin, other developers from your team
+[00:20:39.679] will see this as long as they fetch.
+[00:20:42.400] Actually they they don't even have to
+[00:20:43.760] fetch because backlog MD fetches uh
+[00:20:45.679] under the hood. So one of the uh only
+[00:20:48.640] requirements of backlog MD is to have
+[00:20:50.640] git uh command line installed.
+[00:20:54.240] And most important backlog MD was
+[00:20:56.480] written 99% by AI agents. This is
+[00:20:59.360] because first it was a challenge for me
+[00:21:01.760] to not write code and to not mix myself
+[00:21:04.640] with AI agents. I want to learn and to
+[00:21:07.039] get better at using AI. So every time I
+[00:21:09.840] had to do some adjustments, I asked the
+[00:21:12.559] the agent to fix everything for me. So
+[00:21:14.559] the only files that are really written
+[00:21:17.120] by me are the agent instructions.
+[00:21:20.320] Everything else is being written by AI
+[00:21:22.400] agents. Obviously I went back and forth
+[00:21:24.640] with some features. Sometimes I
+[00:21:26.000] completely cancelled. But what is good
+[00:21:28.159] about the backlog is that you have the
+[00:21:29.760] specs and if something goes wrong you
+[00:21:32.159] can go back to the specs and modify them
+[00:21:35.280] and start again on the same feature
+[00:21:37.280] maybe changing the agent and hopefully
+[00:21:39.440] this time it's going to go well. So now
+[00:21:41.840] if everything went right
+[00:21:44.960] we should see this
+[00:21:47.440] result. All right it's there. You can
+[00:21:50.240] see the move uh button there. So in the
+[00:21:53.520] meantime cloud has implemented the
+[00:21:55.039] feature that we wanted. So let me see if
+[00:21:57.120] it works.
+[00:22:01.679] So uh let's say uh the so first of all
+[00:22:06.640] implement move mode has been marked as
+[00:22:08.480] done. You can see it took few minutes.
+[00:22:11.760] Uh all of the acceptance criterias are
+[00:22:14.640] marked as done. We have the
+[00:22:16.799] implementation plan the one that we
+[00:22:18.559] couldn't see before. Uh we have
+[00:22:21.039] implementation steps and there should be
+[00:22:23.679] like at the very end here. Wow, Claude
+[00:22:26.799] really wrote a lot of information
+[00:22:31.200] implementation notes which is something
+[00:22:33.200] that I tell the agent to to write so
+[00:22:36.080] that we see um what has been done in
+[00:22:38.960] this task. So very quickly let's check
+[00:22:42.480] uh the result. So I press M task is
+[00:22:46.080] highlighted and I move it in progress.
+[00:22:48.400] Let's say something went wrong and it
+[00:22:49.840] didn't uh work as expected. Press enter
+[00:22:53.840] and it's here and I guess it's work.
+[00:22:56.320] Let's see. Yes, it's now in progress.
+[00:22:58.320] So, this is how you use backlog MD to
+[00:23:00.400] work on backlog MD or on any of your
+[00:23:02.880] projects. Um, all right. So,
+[00:23:08.640] let me conclude.
+[00:23:12.880] So, why does this work so well? So with
+[00:23:15.039] the markdown tasks uh you have more
+[00:23:18.640] chances to do better context
+[00:23:20.159] engineering. So to put exact information
+[00:23:22.400] as the agent needs from every single
+[00:23:24.559] task in in uh for the work to be done.
+[00:23:28.559] Uh you most likely will not run out of
+[00:23:31.120] context window if you work on one single
+[00:23:33.280] task per session. You can roll back
+[00:23:35.440] improve the specs and try again. Scope
+[00:23:38.000] is well defined with acceptance
+[00:23:39.440] criteria. agents don't do more or less
+[00:23:41.600] than expected because of the definition
+[00:23:43.280] of done. You have three steps of review
+[00:23:46.240] after the task is created after the
+[00:23:47.840] implementation plan is uh written and
+[00:23:50.400] after the code the execution so the code
+[00:23:53.600] review basically
+[00:23:55.600] and you can work on multiple tasks in
+[00:23:57.679] parallel maybe with git works.
+[00:24:00.400] All right. So very quickly open
+[00:24:02.159] question. So agile software development
+[00:24:04.400] will have to adapt for this AI native
+[00:24:06.559] workflows. So they have to uh you have
+[00:24:09.360] to integrate AI agents uh as team
+[00:24:11.840] members. So in in this case like using
+[00:24:14.799] backlog and is a good way to start but
+[00:24:16.640] it's obviously not what is going to be
+[00:24:18.480] there in a year. Uh you have to think
+[00:24:21.039] about story points estimations as
+[00:24:22.960] something that works with humans but not
+[00:24:24.559] with a agents that can run the whole
+[00:24:26.159] night and like finish a whole sprint in
+[00:24:28.000] a single night.
+[00:24:29.760] uh and then we have to like really know
+[00:24:31.679] what to build. We have to still uh get
+[00:24:34.640] the customer feedback and we need to
+[00:24:36.559] respond to changes and what are the
+[00:24:38.480] challenges. So automated reviews. So in
+[00:24:40.960] order to have a task being done and also
+[00:24:43.039] merge and deploy to production
+[00:24:46.000] solving conflicts, how many tasks we can
+[00:24:48.240] uh tackle in parallel and keep the
+[00:24:50.799] humans in the loop so that we deliver
+[00:24:53.679] good uh software products to other
+[00:24:56.320] humans. Thank you. Heat. Heat.
+[00:25:00.622] [music]
+[00:25:07.827] [music]
+[00:25:13.722] [music]

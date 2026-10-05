@@ -1,0 +1,983 @@
+[00:00:00.000] I think it's completely nonsensical the LM is not running in your Python process.
+[00:00:05.680] the universe would end before Python could execute inference.
+[00:00:09.320] So the LM is a very, very simple HTTP call away.
+[00:00:13.480] So it's utterly baffling to me that people think any particular language
+[00:00:17.320] has a natural advantage to make what is an incredibly simple HTTP call.
+[00:00:22.040] open claws not written in Python.
+[00:00:23.960] in the case of many enterprise applications, they're obviously written
+[00:00:27.960] in Java.
+[00:00:28.840] The critical adjacencies are existing business
+[00:00:31.720] logic, existing enterprise services those applications interact with.
+[00:00:35.840] And it's quite obvious the correct thing to do is simply make
+[00:00:40.920] the very simple HTTP calls from your Java stack.
+[00:00:46.800] The AI native dev is a podcast for developers and engineering
+[00:00:50.080] leads at the cutting edge of AI and a genetic coding.
+[00:00:53.400] Join your hosts, Guy pigeon and me, Simon Maple.
+[00:00:56.400] Every week as we chat with the most exciting voices in
+[00:00:59.600] AI and tackle the biggest questions facing developers today.
+[00:01:04.000] This is the AI native dev.
+[00:01:11.520] Back in November, we
+[00:01:12.640] hosted the first ever in-person AI native Devon in New York.
+[00:01:16.680] This June 1st and second, we're bringing it to London.
+[00:01:19.720] It's two days built for Anna to developers and engineering teams, one day
+[00:01:24.520] full of hands on workshops and one day full of practical talks on
+[00:01:28.680] agent skills, context engineering, agent orchestration and enablement platforms
+[00:01:32.880] and how teams are actually shipping AI in production.
+[00:01:36.680] Join us at the Brewery in London near the Barbican for all of that, plus
+[00:01:40.960] networking parties, giveaways and a room
+[00:01:44.040] full of people building the future of AI native development.
+[00:01:47.880] You can also join us from anywhere in the world via the live stream.
+[00:01:51.440] As you're listening to this podcast, you get 30% off your ticket with Code Pod 30.
+[00:01:56.880] Just head to ainativedevcon.io and we'll see you in London.
+[00:02:04.600] Hello,
+[00:02:05.120] and welcome to another episode of the AI Native Dev Podcast.
+[00:02:08.920] And we've got a special episode, actually, because one of my one of my heroes,
+[00:02:12.040] fellow Java champions, Rod Johnson, creator of Spring,
+[00:02:16.800] the founder and CEO of Embabel, joins me here today.
+[00:02:20.160] So, Rod, a very a very special welcome. Thank you.
+[00:02:22.720] Simon, it's good to be here. Excellent.
+[00:02:24.280] And of course, you're from Australia. Yes.
+[00:02:27.480] I now live again in Sydney, but actually lived in London for seven years.
+[00:02:32.200] So when I created Spring,
+[00:02:35.320] most of the early years of what became SpringSource was in London.
+[00:02:39.480] And then I lived in the Bay area for another few years after that.
+[00:02:42.920] Yeah, yeah.
+[00:02:43.200] Because I guess, in the early, early, early days, I guess.
+[00:02:46.760] SpringSource, Interface 21 at one point.
+[00:02:48.680] It was. Interface 21 was the first company name.
+[00:02:51.040] Yeah.
+[00:02:51.480] Back then I was I was at IBM and a number of folks,
+[00:02:55.480] Andy Wilkinson and like that kind of like moved over
+[00:02:58.680] and and that was there was an office I think close by there.
+[00:03:02.680] Was it Romsey way, Southampton. Yeah.
+[00:03:05.280] It was a strange accident that that office was in Southampton.
+[00:03:09.000] I can imagine.
+[00:03:10.120] Yeah.
+[00:03:10.440] We like to think about, you know, liberating people.
+[00:03:13.080] So we did Andy and a few other really good engineers from IBM.
+[00:03:18.040] Still there.
+[00:03:19.000] Yeah. Yeah, yeah, yeah.
+[00:03:20.600] He's doing great stuff.
+[00:03:21.760] There's I mean, one of the amazing things about, I think the Spring story
+[00:03:26.040] has been the retention of folk for that length of time.
+[00:03:30.120] I mean, primarily among them, of course, Jurgen.
+[00:03:32.680] Like, Jurgen Hurler joined the Spring project in early 2003.
+[00:03:38.800] And I would say he has worked full time on Spring
+[00:03:42.840] since probably May 2003.
+[00:03:46.240] And, you know, Jurgen did well out of the acquisition
+[00:03:50.840] and it is what he wants to do and he does it exceptionally well.
+[00:03:54.960] I think, you know, I think it's a wonderful thing for the Java community.
+[00:03:57.600] Yeah. Incredible.
+[00:03:58.480] And so, you know, for you personally, I was looking a little bit back
+[00:04:02.360] over your history and there was one super interesting kind of backstory
+[00:04:06.960] that that very much surprised me, but it kind of made me very, very curious.
+[00:04:11.080] You as well as obviously well before Spring,
+[00:04:14.440] you have a PhD in 19th century Parisian piano music.
+[00:04:19.240] Yes, that is true.
+[00:04:20.480] I am a pianist and my
+[00:04:24.880] first
+[00:04:25.200] degree was a major in both music and computer science,
+[00:04:28.200] and I really couldn't decide which one I wanted to go on with.
+[00:04:32.440] And then I got a very generous Australian Post
+[00:04:37.840] Government Research Postgraduate Research award to do my PhD in music.
+[00:04:42.480] So I did that.
+[00:04:44.120] And actually I taught at the Sydney Conservatory of Music.
+[00:04:48.320] I taught music history for a couple of years.
+[00:04:50.360] But, you know, I always still had this desire to write code.
+[00:04:55.080] So I actually wrote some shareware back in the mid 90s when that was the thing.
+[00:05:00.520] I wrote some windows shareware that was moderately successful, and people
+[00:05:04.400] actually wrote checks that arrived in the mail.
+[00:05:06.520] It was quite a surprise that people actually sent checks.
+[00:05:10.640] And then, you know, I eventually decided that if I stayed
+[00:05:15.600] a music academic, I couldn't see how I could ever afford a house in Sydney.
+[00:05:19.120] And so that's when I decided, okay, one of these
+[00:05:22.000] should be a hobby, and one of them should be my career.
+[00:05:25.960] I've got it the wrong way around.
+[00:05:27.600] And then, of course, sadly,
+[00:05:28.880] I didn't play the piano for ten years because I was so busy in my career.
+[00:05:32.920] So it wasn't a weird detour or anything like that.
+[00:05:35.320] It just happened to be.
+[00:05:36.720] You're very creative, whether it's code, whether it's whether it's music.
+[00:05:40.120] And you just enjoyed both.
+[00:05:42.080] Yeah.
+[00:05:42.320] Look, I think since I first wrote code, probably now in the mid 80s,
+[00:05:49.080] I don't think there's ever been very long that's gone when I haven't
+[00:05:53.000] written code, because I just still keep coming back to it.
+[00:05:56.200] And I love it.
+[00:05:57.280] And it's one of the things I find most enjoyable.
+[00:06:00.640] And interestingly, even though now obviously I don't write
+[00:06:04.440] most of my code because coding agents were at most of my code,
+[00:06:07.680] I still get the same buzz because I'm still in control.
+[00:06:10.680] I'm still creating and shaping something.
+[00:06:12.920] So, you know, it's just as satisfying to me
+[00:06:15.440] if I achieve the outcome, if I don't type most of the code.
+[00:06:19.120] Yeah. Amazing.
+[00:06:20.040] So post Spring. Post Spring source,
+[00:06:24.960] Spring
+[00:06:25.280] source were acquired for about 20 odd years or so.
+[00:06:28.280] Maybe you were doing more in on on boards, doing investments, things like that.
+[00:06:33.400] And then you launched in Embabel.
+[00:06:35.200] What kind of did you see that made you feel, you know, this is the moment.
+[00:06:39.760] This is the thing that's worth building right I think it is
+[00:06:43.920] the fact that we're at such an inflection point in the industry.
+[00:06:47.000] So it seemed to me as soon as that amazing moment happened,
+[00:06:52.000] when I think it was GPT three, ChatGPT suddenly, suddenly became useful, suddenly
+[00:06:57.440] stopped repeating itself and going down a weird rat hole and was clearly useful.
+[00:07:02.520] And I found a fascinating problem of how do we make this useful for business?
+[00:07:07.840] And it's a pretty hard problem.
+[00:07:09.680] So that was a very strong motivation.
+[00:07:13.560] And it I'd actually been for my own pleasure probably
+[00:07:19.560] in the last two years before that, writing a ton of code where I'd actually,
+[00:07:24.000] for a personal project got into TensorFlow and quite a lot of low level stuff.
+[00:07:27.840] So I was already very interested in the AI space, and it just naturally morphed
+[00:07:33.480] into trying to create a framework to help solve these problems.
+[00:07:37.200] Interesting.
+[00:07:38.000] I guess when we look at enterprises today,
+[00:07:42.880] many teams are being
+[00:07:43.960] told to almost abandon Java to rewrite in Python.
+[00:07:47.680] And I think, you know, you you wrote about this, that you know, this is wrong.
+[00:07:53.000] This is this is the last year of Python dominance in AI.
+[00:07:56.680] Yes. And that's the wrong way.
+[00:07:58.760] Why would you say that's the wrong way?
+[00:08:00.120] I agree, by the way.
+[00:08:00.800] But why would you say that's the wrong way?
+[00:08:02.440] I think it's completely nonsensical because I think if you have
+[00:08:06.680] a business problem, you need to consider the adjacencies of that problem, right?
+[00:08:12.200] Like you're solving a business problem.
+[00:08:14.080] What are you working with?
+[00:08:15.200] You're working
+[00:08:15.840] probably with a database, enterprise services and existing code base.
+[00:08:20.120] You're also working with something new, which is LMS.
+[00:08:23.080] Well, if you consider those adjacencies, the LM
+[00:08:27.520] is not running in your Python process.
+[00:08:30.280] I mean, like we literally
+[00:08:31.760] the universe would end before Python could execute inference.
+[00:08:35.400] So the LM is a very, very simple HTTP call away.
+[00:08:39.560] So it's utterly baffling to me that people think any particular language
+[00:08:43.400] has a natural advantage to make what is an incredibly simple HTTP call.
+[00:08:48.280] And I think people are gradually getting that.
+[00:08:51.360] Like, for example, if you look at open claw, open claws not written in Python.
+[00:08:56.320] Yeah, there's absolutely I guess Peter Steinberger wrote it in the language
+[00:09:00.000] that he preferred.
+[00:09:01.160] So in the case of many enterprise applications,
+[00:09:05.360] they're obviously written in Java.
+[00:09:07.120] The critical adjacencies are existing business
+[00:09:10.000] logic, existing enterprise services those applications interact with.
+[00:09:14.120] And it's quite obvious that the correct thing to do
+[00:09:18.440] is simply make the very simple HTTP calls from your Java stack.
+[00:09:24.240] Now, I think one of the reasons people think
+[00:09:27.360] this is the confusion between data science
+[00:09:32.120] and AI and business applications, and they're entirely different things.
+[00:09:36.480] For example, I'm I had written prior to returning to Java within Embabel.
+[00:09:42.800] I'd written a ton of Python.
+[00:09:44.560] Actually, believe it or not, probably two years ago
+[00:09:47.840] my Python was far more fluent than my Java.
+[00:09:51.520] If I were using as I was
+[00:09:54.680] in that I was using TensorFlow, I would do it in Python.
+[00:09:58.640] If I were fine tuning doing certain kinds of model training.
+[00:10:04.280] I'd certainly do it in Python, certain kinds of data processing and ingestion
+[00:10:08.560] I do in Python.
+[00:10:09.480] So my point is fundamentally that you should
+[00:10:13.400] in any task do it in the language that's most appropriate for that task.
+[00:10:17.520] These genii enablement of apps.
+[00:10:20.840] That problem is a task that's much better done
+[00:10:24.160] in Java, where the app is already written than in Python.
+[00:10:28.960] And of course, in Embabel is written in.
+[00:10:32.440] I think.
+[00:10:33.080] It is nearly all written in Kotlin.
+[00:10:34.920] Most of our examples of Java, and we put a lot of effort
+[00:10:38.720] into making sure that for Java users, it's completely seamless.
+[00:10:42.520] So like the vast majority of our user base, as you'd expect in jabber,
+[00:10:46.840] and you will not see a companion, a Kate, you won't see anything.
+[00:10:51.920] That's weird.
+[00:10:52.760] It's like really nice, fluent Java.
+[00:10:56.640] So yeah,
+[00:10:57.200] I find that in the when I work on the core framework, I'm working in Kotlin.
+[00:11:01.200] When I work on example applications, I'm working in Java.
+[00:11:05.920] And to be honest, the Java flavored API is so nice that even in Kotlin,
+[00:11:11.920] like when you're using the framework, it's actually pretty much the same in other.
+[00:11:15.720] Language, and the integrations between are pretty seamless.
+[00:11:19.920] Any way that you can actually dip from Kotlin straight into Java anyway, right?
+[00:11:23.240] Oh, absolutely.
+[00:11:24.200] Like, I mean, I think probably maybe over ten years ago I spent a lot actually
+[00:11:28.560] probably more like 13 years ago, did a lot in, Scala.
+[00:11:33.360] And I loved Scala as a language.
+[00:11:35.560] But the fact was the integration with Java was painful.
+[00:11:39.960] Like every time you had a collection, for example, it was misery.
+[00:11:44.800] I think the creators of Kotlin have done an amazing job
+[00:11:49.560] with Java interop, and also they don't introduce
+[00:11:52.720] the problems like the breakage, lack of binary compatibility, etc.
+[00:11:56.640] that Scala had.
+[00:11:57.720] So yeah, I find I find Kotlin a really nice language to work
+[00:12:01.880] in, though I think it is also important to point out that Java has improved a lot.
+[00:12:07.360] You know, I do find it very annoying that people love their Java straw man.
+[00:12:12.840] So, you know, a lot of people out there are pretending that
+[00:12:15.600] Java has not evolved and Java is actually evolved a lot.
+[00:12:19.320] How this argument with guy every,
+[00:12:21.400] every day, he always calls Java a very ancient, kind of like little.
+[00:12:25.200] I think he's just calling me though.
+[00:12:27.480] But, but, but let's talk a little bit about actually a couple of months ago
+[00:12:30.720] maybe actually, of course, you feel it's probably a year, a few weeks ago,
+[00:12:33.000] I think we were both in Atlanta, and you gave a closing keynote for Nexus.
+[00:12:38.200] Nexus. That's right.
+[00:12:39.000] Yeah.
+[00:12:39.560] And, and and you talked a little bit about how AI is essentially
+[00:12:43.920] almost bolted on as a disconnected layer.
+[00:12:47.160] And as a result and, you know, rather than being integrated more into,
+[00:12:51.600] into the existing systems and as a result, you know, it causes
+[00:12:56.080] some of the, some of the more the failure cases as a result.
+[00:13:00.920] Walk us through what you see as like a real enterprise
+[00:13:03.960] AI failure case from from European.
+[00:13:07.440] I think the biggest problem is
+[00:13:10.560] where there is a mandate to AI all the things,
+[00:13:13.960] and it comes down from the very top
+[00:13:16.880] and people are doing
+[00:13:20.560] AI projects without really a business case,
+[00:13:23.560] without really being sure that AI is appropriate for this.
+[00:13:27.000] So I think one of the major Andy patterns
+[00:13:30.520] is this idea of we must use more AI without like, why?
+[00:13:35.080] What for?
+[00:13:35.920] Because much as I love and am fascinated by AI,
+[00:13:41.400] if you can do any single thing without using an LLM,
+[00:13:45.520] well of course you do it without using an LLM.
+[00:13:47.360] It's way cheaper, it's more deterministic, it's faster.
+[00:13:50.440] Right?
+[00:13:50.760] There's like every single metric you can think of is going to be better.
+[00:13:54.920] So you know, I think the first thing that organizations need to do
+[00:13:59.520] is kind of think of how do we get there from here.
+[00:14:02.880] So think about, for example, one of our customers in Australia
+[00:14:07.000] have started by identifying small things
+[00:14:11.200] where, for example, there was one particular form where
+[00:14:14.520] if a customer filled in that form on their website,
+[00:14:18.480] it required a person to evaluate what they'd said.
+[00:14:23.120] 95% of those cases were really simple things that were a little bit too
+[00:14:27.560] complex to, like, parse
+[00:14:28.720] with regular expressions or whatever, but they were pretty simple things.
+[00:14:32.120] So you know that they've been able to remove that friction
+[00:14:35.400] and give in the 95% case, give their customer
+[00:14:38.920] instant ability to move forward without waiting on an employee.
+[00:14:43.240] And those, I think a very good examples of where you can start
+[00:14:47.800] and gradually put runs on the board, build more confidence.
+[00:14:52.680] Another problem is, as you mentioned, the alien stack problem.
+[00:14:56.360] So because that hurts in two ways.
+[00:15:00.040] Firstly, technically it makes everything harder
+[00:15:03.360] and secondly, it often means the wrong people drove the strategy.
+[00:15:06.760] So you have people who don't understand the core business,
+[00:15:13.200] have never seen any of the core business applications
+[00:15:16.320] who are driving the strategy, and that really doesn't work
+[00:15:19.800] when you need to enable those applications.
+[00:15:22.280] Like I had a chat, sometime last year with the lead
+[00:15:27.080] AI architect at a very, very large Australian company who
+[00:15:33.400] was a Python guy, listen politely, wasn't very interested.
+[00:15:36.680] And at the end of the call, I guess trying to be nice,
+[00:15:39.280] he said, I'm sure we've got Java somewhere.
+[00:15:41.160] I'll ask around.
+[00:15:42.640] I've never worked for that organization, but basically I'm
+[00:15:47.960] well aware, as most people would be in the industry in Australia,
+[00:15:51.240] that about 70% of it is written in Java.
+[00:15:55.120] The remainders.
+[00:15:56.000] Net and they're phasing that out in favor of Java.
+[00:15:59.480] And this person had been in their job for almost a year.
+[00:16:02.680] It had never occurred to them to
+[00:16:06.080] go and ask, by the way, what do we write our software in?
+[00:16:10.080] Apparently not important.
+[00:16:11.720] I just don't have a good feeling about how that's going to play
+[00:16:15.080] And of course, that happens more and more now where we see so much of a connection,
+[00:16:20.360] so much of a disconnection between, you know, us as developers and the code,
+[00:16:25.440] the implementation that we actually write because there's almost an overreliance
+[00:16:29.600] or an over agency on us using AI
+[00:16:33.400] that it's making so many of the decisions and we're offloading so much of that.
+[00:16:38.720] A lot of the knowledge actually is on the is on the AI side,
+[00:16:42.200] or rather on the implementation side, which we are abstracted away from.
+[00:16:45.640] How much of a problem?
+[00:16:46.960] Do you do you see that as.
+[00:16:49.680] I think it's a fascinating question.
+[00:16:51.800] I think one of the skills that developers need to master is
+[00:16:58.440] working in this new way and retaining the control that matters.
+[00:17:01.880] I do believe that you can vibe code things like some classes of UI apps.
+[00:17:07.520] Sure, they're disposable anyway.
+[00:17:09.800] Agents are very, very good at that.
+[00:17:13.320] You cannot vibe code serious software, and I am a vigorous user of coding
+[00:17:20.080] agents, as I would say, I probably right at most 5% of my code, maybe less.
+[00:17:25.680] But I am very much in control
+[00:17:29.400] and I find that from a design perspective,
+[00:17:33.680] the agent more often gets it wrong than right.
+[00:17:36.720] So, and I know there are different points of view on this.
+[00:17:40.840] I believe it is vitally important that we still understand the architecture,
+[00:17:45.680] that we are still aware of what's going on and are not too trusting,
+[00:17:51.240] because I do think that once you get into complex applications,
+[00:17:55.400] if you don't maintain that kind of architectural oversight,
+[00:17:59.480] you will quickly end up with a mess where your agent will happily
+[00:18:03.440] add a new feature.
+[00:18:04.760] With every new feature, the design degrades
+[00:18:07.520] and it becomes really nasty code.
+[00:18:11.520] And your reason for that?
+[00:18:12.880] You mentioned 5% of
+[00:18:14.280] of you know, what is created there is I generated your reason for that.
+[00:18:18.520] That's an intentional block there in terms of you don't want to write more
+[00:18:23.880] because it's a choice that you want to have more control over what's written.
+[00:18:27.640] Look, if you read.
+[00:18:29.240] The code, well, actually.
+[00:18:32.720] Okay, let's put it this way.
+[00:18:34.240] In the open source project, I wrote more than 5% of the code.
+[00:18:38.560] I probably are on the side of being conservative,
+[00:18:41.200] but in some of our internal applications, it's more like the 95% is authored.
+[00:18:46.880] But if you read that code, you would think I'd written it.
+[00:18:49.880] It's like the designs are very, very clearly.
+[00:18:54.440] And I will sit there.
+[00:18:56.560] I'll watch defeats, I'll look at the output,
+[00:18:58.840] and I will very frequently stop it and say, no, that's wrong.
+[00:19:02.200] You've hardcoded this. That should be a strategy.
+[00:19:04.400] Pull it out. And.
+[00:19:06.560] I believe that that potentially can produce a better result
+[00:19:11.840] than you can get with a human alone or a coding agent alone.
+[00:19:17.560] I would say, for example, if I look at what I write
+[00:19:21.200] with a coding agent, it's much faster than I could do, and it's somewhat
+[00:19:25.760] better quality than I could do if you compared it the other way.
+[00:19:30.320] If I left it all to the coding agent, I believe the quality
+[00:19:33.080] would be dramatically lower.
+[00:19:34.800] It would, and it probably ultimately went end up being slower as well.
+[00:19:39.080] Yeah, yeah. Super interesting.
+[00:19:41.640] I want to talk a little bit
+[00:19:42.720] about one of the pieces of Embabel, which is the planner.
+[00:19:47.040] And this is, this is super interesting.
+[00:19:48.480] So it's it's a pathfinding algorithm.
+[00:19:51.200] The goat, the goat goat.
+[00:19:53.360] Goal oriented action planning.
+[00:19:54.960] That's it. Goal oriented action planning.
+[00:19:57.040] So it's a pathfinding algorithm that was originally built for NPCs in gaming.
+[00:20:02.880] Is that right?
+[00:20:03.520] It is.
+[00:20:04.240] Yes. And the key thing is it's it's deterministic.
+[00:20:07.400] Correct.
+[00:20:08.360] And I think if you look at other frameworks,
+[00:20:12.680] whether it's Lange chain or AI or those types of things, it's the it's
+[00:20:16.800] ultimately the LM that effectively helps decide what the the what to do
+[00:20:22.200] next, what the planning aspects are and things like that.
+[00:20:25.320] I'd love to talk about why you picked
+[00:20:28.800] the this algorithm from the NPC space.
+[00:20:32.920] What did you see there?
+[00:20:34.160] I started off thinking about some of the most obvious ways to do it,
+[00:20:37.720] and one of the most obvious ways to do it is the state machine.
+[00:20:40.080] So land graph.
+[00:20:40.960] In fairness to land graph, land graph is deterministic.
+[00:20:44.560] You define a state machine ahead of time.
+[00:20:47.880] So I started off by using that approach.
+[00:20:50.560] But let's let's step back
+[00:20:51.680] a little bit first and talk about the motivation for planning.
+[00:20:55.920] So obviously you could just give your model a bunch of tools right.
+[00:21:02.280] And let the loop handle things.
+[00:21:05.200] And there are cases where that makes sense.
+[00:21:08.800] But fundamentally for things like automating a business process
+[00:21:12.440] in a consistent, predictable way, that really isn't sufficient
+[00:21:16.720] because you don't know what order the LM will invoke, the tools you give it in.
+[00:21:21.480] You don't know precisely what arguments it will give it to them.
+[00:21:26.440] So the idea is that we
+[00:21:29.440] enable users to decompose flows into a number of steps.
+[00:21:33.440] Those steps might invoke one or more llms, or they might just be code steps.
+[00:21:38.080] So to that extent, these are things that Lang graph does that
+[00:21:41.760] AI does that Microsoft semantic kernel does.
+[00:21:44.120] I mean, that's a familiar idea and a proven idea
+[00:21:47.160] that you break things down into smaller steps.
+[00:21:49.960] It also means that if you're using Llms in those steps,
+[00:21:53.320] you can use different llms for different requirements.
+[00:21:56.360] And that means, for example, you could potentially even use local LLM
+[00:22:00.920] behind your own firewall
+[00:22:02.480] for certain things that are small enough for local them to do it.
+[00:22:05.520] And highly sensitive.
+[00:22:06.520] So your customer data never goes outside.
+[00:22:08.880] So there's a lot of benefits there.
+[00:22:10.200] But it brings us back to how do we how do we plan those steps?
+[00:22:14.280] How do we decide what order we're going to do things.
+[00:22:17.440] So you can do the state machine idea.
+[00:22:20.320] But what I found when I was working on something
+[00:22:22.680] pretty similar to what came out with is firstly
+[00:22:27.840] changing a state machine, for example, adding more states and transitions.
+[00:22:31.480] It's pretty fiddly, right?
+[00:22:32.600] You've got to rewire the thing if you're extending it.
+[00:22:36.000] And secondly, you have a problem with respect to typing,
+[00:22:39.720] because your state transitions are generally orthogonal
+[00:22:43.200] to the type requirements of the individual action states.
+[00:22:47.800] So our idea with goat planning differs in two ways.
+[00:22:52.600] Firstly, it is dynamic.
+[00:22:55.400] So the planning occurs at runtime, and secondly it is
+[00:23:02.240] totally integrated with the type system.
+[00:23:04.320] So we allow people to create custom
+[00:23:08.640] custom conditions.
+[00:23:09.800] But fundamentally the ordering of actions is typically defined by the
+[00:23:15.600] the arguments and return types of Java methods,
+[00:23:19.640] which means that you can never have an action that's invoked when it doesn't have
+[00:23:23.960] the parameters that are needed for it at the time.
+[00:23:28.240] So go is essentially it's an A star algorithm.
+[00:23:31.800] So we identify a goal.
+[00:23:34.760] We look at the steps that can get from the current world state to the goal.
+[00:23:39.960] We do that by chaining actions.
+[00:23:41.880] So a goal has preconditions.
+[00:23:44.120] So certain, you know conditions in the world state that must be true.
+[00:23:49.200] Actions have preconditions and expected post conditions.
+[00:23:53.840] So preconditions are absolute.
+[00:23:56.760] You cannot declare your goal
+[00:23:58.200] to be satisfied unless those conditions have been met.
+[00:24:00.680] You cannot invoke any action unless those conditions have been met.
+[00:24:04.160] But the post conditions of actions are essentially promises
+[00:24:09.680] that I will have achieved this essentially side effect.
+[00:24:12.760] So the planner starts off by identifying
+[00:24:16.640] a plan from the current world state to the desired goal.
+[00:24:20.040] And of course, it may say there is no plan
+[00:24:22.000] which is legitimate and good to know the.
+[00:24:25.760] So it won't do things that don't make sense,
+[00:24:29.720] then it will execute the first action.
+[00:24:32.600] It will identify a list of actions that could achieve that goal.
+[00:24:35.400] We'll execute the first action.
+[00:24:37.280] It will now replan.
+[00:24:39.640] So it will look at the world state as it stands after the execution
+[00:24:43.600] of each action and say, okay, how do I get to the goal now?
+[00:24:46.800] Like most of the time you're the happy path will work.
+[00:24:50.000] The action promised that it will have certain,
+[00:24:52.760] you know, certain things will be true after it's executed.
+[00:24:55.800] The planner checks. Yep, looks like the world states
+[00:24:57.800] what I expected and it will go to the next step.
+[00:25:00.920] And this is entirely automated.
+[00:25:02.560] This is entirely automated.
+[00:25:03.960] So typically Java developers don't really need to
+[00:25:09.880] know about the guts of the planner, typically, the way in which they provide
+[00:25:14.600] inputs to the planner is they define what we call action methods.
+[00:25:19.080] So they annotate Java methods with that action and the arguments to those methods.
+[00:25:25.080] And the return types basically give the planner information
+[00:25:29.240] to perform the chaining.
+[00:25:31.000] There are some cases where you also want custom conditions,
+[00:25:36.120] so they can define custom conditions to further control the workflow.
+[00:25:41.600] But it means, for example, that there may be
+[00:25:44.960] more than one route to a goal, and it can choose the cheapest route
+[00:25:48.080] because you can assign cost to individual actions.
+[00:25:52.200] Cost can even be dynamic.
+[00:25:53.800] So if one of your actions involve, say, invoking a system that might be under
+[00:25:58.560] heavy load, you could actually reflect that in a dynamic cost value for that.
+[00:26:02.800] So it might automatically choose a different route.
+[00:26:07.000] That's super interesting.
+[00:26:08.000] And that's and that's dynamic at runtime.
+[00:26:10.040] Not it can kind of like decide based on the current state of the world.
+[00:26:14.000] That's pretty cool.
+[00:26:15.720] One of the other things, because it's very deterministic.
+[00:26:18.680] If you were to ask
+[00:26:21.880] why did why was the decision made?
+[00:26:24.920] What can what can you provide as, as, you know, some information
+[00:26:28.920] or diagnostic about why something happened that non-deterministic planner
+[00:26:33.360] wouldn't be able to?
+[00:26:34.360] Yes. We can absolutely show you the plan that was formulated, the
+[00:26:39.280] what we saw in the world state that caused us to formulate that plan.
+[00:26:45.080] The planner and the whole of In Embabel emits a whole lot of events.
+[00:26:50.360] So you can also write listeners
+[00:26:52.160] that will persist these or whatever you want to do with your audit logs.
+[00:26:56.880] So yes, you can absolutely explain why it did a thing
+[00:27:01.040] and ensure that it does the same thing every time.
+[00:27:04.840] Of course, once you get inside the action steps, if you're calling an LLM
+[00:27:09.120] that may, that's not going to be wholly deterministic.
+[00:27:13.400] But on the other hand, this enables you to right size your invocations.
+[00:27:18.440] So if you have, as you unfortunately need to do with a bot
+[00:27:23.000] like three page prompt and 32,
+[00:27:27.360] you're never going to have total predictability.
+[00:27:29.680] Whereas if you're doing something with a very small prompt and three tools.
+[00:27:35.360] It's going to be highly predictable.
+[00:27:37.400] I mean, it's obviously
+[00:27:38.160] not going to be 100% predictable, but you will find that the amount of time
+[00:27:41.960] you need to expend on prompt engineering is way, way lower.
+[00:27:47.760] So yes, overall, the systems tend to become much
+[00:27:50.920] more explainable, much more deterministic.
+[00:27:54.800] Absolutely.
+[00:27:55.600] I'd love to talk a little bit about MCC.
+[00:27:59.960] Yeah.
+[00:28:00.200] So everyone kind of like treats MCC or maybe certainly did
+[00:28:04.160] before as if they're the golden bullet they solve agents.
+[00:28:08.200] What would you say.
+[00:28:09.320] The gap that most developers haven't seen yet.
+[00:28:13.840] In this case.
+[00:28:16.800] I think MCP.
+[00:28:18.480] Has played an incredibly important role in enabling a whole ecosystem.
+[00:28:22.240] And I think MCP was really a catalyst in getting a much
+[00:28:27.120] larger number of people to understand just what you can achieve with tools.
+[00:28:30.440] Yeah. However.
+[00:28:31.920] Having said that, I'm kind of a bit of an MCP skeptic.
+[00:28:35.200] In for a number of reasons.
+[00:28:39.600] Firstly.
+[00:28:40.560] If you are doing what we were talking about earlier, where your
+[00:28:44.040] AI enabling an enterprise system, why run it through MCP
+[00:28:48.240] so you can wear them Embabel or Spring AI or Lang chain for j.
+[00:28:53.080] Any framework you can easily expose Java methods as tools.
+[00:28:59.360] So you have to ask the question, well, if it's that easy to do,
+[00:29:03.240] why do I have to jump through this additional hoop?
+[00:29:07.000] Especially when you can do things like expose tools on domain objects
+[00:29:12.360] where you've actually retrieved the correct domain object
+[00:29:15.480] based on, you know, repository call or something.
+[00:29:18.520] And now you're exposing this thing
+[00:29:21.640] that you couldn't easily expose via MCP.
+[00:29:25.040] So that's one reason that I think very often, and
+[00:29:28.960] this is not only true of the Java stack, but it's probably more important in Java.
+[00:29:33.400] Your first call, you know, thought for any tool
+[00:29:37.400] you want to expose is, well, I could just expose it using my stack.
+[00:29:41.400] Why don't I expose a Java method or a Python function and totally do that?
+[00:29:46.920] Secondly, the reason that I'm a little bit of an MCP skeptic.
+[00:29:52.360] Is I guess the case for MCP
+[00:29:57.080] is that it's an API specification specifically designed for agents.
+[00:30:01.440] If it's an API specification, we already have things like open
+[00:30:04.680] API, swagger, GraphQL. Right.
+[00:30:08.080] These things exist.
+[00:30:09.760] So why do we need a new one?
+[00:30:11.320] And I guess the MCP argument is we need it because the specifically designed
+[00:30:15.480] for agents.
+[00:30:16.600] And I guess more recently I've started to come to the
+[00:30:22.200] conclusion that the only thing
+[00:30:25.080] that is perfectly right for any given agent might well be unique to that agent.
+[00:30:29.720] So, for example, you could have an MCC server that exposes
+[00:30:34.080] a service, but imagine there's an open API spec that already exists.
+[00:30:38.440] You could also connect to that and have your own tools that are shaped
+[00:30:43.520] using that spec that is shaped as your particular loop needs.
+[00:30:48.320] So I.
+[00:30:49.600] Do think MCP has been a great net benefit for moving the industry forward,
+[00:30:55.080] but I don't think it's a one size fits all solution.
+[00:30:58.040] I think in many cases, it makes sense to work directly with API specifications.
+[00:31:03.040] And, you know, plan A should always be just expose
+[00:31:07.360] the logic from your present stack.
+[00:31:10.360] Hey everyone!
+[00:31:11.160] Hope you're enjoying the episode so far.
+[00:31:13.440] Our team is working really hard behind the scenes to bring you the best guests,
+[00:31:17.320] so we can have the most informative conversations about a gentle development,
+[00:31:21.640] whether that's talking about the latest
+[00:31:23.280] tools, the most efficient workflows, or defining best practices.
+[00:31:27.080] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:31:31.000] If you're enjoying the podcast and want us to continue to bring you
+[00:31:34.040] the very best content.
+[00:31:35.320] Please do us a favor and hit that subscribe button.
+[00:31:37.800] It really does make a difference and lets us continue to improve
+[00:31:41.160] the quality of our guests and build an even better product for you.
+[00:31:45.600] All right, back to the episode.
+[00:31:47.680] I think Karpathy put a tweet out talking about how models
+[00:31:51.560] are outpacing the products that are built on top of them.
+[00:31:55.200] Now
+[00:31:58.320] you're building the orchestration layer with in Embabel.
+[00:32:01.400] Does that mean you're already behind the models?
+[00:32:07.080] It's an interesting.
+[00:32:08.200] Question, and certainly if you look at how we're building, you know, coding
+[00:32:12.240] agents have planned have improved significantly more than I think
+[00:32:16.480] we would have expected.
+[00:32:17.280] Like there was that leap in late November, December time.
+[00:32:21.240] That was quite dramatic.
+[00:32:24.240] I think models are definitely getting better,
+[00:32:27.480] but I think that many of the fundamental problems still remain.
+[00:32:32.560] And if you're automating business processes,
+[00:32:34.960] the idea of moving, say, planning outside the control of the model
+[00:32:39.040] to using some deterministic approach, I think that still retains value.
+[00:32:44.920] You know, I think explainability still remains as important.
+[00:32:49.440] So I do.
+[00:32:51.000] Think that even as models improve the frameworks
+[00:32:55.080] above them, the agent harnesses frameworks are still very important.
+[00:32:58.880] Good example of that is if you look at, say, Claude code.
+[00:33:03.640] Sure.
+[00:33:04.320] Sonnet 4.6 is way better than previous models.
+[00:33:08.040] But Claude code is also way better.
+[00:33:09.880] Like if you look at, say, Claude code today versus 4 or 5 months ago,
+[00:33:14.480] it's working in a completely different way that actually makes it more effective.
+[00:33:18.520] So I'd actually don't really
+[00:33:21.600] see I don't really see
+[00:33:24.600] conflict between the models being smart and the harness is being smart.
+[00:33:28.560] I think we need to have advances in both places
+[00:33:32.400] where I think you will definitely
+[00:33:35.960] see some case of the models.
+[00:33:39.000] Eating the harness is where it doesn't really matter
+[00:33:43.360] if things are deterministic, where you can just give
+[00:33:47.200] a model a bunch of tools and it's fine if it's a bit unpredictable.
+[00:33:51.320] So I do think there is definitely a space where models
+[00:33:54.880] will, you know, require less infrastructure around them.
+[00:33:58.480] But I think that space is not a space that's particularly relevant to
+[00:34:03.040] enterprise apps.
+[00:34:05.400] Back in January of
+[00:34:06.840] this year, you mentioned that your Claude Cloud
+[00:34:11.240] workflow involves a lot of design conversations and kind of like
+[00:34:15.560] back and forth with Claude code, which kind of long planning, I guess.
+[00:34:19.400] And you mentioned that after that, you code and the results very often
+[00:34:24.080] are better than handwritten, which I think you mentioned earlier as well.
+[00:34:27.960] Now,
+[00:34:30.040] Paul doesn't understand certain things.
+[00:34:31.720] I think you mentioned companion objects were 1 in 1 tweet
+[00:34:34.880] with a couple of interesting, interesting examples.
+[00:34:37.800] So if you use some Claude code to build parts of Embabel, and Claude
+[00:34:42.360] doesn't fully understand parts of your architecture, how does it feel
+[00:34:47.400] being inside that loop with the agent at the time trying to build that out?
+[00:34:52.960] Look, I think that it works well because
+[00:34:58.640] I fully understand the architecture and I often correct it.
+[00:35:02.200] I do wonder what will happen if develop
+[00:35:06.320] is increasingly take the easy option of not understanding it.
+[00:35:10.080] So, you know, I feel like I'm personally in a very sweet spot.
+[00:35:12.920] I completely understand the architecture and code base.
+[00:35:15.920] I know the language now very well.
+[00:35:18.360] I we build on Spring a Spring rather well.
+[00:35:22.840] So, you know, I actually do know all the parts of the stack really well
+[00:35:27.320] and that enables me to effectively take control.
+[00:35:31.280] I personally would worry a lot about people who didn't understand that.
+[00:35:36.880] You know, I think I think it is really important
+[00:35:40.640] to stay in control now with respect to writing code,
+[00:35:45.920] I don't believe developers should be spending a lot of their time
+[00:35:50.200] writing code, because you can actually get so much more leverage
+[00:35:54.720] by focusing on the things where you you uniquely add value.
+[00:35:59.880] That said, does does AI ever surprise you in the sense of
+[00:36:03.200] giving you a maybe a design or an architecture suggestion
+[00:36:06.480] that you may not have thought about that actually kind of triggers you into either
+[00:36:10.600] going a different direction, or maybe trying it out to see if it's better.
+[00:36:14.920] Not that often one.
+[00:36:16.880] However, one of the things that has been useful
+[00:36:19.880] has been the discussion back and forth.
+[00:36:22.600] And yeah, there's definitely been quite a few times
+[00:36:25.880] where it has thought of a problem that I hadn't thought of.
+[00:36:28.760] So where we're discussing a proposed change and it points out
+[00:36:32.080] something that I hadn't thought of.
+[00:36:35.480] Yes. Yeah, I find that it's better at that
+[00:36:38.800] than it is at coming up with an original idea.
+[00:36:41.840] I do think original ideas, it's probably not its strong point.
+[00:36:48.000] And, you know, overall I'm extremely happy.
+[00:36:51.320] But there are certain times when I'm frustrated
+[00:36:54.880] the last few days for an internal product.
+[00:36:57.840] I'm trying to build a pretty elaborate
+[00:37:00.880] testing infrastructure at every level that has things like testing,
+[00:37:05.200] using real alarms and a test containers database test
+[00:37:09.280] using real llms and faking all the tools and all these kind of things.
+[00:37:14.040] And Claude Codes been doing astonishingly badly.
+[00:37:17.240] And I think one of the reasons is
+[00:37:21.960] that it's
+[00:37:22.440] just not seen this, because this is probably a fairly new form
+[00:37:26.240] of testing, like for example, the
+[00:37:29.240] I think to get maximum autonomy
+[00:37:32.960] with your coding agents, you need to be obsessive about tests.
+[00:37:36.360] So this is both a more extreme like amount of testing that it's seen.
+[00:37:41.600] And also some of the types of testing are probably not things that seen before.
+[00:37:46.720] And it just seems to be really struggling to a surprising extent.
+[00:37:50.520] Despite clear directions.
+[00:37:54.320] How about have you have you played much with kind of like skills and context
+[00:37:59.280] to actually guide it in, in that sense
+[00:38:02.320] of trying to allow it to provide suggestions that you would find.
+[00:38:06.800] Closer to what you would want.
+[00:38:09.520] I tried a bit
+[00:38:12.440] with skills, also with Claude, MD, I do find,
+[00:38:17.800] unfortunately sometimes with the coding agent,
+[00:38:19.960] as the context gets big, it forgets things like one of the things
+[00:38:24.080] that is really strange is it keeps wanting to put FCN
+[00:38:29.040] in, like the body of the code, which I hate because they prefer inputs.
+[00:38:33.640] And I've got that in my Claude, MD and like 50% of the time it still forgets.
+[00:38:38.280] So even though that's a, that's a mandatory thing that the agent has to
+[00:38:42.200] read, it's not something that's even a progressive kind of learning for it.
+[00:38:46.000] Yeah. It's just attention falls off.
+[00:38:48.560] Yeah, yeah.
+[00:38:51.080] Let's take a sidestep now.
+[00:38:52.560] I think it was a new stack article that I read from you
+[00:38:56.040] where you were talking about the importance of TypeScript, and
+[00:38:59.200] I think you said TypeScript was the most important language today.
+[00:39:03.320] And that was largely because I think it too x to the, the
+[00:39:07.120] how good a typical JavaScript would be.
+[00:39:10.920] So, so given that you think TypeScript today is the most important language,
+[00:39:15.240] not Java, how can you hold both?
+[00:39:20.040] Building on the JVM as well as believing TypeScript as
+[00:39:23.080] is is the most important?
+[00:39:26.040] I think TypeScript is a very clever language.
+[00:39:29.480] I think it's interesting if you look at what used to be statically
+[00:39:34.360] and dynamically typed languages, to some degree they're converging.
+[00:39:37.400] So if you look at most modern Python, it's extensively using type ends.
+[00:39:42.320] In fact the Python type systems actually getting reasonably good. Now.
+[00:39:47.040] TypeScript obviously added a layer of typing over JavaScript.
+[00:39:52.520] So I.
+[00:39:55.480] I think TypeScript is a beautiful language.
+[00:39:58.400] I think it's very important.
+[00:39:59.840] Would I still say it's the most important?
+[00:40:04.120] I think it depends on the class of application.
+[00:40:06.480] If I were writing a, you know, a,
+[00:40:10.120] many kinds of application from scratch,
+[00:40:13.520] I'd probably use TypeScript for server and react.
+[00:40:17.240] On the other hand, if you're looking at enterprise applications,
+[00:40:21.480] not that many of them are written on node, and not that many of them
+[00:40:24.720] should be written on node. Right?
+[00:40:26.280] Like when you look at the JVM, Java, Kotlin, you get a whole bunch of things
+[00:40:32.080] that are really valuable for that class of application.
+[00:40:35.800] And you know that I think TypeScript
+[00:40:39.560] nice is the language is doesn't really add much relevance there.
+[00:40:44.440] So I think modern Java is definitely better than when I'm probably
+[00:40:48.320] when I made those comments.
+[00:40:49.480] Secondly, I think Kotlin is an excellent
+[00:40:52.560] language for people to consider.
+[00:40:55.600] And you know, Kotlin is a language.
+[00:40:59.080] I think it's pretty different from TypeScript, but I would say
+[00:41:04.760] they're kind of about on a par that I still miss things like union types.
+[00:41:09.320] I love union types.
+[00:41:10.800] I could go into this whole rant about how sealed hierarchies are absolutely not
+[00:41:15.360] as good as union types, but nevertheless, there's a bunch of things in Kotlin
+[00:41:19.920] that are better than TypeScript, so I would say they're on a par.
+[00:41:27.200] The other problem with
+[00:41:29.160] TypeScript is, although they've done a wonderful job,
+[00:41:33.800] there is still fundamentally a layer of madness underneath
+[00:41:36.840] which you sometimes get at and cannot be concealed.
+[00:41:40.200] Whereas with Kotlin, you get a modern language that sits on top of something
+[00:41:44.640] that's much more robust and kind of much more predictable underneath.
+[00:41:50.160] Do you see any of that?
+[00:41:50.880] I mean, I guess with all the advances in AI,
+[00:41:54.840] do you see any of that changing in that, say, five years?
+[00:41:58.680] Is there much movement happening there around languages?
+[00:42:01.160] Enough to, to, to break those truths?
+[00:42:05.840] It's a really interesting question.
+[00:42:07.840] And uncharacteristically for me, I don't know my opinion on it.
+[00:42:11.560] I can persuade myself that either languages don't matter
+[00:42:15.360] or that they do matter.
+[00:42:16.600] So firstly, I think a lot of people imagine that
+[00:42:22.080] the training corpus means the blockbuster languages
+[00:42:26.200] are going to have a natural advantage and that will be entrenched.
+[00:42:29.480] That absolutely is not true.
+[00:42:31.320] So I find it interesting that if you think of the three languages
+[00:42:35.640] for which I use coding agents, so
+[00:42:39.800] Java, Kotlin and Python,
+[00:42:43.400] there is no question which one coding agents do a better job of.
+[00:42:47.280] It's Kotlin.
+[00:42:48.320] The reason?
+[00:42:49.320] Yeah. Which is absolutely not what you would think.
+[00:42:53.760] So think about Java and Python.
+[00:42:57.720] They're both languages that have literally been around forever
+[00:43:01.000] and that have evolved quite rapidly in the last few years, right?
+[00:43:04.800] You shouldn't be writing 2019 Java now.
+[00:43:07.320] You may certainly shouldn't be writing 2019 Python. And
+[00:43:12.520] there's just so much trading data
+[00:43:14.920] that is like you can obviously say always use VAR,
+[00:43:18.840] use the enhanced switch statement, always use type hints in Python.
+[00:43:22.800] And because of this year weight of that training data you're kind of fighting it.
+[00:43:27.680] So it's I mean I'm not saying it's not good.
+[00:43:29.800] It's still there very very good with both Java and Python.
+[00:43:33.920] But actually it has surprised me that Kotlin is definitely better
+[00:43:37.680] because there's not much.
+[00:43:38.920] Kotlin hasn't evolved as much because it started off
+[00:43:43.200] as a modern language, and secondly, because,
+[00:43:48.000] you know, the people who got into it early were probably pretty skilled.
+[00:43:52.040] There's not a lot of really bad Kotlin out there like there is Java or Python.
+[00:43:56.520] So firstly, I don't think it is true that the blockbuster languages
+[00:44:01.280] will be entrenched because of training.
+[00:44:02.800] Data like
+[00:44:03.960] Helms are really, really good at anything they've seen a decent amount of,
+[00:44:07.920] and they've seen a decent amount of any programing language we've heard of.
+[00:44:12.000] But you then get the question of, well, in that case,
+[00:44:17.640] why wouldn't you write everything in the perfect language for that thing?
+[00:44:22.280] So, you know, as we were saying earlier,
+[00:44:24.080] there are things I absolutely wouldn't do write in Python versus Java.
+[00:44:28.040] So why wouldn't llms?
+[00:44:30.560] Because they're essentially guru level in every language.
+[00:44:33.680] Why wouldn't they then just choose to write each thing in the ideal language?
+[00:44:37.640] Go write this service in rust, go write this in go or whatever they may.
+[00:44:42.720] Are there any things that's worth still running in go?
+[00:44:44.680] Personally, I don't think so, but, I so
+[00:44:50.720] the problem with that is, I guess, something that we saw
+[00:44:54.120] with the microservices craze and there are other costs.
+[00:44:57.440] So now you're getting a whole bunch of costs in maintenance.
+[00:45:01.920] And unless we're willing to totally trust machines,
+[00:45:05.760] which I've argued we shouldn't do, I don't think
+[00:45:08.880] that's such a great idea.
+[00:45:12.320] From just the stack as well as people needing to maintain that.
+[00:45:16.880] Yeah. And also, what are you going to do from a security perspective?
+[00:45:19.680] Like.
+[00:45:20.720] Yeah.
+[00:45:21.560] Landscape just like multiplies every single time
+[00:45:23.880] you introduce a new language or a new library
+[00:45:25.880] that's being reflected across multiple different languages.
+[00:45:29.440] So I'm I guess I probably come down to the idea
+[00:45:33.080] that at least at this point, it probably isn't going to change things that much.
+[00:45:36.480] And the reasons that we choose the languages and stacks
+[00:45:41.280] we do
+[00:45:42.120] probably don't really change that much, because when you get them into production
+[00:45:46.400] and stand behind them in production, that hasn't really changed a lot.
+[00:45:50.880] In Embabel. Is open source, I believe, right?
+[00:45:53.400] Yes it is. Yes, yes.
+[00:45:55.160] And one of the things that you kind of
+[00:45:57.880] like mentioned was open source needs or rather companies that,
+[00:46:02.360] you know, are backing open source projects.
+[00:46:05.640] They need a business model from day one.
+[00:46:08.960] What does that look like from Embabel?
+[00:46:11.080] So it most likely will be open core.
+[00:46:15.840] So I do think that
+[00:46:19.280] the support model for open source is a very difficult model.
+[00:46:22.880] Historically, it's been a difficult model.
+[00:46:24.840] I think it's becoming much, much more difficult with coding agents.
+[00:46:30.400] So I think there will be products
+[00:46:34.520] above the framework and,
+[00:46:42.080] well, we're not ready to announce anything yet,
+[00:46:45.720] but I think it's going to be quite a lot higher than the framework.
+[00:46:48.960] So, you know, we our current thinking is we will use the framework
+[00:46:53.560] as a competitive advantage
+[00:46:55.080] in building products that are potentially not even aimed at software developers.
+[00:46:58.680] So products that are aimed more knowledge workers in general.
+[00:47:03.480] But the framework itself is Apache License, as was Spring.
+[00:47:07.080] And we welcome community contributions.
+[00:47:10.280] So we have an active discord, you know, GitHub issue tracker and the like.
+[00:47:14.600] So anyone listening, please, please come and contribute and join the community.
+[00:47:20.680] And of course mention Spring.
+[00:47:22.680] Spring survived you know gosh VMware pivotal now
+[00:47:26.680] Broadcom acquisitions.
+[00:47:29.680] What's the thing.
+[00:47:30.760] Do you feel that made it survive those acquisitions.
+[00:47:33.720] Whereas you know very often many open source projects
+[00:47:37.320] kind of wither or die when when acquisitions happen.
+[00:47:40.360] Is it just the the sheer popularity, the community
+[00:47:43.480] within the Java ecosystem that kind of that helped drive it?
+[00:47:46.760] Well, I think Spring, obviously, by the time of the first acquisition in late
+[00:47:50.120] 2009, Spring was already a monster, right?
+[00:47:53.280] I mean, it was already the fact I started in Java.
+[00:47:56.880] Yeah,
+[00:47:58.320] yeah.
+[00:47:58.640] So that obviously had an enormous inertia.
+[00:48:02.360] However, I think it has helped the fact that
+[00:48:07.440] there are quite
+[00:48:10.320] a significant number of really skilled developers who are paid to work
+[00:48:13.360] full time on Spring, and that means that, you know, things that aren't exciting
+[00:48:18.640] get fixed,
+[00:48:19.200] because if somebody's job to fix them, whether they're excited about it or not.
+[00:48:22.400] So I still firmly believe that open source does really benefit
+[00:48:27.600] from having a business behind it, because, you know,
+[00:48:31.360] the things that make Spring dependable, the fact that it's
+[00:48:34.800] pretty damn robust software, and that anything that is found in it,
+[00:48:38.800] it's a serious issue will be fixed really quickly, partly reflects that.
+[00:48:44.080] We're not reliant on volunteers.
+[00:48:47.880] I mean, it's obviously great when there are community contributions,
+[00:48:51.080] but I do think having that professionalism behind it is important.
+[00:48:55.960] Complete product style approach of development.
+[00:48:58.920] Yeah, So we'll jump into some rapid fire questions.
+[00:49:02.120] What would you say is the most underrated thing about the JVM
+[00:49:06.240] that the Python world doesn't know it's missing out?
+[00:49:10.160] Well, I think performance obviously,
+[00:49:11.720] but actually my more serious answer would be the code written on it.
+[00:49:16.040] The business logic, the domain models incredible value
+[00:49:20.640] in understanding critical businesses.
+[00:49:23.880] Yeah.
+[00:49:24.960] What's an unpopular opinion about AI agents
+[00:49:28.160] that most developers would push back on?
+[00:49:30.440] I think it's probably my relative degree of skepticism about MCP.
+[00:49:34.360] It's not that I think MCP is bad.
+[00:49:37.280] I just think that MCP has become the one hammer
+[00:49:41.120] and people are looking everywhere for nails.
+[00:49:45.200] What's the one thing you tell a Java
+[00:49:47.760] developer who's been told to learn Python?
+[00:49:51.080] I would tell them to read some of my blogs.
+[00:49:54.320] I've got a series of blogs on comparing, like Python examples with Java examples,
+[00:49:59.440] and either show their boss
+[00:50:02.600] one of those examples or better still, code something up themselves.
+[00:50:06.200] Just demonstrating that the Java code is extremely competitive
+[00:50:10.800] with the Python code.
+[00:50:12.160] Landgraf or in Embabel,
+[00:50:13.840] you have to pick one for a project that's already in production.
+[00:50:16.720] okay.
+[00:50:17.000] Firstly, is this a Java project or a Python project
+[00:50:21.440] is a Java project or definitely pick in Embabel,
+[00:50:24.400] because if otherwise I'd be bringing in the alien stack.
+[00:50:28.920] So like the risks in Embabel is currently 0.3.5,
+[00:50:34.120] it's pretty close to API stability.
+[00:50:37.640] I'd be surprised if anything breaks between now and 1.0,
+[00:50:40.960] so it will get to 1.0 probably in the next 4 to 6 weeks.
+[00:50:44.640] So I don't think that's being perfectly honest.
+[00:50:47.320] I don't think that's a great risk for someone to adopt.
+[00:50:49.560] Whereas if I had a Java project, I would think it's a considerable risk
+[00:50:53.080] to bring in a completely different stack and then have it
+[00:50:56.640] have to talk to my Java business logic.
+[00:50:58.680] That to me seems way riskier. Yeah.
+[00:51:01.480] And by the time you've finished all of that in Embabel will be 1.0
+[00:51:04.520] and you'll feel really, really annoyed with yourself.
+[00:51:09.240] Kotlin or Java for a
+[00:51:10.960] brand new enterprise project starting today,
+[00:51:14.720] Ben depends on the size of the team.
+[00:51:17.200] If my gut feeling would be if it's a team
+[00:51:20.200] of less than 20, I would seriously consider Kotlin.
+[00:51:23.920] If it's a larger team and they're not already skilled in Kotlin, I would stick.
+[00:51:27.640] With Java these days.
+[00:51:28.720] I haven't touched Colin for a little while actually.
+[00:51:30.320] But is it?
+[00:51:32.080] Is there still I mean, a Java developer learning Scala?
+[00:51:35.800] There was a there was a significant kind of like, you know, learning curve.
+[00:51:40.000] Java to Colin these days, is.
+[00:51:41.600] That much of a learning curve?
+[00:51:43.080] I honestly don't know because I really came to Kotlin
+[00:51:48.360] having done probably more Python.
+[00:51:52.360] Well, I had done Java for a few months before getting back to Kotlin,
+[00:51:56.160] but like I, I've just done so much in languages
+[00:51:59.840] other than Java that I wasn't coming from that.
+[00:52:01.680] So I honestly don't know.
+[00:52:03.440] I would say it's definitely easier than Scarlet.
+[00:52:05.320] There's no question
+[00:52:06.400] it's easier than Scala, but most things are easier than Scala.
+[00:52:10.600] I think it's a pretty easy language to learn.
+[00:52:13.600] The other thing that I would say is, well, actually two things.
+[00:52:17.360] Firstly, I think every developer should try to learn a new language
+[00:52:21.040] every year or two on principle, because I think it improves how you think.
+[00:52:24.040] Secondly, it has never been easier to learn a language
+[00:52:27.000] like LMS can help you learn any language so quickly.
+[00:52:31.040] So I think that the bar has been significantly lowered.
+[00:52:35.080] Like I don't own a book on Kotlin.
+[00:52:36.760] I've never read a book on Kotlin.
+[00:52:38.320] And I think a good way that you mentioned it earlier in terms of,
+[00:52:41.400] you know, having an LLM critique is actually you actually get a better value
+[00:52:45.240] for your money than versus versus like asking it to create.
+[00:52:48.320] And I think also when you're learning a language,
+[00:52:50.680] asking an LLM to describe what's happening and why things are doing, I think
+[00:52:54.480] sometimes actually better than saying, hey, can you just create this thing?
+[00:52:57.080] And then I'll try and work out
+[00:52:58.160] why you've done it? I think the two are similar.
+[00:53:00.720] Well, especially if you're an experienced developer.
+[00:53:03.000] So I when I'm learning a language,
+[00:53:06.120] I frequently asked the LM
+[00:53:09.440] what is the equivalent of this feature in whatever language I know.
+[00:53:13.600] Like for example, in Python
+[00:53:14.800] is there an equivalent of TypeScript type codes, that kind of thing.
+[00:53:18.640] So, you know, I think if you already can explain concepts, Llms can do
+[00:53:22.440] an amazing job of mapping those concepts onto a particular language.
+[00:53:29.480] What's your favorite AI tool that you use daily?
+[00:53:32.080] Isn't Claude Code.
+[00:53:33.760] Look, it's probably, Claude desktop.
+[00:53:38.680] And just having that ability to have a bunch of tools do competitive
+[00:53:44.880] research, like there's a whole range of things that I use it for.
+[00:53:50.760] What's the one thing
+[00:53:51.760] you'd say you got wrong with Spring that you'd do differently with embedding?
+[00:53:57.440] One thing that it's a pretty small thing that it's it's
+[00:54:02.680] fun is the logging I wanted to retrofit on the Spring,
+[00:54:07.160] the idea of logging coming from events, and it was too late within Embabel.
+[00:54:12.720] We have done that, and it means that
+[00:54:15.800] it ensures that all the events are complete, right?
+[00:54:18.920] You can stream them over SSH, you can listen to them, but it also means
+[00:54:22.160] we can change your blogging personality so your logs can look like Yoda spec.
+[00:54:26.240] So, you know, that was a small thing.
+[00:54:29.960] That kind of fun.
+[00:54:31.440] I would say to some degree, this style of Embabel picks up from modern
+[00:54:37.800] Spring with some additional things that are easier to do in Colin.
+[00:54:42.960] So, for example, we don't use a lot of builders.
+[00:54:45.400] You can just do that more elegantly in Kotlin, even folk to use from Java.
+[00:54:50.280] so I've got one last question for you, right?
+[00:54:52.080] If in Embabel doesn't exist in
+[00:54:54.680] five years, what do you think would have been that killed?
+[00:54:58.520] I have.
+[00:54:59.200] Absolutely no idea.
+[00:55:00.600] Because in five years time, like, for example,
+[00:55:04.920] are people still involved in writing applications
+[00:55:09.400] or have they gone against my advice and let the machines completely take over?
+[00:55:13.440] So, for example, I would say this is absolutely
+[00:55:17.320] the last wave of frameworks that will be chosen by people.
+[00:55:20.520] Increasingly, choices will be made by our tools.
+[00:55:24.960] But look, I think that we are in an almost unique
+[00:55:29.640] environment where five years into the future.
+[00:55:33.000] Even a year or two.
+[00:55:34.280] Yeah, yeah.
+[00:55:36.400] Awesome.
+[00:55:37.120] Actually, in fact, it was Thomas drunk who, on a very recent episode
+[00:55:41.200] said anyone who tries to predict anything once two years out,
+[00:55:45.880] you're going to be completely off and is a good episode
+[00:55:49.920] that we brought up on our 100th just recently, where I kind of introduced
+[00:55:53.680] some of guy's predictions from 1 or 2 years ago,
+[00:55:57.400] and we went through them, so it was all good fun.
+[00:55:59.920] But rod, this has been this has been very enlightening
+[00:56:02.320] and really fun to chat with you.
+[00:56:03.800] So thank you very, very much for for making the time for us.
+[00:56:06.920] Thank you. Fun conversation.
+[00:56:08.400] Absolutely.
+[00:56:08.880] And thanks for listening and hopefully see you on the next episode.
+[00:56:12.240] So tune in for that. Bye for now.
+[00:56:14.000] The AI native dev is brought to you by the package manager for skills and context.
+[00:56:18.680] Your hosts are Guy pigeon and me, Simon Maple.
+[00:56:21.840] Our producer is Tom Dowler.
+[00:56:23.640] The AI native dev is not just a podcast, it's a community.
+[00:56:27.000] And we host monthly meetups at the Tesla offices in central London.
+[00:56:30.680] Visit Tesla IO forward slash community to learn more and I hope to see you there.

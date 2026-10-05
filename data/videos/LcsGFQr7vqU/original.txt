@@ -1,0 +1,953 @@
+[00:00:19.280] Hi everyone. And yeah, thanks for being
+[00:00:21.720] here.
+[00:00:22.720] Let's just dive right in. Today's
+[00:00:24.400] session that I'm going to be giving to
+[00:00:25.640] you is modernizing systems observability
+[00:00:28.200] with AI and LLMs.
+[00:00:30.680] As mentioned already, my name is Jason
+[00:00:33.440] Hand. I am a senior developer advocate
+[00:00:35.440] at Datadog, primarily focusing on topics
+[00:00:38.200] such as SRE, site reliability
+[00:00:40.120] engineering, DevOps, and as we'll see
+[00:00:42.600] today, artificial intelligence is of
+[00:00:44.600] course the new hotness that everybody's
+[00:00:46.680] talking about, and Datadog is no
+[00:00:48.480] different.
+[00:00:49.760] So, before we get too far along into our
+[00:00:52.120] sessions though, I wanted to provide
+[00:00:53.640] this link for you because I've done a
+[00:00:55.840] ton of research to provide some
+[00:00:58.120] information for you today that is real
+[00:01:01.080] just great resources to have on hand.
+[00:01:02.880] You can also go get the slides. Pretty
+[00:01:04.559] much everything I'm going to be sharing
+[00:01:05.760] today is available at this link. It's
+[00:01:07.720] just a GitHub repo.
+[00:01:09.560] So, feel free to go visit that after now
+[00:01:12.440] if you'd like. I'll definitely give you
+[00:01:13.920] these links this link again later in the
+[00:01:16.640] session, so don't worry if you don't
+[00:01:17.840] capture that now. I just know a lot of
+[00:01:19.640] you like to have that up front.
+[00:01:21.600] Okay, so getting started here, I thought
+[00:01:23.480] we would first off just have a little
+[00:01:25.520] thought experiment and have you ever
+[00:01:27.360] really given much thought to how much
+[00:01:28.800] data is being generated annually on a
+[00:01:31.880] global scale? I know that that's
+[00:01:34.280] something I haven't really given much
+[00:01:35.320] thought about here until until recently,
+[00:01:37.520] but according to some of the
+[00:01:39.680] the data that I found as I, you know,
+[00:01:41.960] began researching this stuff, it looks
+[00:01:44.360] like since around 2010, the volume of
+[00:01:47.880] the data that's been generated each year
+[00:01:49.640] has grown steadily. I don't think
+[00:01:51.120] anybody's all that surprised by that at
+[00:01:52.920] all. But what is surprised made me is or
+[00:01:55.720] surprising is that about 90% of the
+[00:01:57.960] world's data has been produced in just
+[00:02:00.280] the past 2 years. So, in other words,
+[00:02:02.680] since 2010, so like 14 years or so,
+[00:02:06.160] that figure has skyrocketed from around
+[00:02:08.479] 2 ZB
+[00:02:09.800] all the way up to a little over 150 or
+[00:02:12.480] just under 150 ZB as of 2024,
+[00:02:16.160] which is crazy. And for those of you who
+[00:02:17.520] aren't sure, I had never heard of a ZB
+[00:02:20.160] until recently when I was looking into
+[00:02:21.640] this stuff. I can't believe this is the
+[00:02:22.920] size we're at. And to give you some
+[00:02:24.160] context, a petabyte, most of us are
+[00:02:26.560] probably familiar with with petabytes.
+[00:02:28.560] That's 1 million GB.
+[00:02:30.880] An exabyte is 1,000 petabytes, and a ZB
+[00:02:35.240] is 1,000 exabytes. So, we're talking
+[00:02:37.840] massive, massive amounts of data. Kind
+[00:02:40.320] of to Deion's point earlier is that we
+[00:02:43.360] just are swimming in data. There's just
+[00:02:45.760] so much of it. And really, there's no
+[00:02:48.040] sign of it slowing down at all. The
+[00:02:49.760] trend is still moving upwards, of
+[00:02:51.760] course. Really not a surprise with
+[00:02:53.640] global data generated generation
+[00:02:56.160] projected to be
+[00:02:57.920] or projected to increase rather by about
+[00:02:59.880] 150% by 2025,
+[00:03:03.480] reaching probably over 180 ZB.
+[00:03:06.680] And you can see here in this quote that
+[00:03:08.400] I pulled, a lot of that data is actually
+[00:03:10.800] real-time data that's created by
+[00:03:12.480] connected users having digital
+[00:03:14.080] interactions pretty much all day long.
+[00:03:17.600] Another
+[00:03:18.760] infographic that I came across that I
+[00:03:20.320] wanted to share with you that I thought
+[00:03:21.519] was really interesting when it comes to
+[00:03:22.959] data. This one here shows that every
+[00:03:25.320] minute of every day, people are sending
+[00:03:27.760] somewhere around 241 million emails.
+[00:03:31.360] Viewers are watching over 43 years of
+[00:03:33.680] streaming content. WhatsApp users are
+[00:03:36.320] sending messages somewhere around 41.6
+[00:03:39.239] million of them a day
+[00:03:40.760] or every minute of every day. Fans of
+[00:03:43.360] Taylor Swift are streaming her songs
+[00:03:45.400] 69,000 times per day or per minute per
+[00:03:49.160] day. And the average person is producing
+[00:03:51.160] about 102 megabytes. Now, these numbers,
+[00:03:54.640] some of them are pretty staggering, some
+[00:03:56.040] of them are probably not all that
+[00:03:57.160] surprising, but the point is that we're
+[00:03:58.880] just dealing with massive massive
+[00:04:00.960] amounts of data these days.
+[00:04:02.920] Um and the thing is I think that a lot
+[00:04:05.520] of us uh
+[00:04:06.720] have started to realize is there's a lot
+[00:04:08.360] of answers in that data. A lot of the
+[00:04:10.240] questions that we have as developers, as
+[00:04:12.200] operations folks,
+[00:04:13.840] um even as businesses, there's a lot of
+[00:04:16.239] things that we can uncover in that data
+[00:04:18.600] and making sense of that large volume,
+[00:04:20.840] that vast amount of data that we have
+[00:04:22.280] now is sort of the goal of a lot of the
+[00:04:24.720] things that we're going to be talking
+[00:04:25.720] about today.
+[00:04:27.160] Now, you might be thinking to yourself,
+[00:04:28.480] well, that's interesting. Those are neat
+[00:04:30.520] statistics and numbers, but that's not
+[00:04:33.040] my data. That's not the kind of data
+[00:04:34.880] that I deal with on a day-to-day basis.
+[00:04:36.560] I'm dealing with uh things that are much
+[00:04:38.960] different than that. Um you're probably
+[00:04:41.400] dealing with platform generated data,
+[00:04:43.160] right? You're probably thinking, well,
+[00:04:44.320] that's that the stuff I'm interested in
+[00:04:47.160] uh especially from an observability
+[00:04:48.800] point of view is really something that's
+[00:04:50.520] related to our system or maybe to the
+[00:04:52.919] applications that are running within our
+[00:04:54.760] platform or our systems. There's a lot
+[00:04:57.160] of generated data that is being um
+[00:05:00.560] well, generated that we need to make
+[00:05:02.240] sense of. And some of that is coming
+[00:05:04.120] from our servers or other servers other
+[00:05:06.520] people's servers, maybe it's coming from
+[00:05:08.040] cloud, from infrastructure and services
+[00:05:10.280] that are running up in the cloud. It
+[00:05:12.000] could be coming from your users just as
+[00:05:13.680] they interact with your systems. And of
+[00:05:15.720] course, when things go wrong, there's
+[00:05:17.360] data that's generated there as well.
+[00:05:20.760] A research report by Tech Strong
+[00:05:22.919] uh research found that about 63%
+[00:05:26.320] of companies that they uh surveyed plan
+[00:05:28.640] to make investments in observability
+[00:05:30.320] over the next 2 years with about 21%
+[00:05:33.320] saying that's going to be quote
+[00:05:34.400] significant
+[00:05:35.880] uh in the in that time. So, you can see
+[00:05:38.120] that this is something now just in terms
+[00:05:40.120] of the data and understanding that from
+[00:05:42.240] an observability perspective is becoming
+[00:05:44.760] a high priority for a lot of
+[00:05:46.000] organizations.
+[00:05:47.440] In a different report, the AI-augmented
+[00:05:49.840] DevOps survey report from TechStrong,
+[00:05:52.040] they found there that about 46% of the
+[00:05:55.160] respondents were working for
+[00:05:56.400] organizations that plan to adopt AI to
+[00:05:59.440] help augment their DevOps teams over the
+[00:06:01.760] next year or so.
+[00:06:03.680] And you know, with only about 20% of
+[00:06:06.280] those respondents actually saying they
+[00:06:07.560] have no plan whatsoever.
+[00:06:09.920] So, I thought what we would do is
+[00:06:11.880] actually understand in what ways are
+[00:06:14.520] those organizations planning to adopt AI
+[00:06:17.240] tools to augment their DevOps and
+[00:06:19.200] observability efforts over the next 12
+[00:06:21.480] months.
+[00:06:22.400] Well, a lot of it has to do with kind of
+[00:06:24.560] like two bucketed groups that I've come
+[00:06:26.160] up with. You can kind of think of it as
+[00:06:27.400] four, I guess, with development and
+[00:06:28.720] testing being two of them, and then
+[00:06:30.800] operations and monitoring being the
+[00:06:32.600] other bucket. Probably most of us on
+[00:06:34.760] this session are
+[00:06:37.040] identifying with one of these, you know,
+[00:06:38.840] in terms of the things that we do in our
+[00:06:40.120] day-to-day with our primary focus. So,
+[00:06:42.280] these are the areas that that I think
+[00:06:44.480] are the most interesting to talk about
+[00:06:47.120] the expected benefits. And then when I
+[00:06:49.280] say expected benefits, what I mean is
+[00:06:51.919] that we're so early along in a lot of
+[00:06:53.919] this is that we haven't really realized
+[00:06:56.000] some of the benefits. There are
+[00:06:58.880] organizations out there and teams that
+[00:07:00.840] have been experimenting with AI and LLMs
+[00:07:03.240] in their observability practices for a
+[00:07:04.919] while now, or just AI in general within
+[00:07:07.400] their organizations, and we've got data
+[00:07:09.280] that we can
+[00:07:10.480] share about that. And in fact,
+[00:07:13.040] the link I have here at the bottom of
+[00:07:14.480] the slide will lead you to the results
+[00:07:17.040] of the of those surveys that we talked
+[00:07:18.680] about, where you can see they do measure
+[00:07:21.160] a notable increase in productivity. I'm
+[00:07:23.800] going to come back to productivity here
+[00:07:25.919] in a moment because there's a there's a
+[00:07:27.320] few ways for us to break that down.
+[00:07:29.760] But they're also seeing a reduction in
+[00:07:31.720] the skills gap as an expected benefit
+[00:07:34.560] from a lot of just AI in in sort of
+[00:07:37.200] DevOps teams in general. And the same
+[00:07:39.400] with improving the quality of their
+[00:07:40.680] software as well as lowering their
+[00:07:42.840] operational costs. So, these are the
+[00:07:44.680] ways that um, you know, organizations
+[00:07:47.320] are expecting to find some benefit by
+[00:07:49.760] going down this path of leveraging AI
+[00:07:51.840] and LLM enabled platforms for their
+[00:07:54.240] observability efforts, or really just
+[00:07:56.040] their DevOps efforts in general. But, if
+[00:07:58.360] we back up and take a little little
+[00:08:00.880] closer look at the increase in
+[00:08:02.440] productivity, we can break this down
+[00:08:04.520] into a couple of categories as well. The
+[00:08:06.320] first one being code development. I
+[00:08:08.360] think a lot of us has probably played
+[00:08:10.040] with the variety of different co-pilots
+[00:08:11.880] that are out there, whether that's
+[00:08:12.960] GitHub co-pilot, or ChatGPT, or Claude,
+[00:08:15.840] Sonic. Whatever the case may be, there's
+[00:08:17.720] a lot of AI enabled tools out there that
+[00:08:20.480] are really speeding up and helping us
+[00:08:22.240] with code development. They're helping
+[00:08:23.760] improve the quality of the writing of
+[00:08:25.640] the code. They're helping us with
+[00:08:27.680] debugging it and making sure that it's,
+[00:08:29.520] you know, at least a little bit freer of
+[00:08:31.680] the few fewer of defects, or has fewer
+[00:08:34.000] defects, I guess you could say.
+[00:08:35.680] Uh, also finding ways to do code reviews
+[00:08:37.880] in an automated way, and and reducing
+[00:08:39.800] the errors, uh, is a is another way that
+[00:08:41.919] they're seeing productivity gains. And
+[00:08:43.719] then the AI co-pilots really themselves
+[00:08:45.800] are helping write the the code faster,
+[00:08:48.040] or just helps us write code faster, and
+[00:08:50.600] understand the code and the structures
+[00:08:52.200] behind them a little bit easier. I know
+[00:08:54.000] for me personally, I don't write a ton
+[00:08:55.480] of code, but lately, over the past year
+[00:08:57.720] or so, as I've had situations where I
+[00:09:00.080] did need to write code, or I was working
+[00:09:01.800] on a project, these co-pilots and and
+[00:09:03.839] the different tools that are out there
+[00:09:05.080] now have really enhanced my abilities to
+[00:09:07.720] to put out some, you know, relatively
+[00:09:10.000] useful code. And uh, it's been uh, you
+[00:09:12.880] know, and I'm just one one person. I'm
+[00:09:14.680] not even writing code in in production
+[00:09:16.640] systems, so I think the increase in
+[00:09:19.040] productivity there is pretty clear. The
+[00:09:21.080] other category that we're seeing some,
+[00:09:23.560] uh, productivity increases too, is in
+[00:09:25.160] the testing and quality areas. And a lot
+[00:09:26.880] of that has to do with just efficiencies
+[00:09:29.040] now with the way that the stuff is being
+[00:09:31.200] tested, the code's being tested.
+[00:09:32.920] Improvements in also the test script
+[00:09:35.240] creation process. I think that's another
+[00:09:37.080] area we're seeing some uh increased
+[00:09:39.200] productivity. And the automated testing
+[00:09:41.840] uh and quality assurance processes in
+[00:09:44.160] general, being able to apply some AI
+[00:09:46.960] tooling and and
+[00:09:48.560] enhancements there. And then last, uh I
+[00:09:51.000] think all of us have probably read
+[00:09:53.000] marketing material or seen something
+[00:09:54.480] about how how AI is help is helping to
+[00:09:57.360] detect and auto heal and even predict uh
+[00:10:00.040] a lot of defects before they make it
+[00:10:02.440] into our production environments.
+[00:10:05.480] So, those are those are the expected
+[00:10:06.880] benefits that I I think a lot of
+[00:10:08.440] organizations have already seen or maybe
+[00:10:10.520] that they're expecting to see.
+[00:10:12.560] But, if we focus a little bit more down
+[00:10:15.760] to just the observability and not not
+[00:10:17.840] DevOps as a whole, but really just
+[00:10:19.440] focusing into this world of monitoring
+[00:10:21.200] and tracing and and all that kind of
+[00:10:23.240] stuff, the observability stuff is what
+[00:10:25.200] we're all here to learn about. And I
+[00:10:27.440] think the best place for us to examine
+[00:10:30.520] what's going on out there across the
+[00:10:32.120] industry is to take a look at the the
+[00:10:34.400] leaders in the space and the visionaries
+[00:10:36.040] in the space. And those those terms,
+[00:10:37.880] leaders and visionaries, that's coming
+[00:10:39.320] directly from Gartner and their magic
+[00:10:41.080] quadrant. I'm sure at this point all of
+[00:10:43.400] us have seen some version of a magic
+[00:10:45.200] quadrant. There's a lot of them out
+[00:10:46.760] there. This is a recent one that came
+[00:10:48.600] out that shows the magic quadrant for
+[00:10:50.920] observability platform. So, I figured
+[00:10:52.520] we'd start here in terms of exploring,
+[00:10:54.960] well, what is out there and what are
+[00:10:57.200] vendors providing? What what can we do?
+[00:10:59.640] So, we're going to focus just on these
+[00:11:01.360] here that I've highlighted, although I'm
+[00:11:03.160] not going to go into each of them
+[00:11:04.720] individually and tell you one by one
+[00:11:07.320] what all of them offer. I'm going to
+[00:11:08.920] give you a whole bunch of things that
+[00:11:10.720] just sort of sums up what all of those
+[00:11:12.600] vendors are offering, and then we'll
+[00:11:13.720] take a little closer look at it later.
+[00:11:16.320] The first one I think we've probably all
+[00:11:18.160] seen in a number of ways is anomaly
+[00:11:20.680] anomaly detection. This is something
+[00:11:22.560] that a lot of vendors, a lot of tools
+[00:11:24.240] have had available for quite some time.
+[00:11:26.000] DataDog has something called Watchdog,
+[00:11:27.760] which falls into this category. It's
+[00:11:29.600] really a a learning powered tool that
+[00:11:32.120] really helps us spot unusual patterns
+[00:11:35.120] and system behavior from the logs and
+[00:11:37.960] just different areas of the system of
+[00:11:39.520] the data that's coming into the system
+[00:11:40.800] looking for those patterns that might be
+[00:11:42.560] easily missed on a by human.
+[00:11:45.440] Another area is in root cause analysis.
+[00:11:48.000] I don't love the term root cause but I
+[00:11:49.800] understand the process. It's you know in
+[00:11:52.440] in least in this case where we're
+[00:11:53.880] talking about AI enabled driven AI
+[00:11:56.320] enabled RCAs. It's helping us understand
+[00:11:59.240] those underlying issues and correlate
+[00:12:01.120] things and and be able to streamline the
+[00:12:02.960] incident understanding and resolution
+[00:12:05.040] process.
+[00:12:06.720] Another area is predictive analytics. We
+[00:12:08.840] see that across a lot of the vendors
+[00:12:10.360] trying to provide some way for their
+[00:12:12.320] tools to forecast what might happen.
+[00:12:15.160] So you can see some sort of potential
+[00:12:16.560] threats or potential system issues that
+[00:12:18.400] might be going on. This way you got a
+[00:12:20.200] little bit more proactive approach to
+[00:12:22.320] understanding your incident management
+[00:12:24.560] techniques.
+[00:12:26.440] One that I think we're probably all
+[00:12:27.640] familiar if we've played with chat GPT
+[00:12:29.640] or the any of the other popular tools
+[00:12:31.280] out there is the natural language query
+[00:12:33.320] processing. Being able to intuitively
+[00:12:36.280] query
+[00:12:37.839] systems and and get information is just
+[00:12:40.920] through natural language being able to
+[00:12:42.200] talk to it as just though it's another
+[00:12:43.560] person has really sped up I think a lot
+[00:12:46.680] of people's understanding of how to get
+[00:12:48.960] information out of their system which is
+[00:12:50.680] really at the heart of observability
+[00:12:52.920] as we know.
+[00:12:54.920] Automated incident correlation is
+[00:12:56.560] another area that we're seeing
+[00:12:58.400] capabilities pop up where there's AI
+[00:13:01.600] systems now that are helping group
+[00:13:03.760] related incidents being able to make it
+[00:13:06.080] a little bit more efficient when you go
+[00:13:07.440] into start troubleshooting and
+[00:13:08.640] debugging.
+[00:13:10.920] Business impact analysis is another area
+[00:13:13.120] that we've also seen these tools start
+[00:13:16.200] to provide some capabilities where some
+[00:13:19.120] kind of automated assessment is actually
+[00:13:21.040] happening to help us understand how the
+[00:13:23.040] system
+[00:13:24.520] and the issues that may be happening are
+[00:13:26.440] actually affecting our overall business
+[00:13:28.280] operations or the goals of the business.
+[00:13:30.880] Data Dog actually has something called
+[00:13:33.560] RUM, which helps you understand the
+[00:13:35.360] business impact of of RUM and using some
+[00:13:38.720] AI-enabled stuff in there as well.
+[00:13:41.280] Security threat detection is another
+[00:13:43.160] area that we are seeing some
+[00:13:44.440] capabilities in where we see enhanced
+[00:13:47.120] log parsing
+[00:13:49.120] and understanding, you know, some of the
+[00:13:51.120] using machine learning, I should say,
+[00:13:53.120] understanding some of the tools to help
+[00:13:54.880] us identify and address security
+[00:13:57.360] vulnerabilities before, you know, before
+[00:13:59.360] we're
+[00:14:00.440] exposed.
+[00:14:01.840] And then the next one I've got here is
+[00:14:04.400] log analysis. I think
+[00:14:06.920] a lot of the vendors, many of the
+[00:14:08.120] vendors anyway, are providing some sort
+[00:14:10.040] of AI-enabled log analysis to help us
+[00:14:12.880] parse through that data and understand
+[00:14:14.680] it a little bit better looking for
+[00:14:16.400] patterns,
+[00:14:17.920] looking for ways to just speed up the
+[00:14:20.040] resolution process in general.
+[00:14:23.320] Incident clustering and intelligence.
+[00:14:25.720] This is a feature that you see out there
+[00:14:28.080] across some of them where they're able
+[00:14:29.640] to group incidents together and provide
+[00:14:32.320] some kind of insight into what's
+[00:14:33.760] actually happening with our systems,
+[00:14:35.880] what do these incidents mean, you know,
+[00:14:38.720] gather grouping them together to show
+[00:14:40.280] off that kind of those kinds of
+[00:14:41.880] insights.
+[00:14:43.760] The next one I got on our list here is
+[00:14:45.240] behavioral analysis.
+[00:14:47.280] What you'll see here in some of the
+[00:14:48.640] vendors is that they're actually using
+[00:14:50.480] automated assessment of our system
+[00:14:52.200] behavior to help improve the reliability
+[00:14:55.280] and and hopefully reduce the downtime
+[00:14:57.520] that that is going to inevitably occur
+[00:14:59.720] at some point.
+[00:15:01.360] Virtual agents and predictive tools is
+[00:15:03.920] another one where we've got these
+[00:15:05.440] AI-driven agents
+[00:15:07.240] that are helpful for incident
+[00:15:08.760] prevention. They're also help helpful
+[00:15:10.520] for just, you know, operational
+[00:15:11.960] enhancements. A lot of a lot of people
+[00:15:14.200] are really talking about virtual agents
+[00:15:16.839] as as sort of the next wave of of this
+[00:15:19.320] movement where you have not just AI
+[00:15:21.560] assistants, but you actually have AI
+[00:15:23.520] agents out there where they're actually
+[00:15:25.280] taking more of a proactive stance and
+[00:15:27.920] going out and doing things for you.
+[00:15:30.040] Trying to be a little bit more
+[00:15:30.840] predictive.
+[00:15:32.720] And then the last one in our last our
+[00:15:34.320] list here is proactive alerts. I think a
+[00:15:36.640] lot of
+[00:15:37.720] you know, many of the vendors I should
+[00:15:38.800] say are looking for ways to analyze the
+[00:15:41.040] data and then look for patterns to help
+[00:15:43.160] predict what's going on, finding matches
+[00:15:45.280] that allow us to proactively alert the
+[00:15:47.840] right people before things either get
+[00:15:50.560] worse or or go bad in the first place.
+[00:15:53.040] So these these 12
+[00:15:55.200] we'll call them capabilities are how I
+[00:15:58.000] would sum up all of those vendors that
+[00:16:00.480] we looked at in the magic quadrant. If
+[00:16:02.360] you looked at all of them said, "Well,
+[00:16:03.440] what are all of them doing?" These are
+[00:16:05.200] the at a very high level the 12 areas.
+[00:16:08.480] But if we were to summarize those into
+[00:16:10.840] into a couple into a few things that I
+[00:16:13.160] think are really the most important to
+[00:16:15.600] probably us
+[00:16:17.480] on this call or at least the ones that
+[00:16:19.560] I'm seeing the most prevalent. So what
+[00:16:21.680] more of a trend is in the incident
+[00:16:23.360] management space. And I don't think
+[00:16:25.080] anybody's all that surprised by that. A
+[00:16:26.880] lot of the things that we use
+[00:16:28.040] observability tools is of course part of
+[00:16:30.400] an incident management process.
+[00:16:32.480] The other one is in the predictive
+[00:16:33.839] capabilities. I pointed out some of
+[00:16:35.320] those capabilities that we were talking
+[00:16:36.800] about. A lot of that is in this vein of
+[00:16:38.839] prediction and and and trying to
+[00:16:40.440] proactively catch things before they
+[00:16:42.680] happen.
+[00:16:43.720] And then the last one is in the query
+[00:16:45.080] intelligence, which we've talked about
+[00:16:47.080] already a lot in terms of the different
+[00:16:48.680] chatbots and the agents and stuff like
+[00:16:50.960] that being able to use natural language
+[00:16:53.400] to inter- interact with these things
+[00:16:55.600] that then communicate with our systems
+[00:16:57.360] and help us just navigate the data and
+[00:16:58.920] the systems in a much more safer way.
+[00:17:02.560] But if we go into each of these in a
+[00:17:04.439] little bit more detail, you can see that
+[00:17:07.000] in the incident management space a lot
+[00:17:09.000] of it has to do with that automated RCA
+[00:17:10.800] stuff that we talked about, being able
+[00:17:12.240] to reduce the resolution time from
+[00:17:14.079] probably something like hours or
+[00:17:15.760] multiples of minutes to down to seconds
+[00:17:18.079] or, you know, few minutes. Those are big
+[00:17:20.040] wins for the incident management space.
+[00:17:22.000] Being able to
+[00:17:23.439] maybe pull in and rank some of the most
+[00:17:25.319] likely
+[00:17:27.000] parts of the system that are correlating
+[00:17:29.160] with the incidents that are happening,
+[00:17:30.720] so you can see things that might be
+[00:17:31.960] having some downstream effects and then
+[00:17:33.960] what those relationships look like. So,
+[00:17:36.120] that's a big part of the automated RCA
+[00:17:38.080] that I think is a win for a lot of
+[00:17:39.960] organizations in this in this category.
+[00:17:43.320] The intelligent classification is
+[00:17:45.040] another area where
+[00:17:46.520] that's helping with incident management
+[00:17:47.800] a lot, being able to automatically
+[00:17:49.200] categorize issues based on some kind of
+[00:17:51.400] predefined criteria. Then also learning
+[00:17:54.720] iteratively over time so that, you know,
+[00:17:56.760] it can learn from its past incidents and
+[00:17:58.800] actually try to improve and refine those
+[00:18:00.640] categories moving forward. And then
+[00:18:03.000] really one of the interesting things is
+[00:18:05.480] as far as like the difference between
+[00:18:06.920] humans being involved with this is is
+[00:18:09.080] where we can find unbiased
+[00:18:11.400] prioritization based on the actual
+[00:18:13.480] impact or urgency of situation through
+[00:18:16.760] that classification.
+[00:18:19.400] Another thing within incident management
+[00:18:21.120] is the real-time response automation
+[00:18:23.200] that is implemented to help us
+[00:18:25.960] really, you know, solve for common
+[00:18:27.600] incidents, maybe generate and optimize
+[00:18:30.200] resolution scripts, things that are, you
+[00:18:32.520] know, things that happen in a more
+[00:18:34.480] common way, I guess you could say.
+[00:18:36.640] Or maybe executing containment and
+[00:18:38.480] mitigation procedures and automating
+[00:18:40.960] that initial first response, you know,
+[00:18:43.480] like what are the first few things that
+[00:18:45.040] a human would do? Let's go ahead and and
+[00:18:47.040] make that response part of the
+[00:18:48.200] automation in real time and then when
+[00:18:50.400] the human arrives on the scene, they'll
+[00:18:52.640] have different roles that they'll be
+[00:18:53.720] involved with.
+[00:18:55.160] And then the last one in the incident
+[00:18:56.680] management category that I wanted to
+[00:18:58.080] share with you is the advanced analytics
+[00:18:59.720] and reporting where we're really talking
+[00:19:01.640] about being able to generate a detailed
+[00:19:03.640] incident report in real time so that
+[00:19:05.720] that when the on-call engineer arrives
+[00:19:08.080] into their
+[00:19:09.320] channel,
+[00:19:10.480] whatever it might be, chat channel, they
+[00:19:12.160] can see what's going on. They've got a
+[00:19:14.040] nice summary of the incident so far as
+[00:19:16.440] it's happened and anything that they
+[00:19:18.360] need to know to help go help just dive
+[00:19:20.960] in and make a a difference right away,
+[00:19:22.880] but also being able to analyze those
+[00:19:24.880] incidents
+[00:19:26.280] in real time if there are multiple
+[00:19:27.680] incidents happening, you can correlate
+[00:19:29.240] those together,
+[00:19:30.720] find ways to actually predict some of
+[00:19:32.720] the things that might
+[00:19:34.600] take place in the future incidents and
+[00:19:36.360] and try to try to get ahead of those.
+[00:19:38.680] And then what I you know, one of the
+[00:19:40.360] things that I always have really enjoyed
+[00:19:42.000] about some of the stuff I see in this is
+[00:19:44.760] in the post incident review, putting
+[00:19:46.880] together a lot of the information
+[00:19:49.000] that took place with
+[00:19:50.640] within our socio-technical system. So
+[00:19:52.400] both the the actual, you know, technical
+[00:19:54.640] side of the system, but also the human
+[00:19:56.240] side and understanding all that together
+[00:19:58.960] is part of our learning efforts and and
+[00:20:00.560] I think, you know, being able to see all
+[00:20:01.880] that generate a lot of that generated
+[00:20:03.680] for us can really speed up the process
+[00:20:05.520] of learning.
+[00:20:07.160] When it comes to the predictive
+[00:20:08.280] capabilities, I think the early
+[00:20:10.000] detection and prevention is a is a a big
+[00:20:13.240] part of what we're seeing here where
+[00:20:16.560] the systems, these AI-enabled systems
+[00:20:18.360] are helping us to predict and diagnose
+[00:20:20.120] those systems before, you know, spotting
+[00:20:22.760] these anomalies and and trying to detect
+[00:20:24.440] things before they actually go bad and
+[00:20:26.280] become critical issues.
+[00:20:28.160] Enabling that detection,
+[00:20:30.320] you know, can help us ahead of time can
+[00:20:32.560] help us actually reduce costs too, and
+[00:20:34.480] make sure that the when we do have
+[00:20:35.760] disruptions that they they aren't as
+[00:20:37.760] costly as they could be.
+[00:20:39.840] The next one is our performance
+[00:20:41.480] optimization aspect of the predictive
+[00:20:43.800] capabilities where we can provide
+[00:20:45.320] real-time analytics for tracking the
+[00:20:47.760] application performance metrics or maybe
+[00:20:49.720] we're monitoring the latency and the
+[00:20:51.400] throughput patterns to identify any kind
+[00:20:53.640] of potential degradations.
+[00:20:56.720] In the security and compliance area,
+[00:20:59.160] we've got
+[00:21:00.360] you know, systems that are proactively
+[00:21:01.760] detecting security vulnerabilities and
+[00:21:03.640] threats. We're helping identify
+[00:21:06.200] anomalies that could indicate some kind
+[00:21:07.880] of data breach and maybe even
+[00:21:09.800] automatically detect and map detect and
+[00:21:11.840] mask some of the PII information that
+[00:21:13.920] might show up in unexpected places.
+[00:21:17.040] And then the last one in this group is
+[00:21:18.760] cost and efficiency reductions where we
+[00:21:21.320] can decrease the incident incident
+[00:21:22.920] resolution time hopefully through the
+[00:21:24.400] lot of these capabilities which of
+[00:21:25.600] course is going to affect our cost, but
+[00:21:27.680] we can also optimize data volume through
+[00:21:30.680] intelligent filtering and sampling of
+[00:21:32.760] that data before we process it and then
+[00:21:35.480] of course automating routine monitoring
+[00:21:37.760] tasks to help reduce some of that manual
+[00:21:40.480] effort is also going to cut cut our
+[00:21:42.360] costs in ways.
+[00:21:45.760] And then our last group here the natural
+[00:21:47.360] language querying we're all probably
+[00:21:50.040] familiar with much of this where we can
+[00:21:52.520] take you know just normal language you
+[00:21:54.880] just talk to the to the models whatever
+[00:21:57.920] they may be or the chatbots
+[00:21:59.720] in just a normal way you know like you
+[00:22:01.840] would to to another person and be able
+[00:22:04.000] to query and interact with our systems
+[00:22:06.200] in safe ways
+[00:22:07.840] just through those natural
+[00:22:08.880] conversations. I think that's a lot
+[00:22:11.240] those are a lot of great benefits to
+[00:22:13.160] help us eliminate the need for
+[00:22:15.640] understanding complex query languages or
+[00:22:18.080] syntax things like that.
+[00:22:20.240] The personalized experience is another
+[00:22:21.960] area that I think these natural language
+[00:22:23.960] querying aspects are providing some
+[00:22:25.840] benefits for us where we can actually
+[00:22:27.960] predict the bots or whatever they might
+[00:22:29.840] be can predict some of our actions and
+[00:22:32.400] help us analyze
+[00:22:34.280] you know what it is we we want to do in
+[00:22:35.840] terms of our own user behavior and that
+[00:22:38.040] way it can optimize the interfaces for
+[00:22:40.480] individual users. You know I might get
+[00:22:42.080] an interface that's different from the
+[00:22:43.240] next person just based on the tasks and
+[00:22:45.120] the things that I do.
+[00:22:48.000] Smart assistance is another one where
+[00:22:49.760] you're seeing
+[00:22:51.080] these tools providing context that are
+[00:22:53.880] context specific recommendations so that
+[00:22:56.560] they can offer a quick explanations on
+[00:22:59.280] what to do for certain errors or certain
+[00:23:01.360] types of disruptions that you might be
+[00:23:02.880] experiencing as well as automating any
+[00:23:04.640] kind of routine remediation tasks. I
+[00:23:07.720] used to talk a lot about this subject
+[00:23:09.600] called ChatOps and I think a lot of this
+[00:23:12.120] stuff that we used to talk about ChatOps
+[00:23:13.760] is kind of come full circle where we can
+[00:23:15.080] now in chat just use common language and
+[00:23:18.880] enact or execute commands that happen
+[00:23:22.360] throughout our system that can help us
+[00:23:23.880] especially in in
+[00:23:25.640] you know within the observability space.
+[00:23:28.320] And then task simplification kind of
+[00:23:30.000] falls into that bucket too where you're
+[00:23:31.480] just enabling maybe multiple multi-step
+[00:23:34.440] complex multi-step processes and actions
+[00:23:36.840] and tasks that can all be automated
+[00:23:39.360] so that there's a lot better
+[00:23:40.360] coordination really across multiple
+[00:23:42.480] services and applications.
+[00:23:45.000] So those are the three areas that I
+[00:23:46.720] think are really kind of the most
+[00:23:48.600] impactful when it comes to the
+[00:23:50.080] observability
+[00:23:51.600] space and in the AI and LLMs.
+[00:23:54.360] I just wanted to point out this one
+[00:23:55.640] slide of Datadog here because when you
+[00:23:57.640] look at any of these vendors now it's
+[00:23:59.880] not just that they have one thing that
+[00:24:02.080] falls into the AI LLM enabled space.
+[00:24:04.960] They actually have in most cases several
+[00:24:07.200] things and you can see here there's a
+[00:24:08.840] few things that Datadog offers but the
+[00:24:11.200] one thing that I wanted to point out
+[00:24:12.520] today
+[00:24:13.640] that I think we're super proud of is
+[00:24:16.040] that earlier this year there was Datadog
+[00:24:18.920] had announced Toto which is a foundation
+[00:24:21.440] model for time series forecasting that
+[00:24:24.280] we developed in-house and it was trained
+[00:24:26.320] on 1 trillion data points and
+[00:24:28.360] specifically optimized for observability
+[00:24:30.800] use cases. And in all the benchmark
+[00:24:32.960] tests Toto demonstrated superior
+[00:24:35.600] performance over existing models both in
+[00:24:38.160] general purpose forecasting tasks as
+[00:24:40.480] well as specifically in the
+[00:24:42.040] observability metrics. And another thing
+[00:24:44.360] too is that it achieved the
+[00:24:46.680] the state of the art you could say
+[00:24:48.360] zero-shot performance across multiple
+[00:24:51.240] data sets which if you've follow
+[00:24:52.960] anything in this AI space anytime you
+[00:24:54.640] hear something about uh zero-shot
+[00:24:56.520] performance, uh that's always super
+[00:24:58.080] impressive.
+[00:25:00.280] One more look at some of the main
+[00:25:01.960] capabilities that we're seeing in the
+[00:25:03.640] space across a lot of different vendors
+[00:25:05.880] out there, just to give you an idea and
+[00:25:08.760] uh what's going on. But, don't forget
+[00:25:10.640] that, you know, when it comes to these
+[00:25:13.200] AI and LLM-enabled capabilities of
+[00:25:16.480] observability of observability
+[00:25:18.280] platforms,
+[00:25:19.480] all of it comes down to data. Making
+[00:25:21.720] sure that you have really, really great
+[00:25:23.080] data, regardless of what it is you're
+[00:25:24.680] trying to do, regard- regardless of the
+[00:25:26.800] capability that you're drawn to with
+[00:25:28.480] this AI and LLM stuff, it's really about
+[00:25:30.640] managing that massive amount of data
+[00:25:32.560] that we talked about at the beginning of
+[00:25:33.840] the session, and understanding that that
+[00:25:36.000] data and finding ways to create more
+[00:25:38.600] value for users, there's a lot of
+[00:25:40.280] answers in that data, and and trying to
+[00:25:42.520] um
+[00:25:43.120] make sense of it and and sift through it
+[00:25:44.920] and do interesting and valuable things
+[00:25:47.320] with that, impactful things with it, is
+[00:25:49.640] really at the heart of all of this. Um
+[00:25:51.880] so, uh
+[00:25:53.280] just keep that in mind. And uh as we
+[00:25:55.600] start to wrap up here, I've got a few
+[00:25:56.960] key takeaways for you for today's
+[00:25:58.960] session. I think as we've talked through
+[00:26:01.000] a lot of this, I've given you some
+[00:26:02.240] general ideas about what a lot of the
+[00:26:03.920] vendors are doing when it comes to the
+[00:26:05.880] AI and LLMs um out there in the
+[00:26:08.440] observability space, and a lot of it
+[00:26:09.920] just comes down to data analysis and
+[00:26:12.160] having really great advanced automated
+[00:26:14.800] ways of of understanding that data,
+[00:26:17.440] making sure that we can um instantly
+[00:26:19.440] detect anomalies and make our systems a
+[00:26:22.320] little bit more efficient and our
+[00:26:23.760] monitoring efforts a lot more efficient
+[00:26:25.400] through analyzing that data in a number
+[00:26:26.920] of ways.
+[00:26:28.040] The other takeaway is that generative AI
+[00:26:30.000] and LLMs are now, uh you know, enhancing
+[00:26:33.200] our monitoring efforts by finding those
+[00:26:36.680] those uh patterns, those hidden patterns
+[00:26:38.480] that we can't find as humans in all this
+[00:26:40.800] complex and vast data. And then the
+[00:26:43.200] other one uh the last one here um is how
+[00:26:46.280] generative AI and LLMs are now really
+[00:26:48.240] improving our system reliability by
+[00:26:51.080] reducing some of the manual
+[00:26:52.440] troubleshooting and and creating a lot
+[00:26:54.120] more intuitive interactions with our
+[00:26:55.640] systems and allowing us to
+[00:26:58.480] just have a much better overall
+[00:27:00.040] performance and experience as we are
+[00:27:02.960] interacting with our systems and
+[00:27:04.240] troubleshooting and and that kind of
+[00:27:05.560] thing and hopefully you know creating a
+[00:27:07.120] little bit better modernization
+[00:27:09.560] practices within our observability
+[00:27:11.920] efforts.
+[00:27:14.360] Well, I promised you the link to this
+[00:27:15.760] resources again. So here it is.
+[00:27:18.600] You can follow the QR code. It'll take
+[00:27:20.600] you to the same place, but this is a
+[00:27:22.080] like I mentioned earlier I think this is
+[00:27:23.600] a GitHub repo. I've got all the links to
+[00:27:25.760] everything I talked about today.
+[00:27:27.760] Feel free to go download that. You also
+[00:27:29.960] have all of the slides and that kind of
+[00:27:31.960] stuff.
+[00:27:33.040] And with that I think we've got some
+[00:27:35.280] time for questions. So I really
+[00:27:36.960] appreciate y'all having me out here
+[00:27:38.320] today. It's been a pleasure to talk to
+[00:27:40.240] you about AI and LLMs in the
+[00:27:42.600] observability space. And Deion, what you
+[00:27:45.960] got for me?
+[00:27:47.120] Hey, thank you so much Jason. So
+[00:27:50.760] one of the fun parts of the the
+[00:27:53.440] weirdness of these LLMs is when they
+[00:27:56.680] kind of surprise you
+[00:27:59.120] in different ways whether that's
+[00:28:01.440] asking it to write some things and it
+[00:28:03.120] comes up with creative things or
+[00:28:04.480] creative code or the like. I was curious
+[00:28:07.000] if
+[00:28:07.760] you have any you've seen through your
+[00:28:10.120] customers or like any kind of surprises
+[00:28:13.160] where you know, the the LLM's been able
+[00:28:15.920] to find things that you know, was kind
+[00:28:18.920] of an aha moment for a customer or some
+[00:28:21.280] of the other you know, capabilities that
+[00:28:23.520] you've talked about where it's just like
+[00:28:25.200] that that je ne sais quoi that comes
+[00:28:27.440] with the LLM has kind of popped up.
+[00:28:30.400] Yeah. Yeah, I think what you're
+[00:28:31.440] referring to is
+[00:28:32.760] hallucinations one of our favorite uh uh
+[00:28:34.840] uh
+[00:28:35.600] byproducts I think of a lot of these a
+[00:28:37.480] lot of these tools that are out now is
+[00:28:38.840] that they're not always um
+[00:28:40.840] uh well, like you mentioned at the
+[00:28:42.040] beginning they're a black box and they
+[00:28:44.080] um
+[00:28:44.800] they're unpredictable. You know, they're
+[00:28:46.200] not always going to provide the same
+[00:28:47.560] results given the same inputs. And so,
+[00:28:49.800] yeah, that is a concern. I think it
+[00:28:51.720] really depends on, you know, the
+[00:28:53.000] application. Of course, there are there
+[00:28:54.680] are tools out there. Data Dog is a great
+[00:28:56.360] example where we've got something called
+[00:28:58.000] the LLM observability tool to allow us
+[00:29:00.880] to identify hallucinations and see those
+[00:29:03.320] as they come in and go out. We've got
+[00:29:05.880] some ways to analyze that data and you
+[00:29:08.000] know, again, goes back to the pattern
+[00:29:09.120] matching. If we've seen this type of
+[00:29:10.440] stuff before, we can see that, you know,
+[00:29:12.440] this doesn't match the type of input we
+[00:29:15.520] had and the expected output that we were
+[00:29:17.720] looking for. So,
+[00:29:19.480] I think when it comes to a lot of the
+[00:29:22.800] enhancements and and the things that I
+[00:29:24.400] was sharing with you,
+[00:29:26.040] you know, those are the capabilities a
+[00:29:28.520] lot of vendors are are providing and and
+[00:29:30.600] it's really on them to try to understand
+[00:29:32.920] and make sure that they're capturing
+[00:29:35.080] everything they need to know about these
+[00:29:36.240] hallucinations and and and keep tabs of
+[00:29:38.400] that. But, you bring up a good point. If
+[00:29:39.840] you're a business and you've got some AI
+[00:29:43.080] or LLMs enabled in your system that's
+[00:29:45.360] providing a service for a user, how do
+[00:29:48.000] you keep an eye on the output and make
+[00:29:50.120] sure that it's providing the right
+[00:29:51.320] answers? It is still a a huge challenge
+[00:29:53.760] for a lot of folks. Um
+[00:29:55.960] and I I think, you know, there are some
+[00:29:57.600] vendors out there, Data Dog included,
+[00:29:59.240] who do have some solutions to help um
+[00:30:01.880] make sense of some of that.
+[00:30:03.720] Got it. Sounds good.
+[00:30:05.840] Okay. We have a question here. What do
+[00:30:08.720] you think LLMs will not be great at in
+[00:30:11.080] observability?
+[00:30:14.080] Oh, wow, that is a good one. You know, I
+[00:30:18.760] in my experimenting with different LLMs,
+[00:30:21.920] it is good for
+[00:30:24.080] writing up, you know, copywriting type
+[00:30:26.840] of things. And I think we're seeing in
+[00:30:28.880] post-incident reviews and in incident
+[00:30:30.800] summaries, it's giving us a lot of good
+[00:30:33.400] data there and and and writing that kind
+[00:30:35.960] of stuff up. But, I think if you try to
+[00:30:38.880] allow LLMs or AI to write too much,
+[00:30:43.800] um it it seems to stumble on at that
+[00:30:46.520] point. And I don't know if that's just
+[00:30:48.520] some of the tools that I've experimented
+[00:30:50.040] with so far, but I I feel like I in my
+[00:30:53.800] mind, summarizing transcripts and and
+[00:30:56.720] things like that, um these tools are
+[00:30:59.000] great at that kind of thing. But if you
+[00:31:01.240] if you want them to come up with
+[00:31:02.720] something creatively, and you don't have
+[00:31:04.400] a really solid rag system or someplace
+[00:31:06.560] for it to go extract that data from, and
+[00:31:09.000] it just has to rely on its own uh
+[00:31:11.120] pre-built models, it it doesn't do as
+[00:31:14.080] well in those cases. So, I think you
+[00:31:15.840] have to limit how much it's creating for
+[00:31:18.320] you, or at least in limit it in sort of
+[00:31:20.640] smaller sizes, so that um it's not just
+[00:31:23.600] trying to write you huge large volumes
+[00:31:25.120] of information, and then it'll get lost
+[00:31:26.760] in the in the plot, I think. Usually is
+[00:31:28.560] what I my experience is, anyway.
+[00:31:31.320] Got it. And then, certain LLMs seem to
+[00:31:34.040] be particularly good at, you know,
+[00:31:36.160] certain things. So, like Sonnet 3.5
+[00:31:39.120] has a good vibe check for me when it
+[00:31:41.320] writes code. It feels like it's the kind
+[00:31:43.640] of code that I prefer compared to other
+[00:31:45.800] models. Have you noticed similar things
+[00:31:47.680] in the uh with the type of task that
+[00:31:50.280] you've been talking about, where like a
+[00:31:51.840] certain model may be better for one
+[00:31:53.520] task, and maybe another one for another
+[00:31:55.400] task?
+[00:31:56.720] You know, so far I have not been able to
+[00:31:58.920] identify anything like that in my own
+[00:32:01.200] experimentation. Now, I will be honest,
+[00:32:02.960] I have not gone through all of the
+[00:32:04.240] vendors and tried out all of their
+[00:32:05.640] tools. Uh I can only kind of speak to
+[00:32:08.040] the things with within DataDog and some
+[00:32:10.120] of the things I've experimented with,
+[00:32:11.760] like you're talking about with Sonnet
+[00:32:12.960] and Claude and ChatGPT. And um I I I
+[00:32:16.680] don't know that I have a favorite. I
+[00:32:18.040] feel like ChatGPT has been pretty good
+[00:32:20.680] to me early on, but it's a little less
+[00:32:23.120] valuable to me lately. Uh I've done some
+[00:32:25.400] interesting things with Google Vertex
+[00:32:27.880] and and had some success over there with
+[00:32:29.560] Gemini. Um but I I don't have, at least
+[00:32:33.320] right now, a mental model on which ones
+[00:32:35.280] are best suited for certain things.
+[00:32:37.800] But that is something I've actually
+[00:32:39.080] recently tried to tried to make an
+[00:32:40.680] effort to understand because now it's
+[00:32:42.160] it's not just that there's a couple of
+[00:32:43.560] different models.
+[00:32:45.160] All of the vendors have multiples of
+[00:32:47.040] models and just understanding, you know,
+[00:32:48.840] just the ones of of let's say ChatGPT
+[00:32:51.920] use
+[00:32:53.440] what's the use case scenario for every
+[00:32:55.360] one of them and understanding that is a
+[00:32:57.400] is becoming a bigger task than it used
+[00:32:59.800] to be.
+[00:33:00.760] Yeah, it makes sense. Well, thanks so
+[00:33:02.480] much Jason. Really appreciate it. Thanks
+[00:33:04.440] for taking the time.
+[00:33:05.600] Yeah, thanks you and appreciate it and
+[00:33:08.200] yeah, we'll see you sometime soon.
+[00:33:10.360] Sounds good. Cheers.

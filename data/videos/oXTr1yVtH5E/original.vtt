@@ -1,0 +1,4245 @@
+WEBVTT
+
+1
+00:00:09.450 --> 00:00:14.960
+[Music]
+
+2
+00:00:12.400 --> 00:00:18.320
+Well, hi everyone. Uh, so as Simon said,
+
+3
+00:00:14.960 --> 00:00:21.279
+I am Drew. I am the head of AI product
+
+4
+00:00:18.320 --> 00:00:24.880
+here at Tessle. So today I wanted to
+
+5
+00:00:21.279 --> 00:00:27.439
+talk about how we think of evals or
+
+6
+00:00:24.880 --> 00:00:29.760
+maybe more accurately how our process
+
+7
+00:00:27.439 --> 00:00:31.920
+for evals has evolved over time at
+
+8
+00:00:29.760 --> 00:00:33.760
+Tesla. Uh going through a few stages
+
+9
+00:00:31.920 --> 00:00:37.120
+that I think are pretty common in my
+
+10
+00:00:33.760 --> 00:00:39.440
+experience of developing AI features. Uh
+
+11
+00:00:37.120 --> 00:00:40.960
+but in particular what I want to get out
+
+12
+00:00:39.440 --> 00:00:43.160
+of this session is sort of convincing
+
+13
+00:00:40.960 --> 00:00:45.680
+everybody that
+
+14
+00:00:43.160 --> 00:00:47.680
+eval doesn't have to slow you down. It
+
+15
+00:00:45.680 --> 00:00:49.920
+doesn't have to sort of be a thing that
+
+16
+00:00:47.680 --> 00:00:52.559
+blocks progress or is you like oh I got
+
+17
+00:00:49.920 --> 00:00:54.079
+to add tests to my code. It's more of a
+
+18
+00:00:52.559 --> 00:00:56.800
+this is a way that you can actually do
+
+19
+00:00:54.079 --> 00:01:00.559
+really fast iterative development that
+
+20
+00:00:56.800 --> 00:01:02.320
+feels much much more like flow state fun
+
+21
+00:01:00.559 --> 00:01:03.680
+gets the whole team involved uh and
+
+22
+00:01:02.320 --> 00:01:07.040
+really feels like it speeds things up
+
+23
+00:01:03.680 --> 00:01:10.720
+rather than slowing things down. So to
+
+24
+00:01:07.040 --> 00:01:14.479
+hop into things I will talk about the
+
+25
+00:01:10.720 --> 00:01:16.320
+different stages of evals. So I think in
+
+26
+00:01:14.479 --> 00:01:19.119
+my experience people tend to go through
+
+27
+00:01:16.320 --> 00:01:21.920
+four sort of distinct phases as they
+
+28
+00:01:19.119 --> 00:01:23.759
+learn about what it is like to eval uh
+
+29
+00:01:21.920 --> 00:01:26.320
+both AI features generally but I think
+
+30
+00:01:23.759 --> 00:01:27.640
+in particular code ccentric evals
+
+31
+00:01:26.320 --> 00:01:30.520
+there's a lot of sort of like particular
+
+32
+00:01:27.640 --> 00:01:33.360
+nuances uh and it almost always starts
+
+33
+00:01:30.520 --> 00:01:36.000
+with vibe based evals something along
+
+34
+00:01:33.360 --> 00:01:38.159
+the lines of hey I'm a software
+
+35
+00:01:36.000 --> 00:01:40.079
+developer I'm a product manager I'm you
+
+36
+00:01:38.159 --> 00:01:41.600
+know anything in between I'm used to
+
+37
+00:01:40.079 --> 00:01:43.920
+just like building stuff and testing it
+
+38
+00:01:41.600 --> 00:01:45.680
+like seeing if it works looking a couple
+
+39
+00:01:43.920 --> 00:01:48.560
+runs like did it compile, did it go
+
+40
+00:01:45.680 --> 00:01:50.640
+through, why can't I do that for my AI
+
+41
+00:01:48.560 --> 00:01:52.560
+based features as well, right? So
+
+42
+00:01:50.640 --> 00:01:54.000
+they'll write a prompt, they'll maybe
+
+43
+00:01:52.560 --> 00:01:55.759
+pull a model from hugging face,
+
+44
+00:01:54.000 --> 00:01:57.520
+something like that, and then they will
+
+45
+00:01:55.759 --> 00:01:59.680
+run it. They'll have three or four,
+
+46
+00:01:57.520 --> 00:02:00.960
+maybe 10 if they're feeling ambitious
+
+47
+00:01:59.680 --> 00:02:02.560
+outputs that they'll look at and they'll
+
+48
+00:02:00.960 --> 00:02:03.240
+just kind of does it feel right? Does it
+
+49
+00:02:02.560 --> 00:02:06.240
+look
+
+50
+00:02:03.240 --> 00:02:08.160
+right? There's a few challenges when you
+
+51
+00:02:06.240 --> 00:02:09.840
+take this approach, right? It's quick to
+
+52
+00:02:08.160 --> 00:02:12.080
+get off the ground. It's quick to get
+
+53
+00:02:09.840 --> 00:02:14.160
+started, but first of all, it's
+
+54
+00:02:12.080 --> 00:02:15.760
+inconsistent, right? Even yourself
+
+55
+00:02:14.160 --> 00:02:18.400
+looking at the same output, different
+
+56
+00:02:15.760 --> 00:02:20.160
+times of day, different you're rushed or
+
+57
+00:02:18.400 --> 00:02:21.680
+there's like small tweaks, are you
+
+58
+00:02:20.160 --> 00:02:24.319
+really applying all of the same
+
+59
+00:02:21.680 --> 00:02:26.160
+heristics the same every time? Uh, but
+
+60
+00:02:24.319 --> 00:02:28.720
+more importantly, it's really hard to
+
+61
+00:02:26.160 --> 00:02:31.280
+standardize this kind of an eval across
+
+62
+00:02:28.720 --> 00:02:32.920
+a team or across time, right?
+
+63
+00:02:31.280 --> 00:02:35.280
+as you revise the
+
+64
+00:02:32.920 --> 00:02:37.360
+feature, are you really being diligent
+
+65
+00:02:35.280 --> 00:02:39.360
+about how you compare the output this
+
+66
+00:02:37.360 --> 00:02:41.680
+time versus last time? And are your
+
+67
+00:02:39.360 --> 00:02:43.360
+teammates doing the same thing? Uh, it
+
+68
+00:02:41.680 --> 00:02:45.360
+can also be pretty unrepresentative,
+
+69
+00:02:43.360 --> 00:02:47.280
+right? So, if you have five to 10
+
+70
+00:02:45.360 --> 00:02:49.200
+examples that you're running through,
+
+71
+00:02:47.280 --> 00:02:51.200
+that's not necessarily going to capture
+
+72
+00:02:49.200 --> 00:02:52.640
+everything that comes from production
+
+73
+00:02:51.200 --> 00:02:54.720
+traffic, right? It can be good to catch
+
+74
+00:02:52.640 --> 00:02:56.720
+like really really lowhanging fruit
+
+75
+00:02:54.720 --> 00:02:58.319
+about Ben formats or things like that,
+
+76
+00:02:56.720 --> 00:03:00.239
+but that's not going to give you
+
+77
+00:02:58.319 --> 00:03:02.000
+everything that you want. And it can
+
+78
+00:03:00.239 --> 00:03:03.599
+also be really hard to action because
+
+79
+00:03:02.000 --> 00:03:05.920
+it's not very representative. Right?
+
+80
+00:03:03.599 --> 00:03:09.040
+When you look at a specific example, say
+
+81
+00:03:05.920 --> 00:03:11.200
+you asked for some code uh to generate
+
+82
+00:03:09.040 --> 00:03:12.440
+Fibonacci numbers and you get a
+
+83
+00:03:11.200 --> 00:03:14.319
+recursive
+
+84
+00:03:12.440 --> 00:03:17.120
+implementation, the model just do that
+
+85
+00:03:14.319 --> 00:03:19.120
+for Fibonacci or is it because it favors
+
+86
+00:03:17.120 --> 00:03:21.120
+recursion over iteration generally and
+
+87
+00:03:19.120 --> 00:03:22.239
+you don't want it to? It's hard to know
+
+88
+00:03:21.120 --> 00:03:24.800
+those kind of things like where to
+
+89
+00:03:22.239 --> 00:03:26.480
+target your fix if you don't have a
+
+90
+00:03:24.800 --> 00:03:28.480
+broader more representative set where
+
+91
+00:03:26.480 --> 00:03:30.000
+you can sort of generalize. Uh it's
+
+92
+00:03:28.480 --> 00:03:31.440
+almost like building a platform versus
+
+93
+00:03:30.000 --> 00:03:33.440
+sort of building a specific feature. You
+
+94
+00:03:31.440 --> 00:03:34.280
+want to be able to look across many many
+
+95
+00:03:33.440 --> 00:03:36.879
+use
+
+96
+00:03:34.280 --> 00:03:38.000
+cases. So let's say I want to fix some
+
+97
+00:03:36.879 --> 00:03:40.720
+of these things. I want to add a few
+
+98
+00:03:38.000 --> 00:03:42.400
+more examples, maybe 20 instead of 10.
+
+99
+00:03:40.720 --> 00:03:44.239
+Maybe I want to standardize some metrics
+
+100
+00:03:42.400 --> 00:03:46.239
+and things like that. Well, now it's
+
+101
+00:03:44.239 --> 00:03:49.200
+getting really slow to review these
+
+102
+00:03:46.239 --> 00:03:52.400
+things by hand, right? Reading code is
+
+103
+00:03:49.200 --> 00:03:53.760
+slow just on its own. Now imagine every
+
+104
+00:03:52.400 --> 00:03:56.720
+time you make a feature change, you have
+
+105
+00:03:53.760 --> 00:03:59.120
+to read 10 to 20 new implementations
+
+106
+00:03:56.720 --> 00:04:00.640
+from scratch as you go through. And what
+
+107
+00:03:59.120 --> 00:04:03.040
+you quickly learn is as you try to solve
+
+108
+00:04:00.640 --> 00:04:05.120
+these problems, you basically just
+
+109
+00:04:03.040 --> 00:04:06.560
+created a really bad eval, right? Like
+
+110
+00:04:05.120 --> 00:04:08.560
+you thought you were saving all of this
+
+111
+00:04:06.560 --> 00:04:09.599
+time by just saying, I'm just going to
+
+112
+00:04:08.560 --> 00:04:11.920
+run with it. I'm just going to look at
+
+113
+00:04:09.599 --> 00:04:14.000
+outputs. And maybe for your first debug
+
+114
+00:04:11.920 --> 00:04:16.799
+session, like that worked pretty well,
+
+115
+00:04:14.000 --> 00:04:18.720
+but by the time you're 10 10 iterations
+
+116
+00:04:16.799 --> 00:04:20.720
+in or three days in, you come back to it
+
+117
+00:04:18.720 --> 00:04:21.759
+next week, my god, this is so much
+
+118
+00:04:20.720 --> 00:04:22.960
+slower than if you could have just
+
+119
+00:04:21.759 --> 00:04:25.360
+automated this, right? This we're
+
+120
+00:04:22.960 --> 00:04:26.720
+getting back to sort of the classic uh
+
+121
+00:04:25.360 --> 00:04:27.840
+software development loop where you try
+
+122
+00:04:26.720 --> 00:04:29.360
+to automate things that are going to
+
+123
+00:04:27.840 --> 00:04:32.639
+happen over and over again so you can
+
+124
+00:04:29.360 --> 00:04:34.560
+just crank on them really quickly.
+
+125
+00:04:32.639 --> 00:04:36.720
+So, inevitably, the next step that
+
+126
+00:04:34.560 --> 00:04:39.840
+everyone hits after they've done some
+
+127
+00:04:36.720 --> 00:04:41.280
+vibe coding is they usually flip all the
+
+128
+00:04:39.840 --> 00:04:42.960
+way to the other side and they say,
+
+129
+00:04:41.280 --> 00:04:44.560
+"Well, that was so bad. I missed all
+
+130
+00:04:42.960 --> 00:04:46.479
+these things. Like, there's so much I
+
+131
+00:04:44.560 --> 00:04:48.320
+wasn't getting from it, so I'm going to
+
+132
+00:04:46.479 --> 00:04:49.840
+do it right this time." And they read a
+
+133
+00:04:48.320 --> 00:04:52.160
+bunch of blog posts. They read a bunch
+
+134
+00:04:49.840 --> 00:04:54.880
+of papers about what like really
+
+135
+00:04:52.160 --> 00:04:57.120
+rigorous evaluation looks like. And they
+
+136
+00:04:54.880 --> 00:04:59.600
+become sort of quality obsessed, right?
+
+137
+00:04:57.120 --> 00:05:02.400
+They want to have really representative
+
+138
+00:04:59.600 --> 00:05:03.600
+hundreds, thousands of examples. They
+
+139
+00:05:02.400 --> 00:05:06.160
+want to look at all of them and make
+
+140
+00:05:03.600 --> 00:05:09.520
+sure every single input is exactly
+
+141
+00:05:06.160 --> 00:05:11.280
+right. They want to handtune some like
+
+142
+00:05:09.520 --> 00:05:13.400
+universal metric that will tell them
+
+143
+00:05:11.280 --> 00:05:15.919
+like is this right or is this
+
+144
+00:05:13.400 --> 00:05:18.160
+wrong? And as a result, it actually ends
+
+145
+00:05:15.919 --> 00:05:19.600
+up being even slower than before, right?
+
+146
+00:05:18.160 --> 00:05:21.680
+Like the problem with manual review is
+
+147
+00:05:19.600 --> 00:05:24.080
+you have to look at a bunch of examples.
+
+148
+00:05:21.680 --> 00:05:25.919
+The problem with being uber obsessed
+
+149
+00:05:24.080 --> 00:05:27.759
+with quality of your evals and making
+
+150
+00:05:25.919 --> 00:05:29.360
+them perfect is you just never ship
+
+151
+00:05:27.759 --> 00:05:31.600
+anything because you can never finish
+
+152
+00:05:29.360 --> 00:05:33.680
+the eval that you're trying to build. Uh
+
+153
+00:05:31.600 --> 00:05:37.120
+so just a few examples of that is say
+
+154
+00:05:33.680 --> 00:05:39.440
+you want even a 50 example eval.
+
+155
+00:05:37.120 --> 00:05:41.759
+Creating 50 code examples and annotating
+
+156
+00:05:39.440 --> 00:05:43.680
+them with the proper output that's not
+
+157
+00:05:41.759 --> 00:05:45.600
+it's not quick. That could take several
+
+158
+00:05:43.680 --> 00:05:47.600
+days to a week if it's a really involved
+
+159
+00:05:45.600 --> 00:05:49.919
+example. If you want more than 50 it
+
+160
+00:05:47.600 --> 00:05:50.960
+starts to get really out of control. And
+
+161
+00:05:49.919 --> 00:05:52.320
+then as you're doing it and you're
+
+162
+00:05:50.960 --> 00:05:54.199
+trying to annotate what the right answer
+
+163
+00:05:52.320 --> 00:05:57.440
+should be, you're very quickly going to
+
+164
+00:05:54.199 --> 00:05:59.520
+learn, there's no objective quality bar.
+
+165
+00:05:57.440 --> 00:06:01.360
+Even if you have like really clean
+
+166
+00:05:59.520 --> 00:06:03.360
+examples and you think you know exactly
+
+167
+00:06:01.360 --> 00:06:05.680
+how it should work, there's going to be
+
+168
+00:06:03.360 --> 00:06:07.440
+disagreement on the readability of the
+
+169
+00:06:05.680 --> 00:06:09.039
+code, the commenting style. I mean, just
+
+170
+00:06:07.440 --> 00:06:11.520
+think about when you put a PR up on your
+
+171
+00:06:09.039 --> 00:06:14.160
+team, how often do people just agree
+
+172
+00:06:11.520 --> 00:06:15.759
+with everything you chose? Uh, and then
+
+173
+00:06:14.160 --> 00:06:17.680
+by the time you do come up with
+
+174
+00:06:15.759 --> 00:06:20.000
+something that balances everything that
+
+175
+00:06:17.680 --> 00:06:22.160
+people want, like, oh, well, we need to
+
+176
+00:06:20.000 --> 00:06:23.600
+have like line length less than this,
+
+177
+00:06:22.160 --> 00:06:25.280
+but we shouldn't use comments in this
+
+178
+00:06:23.600 --> 00:06:26.720
+way. You know, you sort of layer them
+
+179
+00:06:25.280 --> 00:06:28.639
+all up. you're going to end up with
+
+180
+00:06:26.720 --> 00:06:31.280
+something that's so complicated and so
+
+181
+00:06:28.639 --> 00:06:32.880
+nuanced that the only sort of metric
+
+182
+00:06:31.280 --> 00:06:35.360
+that you can run in an automated fashion
+
+183
+00:06:32.880 --> 00:06:37.360
+is an LLM judge which so we'll talk
+
+184
+00:06:35.360 --> 00:06:39.199
+about later for codecentric evals is
+
+185
+00:06:37.360 --> 00:06:40.600
+leaving just a lot of value on the table
+
+186
+00:06:39.199 --> 00:06:42.759
+in terms of what you can do when
+
+187
+00:06:40.600 --> 00:06:45.759
+evaluating code-based
+
+188
+00:06:42.759 --> 00:06:47.199
+solutions. So you you sort of jump to
+
+189
+00:06:45.759 --> 00:06:48.880
+this because you think ah this is the
+
+190
+00:06:47.199 --> 00:06:51.039
+solution. This is the antithesis to what
+
+191
+00:06:48.880 --> 00:06:53.919
+came before. But actually it has its own
+
+192
+00:06:51.039 --> 00:06:55.199
+challenges. And so really the place
+
+193
+00:06:53.919 --> 00:06:57.840
+you'll end up after you sort of gone
+
+194
+00:06:55.199 --> 00:06:59.759
+through a few of these revisions is that
+
+195
+00:06:57.840 --> 00:07:02.160
+eval are a numbers game, right? You have
+
+196
+00:06:59.759 --> 00:07:04.160
+to sort of let go of the idea that you
+
+197
+00:07:02.160 --> 00:07:06.160
+can be perfectly in control or that you
+
+198
+00:07:04.160 --> 00:07:08.000
+can be perfectly out of control and just
+
+199
+00:07:06.160 --> 00:07:10.080
+look at things and you have to start
+
+200
+00:07:08.000 --> 00:07:12.080
+taking on a few more nuanced
+
+201
+00:07:10.080 --> 00:07:13.520
+assumptions. Right? Your inputs, they
+
+202
+00:07:12.080 --> 00:07:16.240
+don't have to be perfect. They just have
+
+203
+00:07:13.520 --> 00:07:18.960
+to be representative. It's okay if only
+
+204
+00:07:16.240 --> 00:07:21.120
+80 to 90, maybe even 70% of them are
+
+205
+00:07:18.960 --> 00:07:23.919
+like really good if you read them. There
+
+206
+00:07:21.120 --> 00:07:25.680
+can be some sort of croft in there. Um,
+
+207
+00:07:23.919 --> 00:07:27.520
+your metrics, they don't have to be
+
+208
+00:07:25.680 --> 00:07:29.280
+perfect. They can be gameable. They just
+
+209
+00:07:27.520 --> 00:07:31.199
+need to be directionally correct. Like
+
+210
+00:07:29.280 --> 00:07:34.199
+your metrics need to tell you things
+
+211
+00:07:31.199 --> 00:07:36.800
+that are wrong or right about what was
+
+212
+00:07:34.199 --> 00:07:38.400
+generated. And finally, like really, you
+
+213
+00:07:36.800 --> 00:07:40.080
+just need to know what do you work on
+
+214
+00:07:38.400 --> 00:07:42.000
+next? Like what is the lowest hanging
+
+215
+00:07:40.080 --> 00:07:44.560
+fruit? Where should you be optimizing,
+
+216
+00:07:42.000 --> 00:07:46.400
+right? And these seem like concessions,
+
+217
+00:07:44.560 --> 00:07:48.160
+but if you can sort of get into this
+
+218
+00:07:46.400 --> 00:07:51.039
+mode of like, it just needs to hill
+
+219
+00:07:48.160 --> 00:07:53.120
+climb me. It just needs to move me up,
+
+220
+00:07:51.039 --> 00:07:55.039
+you can sort of embrace this zen state
+
+221
+00:07:53.120 --> 00:07:57.120
+of mind where it's like, ah, I just need
+
+222
+00:07:55.039 --> 00:07:59.240
+signal. As long as I get signal, we're
+
+223
+00:07:57.120 --> 00:08:01.360
+going to keep moving in the right
+
+224
+00:07:59.240 --> 00:08:03.440
+direction. So, this is getting closer to
+
+225
+00:08:01.360 --> 00:08:05.199
+what we need, right? You can imagine how
+
+226
+00:08:03.440 --> 00:08:06.720
+once you embrace this mindset, it
+
+227
+00:08:05.199 --> 00:08:08.800
+becomes easier to start pulling in
+
+228
+00:08:06.720 --> 00:08:10.720
+synthetic data because, you know, the
+
+229
+00:08:08.800 --> 00:08:13.039
+data is not perfect, right? The LLM
+
+230
+00:08:10.720 --> 00:08:15.919
+might cheat on some things or it might
+
+231
+00:08:13.039 --> 00:08:17.919
+have slightly weird coding standards,
+
+232
+00:08:15.919 --> 00:08:19.759
+but as long as it's mostly right, that's
+
+233
+00:08:17.919 --> 00:08:22.160
+good enough. And now you can get data in
+
+234
+00:08:19.759 --> 00:08:25.440
+a few hours instead of, you know, weeks
+
+235
+00:08:22.160 --> 00:08:27.520
+of laborious uh manual annotation. Your
+
+236
+00:08:25.440 --> 00:08:29.120
+diagnostic metrics become much easier to
+
+237
+00:08:27.520 --> 00:08:30.560
+design, right? They're just these
+
+238
+00:08:29.120 --> 00:08:33.360
+tightly scoped little things that tell
+
+239
+00:08:30.560 --> 00:08:35.200
+you something has changed or this is an
+
+240
+00:08:33.360 --> 00:08:36.399
+outlier relative to other things. And
+
+241
+00:08:35.200 --> 00:08:38.159
+I'll get into more of like what kind of
+
+242
+00:08:36.399 --> 00:08:40.320
+metrics you might design in a minute,
+
+243
+00:08:38.159 --> 00:08:42.640
+but it it frees you up to sort of be a
+
+244
+00:08:40.320 --> 00:08:45.279
+little more iterative with that. And
+
+245
+00:08:42.640 --> 00:08:47.279
+then you also sort of turn away from is
+
+246
+00:08:45.279 --> 00:08:49.519
+this good? And instead you start looking
+
+247
+00:08:47.279 --> 00:08:52.800
+at is this bad? Like can I detect
+
+248
+00:08:49.519 --> 00:08:56.320
+moments like oh if it generated a 400
+
+249
+00:08:52.800 --> 00:08:57.839
+line file for a palendrome detector
+
+250
+00:08:56.320 --> 00:08:59.120
+that's probably bad, right? like it's
+
+251
+00:08:57.839 --> 00:09:02.080
+hard to detect if it's the best
+
+252
+00:08:59.120 --> 00:09:04.959
+palendrome detector, but I can tell that
+
+253
+00:09:02.080 --> 00:09:07.839
+400 lines with 15 helper functions is
+
+254
+00:09:04.959 --> 00:09:07.839
+probably not a good
+
+255
+00:09:07.880 --> 00:09:12.320
+implementation. But you go this route
+
+256
+00:09:10.399 --> 00:09:14.720
+and you start fragmenting all of your
+
+257
+00:09:12.320 --> 00:09:16.560
+metrics. You start putting things into
+
+258
+00:09:14.720 --> 00:09:18.959
+just like hyperfocused things. You've
+
+259
+00:09:16.560 --> 00:09:22.399
+got some errors in your input. Suddenly,
+
+260
+00:09:18.959 --> 00:09:24.240
+you've got this massive behemoth of like
+
+261
+00:09:22.399 --> 00:09:26.800
+a dashboard like how do I make sense of
+
+262
+00:09:24.240 --> 00:09:27.839
+all this? How do I actually make forward
+
+263
+00:09:26.800 --> 00:09:29.519
+progress? The whole point was just to
+
+264
+00:09:27.839 --> 00:09:32.160
+give me signal and move. What happens
+
+265
+00:09:29.519 --> 00:09:33.920
+when I'm getting too much signal? So,
+
+266
+00:09:32.160 --> 00:09:36.560
+the answer to that might be like, oh,
+
+267
+00:09:33.920 --> 00:09:38.560
+just look at some of the examples and
+
+268
+00:09:36.560 --> 00:09:40.480
+oh, we're back to vibe based eval.
+
+269
+00:09:38.560 --> 00:09:42.600
+That's not what we want. But what what
+
+270
+00:09:40.480 --> 00:09:45.519
+do we want? Like, how do we make sense
+
+271
+00:09:42.600 --> 00:09:47.680
+of all of these new like fragmented
+
+272
+00:09:45.519 --> 00:09:50.720
+product metrics that we've sort of or uh
+
+273
+00:09:47.680 --> 00:09:52.640
+quality metrics that we put together?
+
+274
+00:09:50.720 --> 00:09:54.560
+So the answer is something that at Tesla
+
+275
+00:09:52.640 --> 00:09:55.920
+is sort of the current state of our
+
+276
+00:09:54.560 --> 00:09:57.760
+journey. Maybe there's a fifth stage
+
+277
+00:09:55.920 --> 00:09:59.519
+that we haven't reached yet. Uh but
+
+278
+00:09:57.760 --> 00:10:01.920
+we've led on what we call productled
+
+279
+00:09:59.519 --> 00:10:04.959
+evals. And so these really focus upfront
+
+280
+00:10:01.920 --> 00:10:07.600
+on how do we define good? How do we
+
+281
+00:10:04.959 --> 00:10:09.519
+define good enough? And how do we
+
+282
+00:10:07.600 --> 00:10:11.600
+actually know like what is the most
+
+283
+00:10:09.519 --> 00:10:14.240
+important thing to fix right now? And
+
+284
+00:10:11.600 --> 00:10:16.480
+you can think of this as a layer on top
+
+285
+00:10:14.240 --> 00:10:19.360
+of the stage I mentioned before. So
+
+286
+00:10:16.480 --> 00:10:21.120
+you've created this sort of atomized
+
+287
+00:10:19.360 --> 00:10:23.760
+view of all of these fine grained
+
+288
+00:10:21.120 --> 00:10:26.800
+metrics and synthetic data sets that are
+
+289
+00:10:23.760 --> 00:10:28.800
+sort of statistically good. How do you
+
+290
+00:10:26.800 --> 00:10:30.399
+harness that and allow it to sort of
+
+291
+00:10:28.800 --> 00:10:33.640
+move you forward quickly and in a way
+
+292
+00:10:30.399 --> 00:10:36.000
+that brings the whole team
+
+293
+00:10:33.640 --> 00:10:37.920
+together? So the first part of this and
+
+294
+00:10:36.000 --> 00:10:40.320
+the first thing that productled sort of
+
+295
+00:10:37.920 --> 00:10:42.399
+eval can do is they help you look at the
+
+296
+00:10:40.320 --> 00:10:44.560
+right data. Now I mentioned that we
+
+297
+00:10:42.399 --> 00:10:46.480
+don't just want to go back to vibe based
+
+298
+00:10:44.560 --> 00:10:48.240
+eval where you're looking at a few
+
+299
+00:10:46.480 --> 00:10:50.560
+examples and you know just spot checking
+
+300
+00:10:48.240 --> 00:10:52.640
+seeing how it works. Instead what we
+
+301
+00:10:50.560 --> 00:10:55.600
+want to do is we want to first define
+
+302
+00:10:52.640 --> 00:10:57.600
+the input distribution. And what we mean
+
+303
+00:10:55.600 --> 00:11:00.079
+by input distribution is that you want
+
+304
+00:10:57.600 --> 00:11:02.000
+to work with your product managers, your
+
+305
+00:11:00.079 --> 00:11:04.240
+CEO, your leads or just you know anyone
+
+306
+00:11:02.000 --> 00:11:07.519
+on the team to say who are the users
+
+307
+00:11:04.240 --> 00:11:09.760
+that we are trying to support and what
+
+308
+00:11:07.519 --> 00:11:11.839
+kinds of content should the feature
+
+309
+00:11:09.760 --> 00:11:13.680
+handle well. And the goal here is
+
+310
+00:11:11.839 --> 00:11:16.000
+actually to be really specific. So let's
+
+311
+00:11:13.680 --> 00:11:18.160
+say you're building an autocomplete
+
+312
+00:11:16.000 --> 00:11:20.320
+feature or you're building a testr
+
+313
+00:11:18.160 --> 00:11:22.480
+runner, right? Ideally you would say
+
+314
+00:11:20.320 --> 00:11:25.120
+what language are we using? Are we doing
+
+315
+00:11:22.480 --> 00:11:26.720
+unit tests? Are we doing uh integration
+
+316
+00:11:25.120 --> 00:11:27.959
+tests? But you go even further. Say
+
+317
+00:11:26.720 --> 00:11:31.279
+things like we're only testing
+
+318
+00:11:27.959 --> 00:11:33.600
+libraries. Uh for this version, here are
+
+319
+00:11:31.279 --> 00:11:34.959
+15 examples of the kinds of functions
+
+320
+00:11:33.600 --> 00:11:36.800
+that we want to be able to write tests
+
+321
+00:11:34.959 --> 00:11:39.000
+for. Like you really want to push
+
+322
+00:11:36.800 --> 00:11:41.519
+everyone on the team to really
+
+323
+00:11:39.000 --> 00:11:44.720
+understand what is the kind of feature
+
+324
+00:11:41.519 --> 00:11:46.320
+we are building towards. And then on top
+
+325
+00:11:44.720 --> 00:11:49.600
+of that, you want to define what we call
+
+326
+00:11:46.320 --> 00:11:51.920
+operation taxonomy. And so this is in a
+
+327
+00:11:49.600 --> 00:11:54.640
+sense you have a set of functions that
+
+328
+00:11:51.920 --> 00:11:56.959
+you want to be able to test. What kinds
+
+329
+00:11:54.640 --> 00:11:59.680
+of tests should you be able to generate,
+
+330
+00:11:56.959 --> 00:12:02.959
+right? Can you do mocking? Can you do
+
+331
+00:11:59.680 --> 00:12:04.880
+fixtures for filebased? You you want to
+
+332
+00:12:02.959 --> 00:12:08.000
+get really specific here, right? Like
+
+333
+00:12:04.880 --> 00:12:10.079
+there is a temptation to say, oh well,
+
+334
+00:12:08.000 --> 00:12:12.079
+it's Gen AI. It can do almost anything
+
+335
+00:12:10.079 --> 00:12:14.560
+altogether. But you want to be able to
+
+336
+00:12:12.079 --> 00:12:16.720
+push in and say, "Yes, maybe one step
+
+337
+00:12:14.560 --> 00:12:19.200
+could have many operations it takes out,
+
+338
+00:12:16.720 --> 00:12:22.320
+but let's carve it up. Let's categorize
+
+339
+00:12:19.200 --> 00:12:24.040
+what we think are the kinds of tests or
+
+340
+00:12:22.320 --> 00:12:26.000
+the kinds of operations that we will
+
+341
+00:12:24.040 --> 00:12:29.519
+generate." Because then what you want to
+
+342
+00:12:26.000 --> 00:12:32.560
+start doing is creating specific input
+
+343
+00:12:29.519 --> 00:12:34.399
+examples paired with this gen this
+
+344
+00:12:32.560 --> 00:12:36.480
+output or this operation is what we
+
+345
+00:12:34.399 --> 00:12:39.360
+expect. so that you can then say, "Hey,
+
+346
+00:12:36.480 --> 00:12:41.440
+I want to look at only the things that
+
+347
+00:12:39.360 --> 00:12:43.440
+we think we need to be good at and
+
+348
+00:12:41.440 --> 00:12:45.680
+taking the actions that we think we need
+
+349
+00:12:43.440 --> 00:12:47.120
+to take." And in a minute when I get to
+
+350
+00:12:45.680 --> 00:12:49.600
+sort of like the metrics that you will
+
+351
+00:12:47.120 --> 00:12:51.200
+use to surface outliers, you can start
+
+352
+00:12:49.600 --> 00:12:52.959
+to ask things like I just want to know
+
+353
+00:12:51.200 --> 00:12:55.279
+which of these operations are we worst
+
+354
+00:12:52.959 --> 00:12:57.440
+at or is there a certain input that
+
+355
+00:12:55.279 --> 00:12:59.040
+we're particularly bad at? So that I can
+
+356
+00:12:57.440 --> 00:13:01.839
+ask the question of like, do we care?
+
+357
+00:12:59.040 --> 00:13:03.839
+Was that a P 0 input or was that a P1
+
+358
+00:13:01.839 --> 00:13:06.240
+input? maybe we care about Python more
+
+359
+00:13:03.839 --> 00:13:07.760
+than JavaScript and so if Python tests
+
+360
+00:13:06.240 --> 00:13:10.079
+are bad we definitely have to jump into
+
+361
+00:13:07.760 --> 00:13:11.360
+that but if JavaScript is not that bad I
+
+362
+00:13:10.079 --> 00:13:12.959
+don't have to worry about it right so it
+
+363
+00:13:11.360 --> 00:13:14.959
+gives you a little bit of sort of think
+
+364
+00:13:12.959 --> 00:13:17.279
+of it as like an overlay on top of your
+
+365
+00:13:14.959 --> 00:13:19.360
+data to say what's important to look at
+
+366
+00:13:17.279 --> 00:13:22.399
+where do I want to sort of dive in and
+
+367
+00:13:19.360 --> 00:13:24.800
+spend my manual cycles uh to understand
+
+368
+00:13:22.399 --> 00:13:26.800
+the quality of the output and the final
+
+369
+00:13:24.800 --> 00:13:28.720
+piece to this is that once you've got a
+
+370
+00:13:26.800 --> 00:13:29.880
+sense of your input distribution your
+
+371
+00:13:28.720 --> 00:13:32.000
+operation
+
+372
+00:13:29.880 --> 00:13:33.519
+taxonomy you want to generate some
+
+373
+00:13:32.000 --> 00:13:35.200
+example outputs and you want everyone on
+
+374
+00:13:33.519 --> 00:13:37.760
+the team to do this because it ends up
+
+375
+00:13:35.200 --> 00:13:40.160
+being really important product
+
+376
+00:13:37.760 --> 00:13:41.760
+discovery, right? Like you start looking
+
+377
+00:13:40.160 --> 00:13:44.880
+at these features and you quickly
+
+378
+00:13:41.760 --> 00:13:46.480
+realize all of the little edge cases,
+
+379
+00:13:44.880 --> 00:13:48.519
+nooks and crannies, things that you
+
+380
+00:13:46.480 --> 00:13:50.959
+didn't think about when you were just
+
+381
+00:13:48.519 --> 00:13:52.560
+describing this kind of user and we're
+
+382
+00:13:50.959 --> 00:13:53.839
+going to do this kind of a unit test.
+
+383
+00:13:52.560 --> 00:13:55.360
+You're like, "Oh, right. like what
+
+384
+00:13:53.839 --> 00:13:58.320
+happens when I need to mock a thing that
+
+385
+00:13:55.360 --> 00:14:00.160
+has API keys or what happens when I want
+
+386
+00:13:58.320 --> 00:14:03.040
+to generate a file but like the format
+
+387
+00:14:00.160 --> 00:14:04.560
+is like really cumbersome to specify for
+
+388
+00:14:03.040 --> 00:14:06.040
+the AI like it makes that mistake a lot
+
+389
+00:14:04.560 --> 00:14:08.240
+right you can get into these kinds of
+
+390
+00:14:06.040 --> 00:14:10.000
+details and so we really recommend that
+
+391
+00:14:08.240 --> 00:14:12.639
+everyone on the team runs through a few
+
+392
+00:14:10.000 --> 00:14:14.399
+like be the LLM of the product for a
+
+393
+00:14:12.639 --> 00:14:17.320
+second and just generate stuff and
+
+394
+00:14:14.399 --> 00:14:19.920
+realize what's hard what's easy about
+
+395
+00:14:17.320 --> 00:14:22.160
+it so once you have a sense of like what
+
+396
+00:14:19.920 --> 00:14:23.680
+are the areas that you want to look at
+
+397
+00:14:22.160 --> 00:14:25.680
+like what are the things that you care
+
+398
+00:14:23.680 --> 00:14:28.000
+about for this version of the feature
+
+399
+00:14:25.680 --> 00:14:30.399
+and you can expand that over time with
+
+400
+00:14:28.000 --> 00:14:31.839
+later versions. Uh the next thing you
+
+401
+00:14:30.399 --> 00:14:34.639
+need to do is figure out what's the
+
+402
+00:14:31.839 --> 00:14:36.320
+quality bar that we're aiming for. And
+
+403
+00:14:34.639 --> 00:14:38.639
+we think about this in a very particular
+
+404
+00:14:36.320 --> 00:14:40.880
+way. I'll get into a minute why we think
+
+405
+00:14:38.639 --> 00:14:42.800
+about it in a very particular way, but
+
+406
+00:14:40.880 --> 00:14:44.399
+uh we don't just mean, you know, oh, it
+
+407
+00:14:42.800 --> 00:14:45.760
+should be good or oh, we just shouldn't
+
+408
+00:14:44.399 --> 00:14:47.920
+make any mistakes or it should be a
+
+409
+00:14:45.760 --> 00:14:49.519
+delightful experience for the user. Uh
+
+410
+00:14:47.920 --> 00:14:52.320
+we want to specify a few specific
+
+411
+00:14:49.519 --> 00:14:54.399
+things. So the first is going into it,
+
+412
+00:14:52.320 --> 00:14:56.399
+we want to agree on what the level of
+
+413
+00:14:54.399 --> 00:14:58.959
+rigor is going to be for this feature.
+
+414
+00:14:56.399 --> 00:15:00.320
+If we think it's a quick experimental
+
+415
+00:14:58.959 --> 00:15:01.839
+prototype, we're going to show it to
+
+416
+00:15:00.320 --> 00:15:04.079
+three or four users or maybe we're even
+
+417
+00:15:01.839 --> 00:15:06.399
+just going to demo it. We can maybe get
+
+418
+00:15:04.079 --> 00:15:07.600
+away with n equals 10 for our eval set
+
+419
+00:15:06.399 --> 00:15:10.720
+size, right? We just kind of need to
+
+420
+00:15:07.600 --> 00:15:13.519
+know that it roughly is sensible.
+
+421
+00:15:10.720 --> 00:15:14.800
+But if you want to ship something to
+
+422
+00:15:13.519 --> 00:15:15.959
+prod and it's going to be business
+
+423
+00:15:14.800 --> 00:15:18.079
+critical, it's like your core
+
+424
+00:15:15.959 --> 00:15:21.199
+differentiation, maybe you need an eval
+
+425
+00:15:18.079 --> 00:15:23.680
+set of a thousand, 2,000 or 100. Agree
+
+426
+00:15:21.199 --> 00:15:25.839
+on that upfront because one of the most
+
+427
+00:15:23.680 --> 00:15:28.079
+painful experiences we've had at Tesla
+
+428
+00:15:25.839 --> 00:15:29.760
+is when we don't align on that upfront.
+
+429
+00:15:28.079 --> 00:15:32.639
+We get to a point where we're ready to
+
+430
+00:15:29.760 --> 00:15:34.639
+ship and the team thinks, ah, we have
+
+431
+00:15:32.639 --> 00:15:36.880
+like we're ready to go. It looks good.
+
+432
+00:15:34.639 --> 00:15:38.959
+And then they get hit by, oh, but I
+
+433
+00:15:36.880 --> 00:15:40.959
+don't trust this eval like I don't think
+
+434
+00:15:38.959 --> 00:15:43.360
+this is good enough. and I saw one or
+
+435
+00:15:40.959 --> 00:15:44.560
+two examples that weren't good. And so I
+
+436
+00:15:43.360 --> 00:15:46.320
+want to know why those aren't being
+
+437
+00:15:44.560 --> 00:15:49.279
+fixed. So you need to get an agreement
+
+438
+00:15:46.320 --> 00:15:51.519
+on we think this eval set is the right
+
+439
+00:15:49.279 --> 00:15:55.040
+size, covers the right con like concepts
+
+440
+00:15:51.519 --> 00:15:56.720
+and inputs. Uh and it's totally fine for
+
+441
+00:15:55.040 --> 00:15:59.279
+to be anywhere from five to a thousand.
+
+442
+00:15:56.720 --> 00:16:00.880
+You just need to agree on it. Once you
+
+443
+00:15:59.279 --> 00:16:03.199
+have that, you want to just do a little
+
+444
+00:16:00.880 --> 00:16:05.519
+bit of digging. You want to start
+
+445
+00:16:03.199 --> 00:16:08.480
+looking through outputs. You know,
+
+446
+00:16:05.519 --> 00:16:10.160
+ideally you have a set of like the input
+
+447
+00:16:08.480 --> 00:16:11.639
+distribution and the operation taxonomy.
+
+448
+00:16:10.160 --> 00:16:15.360
+You can use that to do some synthetic
+
+449
+00:16:11.639 --> 00:16:17.040
+generation. You create some sort of uh
+
+450
+00:16:15.360 --> 00:16:18.959
+example output for you to look at.
+
+451
+00:16:17.040 --> 00:16:21.120
+You've manually annotated some of them.
+
+452
+00:16:18.959 --> 00:16:23.360
+Go through more. Anytime you see
+
+453
+00:16:21.120 --> 00:16:24.720
+something that looks bad, just think
+
+454
+00:16:23.360 --> 00:16:26.480
+through like how could I have detected
+
+455
+00:16:24.720 --> 00:16:28.480
+this? It doesn't need to be one to one,
+
+456
+00:16:26.480 --> 00:16:30.320
+but it could be like oh this bad one is
+
+457
+00:16:28.480 --> 00:16:31.839
+really long. It's longer than others. So
+
+458
+00:16:30.320 --> 00:16:33.680
+maybe I could have a quick metric that's
+
+459
+00:16:31.839 --> 00:16:35.839
+just what is the length of the
+
+460
+00:16:33.680 --> 00:16:37.920
+generation or oh this one's really bad
+
+461
+00:16:35.839 --> 00:16:40.079
+because all of the variables are three
+
+462
+00:16:37.920 --> 00:16:42.320
+letters or less right so I'll look for
+
+463
+00:16:40.079 --> 00:16:44.800
+that or oh it doesn't compile that one's
+
+464
+00:16:42.320 --> 00:16:47.040
+obvious right you start to collect these
+
+465
+00:16:44.800 --> 00:16:48.600
+like quick iterative metrics that can
+
+466
+00:16:47.040 --> 00:16:50.880
+sort of just find
+
+467
+00:16:48.600 --> 00:16:53.680
+outliers and over time you'll start to
+
+468
+00:16:50.880 --> 00:16:56.480
+get a feel for certain thresholds like
+
+469
+00:16:53.680 --> 00:16:58.639
+oh if if the function is a 100 lines or
+
+470
+00:16:56.480 --> 00:17:00.720
+longer it probably was a bad generation
+
+471
+00:16:58.639 --> 00:17:03.480
+so we're going to set that as one of our
+
+472
+00:17:00.720 --> 00:17:05.520
+metrics that we target for for
+
+473
+00:17:03.480 --> 00:17:08.160
+quality. Also in going through this
+
+474
+00:17:05.520 --> 00:17:09.760
+you've hopefully identified P 0 use
+
+475
+00:17:08.160 --> 00:17:12.160
+cases. So this is the other thing that
+
+476
+00:17:09.760 --> 00:17:14.240
+we try to get agreement on. What are the
+
+477
+00:17:12.160 --> 00:17:16.880
+things uh and this should be defined in
+
+478
+00:17:14.240 --> 00:17:20.559
+terms of the input distribution so users
+
+479
+00:17:16.880 --> 00:17:23.199
+and content and operation taxonomy. What
+
+480
+00:17:20.559 --> 00:17:24.880
+are the things that just can't be wrong?
+
+481
+00:17:23.199 --> 00:17:26.640
+And when I say can't be wrong, I don't
+
+482
+00:17:24.880 --> 00:17:28.960
+mean globally because you'll never know.
+
+483
+00:17:26.640 --> 00:17:30.080
+It's a probabilistic system. But what
+
+484
+00:17:28.960 --> 00:17:32.880
+are the kind of things where we can't
+
+485
+00:17:30.080 --> 00:17:34.880
+have any known instances like if we see
+
+486
+00:17:32.880 --> 00:17:37.440
+this kind of input and this kind of
+
+487
+00:17:34.880 --> 00:17:39.360
+operation leading to a bad output it
+
+488
+00:17:37.440 --> 00:17:41.039
+needs to be added to the e eval set and
+
+489
+00:17:39.360 --> 00:17:43.280
+fixed like we can't launch with any
+
+490
+00:17:41.039 --> 00:17:45.280
+known instance of this. So you want to
+
+491
+00:17:43.280 --> 00:17:46.400
+have those specified. And then finally,
+
+492
+00:17:45.280 --> 00:17:48.400
+once you have all this, once you know
+
+493
+00:17:46.400 --> 00:17:50.240
+how big your eval set should be, once
+
+494
+00:17:48.400 --> 00:17:52.720
+you know what your PZ use cases are,
+
+495
+00:17:50.240 --> 00:17:54.799
+once you've identified some of those
+
+496
+00:17:52.720 --> 00:17:57.039
+targets around like length of functions,
+
+497
+00:17:54.799 --> 00:17:59.200
+number of uh methods, anything like
+
+498
+00:17:57.039 --> 00:18:01.440
+that, then you can sit down and say,
+
+499
+00:17:59.200 --> 00:18:04.240
+okay, for launch, we think we want
+
+500
+00:18:01.440 --> 00:18:06.240
+roughly this percentage of packages that
+
+501
+00:18:04.240 --> 00:18:09.120
+we generate to be below this number of
+
+502
+00:18:06.240 --> 00:18:10.480
+files or all of these P 0 use cases,
+
+503
+00:18:09.120 --> 00:18:14.160
+they must be resolved, right? And this
+
+504
+00:18:10.480 --> 00:18:16.480
+is where you really want to agree that
+
+505
+00:18:14.160 --> 00:18:17.760
+the eval set and the metrics when they
+
+506
+00:18:16.480 --> 00:18:19.200
+combine together will give you
+
+507
+00:18:17.760 --> 00:18:20.880
+confidence to launch. And if you can't
+
+508
+00:18:19.200 --> 00:18:22.039
+get there, your eval set is not done.
+
+509
+00:18:20.880 --> 00:18:24.640
+Like you need to be adding more
+
+510
+00:18:22.039 --> 00:18:26.160
+examples, increasing the rigor, adding
+
+511
+00:18:24.640 --> 00:18:28.919
+more metrics until everybody can look at
+
+512
+00:18:26.160 --> 00:18:32.559
+it and say, I agree with
+
+513
+00:18:28.919 --> 00:18:34.960
+this. So I had a moment here where I was
+
+514
+00:18:32.559 --> 00:18:37.280
+going to talk about what do you do when
+
+515
+00:18:34.960 --> 00:18:39.440
+a model is not actually good enough yet?
+
+516
+00:18:37.280 --> 00:18:43.520
+Like what do you do when your CEO says,
+
+517
+00:18:39.440 --> 00:18:44.640
+"Oh, 90% quality, 95% quality." And then
+
+518
+00:18:43.520 --> 00:18:45.919
+you start working and you realize like,
+
+519
+00:18:44.640 --> 00:18:48.720
+"Oh crap, I think we can only get like
+
+520
+00:18:45.919 --> 00:18:50.320
+60% quality." Uh, and here at Tesla, we
+
+521
+00:18:48.720 --> 00:18:51.679
+call that like the the first mover
+
+522
+00:18:50.320 --> 00:18:53.840
+disadvantage. Like what happens when
+
+523
+00:18:51.679 --> 00:18:55.760
+you're hitting limitations of the model
+
+524
+00:18:53.840 --> 00:18:58.320
+before other people and before it's
+
+525
+00:18:55.760 --> 00:19:00.320
+become sort of a well-known issue that
+
+526
+00:18:58.320 --> 00:19:01.679
+you can have faith the model providers
+
+527
+00:19:00.320 --> 00:19:03.760
+themselves are starting to optimize
+
+528
+00:19:01.679 --> 00:19:05.200
+against or you your team has started to
+
+529
+00:19:03.760 --> 00:19:08.520
+acrue data where you can actually
+
+530
+00:19:05.200 --> 00:19:11.039
+fine-tune and improve uh over the base
+
+531
+00:19:08.520 --> 00:19:12.559
+capabilities and ironically I hit like
+
+532
+00:19:11.039 --> 00:19:14.720
+this bad generation of an image and said
+
+533
+00:19:12.559 --> 00:19:16.799
+all right I'll just try again it was a
+
+534
+00:19:14.720 --> 00:19:18.679
+little better but it was still still not
+
+535
+00:19:16.799 --> 00:19:21.039
+right tried it
+
+536
+00:19:18.679 --> 00:19:22.559
+again I I don't think the image
+
+537
+00:19:21.039 --> 00:19:25.120
+generator can actually generate this,
+
+538
+00:19:22.559 --> 00:19:27.200
+right? Like I So what do I do now? Do I
+
+539
+00:19:25.120 --> 00:19:29.360
+start writing some like image like edge
+
+540
+00:19:27.200 --> 00:19:32.160
+detectors to find text and maybe try to
+
+541
+00:19:29.360 --> 00:19:35.200
+like fix it to change the version like
+
+542
+00:19:32.160 --> 00:19:36.960
+change the the lettering or remove blur?
+
+543
+00:19:35.200 --> 00:19:39.520
+H that's starting to get really
+
+544
+00:19:36.960 --> 00:19:43.919
+expensive. And what happens when you
+
+545
+00:19:39.520 --> 00:19:45.520
+know Dolly 7 or Midjourney 12 comes out
+
+546
+00:19:43.919 --> 00:19:47.280
+and we don't need it anymore. We have
+
+547
+00:19:45.520 --> 00:19:50.799
+all this crust we've accumulated in our
+
+548
+00:19:47.280 --> 00:19:52.720
+system, this tech debt. And so what
+
+549
+00:19:50.799 --> 00:19:54.799
+we've sort of decided with this is that
+
+550
+00:19:52.720 --> 00:19:58.400
+you at some point are going to reach a
+
+551
+00:19:54.799 --> 00:20:00.080
+limit with quality where you've done all
+
+552
+00:19:58.400 --> 00:20:02.640
+the obvious stuff, right? Like you've
+
+553
+00:20:00.080 --> 00:20:04.080
+tuned prompts. If you if your team is
+
+554
+00:20:02.640 --> 00:20:05.679
+capable of fine-tuning, you've done some
+
+555
+00:20:04.080 --> 00:20:07.559
+fine-tuning against it to see what you
+
+556
+00:20:05.679 --> 00:20:10.320
+can sort of get out of the
+
+557
+00:20:07.559 --> 00:20:13.919
+model. Anything else is going to be more
+
+558
+00:20:10.320 --> 00:20:15.520
+than a quick iteration cycle. And at
+
+559
+00:20:13.919 --> 00:20:17.280
+this point, what we've sort of settled
+
+560
+00:20:15.520 --> 00:20:19.200
+on is that this is where you need to
+
+561
+00:20:17.280 --> 00:20:21.600
+flip it around and start designing to
+
+562
+00:20:19.200 --> 00:20:23.760
+your eval results, right? You now have a
+
+563
+00:20:21.600 --> 00:20:25.520
+sense of what are your error cases? What
+
+564
+00:20:23.760 --> 00:20:28.159
+are you good at? What are you bad at?
+
+565
+00:20:25.520 --> 00:20:30.799
+Don't be afraid to build around that,
+
+566
+00:20:28.159 --> 00:20:32.960
+right? Like sometimes you can be tempted
+
+567
+00:20:30.799 --> 00:20:35.280
+to say, I want to just design the
+
+568
+00:20:32.960 --> 00:20:37.360
+absolute best user experience as though
+
+569
+00:20:35.280 --> 00:20:38.880
+everything was magic. But that can
+
+570
+00:20:37.360 --> 00:20:40.159
+really trap you to a point where you've
+
+571
+00:20:38.880 --> 00:20:41.360
+designed something that you can't launch
+
+572
+00:20:40.159 --> 00:20:43.360
+because the model's never going to be
+
+573
+00:20:41.360 --> 00:20:45.120
+ready for it. And so when we say
+
+574
+00:20:43.360 --> 00:20:47.600
+designing around eval results, the first
+
+575
+00:20:45.120 --> 00:20:49.919
+is that we focus on the error cases and
+
+576
+00:20:47.600 --> 00:20:52.320
+we try to think about how can we make
+
+577
+00:20:49.919 --> 00:20:54.240
+these specific error cases easy to
+
+578
+00:20:52.320 --> 00:20:56.720
+detect and recover from and then maybe
+
+579
+00:20:54.240 --> 00:20:58.960
+you get some partial value from them.
+
+580
+00:20:56.720 --> 00:21:01.440
+We've also thought about how can we give
+
+581
+00:20:58.960 --> 00:21:03.440
+users options related to these. So like
+
+582
+00:21:01.440 --> 00:21:04.960
+can we show you multiple implementations
+
+583
+00:21:03.440 --> 00:21:06.880
+and then tell you like this one passes
+
+584
+00:21:04.960 --> 00:21:08.720
+these tests, this one passes those
+
+585
+00:21:06.880 --> 00:21:10.559
+tests, right? And then let the user
+
+586
+00:21:08.720 --> 00:21:12.400
+reason about it. It's much easier to get
+
+587
+00:21:10.559 --> 00:21:14.320
+high quality out of multiple iterations
+
+588
+00:21:12.400 --> 00:21:18.559
+than it is to get it out of just one go
+
+589
+00:21:14.320 --> 00:21:20.320
+at the uh at the the task. We also avoid
+
+590
+00:21:18.559 --> 00:21:23.600
+chaining. So if we know a certain step
+
+591
+00:21:20.320 --> 00:21:25.440
+in the pipeline is bad, we don't then
+
+592
+00:21:23.600 --> 00:21:27.280
+try to automatically run onto future
+
+593
+00:21:25.440 --> 00:21:28.320
+steps, right? We say we're going to have
+
+594
+00:21:27.280 --> 00:21:29.760
+to pause here. We're going to have to
+
+595
+00:21:28.320 --> 00:21:31.679
+get the user to correct so that we can
+
+596
+00:21:29.760 --> 00:21:34.080
+move with known good outputs into the
+
+597
+00:21:31.679 --> 00:21:36.720
+next area. And then finally, we design
+
+598
+00:21:34.080 --> 00:21:39.360
+for a good data flywheel. So it may not
+
+599
+00:21:36.720 --> 00:21:41.440
+be good now, but if we can launch
+
+600
+00:21:39.360 --> 00:21:44.080
+something that gets feedback and gets
+
+601
+00:21:41.440 --> 00:21:48.159
+data, we can ship the good version with
+
+602
+00:21:44.080 --> 00:21:50.320
+the better UX to users faster if we can
+
+603
+00:21:48.159 --> 00:21:52.080
+get a UI that will give us the data that
+
+604
+00:21:50.320 --> 00:21:53.360
+we need. I think there's a really
+
+605
+00:21:52.080 --> 00:21:54.799
+important concept here because
+
+606
+00:21:53.360 --> 00:21:57.159
+oftentimes when you start going down
+
+607
+00:21:54.799 --> 00:22:00.000
+this route, a concern that will come up
+
+608
+00:21:57.159 --> 00:22:03.440
+is but that's bad UX, right? Like why
+
+609
+00:22:00.000 --> 00:22:05.520
+are we putting our problems on the user?
+
+610
+00:22:03.440 --> 00:22:09.039
+And I think historically that's been a
+
+611
+00:22:05.520 --> 00:22:11.600
+very very good instinct amongst sort of
+
+612
+00:22:09.039 --> 00:22:13.440
+the product and design team as we're
+
+613
+00:22:11.600 --> 00:22:16.720
+sort of working through this. But in the
+
+614
+00:22:13.440 --> 00:22:18.400
+world of AI is sort of is your job to
+
+615
+00:22:16.720 --> 00:22:20.880
+figure out how to design a good
+
+616
+00:22:18.400 --> 00:22:22.080
+experience that also gets you good data.
+
+617
+00:22:20.880 --> 00:22:24.320
+And essentially that's one of the
+
+618
+00:22:22.080 --> 00:22:25.600
+durably hard things about AI
+
+619
+00:22:24.320 --> 00:22:28.240
+development. And so you kind of have to
+
+620
+00:22:25.600 --> 00:22:30.159
+start thinking about is the fact that
+
+621
+00:22:28.240 --> 00:22:32.720
+asking for data is a hard thing to do
+
+622
+00:22:30.159 --> 00:22:34.320
+well isn't an excuse anymore. You have
+
+623
+00:22:32.720 --> 00:22:35.760
+to figure out a way to get that feedback
+
+624
+00:22:34.320 --> 00:22:38.240
+because that's going to let you launch
+
+625
+00:22:35.760 --> 00:22:40.120
+faster and ship more value to your users
+
+626
+00:22:38.240 --> 00:22:42.720
+over
+
+627
+00:22:40.120 --> 00:22:45.280
+time. All right, so last step we need to
+
+628
+00:22:42.720 --> 00:22:47.600
+talk about you've designed your product
+
+629
+00:22:45.280 --> 00:22:49.200
+around your edge cases, you have an eval
+
+630
+00:22:47.600 --> 00:22:51.440
+uh you've decided it's ready to launch.
+
+631
+00:22:49.200 --> 00:22:53.760
+You want to go out and you want to start
+
+632
+00:22:51.440 --> 00:22:55.760
+iterating. And everybody who's worked on
+
+633
+00:22:53.760 --> 00:22:57.000
+a product before will know the classic
+
+634
+00:22:55.760 --> 00:22:59.039
+things you get from here are bug
+
+635
+00:22:57.000 --> 00:23:00.320
+reports. You have production data that
+
+636
+00:22:59.039 --> 00:23:01.320
+you can look at. people will start
+
+637
+00:23:00.320 --> 00:23:03.440
+asking for
+
+638
+00:23:01.320 --> 00:23:06.080
+features. We shouldn't think about those
+
+639
+00:23:03.440 --> 00:23:08.559
+anymore. Everything is just booed for
+
+640
+00:23:06.080 --> 00:23:10.400
+the eval set, right? When a bug report
+
+641
+00:23:08.559 --> 00:23:12.799
+comes in, we should have a really smooth
+
+642
+00:23:10.400 --> 00:23:14.400
+flow to get that added directly to the
+
+643
+00:23:12.799 --> 00:23:16.559
+eval set so the team can keep hill
+
+644
+00:23:14.400 --> 00:23:18.320
+climbing against it. When we have
+
+645
+00:23:16.559 --> 00:23:20.240
+production data flowing in, how do we
+
+646
+00:23:18.320 --> 00:23:21.760
+get synthetic data pipelines running on
+
+647
+00:23:20.240 --> 00:23:23.600
+that automatically so that we're
+
+648
+00:23:21.760 --> 00:23:26.559
+refreshing, we're expanding the size of
+
+649
+00:23:23.600 --> 00:23:28.080
+our eval set automatically?
+
+650
+00:23:26.559 --> 00:23:29.919
+when a new feature request comes in, we
+
+651
+00:23:28.080 --> 00:23:31.760
+need to update our input distribution
+
+652
+00:23:29.919 --> 00:23:34.159
+and our operation taxonomy. And then we
+
+653
+00:23:31.760 --> 00:23:35.840
+need to make sure that our eval set has
+
+654
+00:23:34.159 --> 00:23:37.600
+representative examples of that so that
+
+655
+00:23:35.840 --> 00:23:39.600
+we we need to see are there metrics that
+
+656
+00:23:37.600 --> 00:23:41.280
+we're missing. Everything goes into that
+
+657
+00:23:39.600 --> 00:23:43.120
+eval set because the eval set
+
+658
+00:23:41.280 --> 00:23:45.679
+essentially becomes the Figma mock for
+
+659
+00:23:43.120 --> 00:23:47.039
+the AI feature. If it's in the eval set,
+
+660
+00:23:45.679 --> 00:23:48.159
+we know exactly how we're working
+
+661
+00:23:47.039 --> 00:23:49.840
+against it and we know we're hill
+
+662
+00:23:48.159 --> 00:23:53.520
+climbing against it to get to better
+
+663
+00:23:49.840 --> 00:23:55.120
+quality in the next version.
+
+664
+00:23:53.520 --> 00:23:57.120
+All right. So, there's been a lot of
+
+665
+00:23:55.120 --> 00:23:58.799
+highlevel principles, you know, how we
+
+666
+00:23:57.120 --> 00:24:02.159
+think about evals, what we think are the
+
+667
+00:23:58.799 --> 00:24:04.400
+right things to focus on or the uh ways
+
+668
+00:24:02.159 --> 00:24:07.039
+to frame the problem. I wanted to leave
+
+669
+00:24:04.400 --> 00:24:09.840
+a few specific tips uh on two areas in
+
+670
+00:24:07.039 --> 00:24:11.320
+particular. So, I mentioned that getting
+
+671
+00:24:09.840 --> 00:24:13.600
+to this more
+
+672
+00:24:11.320 --> 00:24:15.279
+relaxed we just need signal. It doesn't
+
+673
+00:24:13.600 --> 00:24:18.080
+need to be perfect. One of the things
+
+674
+00:24:15.279 --> 00:24:20.559
+that that unlocks is synthetic data. And
+
+675
+00:24:18.080 --> 00:24:23.159
+so, how do you get good synthetic data?
+
+676
+00:24:20.559 --> 00:24:26.240
+My number one recommendation is read
+
+677
+00:24:23.159 --> 00:24:29.279
+papers. You don't need to understand all
+
+678
+00:24:26.240 --> 00:24:31.919
+of the sort of indepth training
+
+679
+00:24:29.279 --> 00:24:34.159
+techniques or evaluation criteria or
+
+680
+00:24:31.919 --> 00:24:35.919
+anything like that. Most papers will
+
+681
+00:24:34.159 --> 00:24:39.200
+have a section on how they created their
+
+682
+00:24:35.919 --> 00:24:41.039
+data set. And increasingly today, those
+
+683
+00:24:39.200 --> 00:24:42.880
+data set sections are gold. They have
+
+684
+00:24:41.039 --> 00:24:45.200
+all of these methodologies, all these
+
+685
+00:24:42.880 --> 00:24:47.360
+interesting ideas for how you can do
+
+686
+00:24:45.200 --> 00:24:49.679
+clever little twists on a problem to get
+
+687
+00:24:47.360 --> 00:24:52.799
+good synthetic data. Just as two
+
+688
+00:24:49.679 --> 00:24:55.039
+examples, Wizard LM and Math Shepard are
+
+689
+00:24:52.799 --> 00:24:57.600
+both papers that have synthetic data
+
+690
+00:24:55.039 --> 00:25:00.080
+generation techniques in them that we we
+
+691
+00:24:57.600 --> 00:25:02.400
+don't use the actual things that were
+
+692
+00:25:00.080 --> 00:25:04.080
+built in those papers, but we use those
+
+693
+00:25:02.400 --> 00:25:06.559
+data set generation techniques all the
+
+694
+00:25:04.080 --> 00:25:09.840
+time here at Tessle to create good eval
+
+695
+00:25:06.559 --> 00:25:12.080
+sets, training sets, anything like that.
+
+696
+00:25:09.840 --> 00:25:13.919
+Second big thing I want to focus on is
+
+697
+00:25:12.080 --> 00:25:15.919
+as you start developing synthetic data
+
+698
+00:25:13.919 --> 00:25:18.960
+pipelines which is becoming one of the
+
+699
+00:25:15.919 --> 00:25:22.480
+sort of core durably hard things of
+
+700
+00:25:18.960 --> 00:25:24.320
+modern AI development your filter is
+
+701
+00:25:22.480 --> 00:25:26.640
+everything right you can generate data
+
+702
+00:25:24.320 --> 00:25:29.600
+any number of ways if you have a good
+
+703
+00:25:26.640 --> 00:25:31.760
+filter that reliably strips out noise
+
+704
+00:25:29.600 --> 00:25:33.120
+you can get to a good data set and so
+
+705
+00:25:31.760 --> 00:25:35.480
+this is an area it's really worth
+
+706
+00:25:33.120 --> 00:25:37.679
+investing in using every tool in your
+
+707
+00:25:35.480 --> 00:25:39.760
+toolbox. Don't be afraid even if it's
+
+708
+00:25:37.679 --> 00:25:41.600
+like a hard long project to in like
+
+709
+00:25:39.760 --> 00:25:44.240
+incorporate static analysis into some
+
+710
+00:25:41.600 --> 00:25:47.679
+sort of like does it compile does this
+
+711
+00:25:44.240 --> 00:25:49.360
+API match the imports all of that if it
+
+712
+00:25:47.679 --> 00:25:51.919
+gives you incremental gain in the
+
+713
+00:25:49.360 --> 00:25:53.840
+quality of your filter can be worth it
+
+714
+00:25:51.919 --> 00:25:55.360
+uh and in fact usually is is worth it
+
+715
+00:25:53.840 --> 00:25:58.240
+because it really compounds from your
+
+716
+00:25:55.360 --> 00:25:59.840
+filter. Uh and the last one is don't be
+
+717
+00:25:58.240 --> 00:26:02.400
+afraid to overclock your generation,
+
+718
+00:25:59.840 --> 00:26:03.679
+right? Use the biggest model you can. Uh
+
+719
+00:26:02.400 --> 00:26:05.760
+it doesn't have to be what you run in
+
+720
+00:26:03.679 --> 00:26:07.760
+production. You can run like a thousand
+
+721
+00:26:05.760 --> 00:26:09.919
+branches and then just pick the best
+
+722
+00:26:07.760 --> 00:26:11.600
+one. Like really go overboard here
+
+723
+00:26:09.919 --> 00:26:13.760
+because it's all about getting data
+
+724
+00:26:11.600 --> 00:26:16.320
+quickly. Especially for evals where you
+
+725
+00:26:13.760 --> 00:26:19.120
+only need a hundred, a thousand, maybe a
+
+726
+00:26:16.320 --> 00:26:21.120
+couple thousand examples. It's okay if
+
+727
+00:26:19.120 --> 00:26:22.840
+it's not economically feasible to run it
+
+728
+00:26:21.120 --> 00:26:25.919
+at
+
+729
+00:26:22.840 --> 00:26:27.679
+scale. All right, last area. I talked a
+
+730
+00:26:25.919 --> 00:26:29.600
+lot about metrics, a lot about this idea
+
+731
+00:26:27.679 --> 00:26:30.960
+that your metrics don't need to be
+
+732
+00:26:29.600 --> 00:26:32.400
+perfect. They just need to be
+
+733
+00:26:30.960 --> 00:26:35.120
+directionally correct. They need to give
+
+734
+00:26:32.400 --> 00:26:38.320
+you good signal. So, the first piece of
+
+735
+00:26:35.120 --> 00:26:40.240
+advice I have here is keep things small
+
+736
+00:26:38.320 --> 00:26:42.559
+and like pretty dumb at this case,
+
+737
+00:26:40.240 --> 00:26:45.600
+right? like lines of code is a great
+
+738
+00:26:42.559 --> 00:26:48.159
+metric. The overall length of lines,
+
+739
+00:26:45.600 --> 00:26:50.880
+great metric. How many functions are
+
+740
+00:26:48.159 --> 00:26:53.279
+there? Do the tests pass? Like things
+
+741
+00:26:50.880 --> 00:26:54.640
+that are very, very concrete. And then
+
+742
+00:26:53.279 --> 00:26:56.480
+what you're looking for is not so much
+
+743
+00:26:54.640 --> 00:26:59.440
+the absolute number, but relative
+
+744
+00:26:56.480 --> 00:27:01.840
+shifts. You want to know, oh, usually
+
+745
+00:26:59.440 --> 00:27:03.679
+our lines of code is 100. We made a
+
+746
+00:27:01.840 --> 00:27:06.480
+change to our prompts and suddenly lines
+
+747
+00:27:03.679 --> 00:27:07.919
+of code on average is like 300. Like
+
+748
+00:27:06.480 --> 00:27:09.840
+that's something's wrong. We broke
+
+749
+00:27:07.919 --> 00:27:11.760
+something. And then what you can do is
+
+750
+00:27:09.840 --> 00:27:14.320
+you can use these metrics to sort say
+
+751
+00:27:11.760 --> 00:27:16.960
+show me the longest files, show me the
+
+752
+00:27:14.320 --> 00:27:18.159
+longest functions. So I can see ah okay
+
+753
+00:27:16.960 --> 00:27:19.679
+I see what's happening like it
+
+754
+00:27:18.159 --> 00:27:22.080
+misinterpreted this or it's adding all
+
+755
+00:27:19.679 --> 00:27:23.520
+these extra comments that we don't need.
+
+756
+00:27:22.080 --> 00:27:27.520
+So you really just want things that sort
+
+757
+00:27:23.520 --> 00:27:28.960
+of help you to sort and jump in on the
+
+758
+00:27:27.520 --> 00:27:30.720
+right area and to help you detect that
+
+759
+00:27:28.960 --> 00:27:32.799
+something has changed in your base
+
+760
+00:27:30.720 --> 00:27:34.559
+implementation.
+
+761
+00:27:32.799 --> 00:27:36.240
+The next one I'll say is that tests are
+
+762
+00:27:34.559 --> 00:27:39.520
+the absolute gold standard for
+
+763
+00:27:36.240 --> 00:27:41.600
+evaluating code centric things. Uh we
+
+764
+00:27:39.520 --> 00:27:44.080
+have basically a built-in oracle that
+
+765
+00:27:41.600 --> 00:27:47.200
+tells us does is this generation good
+
+766
+00:27:44.080 --> 00:27:49.600
+and it's does its tests pass. Now a lot
+
+767
+00:27:47.200 --> 00:27:51.039
+of code doesn't have tests. So this is
+
+768
+00:27:49.600 --> 00:27:54.120
+again I've mentioned a few areas that
+
+769
+00:27:51.039 --> 00:27:58.240
+are sort of like durably hard in the new
+
+770
+00:27:54.120 --> 00:28:00.080
+landscape for code centric AI features.
+
+771
+00:27:58.240 --> 00:28:03.120
+start developing your capabilities
+
+772
+00:28:00.080 --> 00:28:05.200
+around writing tests for code. Right? If
+
+773
+00:28:03.120 --> 00:28:07.120
+you get code from the wild, if you've
+
+774
+00:28:05.200 --> 00:28:09.120
+generated code, you should have
+
+775
+00:28:07.120 --> 00:28:11.440
+auxiliary pipelines that can write tests
+
+776
+00:28:09.120 --> 00:28:13.360
+and good tests for those so you can now
+
+777
+00:28:11.440 --> 00:28:14.880
+evaluate the quality of them going
+
+778
+00:28:13.360 --> 00:28:16.760
+forward. This is just like an area that
+
+779
+00:28:14.880 --> 00:28:18.880
+it pays to be really good
+
+780
+00:28:16.760 --> 00:28:21.600
+at. I also mentioned that you want to
+
+781
+00:28:18.880 --> 00:28:22.880
+look for outliers. You want to know not
+
+782
+00:28:21.600 --> 00:28:24.480
+is this good or is this bad, but just
+
+783
+00:28:22.880 --> 00:28:25.840
+like is this really different from the
+
+784
+00:28:24.480 --> 00:28:28.080
+rest of what we're generating? like is
+
+785
+00:28:25.840 --> 00:28:30.279
+this distribution if it's all centered
+
+786
+00:28:28.080 --> 00:28:32.799
+here and I've got one all the way over
+
+787
+00:28:30.279 --> 00:28:34.159
+here why I want to dig in. Right? It
+
+788
+00:28:32.799 --> 00:28:36.399
+might be okay. It might just be a normal
+
+789
+00:28:34.159 --> 00:28:39.520
+thing but it can help sort of prioritize
+
+790
+00:28:36.399 --> 00:28:42.159
+where you spend your manual cycles. Uh
+
+791
+00:28:39.520 --> 00:28:43.520
+and then finally when you want to ask
+
+792
+00:28:42.159 --> 00:28:46.720
+that question at the end of the day of
+
+793
+00:28:43.520 --> 00:28:48.159
+like is this good? Is this bad? Just
+
+794
+00:28:46.720 --> 00:28:50.159
+understand that that's there's not going
+
+795
+00:28:48.159 --> 00:28:52.399
+to be like one metric that you define
+
+796
+00:28:50.159 --> 00:28:54.559
+upfront at the beginning of the project
+
+797
+00:28:52.399 --> 00:28:57.279
+that's just definitely right. It's going
+
+798
+00:28:54.559 --> 00:28:58.799
+to look like an amalgamation of many
+
+799
+00:28:57.279 --> 00:29:01.600
+things, right? You might say that like a
+
+800
+00:28:58.799 --> 00:29:04.080
+good generation will have less than 200
+
+801
+00:29:01.600 --> 00:29:07.200
+lines of code. The average line length
+
+802
+00:29:04.080 --> 00:29:09.360
+will be about 30 characters. Function
+
+803
+00:29:07.200 --> 00:29:12.080
+count will be roughly equivalent. You
+
+804
+00:29:09.360 --> 00:29:14.159
+know, there'll be like a ratio of 3:1
+
+805
+00:29:12.080 --> 00:29:17.279
+private to public in the API or
+
+806
+00:29:14.159 --> 00:29:19.039
+something like that, right? That isn't
+
+807
+00:29:17.279 --> 00:29:20.559
+guaranteed, right? You can obviously
+
+808
+00:29:19.039 --> 00:29:22.480
+immediately think of instances where
+
+809
+00:29:20.559 --> 00:29:25.120
+that's not a good function or not a good
+
+810
+00:29:22.480 --> 00:29:27.279
+generation. It's a statistical game. You
+
+811
+00:29:25.120 --> 00:29:28.799
+say if I set this barrier, then more
+
+812
+00:29:27.279 --> 00:29:31.200
+often than not, the things that get
+
+813
+00:29:28.799 --> 00:29:33.440
+flagged, they are good. And the things
+
+814
+00:29:31.200 --> 00:29:35.039
+that get anti- flagged or sort of like
+
+815
+00:29:33.440 --> 00:29:37.440
+flagged in the other bucket, they are
+
+816
+00:29:35.039 --> 00:29:39.520
+bad. And it's statistically right enough
+
+817
+00:29:37.440 --> 00:29:42.320
+that it gives me the signal I need to
+
+818
+00:29:39.520 --> 00:29:43.600
+keep moving. So, that was kind of a
+
+819
+00:29:42.320 --> 00:29:45.360
+whirlwind tour. Covered a lot of the
+
+820
+00:29:43.600 --> 00:29:46.559
+things we think of here at Tessle. I'm
+
+821
+00:29:45.360 --> 00:29:48.640
+sure there'll be questions where they
+
+822
+00:29:46.559 --> 00:29:50.640
+want to dig into certain areas. So, I
+
+823
+00:29:48.640 --> 00:29:53.200
+will stop there and I will move us over
+
+824
+00:29:50.640 --> 00:29:54.799
+to questions.
+
+825
+00:29:53.200 --> 00:29:57.679
+And I think Simon's gonna come up and
+
+826
+00:29:54.799 --> 00:30:00.080
+join me to offer some. I am. And it's
+
+827
+00:29:57.679 --> 00:30:02.000
+it's very disappointing to see how the
+
+828
+00:30:00.080 --> 00:30:04.399
+uh how the cameras slightly moved up
+
+829
+00:30:02.000 --> 00:30:05.600
+that I know. I'm so sorry about that. I
+
+830
+00:30:04.399 --> 00:30:07.039
+blame myself. I'm going to have to I'm
+
+831
+00:30:05.600 --> 00:30:09.039
+going have to deal with that. But yeah,
+
+832
+00:30:07.039 --> 00:30:11.279
+that's that's a mess issue, not not a
+
+833
+00:30:09.039 --> 00:30:12.640
+you issue. So So a couple of couple of
+
+834
+00:30:11.279 --> 00:30:14.880
+interesting uh interesting questions
+
+835
+00:30:12.640 --> 00:30:16.000
+that we've had. Um actually one one as a
+
+836
+00:30:14.880 --> 00:30:17.360
+comment actually which I'd love to kind
+
+837
+00:30:16.000 --> 00:30:20.559
+of like dig into a little bit. Michael
+
+838
+00:30:17.360 --> 00:30:22.720
+Wolf says, um, I love that you suggest
+
+839
+00:30:20.559 --> 00:30:23.760
+folks work a number of examples by hand.
+
+840
+00:30:22.720 --> 00:30:24.799
+There's a lot to learn by digging into
+
+841
+00:30:23.760 --> 00:30:26.159
+the real problem instead of staying
+
+842
+00:30:24.799 --> 00:30:28.080
+above it. And I feel like this is
+
+843
+00:30:26.159 --> 00:30:29.760
+sometimes we sometimes jump to
+
+844
+00:30:28.080 --> 00:30:31.760
+particularly with I guess something like
+
+845
+00:30:29.760 --> 00:30:34.000
+eval where it's like a lot of a lot of
+
+846
+00:30:31.760 --> 00:30:36.240
+tests that you have to run. It's it's a
+
+847
+00:30:34.000 --> 00:30:39.440
+lot of stuff we need to we need to get
+
+848
+00:30:36.240 --> 00:30:41.720
+in and amongst that. um is the I guess I
+
+849
+00:30:39.440 --> 00:30:44.159
+guess in terms of
+
+850
+00:30:41.720 --> 00:30:45.679
+um let's talk talk through the value of
+
+851
+00:30:44.159 --> 00:30:47.440
+that in terms of what happens if you
+
+852
+00:30:45.679 --> 00:30:48.960
+don't do that kind of thing. Yeah. Uh
+
+853
+00:30:47.440 --> 00:30:51.279
+well so I actually have a few concrete
+
+854
+00:30:48.960 --> 00:30:54.960
+pieces to this. So first it's a great
+
+855
+00:30:51.279 --> 00:30:57.360
+point. I think people on your AI team
+
+856
+00:30:54.960 --> 00:30:59.600
+need to look at data and they need to
+
+857
+00:30:57.360 --> 00:31:02.000
+you need to hire for it. And so we have
+
+858
+00:30:59.600 --> 00:31:03.600
+explicit in our interview pipelines, we
+
+859
+00:31:02.000 --> 00:31:05.760
+look for people who have that sort of
+
+860
+00:31:03.600 --> 00:31:07.679
+grit, that sort of ability to sit down
+
+861
+00:31:05.760 --> 00:31:09.360
+and just like look at a bunch of output
+
+862
+00:31:07.679 --> 00:31:10.880
+and say like, "Oh, this was weird. I dug
+
+863
+00:31:09.360 --> 00:31:12.159
+in and then I, you know, I spent 30
+
+864
+00:31:10.880 --> 00:31:14.159
+minutes trying to understand why and
+
+865
+00:31:12.159 --> 00:31:15.360
+tweaking with it." Like that is just a
+
+866
+00:31:14.159 --> 00:31:16.720
+thing you have to do. And you have to
+
+867
+00:31:15.360 --> 00:31:19.200
+understand that your eval sets are going
+
+868
+00:31:16.720 --> 00:31:20.799
+to take a day, two days, sometimes
+
+869
+00:31:19.200 --> 00:31:23.120
+longer to put together. And that's like
+
+870
+00:31:20.799 --> 00:31:25.120
+that is real meaningful work that you
+
+871
+00:31:23.120 --> 00:31:26.960
+want to do. and the value that you get
+
+872
+00:31:25.120 --> 00:31:29.120
+out of that in addition to building good
+
+873
+00:31:26.960 --> 00:31:30.880
+eval sets that obviously can help you
+
+874
+00:31:29.120 --> 00:31:32.799
+sort of iterate faster. I think of it
+
+875
+00:31:30.880 --> 00:31:34.640
+like having a good test suite, how much
+
+876
+00:31:32.799 --> 00:31:37.120
+faster you can develop and push code if
+
+877
+00:31:34.640 --> 00:31:38.159
+you've got good test coverage. The
+
+878
+00:31:37.120 --> 00:31:39.840
+bigger one though, and I think the
+
+879
+00:31:38.159 --> 00:31:42.240
+reason why we really advocate people do
+
+880
+00:31:39.840 --> 00:31:45.840
+things by hand is the product learnings.
+
+881
+00:31:42.240 --> 00:31:47.679
+the fact that there are so many edge
+
+882
+00:31:45.840 --> 00:31:50.080
+cases and things that it's easy to
+
+883
+00:31:47.679 --> 00:31:51.360
+describe abstractly, but if you don't
+
+884
+00:31:50.080 --> 00:31:53.120
+understand the task well enough and
+
+885
+00:31:51.360 --> 00:31:54.320
+where it can go wrong, it's going to be
+
+886
+00:31:53.120 --> 00:31:55.760
+hard to prompt. It's going to be hard to
+
+887
+00:31:54.320 --> 00:31:58.240
+design the UI around it. And so, it's
+
+888
+00:31:55.760 --> 00:32:00.080
+really it's kind of like a new form of
+
+889
+00:31:58.240 --> 00:32:01.840
+uh user interviews. It's just like data
+
+890
+00:32:00.080 --> 00:32:04.080
+interviews, you could call it. No,
+
+891
+00:32:01.840 --> 00:32:07.039
+absolutely. Another question. This is a
+
+892
+00:32:04.080 --> 00:32:09.679
+this is a fun one. So this one is when
+
+893
+00:32:07.039 --> 00:32:10.880
+we think about what good looks like, if
+
+894
+00:32:09.679 --> 00:32:12.320
+there is something which is completely
+
+895
+00:32:10.880 --> 00:32:14.080
+novel that we're trying to run evals
+
+896
+00:32:12.320 --> 00:32:15.679
+against, how the heck do we think, oh
+
+897
+00:32:14.080 --> 00:32:20.159
+yeah, this is a good eval, this is a bad
+
+898
+00:32:15.679 --> 00:32:21.519
+eval. Um we had um Dez trainer from
+
+899
+00:32:20.159 --> 00:32:23.440
+inter one of co-founders of intercom on
+
+900
+00:32:21.519 --> 00:32:25.760
+the podcast from the early days and we
+
+901
+00:32:23.440 --> 00:32:27.279
+did and and he runs these things that he
+
+902
+00:32:25.760 --> 00:32:30.000
+calls torture tests and things like
+
+903
+00:32:27.279 --> 00:32:32.559
+that. And one of the hardest things that
+
+904
+00:32:30.000 --> 00:32:33.919
+that he kind of like said was the was
+
+905
+00:32:32.559 --> 00:32:35.840
+the biggest problem is what does good
+
+906
+00:32:33.919 --> 00:32:37.279
+look like? Yeah. How do we recognize
+
+907
+00:32:35.840 --> 00:32:39.440
+without needing to lean it into
+
+908
+00:32:37.279 --> 00:32:41.200
+production straight away to identify
+
+909
+00:32:39.440 --> 00:32:42.399
+what good looks like what that value is?
+
+910
+00:32:41.200 --> 00:32:46.159
+So so what do we do with things that are
+
+911
+00:32:42.399 --> 00:32:47.679
+novel? Yeah. So I have two two ways that
+
+912
+00:32:46.159 --> 00:32:49.360
+at least we here at Tesla think about
+
+913
+00:32:47.679 --> 00:32:51.840
+this. First actually going a little bit
+
+914
+00:32:49.360 --> 00:32:53.600
+against what you were saying is that uh
+
+915
+00:32:51.840 --> 00:32:55.919
+why not get it in production as soon as
+
+916
+00:32:53.600 --> 00:32:57.600
+you can, right? And so in particular, if
+
+917
+00:32:55.919 --> 00:33:00.480
+you know that you're working in a very
+
+918
+00:32:57.600 --> 00:33:03.360
+novel space where it is really hard to
+
+919
+00:33:00.480 --> 00:33:05.519
+know what's good enough, it might be
+
+920
+00:33:03.360 --> 00:33:07.360
+worth thinking about how can we design
+
+921
+00:33:05.519 --> 00:33:09.039
+our product so that it's easy to ship
+
+922
+00:33:07.360 --> 00:33:10.399
+things that don't necessarily have good
+
+923
+00:33:09.039 --> 00:33:12.559
+quality yet, right? So that could be
+
+924
+00:33:10.399 --> 00:33:14.159
+around designing around optionality,
+
+925
+00:33:12.559 --> 00:33:15.760
+designing even just like a labeling
+
+926
+00:33:14.159 --> 00:33:17.440
+system to let people know this feature
+
+927
+00:33:15.760 --> 00:33:19.039
+is in alpha. But you know, obviously
+
+928
+00:33:17.440 --> 00:33:21.279
+it's good to go further than that if you
+
+929
+00:33:19.039 --> 00:33:23.360
+can. But if you know evaluation is going
+
+930
+00:33:21.279 --> 00:33:25.600
+to be hard and that the end of the day,
+
+931
+00:33:23.360 --> 00:33:27.519
+you really just want production users to
+
+932
+00:33:25.600 --> 00:33:28.799
+tell you, this gets back to what I was
+
+933
+00:33:27.519 --> 00:33:31.840
+saying about we need to get good at
+
+934
+00:33:28.799 --> 00:33:34.240
+designing interfaces that are good
+
+935
+00:33:31.840 --> 00:33:35.360
+experiences and give us good data. We
+
+936
+00:33:34.240 --> 00:33:37.039
+also need to get good at designing
+
+937
+00:33:35.360 --> 00:33:39.200
+interfaces that are good and don't
+
+938
+00:33:37.039 --> 00:33:42.240
+necessarily have to be perfect, you
+
+939
+00:33:39.200 --> 00:33:44.480
+know, AGI to to to work. So that's one
+
+940
+00:33:42.240 --> 00:33:46.480
+thought is maybe just a push of like can
+
+941
+00:33:44.480 --> 00:33:48.480
+you launch sooner and can you design to
+
+942
+00:33:46.480 --> 00:33:49.919
+allow yourself to launch sooner. Yeah.
+
+943
+00:33:48.480 --> 00:33:53.679
+The other thing I'll say is like there
+
+944
+00:33:49.919 --> 00:33:55.519
+is always a world for human judgment, LM
+
+945
+00:33:53.679 --> 00:33:58.320
+as judge. There's these more subjective
+
+946
+00:33:55.519 --> 00:34:00.480
+measures that again you just want to
+
+947
+00:33:58.320 --> 00:34:01.919
+find the biggest lowhanging like
+
+948
+00:34:00.480 --> 00:34:03.760
+oftentimes in my experience launching
+
+949
+00:34:01.919 --> 00:34:05.200
+launching AI features. People know
+
+950
+00:34:03.760 --> 00:34:06.320
+they're going to make mistakes. Yeah,
+
+951
+00:34:05.200 --> 00:34:08.000
+that's not a huge problem. The problem
+
+952
+00:34:06.320 --> 00:34:09.440
+is when you make stupid mistakes like
+
+953
+00:34:08.000 --> 00:34:11.839
+things that are just like how could you
+
+954
+00:34:09.440 --> 00:34:14.399
+possibly have thought this was ready to
+
+955
+00:34:11.839 --> 00:34:15.760
+ship at this moment and catching that
+
+956
+00:34:14.399 --> 00:34:17.280
+like you may not be able to tell like is
+
+957
+00:34:15.760 --> 00:34:19.280
+this really good but you can tell like
+
+958
+00:34:17.280 --> 00:34:21.760
+is this stupid like is this going to be
+
+959
+00:34:19.280 --> 00:34:23.679
+embarrassing to us and so again just to
+
+960
+00:34:21.760 --> 00:34:26.560
+that first mover disadvantage really
+
+961
+00:34:23.679 --> 00:34:28.480
+focus on that and then getting out there
+
+962
+00:34:26.560 --> 00:34:30.240
+and then you can start fine-tuning you
+
+963
+00:34:28.480 --> 00:34:32.320
+it's much easier to solve these problems
+
+964
+00:34:30.240 --> 00:34:34.079
+when you have training data and eval
+
+965
+00:34:32.320 --> 00:34:35.839
+data than it is when you're trying to
+
+966
+00:34:34.079 --> 00:34:37.520
+just do it all sort of conceptually in
+
+967
+00:34:35.839 --> 00:34:40.000
+the lab. So, just really focus in my
+
+968
+00:34:37.520 --> 00:34:42.480
+mind on like blunders first and then
+
+969
+00:34:40.000 --> 00:34:43.839
+that's like really the minimum bar for
+
+970
+00:34:42.480 --> 00:34:46.639
+launch and then just find a way to
+
+971
+00:34:43.839 --> 00:34:50.159
+launch from there. Yeah. Awesome. Um,
+
+972
+00:34:46.639 --> 00:34:53.119
+one uh I just real
+
+973
+00:34:50.159 --> 00:34:55.520
+uh one one last uh question here or one
+
+974
+00:34:53.119 --> 00:34:57.839
+one other question here. Um we talked
+
+975
+00:34:55.520 --> 00:34:59.440
+about iterating in the loop um with
+
+976
+00:34:57.839 --> 00:35:01.200
+humans. What is the good number when
+
+977
+00:34:59.440 --> 00:35:02.960
+iterating? Because I presume you can
+
+978
+00:35:01.200 --> 00:35:06.320
+have too many too few. What's the
+
+979
+00:35:02.960 --> 00:35:08.000
+Goldilocks number? It's it'll this is an
+
+980
+00:35:06.320 --> 00:35:09.680
+obnoxious answer, but it'll always vary
+
+981
+00:35:08.000 --> 00:35:12.880
+a little bit by the problem and by your
+
+982
+00:35:09.680 --> 00:35:14.400
+team. I would say one easy answer is
+
+983
+00:35:12.880 --> 00:35:16.160
+everyone on the team should have spent
+
+984
+00:35:14.400 --> 00:35:18.320
+some time human in the loop like
+
+985
+00:35:16.160 --> 00:35:19.760
+reviewing examples, coming up with
+
+986
+00:35:18.320 --> 00:35:22.079
+outputs because you want everybody to
+
+987
+00:35:19.760 --> 00:35:24.320
+have that sense for how does the feature
+
+988
+00:35:22.079 --> 00:35:26.640
+work? What are the examples? Beyond
+
+989
+00:35:24.320 --> 00:35:29.040
+that, I'll say usually one is not a good
+
+990
+00:35:26.640 --> 00:35:31.599
+idea. So one of the principles behind
+
+991
+00:35:29.040 --> 00:35:33.520
+the reason why synthetic data is good is
+
+992
+00:35:31.599 --> 00:35:35.359
+because somewhere along the lines people
+
+993
+00:35:33.520 --> 00:35:38.560
+realize like oh synthetic data is only
+
+994
+00:35:35.359 --> 00:35:40.160
+70% accurate but if you run two humans
+
+995
+00:35:38.560 --> 00:35:43.440
+through a process their agreement is
+
+996
+00:35:40.160 --> 00:35:46.480
+like 70%. And so it's like synthetic is
+
+997
+00:35:43.440 --> 00:35:49.200
+about as accurate as a human. So in that
+
+998
+00:35:46.480 --> 00:35:50.880
+sense if a human's only 70% accurate you
+
+999
+00:35:49.200 --> 00:35:52.400
+get much better if you can have two
+
+1000
+00:35:50.880 --> 00:35:54.160
+three people running and you can compare
+
+1001
+00:35:52.400 --> 00:35:56.240
+their outputs to one another. It's
+
+1002
+00:35:54.160 --> 00:35:57.680
+called like uh interan annotator
+
+1003
+00:35:56.240 --> 00:35:59.520
+agreement is like a common thing here.
+
+1004
+00:35:57.680 --> 00:36:01.119
+So if you're running humans in the loop
+
+1005
+00:35:59.520 --> 00:36:04.000
+and it's not your core team who you can
+
+1006
+00:36:01.119 --> 00:36:06.240
+just expect to spend 30 minutes on one
+
+1007
+00:36:04.000 --> 00:36:07.839
+example if they need to to get it right
+
+1008
+00:36:06.240 --> 00:36:10.480
+I would say you want at least two
+
+1009
+00:36:07.839 --> 00:36:12.640
+ideally three so you can compare and
+
+1010
+00:36:10.480 --> 00:36:14.640
+break ties and then ideally you want to
+
+1011
+00:36:12.640 --> 00:36:16.320
+be curating that set. So if someone is
+
+1012
+00:36:14.640 --> 00:36:17.920
+consistently off from the other
+
+1013
+00:36:16.320 --> 00:36:19.520
+annotators you're going to want to look
+
+1014
+00:36:17.920 --> 00:36:21.440
+at rotating them out bringing someone
+
+1015
+00:36:19.520 --> 00:36:24.240
+else in. There's like a whole thing here
+
+1016
+00:36:21.440 --> 00:36:26.560
+of designing human annotation loops that
+
+1017
+00:36:24.240 --> 00:36:28.480
+go much deeper, but just to to give some
+
+1018
+00:36:26.560 --> 00:36:31.040
+kind of an actionable number, three. I
+
+1019
+00:36:28.480 --> 00:36:32.880
+would say three. 30 is an okay number if
+
+1020
+00:36:31.040 --> 00:36:34.960
+you're looking if you're not doing like
+
+1021
+00:36:32.880 --> 00:36:36.640
+an annotation job that's so big and so
+
+1022
+00:36:34.960 --> 00:36:38.480
+expensive that you need to really do it
+
+1023
+00:36:36.640 --> 00:36:40.720
+well. In which case, I say go read some
+
+1024
+00:36:38.480 --> 00:36:42.800
+articles online. But, uh, if it's just
+
+1025
+00:36:40.720 --> 00:36:45.119
+like, yeah, I want to know I want like
+
+1026
+00:36:42.800 --> 00:36:47.040
+100 200 examples. I want to send it to
+
+1027
+00:36:45.119 --> 00:36:48.560
+Mechanical Turk or Scale AI or
+
+1028
+00:36:47.040 --> 00:36:51.200
+something, three is a good starting
+
+1029
+00:36:48.560 --> 00:36:54.640
+point. Awesome. And just to just to wrap
+
+1030
+00:36:51.200 --> 00:36:56.720
+up um Michael kind of I mentioned this
+
+1031
+00:36:54.640 --> 00:36:58.480
+is a nice sentiment in the fact that in
+
+1032
+00:36:56.720 --> 00:37:00.400
+a world full of automation we do forget
+
+1033
+00:36:58.480 --> 00:37:02.240
+that learnings happen and we got to
+
+1034
+00:37:00.400 --> 00:37:04.800
+remember it's we need to train as well
+
+1035
+00:37:02.240 --> 00:37:06.720
+right and we need to understand that the
+
+1036
+00:37:04.800 --> 00:37:09.280
+way to train properly is that is that
+
+1037
+00:37:06.720 --> 00:37:12.400
+manual work. So uh yeah follows up user
+
+1038
+00:37:09.280 --> 00:37:13.680
+interviews is better than data use but
+
+1039
+00:37:12.400 --> 00:37:15.599
+it's hard to scale those user
+
+1040
+00:37:13.680 --> 00:37:17.280
+interviews. It seems about that balance
+
+1041
+00:37:15.599 --> 00:37:19.280
+once we Yeah. And it's all about just
+
+1042
+00:37:17.280 --> 00:37:21.359
+layering on tools, right? Like in my
+
+1043
+00:37:19.280 --> 00:37:24.079
+experience, none of the techniques we've
+
+1044
+00:37:21.359 --> 00:37:25.760
+been adding for AI development here have
+
+1045
+00:37:24.079 --> 00:37:28.720
+undercut anything else, right? Like we
+
+1046
+00:37:25.760 --> 00:37:32.320
+still have data sets with lineage. We
+
+1047
+00:37:28.720 --> 00:37:33.680
+still have uh SG boosts used in some
+
+1048
+00:37:32.320 --> 00:37:35.200
+places, right? Like there it's
+
+1049
+00:37:33.680 --> 00:37:37.119
+everything is just like the next level
+
+1050
+00:37:35.200 --> 00:37:38.960
+up. It usually doesn't replace the layer
+
+1051
+00:37:37.119 --> 00:37:40.320
+below it. The same thing with product
+
+1052
+00:37:38.960 --> 00:37:42.560
+development technically. We still talk
+
+1053
+00:37:40.320 --> 00:37:44.800
+to users. You have to we still use our
+
+1054
+00:37:42.560 --> 00:37:46.240
+own intuition. You have to, but now you
+
+1055
+00:37:44.800 --> 00:37:47.920
+can also just look at data to get an
+
+1056
+00:37:46.240 --> 00:37:49.520
+example.
+
+1057
+00:37:47.920 --> 00:37:51.920
+Drew, it's been an absolute pleasure.
+
+1058
+00:37:49.520 --> 00:37:54.119
+Thank you for joining us on Native Con.
+
+1059
+00:37:51.920 --> 00:37:57.280
+So, uh, down here. Yeah, there we
+
+1060
+00:37:54.119 --> 00:38:00.720
+go. Well done. Awesome. Thanks very
+
+1061
+00:37:57.280 --> 00:38:00.720
+much. Get us.

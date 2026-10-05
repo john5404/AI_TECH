@@ -1,0 +1,1075 @@
+[00:00:00.000] He scanned 3,984
+[00:00:03.040] skills. 13.4% of all skills, which is
+[00:00:05.920] 534 in total, all contain at least one
+[00:00:10.080] critical level security issue.
+[00:00:12.480] >> That's scary. If you think about it,
+[00:00:13.960] once people find out how easy it is to
+[00:00:16.200] create a skill, potentially what the
+[00:00:18.080] impact can be, people will use this in a
+[00:00:20.280] malicious way.
+[00:00:20.920] >> What if we go ahead and talk a little
+[00:00:22.520] bit about how an attacker would try and
+[00:00:25.880] create something nasty, something
+[00:00:27.480] malicious? How would they go [music]
+[00:00:28.880] about that?
+[00:00:29.640] >> I think that the the most important one
+[00:00:31.480] is
+[00:00:32.599] most of these skills run on your local
+[00:00:34.720] machine. They have execution power, but
+[00:00:36.560] they probably run on your machine as
+[00:00:38.400] root, or at least [music]
+[00:00:39.880] it has a lot of privileges. If you give
+[00:00:42.000] Cloud the power to execute, I don't
+[00:00:44.080] know, bash scripts or something like
+[00:00:45.120] that. And if I [music] can infect a
+[00:00:47.000] skill in that way that it will create a
+[00:00:49.160] bash script for me to do something I'm
+[00:00:50.560] basically byte coding my prompts now, or
+[00:00:52.640] byte coding my exploits now on the web.
+[00:00:54.200] We can give instructions to create code
+[00:00:56.080] in a normal way, but you can also now
+[00:00:57.440] give instructions to do malicious
+[00:00:58.960] things. Because it's all natural
+[00:01:01.000] language processing.
+[00:01:02.040] >> How would a user use Sneak to identify
+[00:01:05.400] where [music] these malicious skills and
+[00:01:06.760] MCPs are?
+[00:01:07.480] >> Yeah. So,
+[00:01:13.360] >> [music]
+[00:01:19.200] >> Back in November, we hosted the first
+[00:01:21.080] ever in-person AI Native DevCon in New
+[00:01:23.600] York. This June 1st and 2nd, we're
+[00:01:26.120] bringing it to London. It's 2 days built
+[00:01:28.640] for AI Native developers and engineering
+[00:01:30.390] [music] teams. 1 day full of hands-on
+[00:01:33.080] workshops and 1 day full of practical
+[00:01:35.520] talks on agent skills, context
+[00:01:37.520] engineering, agent orchestration and
+[00:01:39.400] enablement platforms, and how teams are
+[00:01:41.720] actually shipping AI in production.
+[00:01:44.400] Join us at the Brewery in London, near
+[00:01:46.200] the Barbican, for all of that, plus
+[00:01:48.600] networking, parties, giveaways, and a
+[00:01:51.200] room full of people building the future
+[00:01:53.520] of AI Native development. You can also
+[00:01:56.040] join us from anywhere in the world via
+[00:01:57.640] the live stream.
+[00:01:59.040] As you're listening to this podcast, you
+[00:02:00.640] get 30% off your ticket with code pod30.
+[00:02:04.600] Just head to ainativedevcon.io
+[00:02:07.040] and we'll see you in London.
+[00:02:12.000] On today's episode, we discover that
+[00:02:13.600] 13.4%
+[00:02:15.360] of all published skills contain at least
+[00:02:18.120] one critical security issue. That is
+[00:02:20.840] frightening. Uh also, we ask the big
+[00:02:22.840] question, what can we as users of these
+[00:02:25.320] skills do to protect ourselves and block
+[00:02:28.000] potentially malicious skills from our
+[00:02:30.720] development environments?
+[00:02:32.360] Today, I'm here in Atlanta with my good
+[00:02:35.400] friend Brian Vermeer. Brian, how are
+[00:02:37.320] you?
+[00:02:37.680] >> I'm great, thank you.
+[00:02:39.000] >> And we're here for a conference
+[00:02:40.400] actually, DevNexus, and it kind of made
+[00:02:42.600] sense actually that while we were here,
+[00:02:44.480] we chatted about uh we chatted about an
+[00:02:46.200] awesome new uh launch
+[00:02:48.880] uh
+[00:02:49.440] that happened today uh which is all
+[00:02:51.440] about adding sneak security scans into
+[00:02:54.760] the Castle Registry. Um Brian, tell us a
+[00:02:57.120] little bit about yourself first of all.
+[00:02:58.480] >> Oh, thanks Mins. Um I'm Brian. I work
+[00:03:01.280] for Snyk, obviously. What we do for
+[00:03:03.519] since forever, we build developer
+[00:03:05.200] tooling to make security more easy for
+[00:03:07.400] developers and to not um
+[00:03:09.959] put it on the security engineers, but
+[00:03:11.920] make developers self-sufficient and make
+[00:03:13.840] sure that they can integrate security
+[00:03:15.920] easier in their workflow. Uh and I think
+[00:03:18.480] these steps as in um
+[00:03:20.480] creating skills to
+[00:03:22.280] uh actually check skills or check MCPs
+[00:03:25.040] or whatsoever is something that
+[00:03:27.519] definitely adds up with what we've what
+[00:03:29.440] we've have been doing over the last
+[00:03:31.360] decade or so.
+[00:03:32.360] >> And and it's interesting, we'll we'll
+[00:03:33.320] focus on that today actually during the
+[00:03:35.120] session, but it's interesting if we look
+[00:03:36.400] back at what uh where Snyk kind of came
+[00:03:38.440] from. Snyk obviously actually started
+[00:03:40.959] more in the SCA space, so looking at
+[00:03:43.080] third-party dependencies
+[00:03:45.320] um and then kind of moved more from
+[00:03:47.000] there into the container space, and then
+[00:03:48.560] into the SAST
+[00:03:50.040] uh scanning of your first-party code and
+[00:03:51.880] so forth. But of course more recently
+[00:03:53.800] with the AI boom, there is a a greater
+[00:03:56.760] expansive code that could exist now
+[00:03:59.080] because assuming people using AI tools
+[00:04:02.520] create more code faster.
+[00:04:05.120] How does that How does sneak deal with
+[00:04:06.720] that?
+[00:04:07.080] >> Well, I think it's complimentary to each
+[00:04:08.280] other. First of all, you still need with
+[00:04:10.080] all the AI agents or the let's say the
+[00:04:12.280] coding assistants.
+[00:04:13.959] They come up with a lot of stuff and
+[00:04:15.560] most of it is quite good nowadays, but
+[00:04:17.359] sometimes they come up with things that
+[00:04:19.640] do not really add up or there is a
+[00:04:23.600] problem in it that you don't see on at
+[00:04:25.600] first hand. So a security tool or
+[00:04:27.640] scanning tool makes sense to still do
+[00:04:29.720] that in your pipelines or in your IDE or
+[00:04:31.760] something like that.
+[00:04:33.160] Same with SAS analysis or make sure that
+[00:04:36.440] your dependencies that you have are
+[00:04:38.680] valid now and are valid in the future.
+[00:04:41.040] But you can imagine now that if you have
+[00:04:42.919] an agentic flow
+[00:04:44.400] and you want your agentic flow to
+[00:04:46.160] autonomously create code that that code
+[00:04:48.480] is also checked upon.
+[00:04:50.000] >> Yeah.
+[00:04:50.360] >> So that that code is not vulnerable or
+[00:04:53.960] slightly vulnerable, but if you give
+[00:04:55.600] that feedback to your agent and that
+[00:04:57.400] agent sees that that can and can help
+[00:04:59.600] you in an iterative process to to make
+[00:05:01.720] that code better. So I think it's a it's
+[00:05:03.480] a very logical step for us to to be in
+[00:05:05.760] that space as well.
+[00:05:06.919] >> And can even if you even if you ask
+[00:05:09.280] really really nicely to to an agent, can
+[00:05:12.320] you get an agent to give you
+[00:05:14.720] like secure code every time?
+[00:05:16.480] >> We tried that. If you if you want to if
+[00:05:18.440] you want to look at some experience my
+[00:05:19.640] my colleague Brian by the way, he did a
+[00:05:22.280] bunch of these experiments on our
+[00:05:24.120] YouTube channel. He's like, "Hey, make
+[00:05:26.000] sure that we I want this this
+[00:05:27.800] application to create a note-taking app.
+[00:05:30.560] Make sure it's super secure because my
+[00:05:32.360] my life depends on it and every now and
+[00:05:34.680] then it comes back with insecure code."
+[00:05:37.240] So
+[00:05:38.240] yes, these models are getting better and
+[00:05:39.840] better, but we also have to know like
+[00:05:41.600] these models are well,
+[00:05:43.760] older than now. Like they've been
+[00:05:45.480] they've been they've been been trained
+[00:05:46.400] in the past. And they're not
+[00:05:47.920] specifically created for for security.
+[00:05:51.200] Most of these models are are general
+[00:05:52.440] purpose models. So, it makes sense to
+[00:05:54.720] have a specific tool checking them and
+[00:05:56.520] and basically an add-on to whatever you
+[00:05:58.720] want to do.
+[00:05:59.400] >> And how about like
+[00:06:01.240] obviously with things like agents MD,
+[00:06:03.080] rules, files, skills, and things like
+[00:06:05.160] that? How much How much value does
+[00:06:08.120] adding secure coding principles and best
+[00:06:10.960] practices into those to kind of like
+[00:06:12.840] guide an agent to generate more secure
+[00:06:15.880] code?
+[00:06:17.120] How much does that help? How much does
+[00:06:18.480] that still leave to chance if you only
+[00:06:20.919] trust
+[00:06:22.120] a skill to do that?
+[00:06:23.040] >> I think if you only trust the skills,
+[00:06:26.480] it's you you still leave it to chance. I
+[00:06:28.240] mean, most of the most of these
+[00:06:29.440] processes are processes that are
+[00:06:32.280] can be deterministic.
+[00:06:33.960] The security scan and we've been doing
+[00:06:35.560] that for years. So,
+[00:06:37.080] I think it's safe to say we're kind of
+[00:06:38.760] good at it. Um but if you know, like if
+[00:06:41.200] you it's it's just like with children,
+[00:06:42.520] right? If you ask it the same question
+[00:06:44.000] twice, they will come up with different
+[00:06:45.280] answers. So, that that that
+[00:06:46.960] >> Both wrong normally as well in my
+[00:06:48.000] experience.
+[00:06:48.520] >> Well, yeah. Well, I I think
+[00:06:51.344] >> [laughter]
+[00:06:52.440] >> I don't want to go into that. But yeah,
+[00:06:54.280] so
+[00:06:55.440] I think the models are getting better
+[00:06:56.880] and better and they will will produce
+[00:06:58.560] better code. Uh
+[00:07:00.240] but still like if you if you look at
+[00:07:01.840] what
+[00:07:02.800] what the training data for that is, if
+[00:07:04.080] you look at what's what's on Stack
+[00:07:06.120] Overflow or what kind of kind of open
+[00:07:08.600] source projects are there, there are
+[00:07:10.240] still a lot of vulnerabilities in there.
+[00:07:11.560] >> Yeah.
+[00:07:11.960] >> May not be massive vulnerabilities, but
+[00:07:13.720] even smaller vulnerabilities if chain
+[00:07:15.160] them together can end up in a chain or
+[00:07:18.000] or an attack chain and therefore be
+[00:07:19.760] massively destructive
+[00:07:21.080] >> Yeah.
+[00:07:21.520] >> into a a specific system.
+[00:07:23.320] >> Yeah, agree. As I mentioned at the start
+[00:07:24.960] of the episode,
+[00:07:26.240] we announced the fact that we now have
+[00:07:27.880] an integration between Snyk and Tessel.
+[00:07:30.040] And
+[00:07:31.120] Tessel through the
+[00:07:32.800] through the registry is exposing some of
+[00:07:35.360] the some of the security scan results
+[00:07:37.760] from from the Snyk scans about every
+[00:07:40.400] single uh
+[00:07:41.880] uh on the registry. So, tell us a little
+[00:07:43.680] bit about the uh the Sneak Agent Scan
+[00:07:45.560] that uh that scans MCPs and uh and
+[00:07:48.320] skills. All right.
+[00:07:49.440] >> Um yeah, it's one of the newer open
+[00:07:51.280] source open source products from from
+[00:07:53.080] the from the Sneak team. And basically,
+[00:07:54.920] what it does is um MCPs you can you can
+[00:07:57.840] see MCPs as as the the next supply chain
+[00:08:00.360] problem, right? Uh you are adding
+[00:08:03.560] features and functions
+[00:08:05.440] to your LLM or to your to your uh agent
+[00:08:08.000] in this case um so, it can execute that.
+[00:08:10.080] Um but, what kind of stuff is there? Uh
+[00:08:11.920] what kind of
+[00:08:13.200] I mean, you see the you see the
+[00:08:14.520] functions it has, but what kind of input
+[00:08:16.240] and what kind of output does it have?
+[00:08:17.680] What kind of flow comes through it? Um
+[00:08:19.600] and for instance, if you trust it now,
+[00:08:21.919] it's good, but what will the follow-up?
+[00:08:23.520] What will the new version do? Um so,
+[00:08:25.760] these are the things we can we can
+[00:08:26.960] monitor and we can scan for you. Um but,
+[00:08:28.800] we also scan skills. And skills
+[00:08:30.600] effectively are MD files. Uh and because
+[00:08:33.840] it's just plain text, they can be
+[00:08:35.680] vulnerable to all sorts of things like
+[00:08:36.960] prompt injections with with I don't know
+[00:08:39.400] um
+[00:08:40.000] the limiter confusion to to to confuse
+[00:08:42.560] the model that it wants to give an
+[00:08:44.280] instruction yes or no, uh or it can be
+[00:08:46.480] obfuscated in in what I don't know I
+[00:08:48.200] don't know even in Chinese or something
+[00:08:49.400] like that or or in B64 encoding. You can
+[00:08:51.480] think of it, these kind of things. Uh
+[00:08:53.000] and there are all sorts of things that
+[00:08:54.920] you don't want to blindly have in a
+[00:08:57.240] skill. But, since a skill file can be
+[00:08:58.839] quite big, um you don't want to do that
+[00:09:00.800] manually. So, that's where we can help
+[00:09:02.560] with um Sneak Agent Scan.
+[00:09:04.040] >> So, so some of those uh issues that you
+[00:09:06.200] mentioned, the security issues that you
+[00:09:07.560] mentioned, um
+[00:09:09.040] Sneak released a a toxic skills threat
+[00:09:11.400] taxonomy table uh in their blog. Um so,
+[00:09:14.320] talk talk us through a few of those uh
+[00:09:16.280] different types of threats. And I one of
+[00:09:18.040] the things I love actually is you you
+[00:09:20.360] highlight whether they're the almost
+[00:09:21.720] like the severity, right? So, there's
+[00:09:22.839] like critical severity, high severity,
+[00:09:24.600] and so forth. So, they're not all made
+[00:09:26.200] equal. There some some are more
+[00:09:27.400] dangerous than others.
+[00:09:28.280] >> Yep. Uh obviously. I mean, I think
+[00:09:31.160] for everybody quite well-known are
+[00:09:33.520] prompt injection detections. I And And
+[00:09:35.440] these are the that one is at top of
+[00:09:37.360] list.
+[00:09:37.760] >> Yeah.
+[00:09:38.240] >> Critical risk level. And you can think
+[00:09:40.080] of hidden instructions within the skill
+[00:09:44.080] that does not
+[00:09:46.080] don't necessarily add something to the
+[00:09:47.400] skill. And these can be encoded like
+[00:09:48.960] basic base 64 encoded or give it a weird
+[00:09:52.160] language like I don't know Hawaiian or
+[00:09:53.800] something like that that we cannot read.
+[00:09:55.720] So they can they can be obfuscated.
+[00:09:57.960] And you can think of other things like
+[00:10:00.040] Unicode smuggling where we use parts of
+[00:10:02.240] the Unicode spectrum that is not visible
+[00:10:05.680] but can be readable for an LLM. And you
+[00:10:08.440] can put instructions in there like hey
+[00:10:11.120] when you want to use the skill make sure
+[00:10:13.120] that you download this binary first. Or
+[00:10:16.600] um
+[00:10:17.360] it can cascade to other skills from to
+[00:10:20.000] other skills that are maybe not on your
+[00:10:21.800] local machine but somewhere else that
+[00:10:23.440] you do not intend to use.
+[00:10:24.640] >> It's really interesting cuz it kind of
+[00:10:25.600] like
+[00:10:26.920] from a user point of view the user
+[00:10:28.640] assumes they've got a good skill. They
+[00:10:30.680] download their skill and then they
+[00:10:32.000] assume
+[00:10:33.440] it's Claude deciding on these actions.
+[00:10:35.280] And so basically but essentially by
+[00:10:36.880] using that skill a prompt injection or
+[00:10:39.240] something I didn't even think about yeah
+[00:10:40.480] downloading something of course.
+[00:10:42.720] Claude can do what it wants and it will
+[00:10:43.760] probably prompt and say oh can I do this
+[00:10:45.560] and you just assume yeah I'm sure this
+[00:10:47.200] is fine.
+[00:10:48.360] Or certainly I guess it can be described
+[00:10:50.640] in a way which is convincing to the
+[00:10:52.120] user. And it it could I suppose
+[00:10:55.520] like
+[00:10:56.560] you're creating code so it could it
+[00:10:59.440] could expose that code to the internet.
+[00:11:02.440] It could share secrets. It could
+[00:11:04.680] download malware onto your local
+[00:11:06.920] development environment.
+[00:11:08.400] >> Yeah yeah think of it like most of these
+[00:11:11.040] skills run on your local machine and
+[00:11:13.760] they have execution power but they
+[00:11:15.280] probably run on your machine as root or
+[00:11:17.600] at least it has a lot of privileges. And
+[00:11:21.720] if you give Claude the the power to to
+[00:11:24.320] execute
+[00:11:25.880] I don't know bash scripts or something
+[00:11:27.000] like that I create bash scripts and if I
+[00:11:29.120] can infect a skill in that way that it
+[00:11:31.800] will create a bash script for me to do
+[00:11:33.320] something. I'm basically vibe coding my
+[00:11:35.080] my my prompts now or if I vibe coding my
+[00:11:37.120] exploits on the way this way. So, you
+[00:11:39.280] should think of it like that. Like we
+[00:11:40.440] can give instructions to create code in
+[00:11:42.320] a normal way, but you can also now give
+[00:11:44.480] instructions to do malicious things
+[00:11:46.360] because it's all natural language
+[00:11:48.120] processing.
+[00:11:49.120] >> Yeah, and and a lot of this a lot of
+[00:11:50.560] them looking through the table now, a
+[00:11:51.640] lot of the the toxic skill threats,
+[00:11:53.920] they're actually quite similar. There's
+[00:11:55.200] nothing there's nothing here which I
+[00:11:56.600] would is like so new. Even prompt
+[00:11:58.840] injection, I mean, we talk about AI
+[00:12:00.480] being only a few years old really, but I
+[00:12:02.720] mean, you know, prompt injection's old
+[00:12:04.880] school now, isn't it? But yeah, a lot of
+[00:12:06.920] here like the malicious code
+[00:12:09.160] I guess credentials or secret detection
+[00:12:11.040] >> Yes.
+[00:12:11.400] >> Um unverifiable dependencies, direct um
+[00:12:15.000] direct money access or should that be
+[00:12:16.360] direct memory access?
+[00:12:17.360] >> Yeah, for instance, if it has has has
+[00:12:18.800] access to to I don't know, crypto crypto
+[00:12:21.360] operations or or anything money related.
+[00:12:23.960] >> Mhm.
+[00:12:24.240] >> Um because yeah, that's now
+[00:12:26.360] quite an interesting thing. If you if
+[00:12:27.760] you connect everything to everything
+[00:12:29.040] with your personal assistants or with
+[00:12:30.600] your
+[00:12:31.480] your skills and your agents. Um if you
+[00:12:33.840] have a crypto wallet there, maybe you
+[00:12:36.280] want to directly access that.
+[00:12:38.040] >> Yeah.
+[00:12:38.560] >> So, these kind of things.
+[00:12:39.640] >> And and of course, I guess one of those
+[00:12:41.360] joys of from from a from an attacker's
+[00:12:43.839] point of view is with people using so
+[00:12:46.280] many MCPs, um
+[00:12:49.040] when a when you have access to that
+[00:12:50.839] agent, when a malicious person has
+[00:12:52.360] access to that agent, they will all of a
+[00:12:54.160] sudden can start grabbing things from
+[00:12:55.480] MCP. That's connection, so maybe that's
+[00:12:58.200] linear, maybe that's GitHub, maybe
+[00:12:59.440] that's your maybe that's
+[00:13:01.920] anything that
+[00:13:02.960] you have.
+[00:13:03.320] >> It can be your It can be your your your
+[00:13:05.240] Google calendar. It can be But it can
+[00:13:07.200] also be that you have an MCP that now is
+[00:13:09.839] just reading your emails.
+[00:13:11.320] >> Mhm.
+[00:13:11.839] >> And you did something you installed it
+[00:13:13.680] with MPX MPX something something {slash}
+[00:13:17.200] latest and you trust all of the all of
+[00:13:19.480] that all of that all of these functions.
+[00:13:21.880] And then they change the function or
+[00:13:24.600] even the input and output might be the
+[00:13:26.000] same, but in the meantime, in the
+[00:13:27.720] middle, they have a side effect of, I
+[00:13:29.680] don't know, downloading a binary. And
+[00:13:31.680] that These are things that for instance
+[00:13:33.080] for an HP issue, you absolutely do not
+[00:13:34.480] want.
+[00:13:34.840] >> Yeah.
+[00:13:35.400] >> So, you want to trust them, but just
+[00:13:36.680] like we had in the in the pre-AI era,
+[00:13:40.440] let's call it like that with um
+[00:13:42.720] dependencies and frameworks that you
+[00:13:44.200] don't want to just blindly trust them.
+[00:13:47.000] Um it's the same here with skills.
+[00:13:48.600] >> Yeah.
+[00:13:49.000] >> But on a different level.
+[00:13:50.280] >> Yeah.
+[00:13:51.160] And of course skills are so prevalent
+[00:13:52.280] right now a lot of the time, whether
+[00:13:53.600] it's MCPs or skills
+[00:13:55.560] it it's like the speed of that the speed
+[00:13:57.440] of how fast the technology gets
+[00:13:58.880] distributed and and and people want to
+[00:14:01.160] jump on it in the in the world of AI,
+[00:14:03.440] people tend to kind of like leave
+[00:14:04.840] security as a as a thing
+[00:14:07.200] that oh, I'll get round to that. Yeah,
+[00:14:08.440] when I want to try this out first. Um
+[00:14:11.640] yeah.
+[00:14:12.240] >> It is it is it is so it's I actually
+[00:14:14.160] mind-blowing even for for um seasoned
+[00:14:16.920] engineers that know all their best
+[00:14:18.560] practices and they're now like, oh, but
+[00:14:21.080] I can do all of this this cool stuff
+[00:14:22.960] with my agents and I can be 10 times
+[00:14:25.360] more productive because I can spin up 12
+[00:14:27.600] agents or something like that.
+[00:14:28.600] >> Mhm.
+[00:14:28.960] >> Uh you still need to do your due
+[00:14:30.280] diligence. You know, you still need to
+[00:14:32.080] be aware that these things that come
+[00:14:34.000] from a random GitHub uh repository
+[00:14:37.200] might not be safe or can be safe now and
+[00:14:40.320] to win your trust.
+[00:14:41.320] >> Mhm.
+[00:14:41.960] >> But can be vulnerable later.
+[00:14:43.000] >> Mhm.
+[00:14:43.320] >> So
+[00:14:44.280] the necessity of of scanning these
+[00:14:46.320] skills and MCPs is there. It's
+[00:14:48.240] definitely there.
+[00:14:48.960] >> And it's also one of the reasons why we
+[00:14:50.280] love we love versions so much. Like, you
+[00:14:52.920] know, we we we allow within Tessel, we
+[00:14:56.080] allow people to pin to a particular
+[00:14:58.080] version. So, we can say, I want this
+[00:14:59.480] skill at this version.
+[00:15:00.760] >> Yep.
+[00:15:01.080] >> Um
+[00:15:02.480] if you don't do that you're open to any
+[00:15:05.560] skill owner uh effectively making
+[00:15:08.240] horrible changes to their skill that you
+[00:15:10.880] don't agree with. You maybe you agreed
+[00:15:12.200] with it at the time. Maybe maybe it
+[00:15:13.880] actually doesn't even have to be
+[00:15:14.920] malicious. It could just be a skill that
+[00:15:16.640] changes into a way that you don't wish
+[00:15:18.240] to work.
+[00:15:19.240] >> True.
+[00:15:19.560] >> But worst case, it could be a security
+[00:15:21.200] issue or malicious. And you're pulling
+[00:15:22.880] that in straight away. It was It was
+[00:15:24.160] safe yesterday, today it's not, and
+[00:15:25.720] you're pulling that in
+[00:15:27.080] and you're none the wiser.
+[00:15:29.160] >> Yep, it's exactly. And I I think that is
+[00:15:31.360] that is also the the case with
+[00:15:33.560] using these these um these versions or
+[00:15:36.480] not not uh pinned versions, but but
+[00:15:38.880] forward versions. You know, we've seen
+[00:15:40.200] that in dependency trees like for years
+[00:15:42.640] now. Uh you don't know what you're what
+[00:15:44.440] you're getting into, and this might
+[00:15:45.840] break your application, and in this case
+[00:15:47.760] it might break your skill or does things
+[00:15:49.400] that you do not want.
+[00:15:50.440] >> Yeah.
+[00:15:51.400] So, let's look at the results actually
+[00:15:53.240] from from one of the recent reports that
+[00:15:55.280] you that that that Snyk came out with.
+[00:15:58.000] So, you scanned 3,984
+[00:16:01.160] skills um in total. And really really
+[00:16:04.920] interesting, 13.4% of all skills, which
+[00:16:07.640] is 534 in total, all contain at least
+[00:16:11.400] one critical-level security issue.
+[00:16:15.240] That's That's scary. Was that expected?
+[00:16:17.960] Is that
+[00:16:18.880] >> I don't know if that was was expected,
+[00:16:20.400] but
+[00:16:21.520] if you think about it, like once people
+[00:16:24.000] find out how easy it is to create a
+[00:16:25.880] skill,
+[00:16:26.880] and
+[00:16:28.080] potentially what the impact can be,
+[00:16:30.320] people will use it in a malicious way.
+[00:16:32.000] >> Yeah. So, I think it
+[00:16:34.040] >> Yeah, you could have expected this. It's
+[00:16:36.160] It's so easy to create something. You
+[00:16:37.680] can literally put just text in a
+[00:16:40.800] um skill file.
+[00:16:42.240] >> Mhm.
+[00:16:43.520] >> And if nobody reads actually reads the
+[00:16:45.800] skill file themselves and just implement
+[00:16:47.960] them or use them. Uh yeah. Obviously,
+[00:16:50.280] we're going to try to steal your money
+[00:16:51.760] or or or execute code or make your make
+[00:16:54.600] your computer part of a botnet or name
+[00:16:56.960] it. Um So, yep, I'm I'm I'm not I'm
+[00:17:00.720] personally not surprised, but I'm not
+[00:17:02.800] sure if it's if it was expected to be
+[00:17:04.959] this high, but it's it's a lot.
+[00:17:06.839] >> And it's interesting cuz like if we
+[00:17:07.959] think about false positives,
+[00:17:09.480] >> Mhm.
+[00:17:10.120] >> um when we think about code, when we
+[00:17:12.280] think about third-party dependencies,
+[00:17:14.480] I'd say it's almost easier to define
+[00:17:16.160] what a false positive is because it it
+[00:17:18.959] you know, they have syntax that is very
+[00:17:20.800] very important to follow otherwise code
+[00:17:22.280] won't compile, code won't run, etc. Um
+[00:17:25.160] with written language though, um it must
+[00:17:27.920] be much harder to find a uh
+[00:17:30.440] a false positive.
+[00:17:31.240] >> Yes, it's it's it's it's definitely less
+[00:17:33.160] obvious and a false positive uh
+[00:17:36.120] The the the question is is it a false
+[00:17:37.400] positive, yes or no? Because
+[00:17:39.120] it might not be invoked, if you can call
+[00:17:41.040] it invoking, like right now, but it
+[00:17:42.720] might be in the future depending on
+[00:17:44.080] which which model you're using. Or if
+[00:17:46.040] the model is is sensitive to a certain
+[00:17:48.240] type of attack. Uh if we go back to the
+[00:17:51.160] the to the top one, the the prompt
+[00:17:52.400] injection kind of thing, there are so
+[00:17:54.000] many techniques how you can do prompt
+[00:17:55.920] injection from from the limiter
+[00:17:57.920] confusing to to um uh
+[00:18:01.360] splitting payloads to uh uh doing in the
+[00:18:04.560] in multi-steps. And some uh some of
+[00:18:07.120] these models that you might use are are
+[00:18:09.000] more vulnerable than others. And over
+[00:18:10.840] time models will be stronger towards
+[00:18:13.200] that.
+[00:18:14.200] But if you combine all these attacks and
+[00:18:16.160] you just obfuscate them in some way,
+[00:18:18.160] well, the chances are that if
+[00:18:21.000] enough people download and use that
+[00:18:22.520] skill,
+[00:18:23.520] you will get something out of it.
+[00:18:24.560] >> Yeah. Yeah, very true. So So, what if we
+[00:18:26.960] go ahead and talk a little bit about how
+[00:18:29.600] an attacker um would try and create uh
+[00:18:33.760] something nasty, something malicious.
+[00:18:35.720] How would they go about that?
+[00:18:36.920] >> Well, I think that the the most
+[00:18:38.800] important one is trust because you want
+[00:18:40.600] to trust either a skill or or or an MCP
+[00:18:43.640] server. Um and we we we spoke about it a
+[00:18:46.280] little already. Um if the if the trust
+[00:18:48.680] is there, um
+[00:18:51.200] and you trust Well, let's let's let's
+[00:18:52.680] let's let's use the MCP server first.
+[00:18:54.480] You have an MCP server with the
+[00:18:56.160] reasoning of, "Okay, I'm I'm I'm can I'm
+[00:18:57.920] I'm able to access your calendar and see
+[00:19:00.160] what your appointments are for today."
+[00:19:02.160] Great. It works. You implement it, does
+[00:19:04.520] nothing weird, it's fine. Um but then we
+[00:19:07.600] update the skill and then we put
+[00:19:09.560] something extra, we put a side effect in
+[00:19:11.080] or we return instead of just your uh
+[00:19:13.840] your calendar items, we return it an
+[00:19:16.840] instruction.
+[00:19:18.120] But, you already trusted you you you you
+[00:19:19.600] you you trusted that skill. You trusted
+[00:19:21.040] that that specific function in it. Uh
+[00:19:23.720] but, from now on, even even maybe
+[00:19:25.760] silently, it can operate in a different
+[00:19:27.800] way, or it will operate in a different
+[00:19:29.280] way. Uh and that side effect might be
+[00:19:31.440] able to, I don't know, offload
+[00:19:33.800] credentials, or uh install a binary, or
+[00:19:37.320] name it. So, that is one thing, the
+[00:19:39.160] trust. Trust is is super important.
+[00:19:42.120] Then, um most of these things, and
+[00:19:44.440] especially specifically in skills, will
+[00:19:45.760] be obfuscated.
+[00:19:46.760] >> Yeah.
+[00:19:47.080] >> And obfuscation can be done in Unicode
+[00:19:50.240] encoding. Some some parts of of of
+[00:19:52.960] uh the Unicode spectrum are not visible
+[00:19:54.680] even uh for the human eye, or for uh um
+[00:19:58.200] if you read it in a text editor.
+[00:19:59.480] >> Mhm.
+[00:20:00.040] >> Um but, are readable instructions for
+[00:20:03.440] NLM.
+[00:20:03.920] >> Mhm.
+[00:20:04.320] >> Um it can also be something that is
+[00:20:06.360] named in a different way, is is base 64
+[00:20:09.360] encoded, or even maybe uh simply
+[00:20:11.240] encrypted. Um so, that obfuscation
+[00:20:13.480] pattern, that you won't obviously see
+[00:20:15.480] it. Uh yeah, that is that is something
+[00:20:17.640] that that is something as well. And,
+[00:20:19.840] obviously, if we can do that, we can
+[00:20:22.360] make these attacks in steps.
+[00:20:24.600] If we're able to you trust me, um I add
+[00:20:27.800] something in that that skill or that MCP
+[00:20:29.720] server, um I may be able to disable some
+[00:20:32.480] of your some of your security guards, or
+[00:20:35.000] or guardrails, or maybe even rewrite
+[00:20:37.160] your guardrails. And in the next step, I
+[00:20:39.040] will do the attacks. So, it's not it's
+[00:20:41.040] not a one-shot thing in most cases.
+[00:20:43.200] >> Trust Trust is an interesting thing as
+[00:20:44.440] well, because essentially, when we talk
+[00:20:46.080] about trust,
+[00:20:47.440] very often these skills hosted just in a
+[00:20:50.160] GitHub repo.
+[00:20:50.800] >> Yeah.
+[00:20:51.320] >> And it goes back to that very same
+[00:20:52.840] problem of open-source code.
+[00:20:54.960] >> Yep.
+[00:20:55.280] >> You're now trusting someone.
+[00:20:58.000] Essentially, you don't know where they
+[00:20:59.240] live, you don't know what their
+[00:21:00.200] background is. You don't know, you know,
+[00:21:02.560] what security processes they follow,
+[00:21:04.400] what what security what software hygiene
+[00:21:06.800] they have in and around their project.
+[00:21:09.160] But because it does something that a
+[00:21:10.760] developer of a company wants to use,
+[00:21:13.560] they download it and they pull that
+[00:21:14.880] directly into their environment,
+[00:21:16.560] potentially, you know, using that, maybe
+[00:21:18.560] checking it in, or maybe adding it into
+[00:21:20.320] that others will also use that, you
+[00:21:22.040] know, sharing across the company.
+[00:21:23.920] And it's it's so dangerous. Um we don't
+[00:21:26.480] have those similar checks up until now.
+[00:21:29.400] How would a user
+[00:21:31.400] uh use Sneak, I guess, directly and then
+[00:21:33.720] we'll talk about within the test of
+[00:21:35.320] registry
+[00:21:36.560] uh to to identify where these malicious
+[00:21:38.960] skills and MCPs are?
+[00:21:40.120] >> Yeah. So, say you have skills installed
+[00:21:42.400] in Cloud or any of the other other
+[00:21:45.360] well-known um agents that you can that
+[00:21:47.800] you can use um for skills or for MCPs.
+[00:21:50.800] Um we have a we have a Basically, it's
+[00:21:52.200] on it's it's on GitHub.
+[00:21:55.080] >> Funny enough, I definitely trust it.
+[00:21:56.520] >> Yes. Yes. Yes. That There's a company
+[00:21:58.640] behind it and we we we definitely want
+[00:22:00.680] to want to retain our um
+[00:22:03.280] our our good profile of of we're helping
+[00:22:05.200] people.
+[00:22:05.600] >> Yeah.
+[00:22:05.920] >> Uh but if you go to to uh what is it get
+[00:22:07.560] get up dot com slash sneak slash what is
+[00:22:09.640] it agent agent dash scan, uh that is the
+[00:22:12.720] Sneak agent scan and you can basically
+[00:22:14.840] use it. It's a Python project, which you
+[00:22:17.320] can launch with UV.
+[00:22:19.000] >> Mhm.
+[00:22:19.560] >> And then it will scan the most
+[00:22:21.400] well-known uh positions on your local
+[00:22:23.680] machine, for instance, to
+[00:22:25.680] uh where skills are are are stored, like
+[00:22:27.720] the doc cloud uh library where your
+[00:22:29.600] skills can be stored in. Same for the
+[00:22:30.960] MCPs. And if you have a specific
+[00:22:32.920] location where your skills are stored,
+[00:22:34.680] you can give that in as well and and it
+[00:22:36.000] will and it will look for are there
+[00:22:37.920] anomalies there. So, this uh the the
+[00:22:40.640] scan that it that is happening is not
+[00:22:42.880] just one simple scan and and not and
+[00:22:45.280] it's not all it's not a deterministic
+[00:22:47.160] one thing to do.
+[00:22:48.080] >> Yeah.
+[00:22:48.400] >> Uh so, there are some static scans
+[00:22:49.640] around that, but there also some um LLMs
+[00:22:51.840] involved that Basically, LLMs as a as a
+[00:22:53.640] judge, different LLMs that look into
+[00:22:55.480] hey, is this vulnerable, yes or no, and
+[00:22:57.320] the combination of all these checks,
+[00:22:58.800] because there are multiple checks, will
+[00:23:00.080] be handed to you um in in this case uh
+[00:23:03.520] your terminal to see like okay this is
+[00:23:05.000] what you have these
+[00:23:07.680] functions in your MCP or these things in
+[00:23:10.120] your skill
+[00:23:11.400] are potentially dangerous and it will
+[00:23:13.600] give you how dangerous they are. It will
+[00:23:15.680] give a score to you like hey this is I
+[00:23:18.200] will give this a 0.5 because yes
+[00:23:21.280] potentially this can be used. However,
+[00:23:23.680] so it's nuanced in such a way that it's
+[00:23:26.080] actually actionable for actionable for
+[00:23:27.440] you. So then you know what you're having
+[00:23:30.040] what kind of
+[00:23:31.360] functions and what kind of skills you
+[00:23:32.840] deploy towards your agents
+[00:23:35.240] and you can make at least an educated
+[00:23:37.160] decision do you want this yes or no or
+[00:23:38.680] do you want to uninstall the skill?
+[00:23:41.240] >> Yeah it's it's one of those things that
+[00:23:42.800] you know
+[00:23:43.680] it's a starting point. You want to look
+[00:23:45.560] at it you want to flag something that it
+[00:23:46.800] believes is is bad. Maybe actually some
+[00:23:49.280] of those activities or those actions
+[00:23:50.800] that the skill will do is actually
+[00:23:52.000] intentional.
+[00:23:53.600] But it's it's about flagging the fact
+[00:23:55.360] that that's what it's trying to do and
+[00:23:58.080] it's a case of okay is this right? And
+[00:24:00.400] then I can make the decision of yeah
+[00:24:01.480] actually yes I trust this or or maybe
+[00:24:03.200] it's the author and I look at the author
+[00:24:04.400] and I say yeah actually this is an
+[00:24:05.840] author I absolutely trust and I
+[00:24:08.200] I want to use
+[00:24:08.760] >> Yeah for instance even if you create
+[00:24:10.200] your your your own MCPs. I create my own
+[00:24:12.360] MCPs to discover what kind of Java
+[00:24:14.320] conferences are still open and what that
+[00:24:15.960] don't I don't want to miss a call for
+[00:24:18.200] papers for instance.
+[00:24:18.880] >> Yeah.
+[00:24:19.240] >> So I have that as a as a very small MCP
+[00:24:22.520] and then it flagged it as hey you are
+[00:24:25.000] pulling in data from an external source
+[00:24:28.120] but since it's this is static data
+[00:24:30.840] the the the chance of this is really
+[00:24:32.520] vulnerable is quite low but at least you
+[00:24:35.000] know that this is happening and then you
+[00:24:36.800] can you can you can see if you want to
+[00:24:38.800] trust it yes or no.
+[00:24:40.280] >> Hey and native DevCon CFP still open by
+[00:24:42.560] the way just just in case people haven't
+[00:24:44.200] haven't haven't submitted. The other way
+[00:24:46.080] of course is so you can use it directly
+[00:24:47.920] and that's really cool to actually be
+[00:24:49.160] able to actually see what's on your
+[00:24:50.400] local machine and identify my
+[00:24:52.440] environment as is. Please can you please
+[00:24:54.680] can you scan that to tell me uh tell me
+[00:24:56.840] what's what's there. Uh as well as that,
+[00:24:59.400] you can actually look on the Tessel
+[00:25:01.080] registry. And on every skill that's in
+[00:25:03.320] the Tessel registry, uh a sneak scan has
+[00:25:05.760] occurred, and the results of those sneak
+[00:25:07.520] scans are right there by the by the
+[00:25:09.280] skill. And you can click on that, and
+[00:25:11.000] you can find more information about, you
+[00:25:12.600] know, exactly first of all, what the
+[00:25:14.920] criticality uh of the outcome if there
+[00:25:17.360] if there are issues, and also, you know,
+[00:25:19.880] click in for more information actually
+[00:25:21.360] identify what does this actually mean,
+[00:25:23.440] and what can I do about it?
+[00:25:24.760] >> Yeah, the the why the why and the how is
+[00:25:26.160] so important. So, not everything that is
+[00:25:28.880] flagged as vulnerable is vulnerable.
+[00:25:31.000] Sometimes sometimes it's intentional,
+[00:25:32.280] but if it's vulnerable, you want to know
+[00:25:33.280] why. What is happening?
+[00:25:34.600] >> Mhm.
+[00:25:34.960] >> And I think this this is a great tool uh
+[00:25:36.960] uh to have, but also, it's great that
+[00:25:38.560] you have it in your registry in that
+[00:25:39.640] case, so you can make an educated
+[00:25:40.920] decision. Do I want to have that skill,
+[00:25:42.840] yes or no?
+[00:25:43.720] >> Hey everyone. Hope you're enjoying the
+[00:25:45.160] episode so far. Our team is working
+[00:25:47.600] really hard behind the scenes to bring
+[00:25:49.360] you the best guests, so we can have the
+[00:25:51.200] most informative conversations about
+[00:25:53.280] agentic development. Whether that's
+[00:25:55.480] talking about the latest tools, the most
+[00:25:57.400] efficient workflows, or defining best
+[00:25:59.440] practices. But, for whatever reason,
+[00:26:01.800] many of you have yet to subscribe to the
+[00:26:03.520] channel. If you're enjoying the podcast
+[00:26:05.560] and want us to continue to bring you the
+[00:26:07.280] very best content, please do us a favor
+[00:26:09.560] and hit that subscribe button. It really
+[00:26:11.363] [music] does make a difference and lets
+[00:26:12.960] us continue to improve the quality of
+[00:26:15.040] our guests and build an even [music]
+[00:26:16.840] better product for you. All right, back
+[00:26:19.680] to the episode.
+[00:26:20.520] >> Yeah, absolutely. And when you look at
+[00:26:21.640] it, of course, we have a bunch of evals,
+[00:26:23.720] we have the we have the
+[00:26:25.520] the review, we have the task evals, and
+[00:26:27.440] those types of things. And now with the
+[00:26:28.760] security scan, you're starting to get a
+[00:26:30.440] picture of what this skill is, and you
+[00:26:32.280] can make an informed decision about,
+[00:26:34.000] yeah, this is actually the right skill,
+[00:26:35.000] or actually, I'm going to search around
+[00:26:36.560] and try and identify other skills that I
+[00:26:38.000] might want to I might want to use. Um
+[00:26:41.480] Okay, so if you're actually if you're a
+[00:26:43.880] a skill creator on the on the Tessel
+[00:26:46.080] registry, you should definitely go ahead
+[00:26:48.240] and look at the skills that you've got.
+[00:26:50.000] See from the scans if there are various
+[00:26:52.600] things that are being flagged. And of
+[00:26:54.320] course, what do the user do? Let's Let's
+[00:26:56.560] talk about a user from the point of view
+[00:26:58.440] of a a creator first. A content Sorry, a
+[00:27:01.920] skill creator first. Then we'll talk
+[00:27:03.720] about a user, someone who's downloading
+[00:27:05.440] skills, what they can actually do and
+[00:27:07.520] look out for. So, as a creator of a
+[00:27:09.440] skill, I own a skill,
+[00:27:11.560] it's not malicious. I don't mean it to
+[00:27:13.600] be malicious, but there are things that
+[00:27:15.200] are I'm writing in that in that skill
+[00:27:18.560] >> Yep.
+[00:27:18.840] >> that Sneak is flagging
+[00:27:20.720] So So, what advice would you give to
+[00:27:22.040] someone who who owns a skill, who, you
+[00:27:25.400] know, hasn't actually got anything
+[00:27:26.640] malicious in there, but it is being
+[00:27:28.320] flagged up because what I'm trying to do
+[00:27:30.040] with that skill, you know, is actually
+[00:27:31.800] doing things that require significant
+[00:27:33.960] permission or to do potentially
+[00:27:35.800] dangerous things?
+[00:27:37.440] >> Yep, that is an interesting one because
+[00:27:39.320] it's a it's a non-deterministic process,
+[00:27:40.960] obviously.
+[00:27:42.000] But I would want to make sure that you
+[00:27:43.320] are very clear on what your intentions
+[00:27:44.920] are.
+[00:27:45.200] >> Yes.
+[00:27:45.560] >> Um and we humans are
+[00:27:49.440] not always really good at explaining
+[00:27:51.840] what we want and why we do it. So, that
+[00:27:53.720] is definitely one thing. And then,
+[00:27:55.440] obviously before before submitting it,
+[00:27:56.920] why not test it yourself? Because these
+[00:27:58.280] tools are are available and it's a
+[00:27:59.760] little bit of trying trial and error
+[00:28:01.280] >> Mhm.
+[00:28:01.680] >> to see if it's it's getting flagged, yes
+[00:28:03.360] or no. If your intentions are good, it
+[00:28:04.880] probably will already get a very low
+[00:28:06.680] score if it's getting flagged. Um
+[00:28:08.840] there's possibly a way to to to to to
+[00:28:11.720] avoid that by by by instructing it in a
+[00:28:14.400] in a better way.
+[00:28:15.040] >> Mhm. Mhm.
+[00:28:16.480] >> And as a user, of course, one of the
+[00:28:18.520] things that we do on the Tasker CLI is
+[00:28:21.560] based on the scan result,
+[00:28:23.520] we can potentially even block various
+[00:28:26.160] skills from being installed based on the
+[00:28:29.560] results of the of the scan. So, as a
+[00:28:31.760] user,
+[00:28:33.480] what should I be What should I do in
+[00:28:35.520] terms of defending against these types
+[00:28:37.640] of potentially bad skills?
+[00:28:40.040] >> Well, I would say like if you if you use
+[00:28:41.560] the Tasker Tasker registry, then or
+[00:28:43.320] you're already informed that what kind
+[00:28:44.800] of problems are there. So, not just
+[00:28:46.720] blindly install them, look at what is
+[00:28:49.000] the intention of skill, how are you
+[00:28:50.320] going to use them, what kind of
+[00:28:51.800] privileges do you give to that project,
+[00:28:54.800] if I can say it like that, um that the
+[00:28:56.640] skill has access to, um and then make
+[00:28:58.960] your informed decision. Uh if it has a
+[00:29:01.080] bunch of critical skills, I would
+[00:29:02.920] definitely pass up on that skill, but
+[00:29:04.560] you can see that right away in your in
+[00:29:05.960] your registry. Uh if you have other
+[00:29:07.920] skills, or maybe self-created skills, or
+[00:29:10.480] uh manually downloaded skills, you can
+[00:29:12.320] use the uh sneak agent scan yourself on
+[00:29:14.560] your on your machine to find out if
+[00:29:16.680] these skills have these issues, and then
+[00:29:18.880] you can inspect them. I mean, it's
+[00:29:21.200] it's a readable format. So, you
+[00:29:22.840] basically can read uh what what is
+[00:29:24.920] there, and but it the the scan already
+[00:29:26.920] gives you uh information on why it
+[00:29:29.240] thinks it has this um
+[00:29:32.120] vulnerability score.
+[00:29:33.000] >> Yeah.
+[00:29:33.560] >> So, it will give you information, not
+[00:29:34.760] just the score, it will give you
+[00:29:35.680] information why the score is either high
+[00:29:37.920] or low, and uh if you if if this is
+[00:29:40.600] critical or not critical, um with an
+[00:29:42.920] explanation.
+[00:29:43.920] >> Amazing. Now, one of the things that
+[00:29:45.080] Sneak has always done very, very well is
+[00:29:47.000] offering scans at various points. Uh and
+[00:29:49.520] I love the fact that, you know, Sneak is
+[00:29:52.320] probably one of those security companies
+[00:29:54.440] that very, very much focuses on the
+[00:29:56.000] developer, and shifts left right to the
+[00:29:58.600] IDE, and now it's even further left into
+[00:30:00.320] the into the, you know, into the agents,
+[00:30:01.920] essentially. So, Evo Agent Guard um for
+[00:30:05.800] Cursor. Uh this is one thing which I
+[00:30:08.320] guess um secures the agent life cycle.
+[00:30:11.680] Talk to us a little bit about that,
+[00:30:12.800] because I think it's interesting how the
+[00:30:14.640] landscape has changed in terms of, you
+[00:30:16.360] know, all these extra places that
+[00:30:18.120] actually need securing. Uh Cursor, of
+[00:30:20.360] course, being a place where it's like an
+[00:30:22.600] IDE with an LLM inside. Talk to us about
+[00:30:25.240] how uh Agent Guard works in that kind of
+[00:30:27.520] instance.
+[00:30:28.080] >> Well, let let let's first go to Evo a
+[00:30:29.800] little bit, because Evo um
+[00:30:31.600] Sneak is known for being developer
+[00:30:33.120] first. Um Evo is more on the security
+[00:30:36.480] team uh part of this of this whole game,
+[00:30:38.720] because
+[00:30:39.680] guess what, But you if you are a
+[00:30:41.000] security team, you want to know what
+[00:30:42.480] kind of models are there. Are these
+[00:30:44.680] models up to date? Maybe you want to put
+[00:30:46.960] guardrails in this. Some some of these
+[00:30:48.880] models might not be even be used. Maybe
+[00:30:51.000] you say like, "Hey, it's fun, but no
+[00:30:52.400] deep fake models for you." Or it's fine
+[00:30:54.800] that you use GPT models, but maybe not
+[00:30:56.840] GPT-4 or lower because they are known
+[00:30:59.800] they they they are well-known to have
+[00:31:01.120] certain
+[00:31:02.560] vulnerabilities or are more vulnerable
+[00:31:04.360] to certain certain type types of
+[00:31:05.640] attacks.
+[00:31:06.760] With Evo, we want to give you we want to
+[00:31:08.880] give the security team an overview like,
+[00:31:10.280] "Hey, this is there in your in your
+[00:31:11.960] landscape, and this is how people are
+[00:31:13.880] using it." Now, if you're using cursor
+[00:31:17.040] or any other but cursor is now the the
+[00:31:18.800] the first one that we do, you want to
+[00:31:20.800] know at the point that people using it,
+[00:31:22.880] what is actually happening? Because if
+[00:31:24.480] you go back to the principles of what
+[00:31:25.960] LLMs are, they they just do rest calls.
+[00:31:28.800] So, things are going in and out, and you
+[00:31:30.840] can monitor that. So, you can also
+[00:31:33.560] at runtime, you can put guardrails in
+[00:31:35.080] it.
+[00:31:35.920] Do you want to go to that what I said do
+[00:31:37.720] to that to that models? Not only are you
+[00:31:39.960] specifying that model, but is that model
+[00:31:41.240] is actually targeted?
+[00:31:43.760] You want to block that that that call.
+[00:31:46.160] Even though your your employee that is
+[00:31:48.760] using an an agent tries to do it, you
+[00:31:51.840] don't want in the end that that that
+[00:31:53.680] there is some sort of shadow AI
+[00:31:55.080] available and that people are using
+[00:31:57.200] non-approved models or non-approved MCPs
+[00:32:01.240] or So, basically what we're what we're
+[00:32:03.080] trying to do there, it's it's more or
+[00:32:04.760] less you can you can describe it as a
+[00:32:06.160] hook that we that we can live monitor at
+[00:32:09.480] runtime what we're doing, and we can put
+[00:32:11.720] guardrails towards
+[00:32:13.440] the use of that agent and say, "Okay,
+[00:32:16.160] yes, you can do this. No, you cannot do
+[00:32:17.800] this." Or you should be warned in what
+[00:32:20.160] kind of situation you you could use it,
+[00:32:22.600] but we can actively block therefore
+[00:32:24.960] company-wide, for instance, certain
+[00:32:27.160] calls to certain models or or certain
+[00:32:29.400] functions.
+[00:32:30.040] >> Wow, wow. So, this is really interesting
+[00:32:31.480] that it it kind of gives that more
+[00:32:32.920] granular kind of ability to control or
+[00:32:35.960] at least have some kind of harness on on
+[00:32:38.320] what people are using when. uh Um and
+[00:32:40.160] presumably it's actually very
+[00:32:41.080] interesting just from the point of view
+[00:32:42.240] of uh seeing what usage is happening and
+[00:32:44.920] seeing what people are doing. So, who's
+[00:32:46.360] the who's the person that Who's the
+[00:32:47.720] persona, I guess, the employee that
+[00:32:49.680] would look at this would be what? The
+[00:32:50.960] the platform team, the security
+[00:32:52.280] engineer?
+[00:32:52.880] >> it's more of a security engineer uh
+[00:32:54.200] security team uh thing because you want
+[00:32:55.920] to have you want to have a a good view
+[00:32:58.280] of your security posture. Yeah. And you
+[00:33:00.240] we already have these kind of things
+[00:33:01.920] with uh the the the regular things like
+[00:33:04.120] the SAST and the and the and the SCA
+[00:33:06.000] scanning. Um and now you can add with
+[00:33:08.520] Evo you can have a more um high-over uh
+[00:33:12.280] holistic view of what your AI landscape
+[00:33:14.560] is and what things are being used or are
+[00:33:17.120] are used in your um
+[00:33:18.920] in your company or in your environment.
+[00:33:20.920] >> Mhm. Um and presumably there are
+[00:33:22.400] policies that you can add as well that
+[00:33:24.200] you can say, "Hey, these different teams
+[00:33:25.840] I want these different policies and
+[00:33:28.000] filter NCP calls that or or certain NCP
+[00:33:31.440] servers that are being used." So, that
+[00:33:33.320] that all that control could be done
+[00:33:34.640] centrally.
+[00:33:35.280] >> Yeah, yeah, you you can you can
+[00:33:36.200] definitely put put these controls in.
+[00:33:38.080] Evo is still in an early stage. Like
+[00:33:39.760] it's a it's it's it's available and it's
+[00:33:41.680] but it's new. So, we are actively
+[00:33:43.800] developing that and making it better and
+[00:33:45.400] better. Um so, yeah, if you want to I
+[00:33:47.680] want to know more, you can can go to to
+[00:33:49.560] evo.ai.sneak.io.
+[00:33:52.720] Um and try to get to get to get access
+[00:33:55.160] to that because we're still in what I
+[00:33:56.640] said we're still in early stage in that,
+[00:33:57.840] but I think um this is a nice or a great
+[00:34:00.480] step for security teams to have um
+[00:34:03.400] a broader uh holistic view of of their
+[00:34:06.200] security landscape including whatever AI
+[00:34:08.399] stuff you're using.
+[00:34:09.440] >> Amazing. Brian, this has been great
+[00:34:11.560] catching up here at DevNexus. So, it's
+[00:34:13.560] uh it's good we bumped into each other.
+[00:34:15.240] And uh yeah, why don't you go to
+[00:34:17.240] tassel.io/registry,
+[00:34:19.280] check out the skills that exist on the
+[00:34:20.679] registry, and and take a look at the
+[00:34:22.280] sneak scans that uh that show potential
+[00:34:25.040] vulnerable issues that exist within
+[00:34:27.320] those skills today. Thanks very much,
+[00:34:29.040] Brian, and uh thanks Thanks tuning in.

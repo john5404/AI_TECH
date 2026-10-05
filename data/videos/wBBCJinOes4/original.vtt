@@ -1,0 +1,709 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:05.000
+Back in June, at AI DevCon in London, one idea came up in almost every room
+
+2
+00:00:05.000 --> 00:00:08.960
+that the hard part of working with AI is no longer the prompt.
+
+3
+00:00:08.960 --> 00:00:10.800
+And it isn't the model either.
+
+4
+00:00:10.800 --> 00:00:13.560
+It's the context you put around it.
+
+5
+00:00:13.560 --> 00:00:15.280
+Let's first hear from Lamis
+
+6
+00:00:15.280 --> 00:00:19.440
+Mukta at Anthropic, who walked us through how context engineering has changed over
+
+7
+00:00:19.440 --> 00:00:24.360
+the past year, and why she thinks it's the thing that multiplies everything else.
+
+8
+00:00:24.760 --> 00:00:26.880
+By way of introduction, my name is Lamis.
+
+9
+00:00:26.880 --> 00:00:29.480
+I'm a member of technical staff at Anthropic.
+
+10
+00:00:29.480 --> 00:00:32.960
+I work on our applied AI team, and this is a team
+
+11
+00:00:32.960 --> 00:00:36.240
+which sits between research, product and go-to-market.
+
+12
+00:00:36.240 --> 00:00:39.960
+So we do a mixture of working on internal projects as well as directly
+
+13
+00:00:39.960 --> 00:00:43.280
+with customers who are building agents at the frontier.
+
+14
+00:00:44.080 --> 00:00:47.120
+Me specifically, I work with startups and founders,
+
+15
+00:00:47.120 --> 00:00:49.640
+many of whom I'm sure are in this room today,
+
+16
+00:00:49.640 --> 00:00:52.040
+and I think I have the best seat in the house
+
+17
+00:00:52.040 --> 00:00:56.200
+because these are the users that are constantly pushing us right up
+
+18
+00:00:56.200 --> 00:01:00.080
+against the boundary of what is possible with models and products today.
+
+19
+00:01:00.120 --> 00:01:05.400
+And as such, we just get to, like, ride the exponential together.
+
+20
+00:01:06.160 --> 00:01:10.040
+One thing that constantly comes up, as I'm sure you're all aware,
+
+21
+00:01:10.040 --> 00:01:14.280
+is what it really takes to take the raw model intelligence
+
+22
+00:01:14.280 --> 00:01:19.880
+that we have today and translate that into durable, scalable, useful products.
+
+23
+00:01:19.920 --> 00:01:23.080
+And one of the main levers that we have in order to do
+
+24
+00:01:23.080 --> 00:01:27.320
+this is context engineering, which will be the focus of my talk today.
+
+25
+00:01:29.800 --> 00:01:32.200
+So on this journey, I want to
+
+26
+00:01:32.200 --> 00:01:36.920
+quickly do a recap of where context engineering has gone in the past year.
+
+27
+00:01:36.920 --> 00:01:40.800
+It's a space that's completely blown up, and through that,
+
+28
+00:01:40.800 --> 00:01:42.760
+we'll kind of distill the primitives that have proven
+
+29
+00:01:42.760 --> 00:01:46.080
+to be really useful, some stuff that has been a little bit less useful.
+
+30
+00:01:47.000 --> 00:01:48.400
+Secondly, we'll talk about
+
+31
+00:01:48.400 --> 00:01:51.640
+what the state of the art is for memory management today.
+
+32
+00:01:52.280 --> 00:01:57.000
+And thirdly, and in particular with that, we'll talk about not just what
+
+33
+00:01:57.040 --> 00:01:58.360
+nice theoretical principles are,
+
+34
+00:01:58.360 --> 00:02:01.680
+but what it takes to actually build these systems in production.
+
+35
+00:02:01.760 --> 00:02:05.520
+And then finally, we'll talk about where this will go on the path to continual
+
+36
+00:02:05.520 --> 00:02:09.560
+learning, and in particular, touching on a paradigm called dreaming.
+
+37
+00:02:12.280 --> 00:02:14.680
+So we said this before.
+
+38
+00:02:14.680 --> 00:02:18.680
+And models — we release new models all the time.
+
+39
+00:02:18.680 --> 00:02:20.640
+They are more and more intelligent.
+
+40
+00:02:20.640 --> 00:02:23.920
+But when it comes to actually deploying these models in your agents,
+
+41
+00:02:23.920 --> 00:02:26.920
+in your environments, in your organization,
+
+42
+00:02:27.200 --> 00:02:31.200
+the intelligence alone is not going to compound because they need this context
+
+43
+00:02:31.200 --> 00:02:34.200
+that helps them perform the specific tasks that you need them to.
+
+44
+00:02:34.680 --> 00:02:37.320
+In particular, a lot of this context is often
+
+45
+00:02:37.320 --> 00:02:39.800
+kind of orthogonal to the model intelligence, right?
+
+46
+00:02:39.800 --> 00:02:44.200
+Like the newest model we've just released, one isn't going to
+
+47
+00:02:44.480 --> 00:02:47.360
+isn't going to, out of the box, know exactly what it takes to succeed
+
+48
+00:02:47.360 --> 00:02:50.400
+in your organization and with the tasks that you want them to.
+
+49
+00:02:50.440 --> 00:02:55.240
+And so it's a really great investment to work on the context engineering part,
+
+50
+00:02:55.240 --> 00:02:58.960
+because this over time has the effect of multiplying
+
+51
+00:02:58.960 --> 00:03:01.960
+the intelligence even as models get smarter.
+
+52
+00:03:02.240 --> 00:03:05.520
+We also heard from Ryan Lopopolo at OpenAI.
+
+53
+00:03:05.920 --> 00:03:09.760
+He argues that most of the old limits on software engineering are gone,
+
+54
+00:03:09.760 --> 00:03:14.240
+and what's left is human time, attention, and the context window.
+
+55
+00:03:14.520 --> 00:03:19.560
+He can only really hold three sessions in his head at once. So,
+
+56
+00:03:20.760 --> 00:03:21.880
+having just told
+
+57
+00:03:21.880 --> 00:03:25.440
+everybody here that the core constraints on software
+
+58
+00:03:25.440 --> 00:03:28.640
+engineering no longer apply, what are those core constraints, right?
+
+59
+00:03:28.680 --> 00:03:32.440
+We have kind of a new set of problems to contend with, using agents
+
+60
+00:03:32.440 --> 00:03:34.000
+in order to produce our software.
+
+61
+00:03:34.000 --> 00:03:39.160
+And to me, these three things are the foundational limits that remain
+
+62
+00:03:39.160 --> 00:03:43.880
+in a world where we are, as a team of humans and agents, producing software.
+
+63
+00:03:44.080 --> 00:03:48.720
+Human time is the fundamentally scarce resource that we have.
+
+64
+00:03:48.760 --> 00:03:54.080
+You know, I know I max out probably at three concurrent sessions on my laptop.
+
+65
+00:03:54.080 --> 00:03:57.360
+If I want to be more parallel and have higher throughput,
+
+66
+00:03:57.360 --> 00:04:02.440
+I must find ways to remove my own synchronous attention from the process.
+
+67
+00:04:03.640 --> 00:04:04.920
+Human and model attention
+
+68
+00:04:04.920 --> 00:04:06.640
+are these foundational limits, right?
+
+69
+00:04:06.640 --> 00:04:11.640
+In the architecture of these LLMs, attention must sum to one.
+
+70
+00:04:11.640 --> 00:04:14.600
+Thrashing the agents by having them do more and more work
+
+71
+00:04:14.600 --> 00:04:17.880
+with conflicting and overbearing requirements in the course of a task
+
+72
+00:04:17.920 --> 00:04:21.200
+is something that is always going to degrade performance less
+
+73
+00:04:21.200 --> 00:04:25.040
+and less over time, but it is one of those core limits of the models.
+
+74
+00:04:25.040 --> 00:04:29.320
+So we need to retool the way we work in order to be more parallel.
+
+75
+00:04:29.360 --> 00:04:33.920
+Fork off a bunch more tasks, be willing to accept smaller or larger
+
+76
+00:04:33.920 --> 00:04:38.440
+or many more PRs in order to let the agents explore what it means to
+
+77
+00:04:38.480 --> 00:04:40.280
+do the job that we need them to do.
+
+78
+00:04:40.280 --> 00:04:45.280
+And finally, you all probably deeply live this model context window.
+
+79
+00:04:46.200 --> 00:04:47.560
+Things that get bigger over time.
+
+80
+00:04:47.560 --> 00:04:50.560
+Still a scarce resource, something we need to protect.
+
+81
+00:04:50.640 --> 00:04:54.320
+I will say, in my own experience with the GPT series of models,
+
+82
+00:04:54.320 --> 00:04:55.840
+auto-compaction is fantastic.
+
+83
+00:04:55.840 --> 00:04:58.120
+I never think about a context window anymore.
+
+84
+00:04:58.120 --> 00:05:03.200
+I can let a task go for six, 12, 36 hours and still get good results,
+
+85
+00:05:03.320 --> 00:05:06.920
+but the context window being obliterated and rebuilt
+
+86
+00:05:06.920 --> 00:05:10.440
+over the course of these auto-compactions is something you must contend with.
+
+87
+00:05:10.440 --> 00:05:14.040
+And there are ways that we structure the context
+
+88
+00:05:14.080 --> 00:05:14.960
+we give the model, or
+
+89
+00:05:14.960 --> 00:05:18.800
+continually resurface context to the model to deal with this constraint,
+
+90
+00:05:18.800 --> 00:05:21.800
+that context windows are continually being emptied and filled.
+
+91
+00:05:21.960 --> 00:05:25.560
+Birgitta Böckeler is a Distinguished Engineer at Thoughtworks.
+
+92
+00:05:25.560 --> 00:05:29.520
+She splits the work of building a harness into two halves: guides
+
+93
+00:05:29.520 --> 00:05:33.520
+that point the agent forward, and sensors that tell it how it's doing.
+
+94
+00:05:33.640 --> 00:05:35.160
+So we're starting with these guides.
+
+95
+00:05:35.160 --> 00:05:37.800
+But then we also want to give it feedback.
+
+96
+00:05:37.800 --> 00:05:38.240
+Right.
+
+97
+00:05:38.240 --> 00:05:42.200
+So, ideally, so that we can trigger immediately
+
+98
+00:05:42.200 --> 00:05:43.520
+a self-correction loop
+
+99
+00:05:43.520 --> 00:05:46.520
+before we even look at the code so that we don't have to, like,
+
+100
+00:05:46.560 --> 00:05:48.800
+have all those low-hanging fruit still in there.
+
+101
+00:05:48.800 --> 00:05:51.800
+So the most common way that people do
+
+102
+00:05:51.800 --> 00:05:54.880
+that right now is with code review agents, right?
+
+103
+00:05:54.920 --> 00:05:58.040
+But there's also all of these other tools that we have in our toolbox
+
+104
+00:05:58.040 --> 00:06:01.080
+from before AI, like static code analysis.
+
+105
+00:06:01.080 --> 00:06:04.960
+And then, of course, an agent usually has access to the log
+
+106
+00:06:04.960 --> 00:06:08.440
+so it can start the application, see what logs come out of it.
+
+107
+00:06:08.720 --> 00:06:12.920
+Many people give an agent access to the browser so it can look at, like,
+
+108
+00:06:12.960 --> 00:06:16.480
+something when it has changed a web component or something like that.
+
+109
+00:06:17.360 --> 00:06:21.240
+And there's actually a difference between these.
+
+110
+00:06:21.280 --> 00:06:25.560
+Sort of, like, a review agent is an LLM judging the work of another LLM.
+
+111
+00:06:25.600 --> 00:06:25.800
+Right.
+
+112
+00:06:25.800 --> 00:06:27.080
+So it's kind of inferential.
+
+113
+00:06:27.080 --> 00:06:30.440
+It's running on the GPU, but we have a bunch of tools as well
+
+114
+00:06:30.440 --> 00:06:34.400
+that are computational, as I decided to call them here.
+
+115
+00:06:34.400 --> 00:06:37.840
+So kind of things that run on the CPU, right, like the static analysis
+
+116
+00:06:37.920 --> 00:06:41.000
+is the best example, I think, to think about this.
+
+117
+00:06:42.240 --> 00:06:42.520
+Yeah.
+
+118
+00:06:42.520 --> 00:06:45.680
+And we have the same distinction on the feed-forward, on the guide side.
+
+119
+00:06:45.720 --> 00:06:50.920
+So we can also think about computational guides on that side.
+
+120
+00:06:50.960 --> 00:06:55.400
+And the best example for me there is codemods. Ian from Meta
+
+121
+00:06:55.440 --> 00:07:00.560
+also just mentioned those, which is, for example, tools like OpenRewrite
+
+122
+00:07:00.600 --> 00:07:07.560
+that are really good at doing version upgrades and migrations of frameworks.
+
+123
+00:07:07.560 --> 00:07:08.560
+I don't know if you remember,
+
+124
+00:07:08.560 --> 00:07:12.360
+like, quite a while ago, Amazon had a really big headline about
+
+125
+00:07:12.400 --> 00:07:16.880
+saving 400 or 500 developer years or something for Java upgrades.
+
+126
+00:07:16.920 --> 00:07:21.080
+That was, under the hood, actually mostly codemods being made available to AI.
+
+127
+00:07:21.120 --> 00:07:23.240
+So that combination is really powerful, right?
+
+128
+00:07:23.240 --> 00:07:27.720
+So all of these things, or maybe providing a different type of code search
+
+129
+00:07:27.760 --> 00:07:30.760
+that is more effective for your really large code base.
+
+130
+00:07:30.760 --> 00:07:34.520
+All of those are ways, again, to increase the probability that AI does
+
+131
+00:07:34.520 --> 00:07:36.560
+what you want in the first go.
+
+132
+00:07:36.560 --> 00:07:41.320
+And to close, Guy Podjarny, CEO and co-founder of Tessl.
+
+133
+00:07:41.840 --> 00:07:45.160
+He makes the case that all of this adds up to a whole new life
+
+134
+00:07:45.160 --> 00:07:48.200
+cycle, sitting alongside the one we already know.
+
+135
+00:07:48.200 --> 00:07:52.720
+Humans move into the context development lifecycle and the agents
+
+136
+00:07:52.760 --> 00:07:54.160
+get the software one.
+
+137
+00:07:54.160 --> 00:07:56.880
+And at the end of the day, we can build really quality software.
+
+138
+00:07:56.880 --> 00:07:59.040
+But there's only so far you can get in the lab.
+
+139
+00:07:59.040 --> 00:08:02.880
+And so you can build your software, you can test it, you can secure it,
+
+140
+00:08:02.880 --> 00:08:05.680
+you can optimize it. And then at some point you need to step out.
+
+141
+00:08:05.680 --> 00:08:08.480
+And that comes into observability for agents.
+
+142
+00:08:08.480 --> 00:08:11.480
+Runtime observability is monitoring the coding agents.
+
+143
+00:08:11.480 --> 00:08:12.480
+And when you monitor
+
+144
+00:08:12.480 --> 00:08:15.800
+those, you can use those to improve the quality of what you have.
+
+145
+00:08:15.840 --> 00:08:18.800
+So you can extract real-world eval scenarios and problems
+
+146
+00:08:18.800 --> 00:08:21.840
+and use those to update and optimize your skills.
+
+147
+00:08:21.840 --> 00:08:23.560
+And you can mine for gaps.
+
+148
+00:08:23.560 --> 00:08:27.080
+So you can look at agents' success as a whole and
+
+149
+00:08:28.160 --> 00:08:28.800
+extract out of
+
+150
+00:08:28.800 --> 00:08:31.800
+that opportunities for new skills or things that you should remove.
+
+151
+00:08:31.840 --> 00:08:35.120
+And in general, as you think about this whole process, combining
+
+152
+00:08:35.120 --> 00:08:39.400
+all these tools together, you increasingly should see a development lifecycle.
+
+153
+00:08:39.440 --> 00:08:43.480
+But it should be a context development lifecycle, not a skill,
+
+154
+00:08:43.520 --> 00:08:45.360
+not a software development lifecycle.
+
+155
+00:08:45.360 --> 00:08:50.600
+We should, as humans, live in the context development lifecycle and leave the SDLC
+
+156
+00:08:50.680 --> 00:08:54.880
+to the agents, or be able to enable the agents to do the SDLC,
+
+157
+00:08:54.880 --> 00:08:58.000
+in which we generate context, evaluate and test it,
+
+158
+00:08:58.040 --> 00:09:01.560
+optimize it as we need to, distribute it via good package management.
+
+159
+00:09:01.560 --> 00:09:05.800
+Securely consume them, observe what has happened, and do that again and again.
+
+160
+00:09:07.120 --> 00:09:08.840
+So in summary,
+
+161
+00:09:08.840 --> 00:09:13.640
+we have a new software stack for agent development.
+
+162
+00:09:13.640 --> 00:09:16.200
+It builds on the models that are like our operating systems.
+
+163
+00:09:16.200 --> 00:09:18.560
+We need to make sure what we build is compatible with them.
+
+164
+00:09:18.560 --> 00:09:20.000
+We have tools as utilities.
+
+165
+00:09:20.000 --> 00:09:21.640
+We have context as the new code.
+
+166
+00:09:21.640 --> 00:09:23.640
+We have harnesses that are like frameworks.
+
+167
+00:09:23.640 --> 00:09:24.960
+Not every developer will
+
+168
+00:09:24.960 --> 00:09:28.040
+build their own harness, but probably more and more organizations would
+
+169
+00:09:28.040 --> 00:09:32.080
+substantially customize harnesses if not build their own, with those
+
+170
+00:09:32.120 --> 00:09:35.520
+composing into factory lines that feel very much like pipelines.
+
+171
+00:09:35.520 --> 00:09:38.560
+You have repeatable type of input coming in, successful
+
+172
+00:09:38.560 --> 00:09:42.240
+output coming out, and into whole dev processes in factories.
+
+173
+00:09:42.360 --> 00:09:45.640
+And within those, skills are the new code,
+
+174
+00:09:45.640 --> 00:09:48.960
+and we should treat them that way and give them the right tools for it.
+
+175
+00:09:49.680 --> 00:09:51.120
+Thanks for watching.
+
+176
+00:09:51.120 --> 00:09:55.760
+Be sure to join us for the next AI DevCon this November in New York City.
+
+177
+00:09:55.840 --> 00:09:59.720
+Visit AI DevCon to learn more and book your ticket.

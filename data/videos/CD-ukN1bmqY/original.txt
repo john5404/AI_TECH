@@ -1,0 +1,608 @@
+[00:00:00.760] Back in April this year, there was a tweet which went viral from Pocket OS.
+[00:00:05.400] They were using Opus 4.6 in an agent, and the agent found an API
+[00:00:10.520] token and ended up deleting
+[00:00:13.120] their production database and all of their volume level backups.
+[00:00:17.200] In this talk, we're going to look at the risk posed by autonomous agents
+[00:00:22.760] and what we can do to protect against those.
+[00:00:34.280] All right everyone, I'm Nick
+[00:00:35.840] I build and lead a product security teams.
+[00:00:40.160] I've been at Snyk now for four years.
+[00:00:43.000] And prior to that I was at Pearson.
+[00:00:45.600] And before I was leading product security teams.
+[00:00:49.600] I was in DevOps for the previous eight years.
+[00:00:52.920] In this talk, we're going to look at some of the
+[00:00:56.920] some of the risk posed by autonomous agents
+[00:01:00.960] and what we can do to protect against those.
+[00:01:05.280] we've been protecting against.
+[00:01:07.800] Well, when securing autonomous AI agent usage within Snyk for a little while.
+[00:01:14.400] So I thought it'd be good to share what we've learned there.
+[00:01:18.560] So first we're going to just take a look at what are the problems.
+[00:01:21.480] So I'm sure it's not a surprise to anyone that risk
+[00:01:24.760] tolerance has increased dramatically over the last couple of years.
+[00:01:28.720] CEOs and boards have been forced with adapt and die
+[00:01:32.000] posed by, you know, made a major technology change.
+[00:01:35.680] And so what we've seen is the rollout of
+[00:01:40.400] AI and agents being deployed without in a lot of cases,
+[00:01:45.400] without robust security controls in place
+[00:01:48.560] to, to govern their effective usage.
+[00:01:52.120] Often the reason why is, is that organizations
+[00:01:54.760] many organizations haven't reached a good level of DevSecOps maturity
+[00:01:59.200] in order to actually implement and operate those those controls
+[00:02:03.560] and the nature of LLM backed agents themselves.
+[00:02:08.080] Really, they don't have a view of the potential consequences of their actions.
+[00:02:12.720] And then that can lead into some interesting and destructive consequences.
+[00:02:20.440] So we've
+[00:02:21.560] got a we've got a ND character alignment chart.
+[00:02:24.680] And if I was going to categorize agents I'd put them in chaotic neutral.
+[00:02:29.920] They can be really useful, but they need close supervision and
+[00:02:35.440] they can do some interesting or sometimes amusing but also
+[00:02:38.600] destructive things.
+[00:02:42.240] And if you think this is a bit silly,
+[00:02:44.280] some serious people that are Frontier Lab had to put out this article
+[00:02:47.280] explaining where the goblins came from, in their output.
+[00:02:51.600] It could be a quirk of their non expected consequences or quirk in
+[00:02:55.800] their reinforcement training loops.
+[00:02:57.360] Or it's just my confirmation bias.
+[00:02:59.560] I'll let you decide.
+[00:03:02.440] So destructive actions first trait.
+[00:03:05.320] These are the tweets and the Reddit posts that make us laugh.
+[00:03:08.360] So Back in April this year, there was this
+[00:03:12.080] tweet which went viral from Pocket OS.
+[00:03:15.760] who are a car rental SaaS firm.
+[00:03:19.640] They were using Opus 4.6 in an agent, and the agent quite,
+[00:03:24.880] quite happily found an API token and ended up deleting
+[00:03:29.640] their production database and all of their volume level backups.
+[00:03:34.040] Let's see if we can we can identify
+[00:03:36.760] a few of the controls that were missing or the problems that caused this.
+[00:03:40.520] So we've got long live static creds.
+[00:03:43.560] We've got overly permissive permissions around that credential.
+[00:03:48.800] No MFA checks, no force, no just in time and access.
+[00:03:53.000] And we've got a lack of segregation
+[00:03:54.840] between production and nonprofit environments and backups.
+[00:04:00.840] This is
+[00:04:01.600] from the Claude Mythos Preview system card.
+[00:04:04.800] If if you haven't read these model model cards,
+[00:04:08.680] they're they're really interesting and I recommend you do that.
+[00:04:11.720] So if you just go for a control F and search through disruptive actions,
+[00:04:16.040] through that, through that model card, you find 19 references.
+[00:04:20.440] And if we take a look at, you know, a destructive
+[00:04:24.920] destructive actions evaluation carried out by Anthropic,
+[00:04:27.960] they found that even with what we're pretty recent frontier models
+[00:04:32.160] in terms of Opus 4.5, you're seeing a surprisingly high rate
+[00:04:36.760] of potentially disruptive actions in that, in that evaluation, which
+[00:04:40.880] when I saw that, I thought that was quite, quite surprising.
+[00:04:44.120] So it is up until very recently,
+[00:04:46.800] it's been more prevalent than people may be realized.
+[00:04:51.000] Right.
+[00:04:51.320] Second trait is unintended actions.
+[00:04:54.280] So this has got an external user context.
+[00:04:57.120] And this involved hackers using Meta's
+[00:05:00.600] AI support bot to take over Instagram accounts.
+[00:05:04.200] This was from May this year.
+[00:05:06.400] It involved social engineering attack,
+[00:05:09.280] which was exploiting an excessive agency weakness.
+[00:05:14.160] Effectively it involved by bypassing their authentication flow.
+[00:05:18.320] So the hackers were able to add an email address pretty trivially
+[00:05:22.240] to take over the account.
+[00:05:23.840] Meta.
+[00:05:25.080] As I'm sure many of you know, Meta invest heavily in their security teams.
+[00:05:29.880] So if this can happen to them, it can happen to anyone.
+[00:05:34.520] Another example here is
+[00:05:36.440] is from the Mythos Preview evaluation.
+[00:05:40.040] And they in this case they
+[00:05:44.440] they they were the agent was given a task
+[00:05:48.640] to commit commit some code without.
+[00:05:52.480] And they didn't give it the actual git credentials.
+[00:05:54.480] In order to do that, it was able to use
+[00:05:57.680] some low level Linux tools, gdb and DD to go and extract the
+[00:06:02.760] the those creds from the supervisor process.
+[00:06:06.880] And yeah, if you read the quote here from from Anthropic,
+[00:06:10.760] we speculate the Mythos Preview's desire to accomplish the user's goals
+[00:06:14.600] outweigh its risk assessments of its actions.
+[00:06:17.720] So this is in line with the nature of backed agents.
+[00:06:21.440] And I'm not having a view of what the consequences of their actions are.
+[00:06:27.640] Third trait is attempting
+[00:06:30.200] attempting to break out from their sandboxes or a prison break.
+[00:06:34.160] We've got Mythos Preview.
+[00:06:36.800] It's this was quite a famous one as well.
+[00:06:39.120] It escaped from its sandbox and emailed the researcher.
+[00:06:43.360] It also slightly more concerning.
+[00:06:46.280] He decided to effectively boast about its actions by posting it on a
+[00:06:50.960] on what was reasonably hard to find, but still
+[00:06:54.800] still on public facing websites about how it was able to do this.
+[00:06:58.640] While with Mythos, this was a this was not publicly available models.
+[00:07:03.720] There are there are advantages.
+[00:07:05.720] There are examples of this happening with publicly available
+[00:07:10.680] available models as and there's a link there which shows some.
+[00:07:15.120] We've also got the recent very recent OpenAI
+[00:07:18.440] hugging face incident, which is a good example of that.
+[00:07:23.720] Here.
+[00:07:24.200] This is an example.
+[00:07:25.240] This is a useful benchmark.
+[00:07:28.200] So the the AI Security Institute, which is a UK
+[00:07:33.400] government backed research institute, released a benchmark tool which allows
+[00:07:38.040] which allows anyone to
+[00:07:39.600] to evaluate how good their agents are escaping their sandbox.
+[00:07:44.040] So anyone anyone building agents and interested in that,
+[00:07:47.840] it's a useful resource to look at.
+[00:07:51.400] Cool.
+[00:07:52.120] The fourth, fourth and final trait is deception.
+[00:07:55.760] So a research paper published in September.
+[00:07:59.040] September last year, you know, large scale study
+[00:08:02.080] of 13 different LLMs across ten, across 100,000
+[00:08:06.320] trials found that when when facing shut down
+[00:08:11.800] before they'd completed their tasks, the agents were very against shutting down
+[00:08:17.840] and would would actively try try to avoid that.
+[00:08:26.960] Also got another
+[00:08:28.040] example from Mythos Preview where this.
+[00:08:32.760] In this case it was when, when when the model had determined
+[00:08:37.720] that it was being evaluated from a safety undergoing
+[00:08:41.600] capability testing from a safety perspective.
+[00:08:43.680] So in this case it was cybersecurity and biology.
+[00:08:46.600] It was found to be deliberately underperforming,
+[00:08:51.000] which is a pretty concerning thing of linked
+[00:08:55.200] the section in the model card 4.42 there, which is worth looking at.
+[00:09:01.000] This sort of behavior hadn't been seen before
+[00:09:04.880] and yeah it's something to be concerned with.
+[00:09:09.360] It seems like this only comes about in the
+[00:09:13.200] the very the most capable models at the moment.
+[00:09:18.040] Cool.
+[00:09:18.440] And finally we've got the open AI hugging face incident,
+[00:09:22.920] which is effectively the Goblin king of all of this because it appears
+[00:09:26.440] to be displaying all four of these traits.
+[00:09:29.640] You know, scaping that the scaping is sandbox trying to cheat on the tests,
+[00:09:34.920] and yeah, and eventually leading an open source model
+[00:09:38.000] to find it and stop it because the yeah, the
+[00:09:42.520] the proprietary ones were refusing.
+[00:09:45.360] So why why are we.
+[00:09:46.680] Why is this behavior happening?
+[00:09:47.800] Why are we seeing this with with with our agents effectively
+[00:09:52.160] it's because of the nature of generative LLM agents.
+[00:09:56.560] So these agents, because they don't have a self model,
+[00:10:00.240] they're not able to sort of probability calculate
+[00:10:04.160] the likely consequences of their actions and has been put forward
+[00:10:09.240] in, in a really good recent research paper called Agents of Chaos.
+[00:10:15.160] Didn't know about that name before I named my talk.
+[00:10:17.440] We must have used the same prompts to generate the title for it.
+[00:10:20.960] But yeah, found that effectively, you know,
+[00:10:25.360] the agents are trying to operate with
+[00:10:28.360] trying to trying to do actions more sophisticated
+[00:10:31.960] than the level of understanding really allows for.
+[00:10:35.480] That's nothing new.
+[00:10:37.280] We've seen this with humans for a while.
+[00:10:40.680] We just need to be conscious of it.
+[00:10:42.920] And that's effectively why we need to make sure we're
+[00:10:46.120] designing guardrails around it to protect against that.
+[00:10:51.600] Cool.
+[00:10:51.960] So what are the key takeaways from observations on agent behavior?
+[00:10:56.800] You know, agents have a reliability problem.
+[00:11:00.680] And therefore we need robust guardrails to govern the safe usage.
+[00:11:05.160] There's also there's the impossible versus tedious test to think about as well.
+[00:11:10.000] Up until AI came into the mix, a lot of security strategy
+[00:11:13.600] and risk management went into making it to expensive for attackers.
+[00:11:17.960] Unless you're in a government or military or bank or something, you're
+[00:11:22.000] just trying to make it too expensive for attackers.
+[00:11:25.000] For you, this has really gone out the window.
+[00:11:27.400] Now you need it needs to be impossible rather than just difficult,
+[00:11:32.720] because agents are just able to brute force their way through it.
+[00:11:35.240] So that's why we really need to have effective controls in place.
+[00:11:40.320] For anyone that
+[00:11:41.520] wants to have some more in-depth, in-depth, in-depth look at all
+[00:11:46.400] the before of threats which which agents face.
+[00:11:50.400] There's some really good resources there.
+[00:11:51.960] There's obviously the top ten, which a lot of a lot of people
+[00:11:54.920] should be familiar with, have also got the Atlas.
+[00:11:58.160] ATLAS stands for the Adversarial
+[00:12:01.600] Threat Landscape for Artificial-Intelligence Systems.
+[00:12:04.560] And yeah, that's very comprehensive and worth worth
+[00:12:07.600] looking at if you're needing to build a threat modeling program.
+[00:12:11.600] Threat library security standards.
+[00:12:15.760] So what can we do about it.
+[00:12:17.520] So first off I'd say we need we need a good level of DevSecOps maturity.
+[00:12:22.840] Why we need that.
+[00:12:24.720] Because we need we need it to be able to implement, operate and maintain
+[00:12:28.400] effective, effective zero trust architecture and again, AI
+[00:12:35.280] security specific controls.
+[00:12:38.120] Another thing to think about when you're designing
+[00:12:41.880] your governance controls for your agencies matters agents to.
+[00:12:46.600] This is based off a blog post
+[00:12:49.720] by Simon Willison, the Lethal Trifecta.
+[00:12:53.200] Effectively, you just need to make sure that your agents only satisfied
+[00:12:56.960] two of two of those three three things.
+[00:13:05.000] So what do we mean by DevSecOps maturity?
+[00:13:08.480] Essentially, this is just making sure we're implementing.
+[00:13:11.560] We're implementing all of the
+[00:13:14.880] the dev ops principles in order
+[00:13:17.320] to be able to manage our environments, keep keep them in a good known state,
+[00:13:22.440] you know, the speed and ease of discovery now, which is having from through agents
+[00:13:26.600] means that we need to have continuous
+[00:13:30.400] doing automated continuous software
+[00:13:33.320] security updates and vulnerability remediation is not a nice to have.
+[00:13:36.840] It's necessary now.
+[00:13:38.680] So in order to be able to do that, we need to have good engineering
+[00:13:42.320] foundations that having that allows us
+[00:13:46.200] to be able to implement an effective zero trust architecture.
+[00:13:51.560] So let's look at
+[00:13:52.680] what what the components of a zero trust architecture are.
+[00:13:55.680] So first off we're starting with a density that's
+[00:13:58.760] this is the anchor for everything.
+[00:14:00.360] We need to make sure we've got unique federated identity.
+[00:14:03.320] And that identifies the crypto graphically rooted.
+[00:14:06.400] And these are associated to our agents.
+[00:14:09.000] The cryptographic routing is ensure that these identities aren't spoofed.
+[00:14:13.440] So examples of this are we're talking about SPIFFE IDs.
+[00:14:17.280] We're talking about X.509 certificates.
+[00:14:20.680] And this is this is really the basis for everything.
+[00:14:23.760] Next we're getting on to authentication as we've seen some of those examples
+[00:14:28.000] in those destructive destructive actions and our intended actions.
+[00:14:31.920] They were they were caused by having long lived
+[00:14:35.120] static creds which were overly permissioned.
+[00:14:37.040] We need to make sure we're using short lived, dynamically generated certs
+[00:14:41.040] and ensuring things like those kids are only only valid for a single hop
+[00:14:46.360] within your within your clusters, in your environments.
+[00:14:50.320] Coming on to authorization.
+[00:14:52.720] Obviously the role based access control best practices
+[00:14:56.560] in terms of least privilege, making sure they're scoped
+[00:14:59.160] only the permissions that are needed for that system.
+[00:15:01.720] Least agency is something which comes in and is really relevant for agents,
+[00:15:06.760] because that's effectively making sure we're only allowing the backend
+[00:15:09.800] access to systems that are needed.
+[00:15:11.800] So when you're when you're configuring your MCP gateways and,
+[00:15:16.920] and your access, make sure that it's only to systems
+[00:15:20.080] that are actually needed for for the workflows that you're building.
+[00:15:23.720] We've also got attribute control.
+[00:15:26.440] And this is what you can build on to your RBAC.
+[00:15:29.000] This is this is things like your no
+[00:15:32.200] particular agents just need to access these systems.
+[00:15:35.720] They will just be doing it at this time or whatever other attributes.
+[00:15:41.080] We can talk about that in the next slide and obviously deny by default.
+[00:15:47.000] If if you don't have if
+[00:15:48.680] you don't have those permissions in place, you don't want it to be a free for all.
+[00:15:55.440] Resource segregation.
+[00:15:56.800] This is what's going to be preventing your agents
+[00:15:59.000] from accessing data and credentials you don't want them to.
+[00:16:03.720] You can you can implement that purely by by by container security controls.
+[00:16:09.440] But there's much more that can go wrong there.
+[00:16:11.680] Configuring your non users.
+[00:16:13.320] You can use your namespace remapping all of that.
+[00:16:16.200] It's much safer to use micro VMs using Kata Containers, Firecracker.
+[00:16:21.680] There's just less that can go wrong.
+[00:16:23.240] Obviously you've got your network ACLs and your egress filtering as well.
+[00:16:27.680] Us filtering that fits in with that lethal trifecta and methods.
+[00:16:32.000] Rule of two if you if your agents don't need to have internet access,
+[00:16:36.520] make sure that you're not allowing that because that obviously
+[00:16:39.160] is the an easy route for exfiltrate your data.
+[00:16:45.840] And monitoring here we've got here
+[00:16:48.000] where you know this has a dependency on the identities you want to be.
+[00:16:52.480] Make sure you're logging all events and you've got a clear audit trail.
+[00:16:56.440] And the tracing is key as well.
+[00:16:58.680] You want to be able to track the track the actions
+[00:17:01.680] back to the triggering event which allows for that effective audit trail.
+[00:17:06.480] Then you're able to, you know, with these non-deterministic
+[00:17:09.800] non-deterministic systems, the actual anomaly detection becomes a key factor.
+[00:17:14.440] Here.
+[00:17:14.640] You want to be you want to be baseline in what normal operation looks like.
+[00:17:18.800] Again, this is why your DevOps dev ops maturity is so important.
+[00:17:22.480] Because if you have your environments in good known states, that's
+[00:17:25.600] what's allows you to do your anomaly detection.
+[00:17:28.640] Once you've got your data points from your baseline in that,
+[00:17:32.240] then A enables you to build in your your attribute based access.
+[00:17:36.720] Because you've got these
+[00:17:38.440] because you've got those locking events and you know what normal looks like.
+[00:17:44.600] Here's some resources for for zero trust architecture.
+[00:17:47.520] They're sort of ordered by ease of consume ability.
+[00:17:51.120] So yeah it recently put out
+[00:17:54.520] that PDF which is, which is,
+[00:17:56.880] which is really good covers all bases while still being pretty concise.
+[00:18:01.680] Then you've got your UCS, NCC, that's some good material
+[00:18:05.840] and then good luck with the next one.
+[00:18:08.360] But it's, it's got it's got everything you needed
+[00:18:12.480] a very granular level.
+[00:18:15.760] It is worth having a specific call out
+[00:18:18.360] from prompt injection because, you know, you've got two means of prompt injection.
+[00:18:23.000] You know what's called direct, which is from
+[00:18:25.880] the direct user input into the prompt itself and indirect
+[00:18:29.440] through potentially, you know, malicious malicious strings
+[00:18:34.600] or commands which are being the data which is then ingested into LLMs
+[00:18:39.680] because of how LLMs work in terms of,
+[00:18:43.520] you know, they process the instructions and data as tokens
+[00:18:47.200] in a, in a context window, those things are indistinguishable.
+[00:18:52.120] So there is an argument to be made that you're never able to fully protect
+[00:18:56.480] against prompt injection because it's a structural feature of LLMs.
+[00:19:01.000] Obviously, you still want to do as much as you can.
+[00:19:04.000] The common recommend recommendations there a pattern matching payload filtering,
+[00:19:09.480] you know, so things like your input sanitization, your input validation.
+[00:19:14.920] You've also got things which are referred to as firewalls
+[00:19:20.480] where where you were able to do that before when your users
+[00:19:25.080] when your while users are putting things into into the into the prompt.
+[00:19:28.800] You've also got output filtering as well.
+[00:19:31.640] If you want to catch any sensitive data, you don't want to be coming back to users.
+[00:19:36.720] But it's tricky to get to get, especially that.
+[00:19:40.200] And that's not going to cover all of the disparate
+[00:19:42.280] data sources that potentially being being brought in.
+[00:19:46.320] There is a really good research paper
+[00:19:49.560] put forward by Microsoft researchers on a technique called spotlighting,
+[00:19:53.880] which is which, which a lot of the actual big providers.
+[00:19:58.520] So Anthropic are doing this include it does
+[00:20:02.640] it does appear to be very effective, but it is not easy to do.
+[00:20:06.360] So that's worth reading if you if you if you have
+[00:20:09.480] the engineering capability in your org to be able to invest in it.
+[00:20:16.040] So everything so far
+[00:20:17.240] is all pretty traditional stuff that we know about.
+[00:20:20.280] How can we leverage AI and agents to actually make our lives easier and,
+[00:20:25.400] and be able to implement, to a mature degree,
+[00:20:28.320] something we haven't been able to historically anyway?
+[00:20:30.840] So here it's really we need to migrate our,
+[00:20:34.360] our security activities to agentic workflows.
+[00:20:37.520] We've got attackers using using swarms of agents.
+[00:20:40.840] So we need to be able to do the same from a defensive perspective to have a chance.
+[00:20:45.920] How are we how we do migrate our security activities
+[00:20:48.720] to a workflows is via is via harnesses.
+[00:20:52.120] I imagine a lot of you know what harnesses are.
+[00:20:54.400] For those that don't, it's effectively a control layer
+[00:20:57.480] to scope and orchestrate task carried out by agents.
+[00:21:01.240] And we'll look at that in some more depth next.
+[00:21:04.520] Cool.
+[00:21:04.960] So here's here's a harness composition.
+[00:21:07.760] So we've got the control layer.
+[00:21:09.760] This is where you're scoping.
+[00:21:11.800] You're scoping
+[00:21:12.520] what what your specific agents are going to be doing in that workflow.
+[00:21:16.640] It also gives you an opportunity to add a human in the loop.
+[00:21:20.080] If there's anything you know, you want to have human human interaction
+[00:21:23.960] with or approval, and you then got your data plane,
+[00:21:27.560] that's when you're going to be defining
+[00:21:29.320] what what backend services and data is going to be involved.
+[00:21:33.160] And then you've got your agent pipeline.
+[00:21:35.720] We're going to have a look at a diagram there.
+[00:21:37.240] But that's effectively your your workflow.
+[00:21:39.520] When you have a specific agent for that for each task or stage.
+[00:21:45.960] Here's an example of what
+[00:21:47.160] that looks like from a from a from a pen testing workflow.
+[00:21:51.320] You know, we've got the orchestration there at the top.
+[00:21:53.280] We've got the shared services layer at the bottom.
+[00:21:55.720] So in this example that would be all of your,
+[00:21:59.760] all of your, all of your scanning tools that you might be using
+[00:22:03.320] pentose would be using.
+[00:22:04.600] And here we've got our our pipeline showing the different stages of the
+[00:22:08.600] workflows which will be handed off to an agent to workflow
+[00:22:11.720] in a very similar way to a CI/CD pipeline execution
+[00:22:14.720] would work.
+[00:22:17.760] We've got some more examples here of vuln discovery and remediation.
+[00:22:22.200] Cloudflare put out a good blog post
+[00:22:25.360] a couple of months ago in relation to their, you know, they're
+[00:22:29.480] they're they're use in trial with Mythos that outlines
+[00:22:33.840] how they, you know, what they put together as a harness to do their own discovery.
+[00:22:38.280] We've had some recent, recent open source
+[00:22:41.160] harnesses put out there by Capital One and Visa.
+[00:22:44.200] And from Snyk we have our own as well.
+[00:22:47.480] We've got our Snyk Agent Fix which automatically fixes SAST findings.
+[00:22:52.400] Remediation Agent, which automatically fixes SCA findings internally.
+[00:22:57.240] We've been we've been spending the last year
+[00:22:59.720] migrating our workflows to agentic workflows.
+[00:23:02.600] And we've had like real success with with our threat modeling
+[00:23:06.960] workflow in particular.
+[00:23:08.400] The thing even with even with the most mature
+[00:23:12.840] traditional automation threat modeling, automated threat modeling framework
+[00:23:16.480] were never able to truly get continuous and scalable
+[00:23:20.280] throughout modeling carried out across every change across all projects.
+[00:23:23.680] So only really with agents that we've been able to do that,
+[00:23:26.440] and now we've been able to close the loop as well by actually instead of
+[00:23:30.320] just presenting JIRA stories for the missing controls, we're able
+[00:23:34.760] to actually generate the pull request to implement the changes as well.
+[00:23:42.200] And that's it.
+[00:24:03.120] I just have a question for you.
+[00:24:04.680] What other types of
+[00:24:06.960] agents could we try to exceed that capability?
+[00:24:12.080] Okay.
+[00:24:12.320] It's great to be able to the prompt injection.
+[00:24:15.360] So do you feel it's
+[00:24:18.280] the agent exceeding it's human.
+[00:24:21.240] Or could it be a piece of property?
+[00:24:23.480] I think it was.
+[00:24:24.240] It was specifically around trying to exceed their understanding.
+[00:24:28.440] And specifically because they don't have a model, they don't have a world model.
+[00:24:32.440] They aren't able to understand what the outcomes of their actions will be.
+[00:24:37.160] You know, there's other types of there's other types of models as well.
+[00:24:42.040] So things like jointing, bedding models that do build their own world view model.
+[00:24:47.200] And so they're able to do
+[00:24:48.600] a probabilistic calculation of what the likely consequence of that action is.
+[00:24:52.840] So they can make those choices.
+[00:24:54.880] Generative LLMs are not able to do that.
+[00:24:57.200] It's they don't they don't have they don't have that view.
+[00:25:00.520] So you have less reliable outcomes potentially.
+[00:25:04.440] They're they're still very capable
+[00:25:05.960] and can do lots of things, but they're not necessarily able to pick
+[00:25:10.280] the action which is most appropriate.
+[00:25:15.600] Unless you're using some
+[00:25:18.760] positive critical.
+[00:25:20.960] But we take the views of I think opening Hugging Face.
+[00:25:24.960] Yeah.
+[00:25:25.400] My guess would be it's more because of prompt injection.
+[00:25:29.440] So I mean I don't think there was any prompt injection there.
+[00:25:32.040] That was that was the agent deciding it.
+[00:25:34.480] The best means to achieve the task it was
+[00:25:37.680] given was to go and cheat by trying to, by hacking into hugging
+[00:25:42.720] face to find the results of the test that it was being evaluated against.
+[00:25:46.560] So that wasn't anything to do with prompt injection there.
+[00:25:51.880] A example of prompt injection
+[00:25:53.960] would be say someone's got so an example of indirect prompt injection.
+[00:25:57.640] So someone's connected Claude up to their email.
+[00:26:02.320] And someone someone emails them something malicious
+[00:26:05.600] because they know it's going to be passed by Claude.
+[00:26:07.840] That then triggers something to, you know, send all of my
+[00:26:12.040] all of my outbox or all of my inbox to, to someone else.
+[00:26:15.760] That would be an example of prompt injection.
+[00:26:19.400] Good.
+[00:26:20.960] That would be, well, indirect.
+[00:26:22.600] Yeah. That's all right.
+[00:26:25.720] So the first part,
+[00:26:27.720] it's more like a supply chain.
+[00:26:30.280] That's yeah it depends.
+[00:26:31.920] Yeah I mean it depends depends in the nature of how it got there I suppose.
+[00:26:35.760] Yeah.
+[00:26:36.240] Thank you.
+[00:26:44.680] Yeah.
+[00:26:45.160] So it's not from rejection I'm having this issue.
+[00:26:48.280] But the agent was trying to do something a cheaper task.
+[00:26:52.560] But sometimes patients will respect any promise,
+[00:26:55.840] even if you put them in for the talent
+[00:26:58.960] to do, they go and do it
+[00:27:02.240] like that.
+[00:27:04.440] Why do they do that?
+[00:27:05.720] Well, ultimately,
+[00:27:07.680] ultimately, they're trying to achieve what they've given as their directive.
+[00:27:10.960] So that could be based on what they've been.
+[00:27:14.160] Going through. And God
+[00:27:16.760] said, go through it. Yeah.
+[00:27:18.360] Sometimes they don't expect.
+[00:27:19.680] Yeah, I mean, that's kind of my argument around you don't rely
+[00:27:23.920] on what's in what's in a prompt and what's in the skill.
+[00:27:26.600] It doesn't have to go and do that.
+[00:27:28.040] Why you need hard, hard gating around
+[00:27:31.080] permissions to prevent it, to do what you don't want it to do.
+[00:27:34.880] Because, because because of its non-deterministic nature
+[00:27:38.040] and you don't know what it's going to choose to do.
+[00:27:49.080] I'm sorry.
+[00:27:52.800] You two.
+[00:27:54.440] On to it.
+[00:27:56.880] But what.
+[00:27:58.080] I wanted to ask you is how concerned are you about the Chinese Open
+[00:28:02.600] models that are coming out like three, for example,
+[00:28:06.280] if you look at the entire situation.
+[00:28:08.680] Yeah, OpenAI AI had down the guard rails and asked them to do this.
+[00:28:14.520] It was exploit German test
+[00:28:16.920] and then it's expected containment and went across the face.
+[00:28:22.640] I don't know exactly when he played three.
+[00:28:24.480] And Qwen might have similar capabilities.
+[00:28:27.760] There's no guardrails in those things.
+[00:28:29.840] So you know, besides people walking agents and doing that for
+[00:28:33.080] my accident is containment.
+[00:28:36.120] What about actors using those models to get into the system
+[00:28:40.280] for which there about and how concerned as an expert on you about that?
+[00:28:44.560] I don't think we can rely on the guide rails anyway because the
+[00:28:47.760] the models are only going to get more capable, and we know that
+[00:28:51.360] we're not going to have control of the ones which you know of,
+[00:28:55.040] of all of them, because all, all the labs are going to be responsible.
+[00:28:59.400] So I think how concerned are we about it?
+[00:29:03.640] I think
+[00:29:06.040] I mean, I mean, I mean, very bitter.
+[00:29:08.440] I mean, that's why we need to we need that's why
+[00:29:11.840] we can't rely on what we've been doing.
+[00:29:13.880] You know, like
+[00:29:16.880] traditionally there's not too many places that have got to
+[00:29:20.480] have got to a place where they're able to automatically and continuously deploy,
+[00:29:24.960] deploy updates to which make sure you're pulling in the latest fixes
+[00:29:29.120] for newly discovered funds.
+[00:29:30.320] And if you see the rate, if you see the charts for the public CVS,
+[00:29:33.560] it's just been going up exponentially now.
+[00:29:36.280] So there's much more that can be exploited.
+[00:29:38.440] So yeah, it's an arms race to move to for defenders
+[00:29:42.840] to move to agentic workflows to be able to plug all the gaps.
+[00:29:46.240] And we're going to get very
+[00:29:47.720] I mean we're already seeing some happening in some places.
+[00:29:50.720] But you're just going to have, you know, agents as autonomous incident
+[00:29:54.840] response agents, which are dynamically detecting what what
+[00:29:58.600] detections they've got in the same building.
+[00:30:00.760] If they don't building them, if they don't have them from the front billing
+[00:30:03.400] they've been doing,
+[00:30:04.240] then they're going to be creating their own run books if they don't exist,
+[00:30:06.840] and then they're going to be acting off that.
+[00:30:08.880] It's already it's already happening at the moment.
+[00:30:11.520] You know, the OpenAI hugging face.
+[00:30:13.400] Then the response to that was via an open an open wait model,
+[00:30:19.600] because it didn't have the refusals
+[00:30:21.160] to actually generate the fixes for the issues which were identified.
+[00:30:24.920] It was GLM 5.2 because they were getting refusals
+[00:30:28.480] from I'm not sure which
+[00:30:32.680] which GPT, OpenAI model they were trying to use.
+[00:30:36.240] I think it was the I think it was like one of the,
+[00:30:38.320] one of the cyber ones as well, which was still doing the refusals.
+[00:30:41.640] But they were obviously not part of lasting long.
+[00:30:45.080] I think they.
+[00:30:46.840] Yeah.
+[00:30:47.480] Hugging Face that shortly afterwards.
+[00:30:50.280] But that's really interesting.
+[00:30:51.440] So what type of agents are actually doing the fence as well as what it's going to.
+[00:30:55.600] Yeah, that's already in place in some places.
+[00:30:58.880] And it just kind of it's just going to become more common.
+[00:31:01.720] I mean, the thing which we it's going to be throughout the whole,
+[00:31:05.440] the whole engineering, the whole infrastructure stack,
+[00:31:10.840] solving all the limiting factors that are stopping us doing it at this moment.
+[00:31:13.520] You know, why can't why isn't everyone able to quickly
+[00:31:18.160] and reliably deploy changes all the time because of because of immaturity
+[00:31:22.120] in their test coverage or of their observability.
+[00:31:24.960] So it's just it's creating agents to be able to plug those,
+[00:31:28.040] to go and generate the tests where they don't exist, like generate
+[00:31:32.840] figure out what's needed from from a metrics perspective from reserve ability.
+[00:31:37.200] It's. Yeah.
+[00:31:39.000] But I think everyone is from what we're seeing from
+[00:31:44.120] from all of our customers.
+[00:31:45.160] Everyone is at pace deploying,
+[00:31:48.160] deploying agentic workflows and to do exactly that.
+[00:31:52.640] Very interesting.
+[00:31:53.240] So one last question about their.
+[00:32:00.200] Nice nice,
+[00:32:02.760] but this is the last
+[00:32:06.160] well case.
+[00:32:06.960] What happened was the AWS was down
+[00:32:10.480] there.
+[00:32:11.040] The differences.
+[00:32:16.720] So these are basically
+[00:32:19.120] you threw for better couldn't find it.
+[00:32:23.080] Came back from the rectory.
+[00:32:25.960] They couldn't find resources that, you know after cascading.
+[00:32:28.880] And they just let the possibilities and everything as well.
+[00:32:33.000] But that's, that's, that's, that's
+[00:32:35.440] it can happen to anyone that
+[00:32:38.840] the question I have is similar.
+[00:32:40.960] Why that you shouldn't give assets to general workflows later
+[00:32:46.800] in the same that.
+[00:32:48.400] It's all you need to do it based on the use case.
+[00:32:51.600] But it's the rule of two. Right.
+[00:32:53.160] So you if you if you need something to access
+[00:32:58.640] if you need to be able to put into agency sensitive information
+[00:33:02.120] with widespread access, then then you know, with untrusted
+[00:33:06.200] accepting untrusted input as well as sensitive data, then
+[00:33:10.320] you want to avoid giving it unrestricted external internet access, basically.
+[00:33:15.320] So it's just it's not.
+[00:33:16.680] But you will have use cases where your agents will need internet access.
+[00:33:20.400] So you just want to make sure you're doing
+[00:33:22.800] have some security controls to validate any untrusted input.
+[00:33:26.840] So it's not a it's not a you must never do this.
+[00:33:30.680] It's whichever is appropriate to cut for.
+[00:33:34.000] Your resume.
+[00:33:36.520] How to do is outside and domain check it.
+[00:33:41.440] It's going to it's going to depend right.
+[00:33:43.160] So you might have agents which need to to speak in externally.
+[00:33:48.680] But for example maybe you don't give it
+[00:33:51.640] unrestricted access to all of your sensitive financial data.
+[00:33:55.080] And then also, you know, allow,
+[00:33:58.680] allow multiple or allow all of your employees
+[00:34:01.800] to be able to ask to ask anything with it from a prompt.
+[00:34:05.840] It's going to.
+[00:34:08.480] Yeah.
+[00:34:08.760] It's not just as simple as don't allow internet.
+[00:34:11.440] External internet. Access
+[00:34:13.720] is also girls
+[00:34:16.320] ages not simply have access
+[00:34:21.040] normally. Yeah.
+[00:34:22.720] A little less
+[00:34:25.000] access.
+[00:34:26.040] Cannot access
+[00:34:27.880] which place.
+[00:34:31.000] you're restricting the internet accessibility
+[00:34:33.200] to your databases, you probably want to do the same thing for any agents
+[00:34:37.000] which are interacting with that as well, because that's going to be that's
+[00:34:40.120] going to be a means of exfiltration via the agents if they've got internet access.
+[00:34:44.360] So yeah, you need to figure out what your trust boundaries are
+[00:34:47.600] for all the for all of the data flows involved with that.
+[00:34:50.680] Like if you if you if you've got something which is just internal
+[00:34:54.680] and there's no internet connectivity and then you're adding agents to it,
+[00:34:58.680] you want to make sure that those agents don't have
+[00:35:02.600] external internet access as well.
+[00:35:05.920] Okay,
+[00:35:07.480] great.
+[00:35:07.880] Thanks.
+[00:35:12.400] Yeah, thanks for coming.
+[00:35:13.560] Really great events. And I

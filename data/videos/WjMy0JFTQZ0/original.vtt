@@ -1,0 +1,5077 @@
+WEBVTT
+
+1
+00:00:00.080 --> 00:00:03.919
+You're telling Chad, hey, how would I
+
+2
+00:00:02.080 --> 00:00:05.359
+find the largest file on my hard drive?
+
+3
+00:00:03.919 --> 00:00:06.720
+It could give you the command, but it
+
+4
+00:00:05.359 --> 00:00:09.120
+cannot run the command on your hard
+
+5
+00:00:06.720 --> 00:00:11.280
+drive. By tool use, we're able to just
+
+6
+00:00:09.120 --> 00:00:12.880
+bypass all of that and let the model
+
+7
+00:00:11.280 --> 00:00:14.559
+have sort of like a side channel where
+
+8
+00:00:12.880 --> 00:00:16.240
+it is saying, okay, these are tokens
+
+9
+00:00:14.559 --> 00:00:18.080
+that I'm not emitting for the user to
+
+10
+00:00:16.240 --> 00:00:20.320
+read. Stop for a second. You should run
+
+11
+00:00:18.080 --> 00:00:21.760
+a certain function or a certain tool.
+
+12
+00:00:20.320 --> 00:00:23.359
+The tools combined with the context and
+
+13
+00:00:21.760 --> 00:00:24.720
+the model and the agentic harness around
+
+14
+00:00:23.359 --> 00:00:26.480
+all of that is the thing that makes an
+
+15
+00:00:24.720 --> 00:00:27.920
+agent an agent as opposed to sort of
+
+16
+00:00:26.480 --> 00:00:29.519
+like just the model which is like a
+
+17
+00:00:27.920 --> 00:00:32.960
+brain in the jar. It cannot do anything.
+
+18
+00:00:29.519 --> 00:00:34.960
+the 41K versus the 1.1K between Claude
+
+19
+00:00:32.960 --> 00:00:36.680
+and Codex. That's super significant.
+
+20
+00:00:34.960 --> 00:00:38.879
+Talk us through kind of like I guess the
+
+21
+00:00:36.680 --> 00:00:42.480
+[music] split in the tools. Our sense is
+
+22
+00:00:38.879 --> 00:00:44.559
+that Sonnet 45, Opus 45 do better than
+
+23
+00:00:42.480 --> 00:00:46.160
+the Codex models [music] in using other
+
+24
+00:00:44.559 --> 00:00:48.480
+tools. There is reason to believe that
+
+25
+00:00:46.160 --> 00:00:50.160
+the model would be capable with new
+
+26
+00:00:48.480 --> 00:00:51.840
+tools that it's never seen because it's
+
+27
+00:00:50.160 --> 00:00:53.120
+like more of a generalist as opposed to
+
+28
+00:00:51.840 --> 00:00:56.360
+has been trained on [music] those tools
+
+29
+00:00:53.120 --> 00:00:56.360
+in particular.
+
+30
+00:01:01.199 --> 00:01:04.400
+Before we jump into this episode, I
+
+31
+00:01:02.960 --> 00:01:07.200
+wanted to let you know that this podcast
+
+32
+00:01:04.400 --> 00:01:09.360
+is for developers building with AI at
+
+33
+00:01:07.200 --> 00:01:12.000
+the core. So whether that's exploring
+
+34
+00:01:09.360 --> 00:01:14.400
+the latest tools, the workflows, or the
+
+35
+00:01:12.000 --> 00:01:16.720
+best practices, this podcast's for you.
+
+36
+00:01:14.400 --> 00:01:18.159
+A really quick ask, 90% of people who
+
+37
+00:01:16.720 --> 00:01:19.920
+are listening to this haven't yet
+
+38
+00:01:18.159 --> 00:01:21.840
+subscribed. So if this content has
+
+39
+00:01:19.920 --> 00:01:24.000
+helped you build smarter, hit that
+
+40
+00:01:21.840 --> 00:01:26.960
+subscribe button and maybe a like. All
+
+41
+00:01:24.000 --> 00:01:29.520
+right, back to the episode. Hello and
+
+42
+00:01:26.960 --> 00:01:32.000
+welcome to another episode of the AI
+
+43
+00:01:29.520 --> 00:01:33.280
+native dev. Um, and my name is Simon
+
+44
+00:01:32.000 --> 00:01:35.600
+Maple. I'm your host for today. And
+
+45
+00:01:33.280 --> 00:01:38.000
+joining me is Yaniv Acne.
+
+46
+00:01:35.600 --> 00:01:40.400
+&gt;&gt; Hi. And Yian is a software engineer from
+
+47
+00:01:38.000 --> 00:01:43.040
+Tessle. Yaniv, you've done a huge amount
+
+48
+00:01:40.400 --> 00:01:45.040
+of research um on some super interesting
+
+49
+00:01:43.040 --> 00:01:48.640
+things about, you know, understanding
+
+50
+00:01:45.040 --> 00:01:51.439
+how context can be used to better enable
+
+51
+00:01:48.640 --> 00:01:54.320
+some of the top tier uh agents in our
+
+52
+00:01:51.439 --> 00:01:55.840
+industry today. Um, you're a software
+
+53
+00:01:54.320 --> 00:01:57.600
+engineer. you've done a little bit in in
+
+54
+00:01:55.840 --> 00:01:58.960
+the AI engineering space. Tell us a
+
+55
+00:01:57.600 --> 00:02:02.479
+little bit about yourself.
+
+56
+00:01:58.960 --> 00:02:04.479
+&gt;&gt; Yeah. Uh thanks Simon. So um I've I've
+
+57
+00:02:02.479 --> 00:02:07.280
+been with Tesla since the start. I think
+
+58
+00:02:04.479 --> 00:02:09.599
+we joined the same time give or take. Uh
+
+59
+00:02:07.280 --> 00:02:11.680
+I've done a bunch of roles and basically
+
+60
+00:02:09.599 --> 00:02:13.920
+change role and shift shape to to fit
+
+61
+00:02:11.680 --> 00:02:15.200
+whatever is necessary. uh I've I've led
+
+62
+00:02:13.920 --> 00:02:17.920
+and kind of like started the I
+
+63
+00:02:15.200 --> 00:02:20.000
+engineering team but now have uh focused
+
+64
+00:02:17.920 --> 00:02:21.520
+more on working with customers but still
+
+65
+00:02:20.000 --> 00:02:23.840
+in working with customers sometimes
+
+66
+00:02:21.520 --> 00:02:25.840
+understanding uh what could best service
+
+67
+00:02:23.840 --> 00:02:27.360
+customer or how would whatever context
+
+68
+00:02:25.840 --> 00:02:29.680
+is relevant to a customer would fit in
+
+69
+00:02:27.360 --> 00:02:31.200
+with an agent requires us to actually
+
+70
+00:02:29.680 --> 00:02:32.800
+often times we look at what customers
+
+71
+00:02:31.200 --> 00:02:34.560
+are doing but sometimes actually look at
+
+72
+00:02:32.800 --> 00:02:37.200
+what the agents are doing and seeing how
+
+73
+00:02:34.560 --> 00:02:39.760
+the two things fit. So what what context
+
+74
+00:02:37.200 --> 00:02:41.760
+do do the agents come with built in like
+
+75
+00:02:39.760 --> 00:02:45.280
+when when you when you download cloud
+
+76
+00:02:41.760 --> 00:02:47.360
+codeex gemini and so on what is it what
+
+77
+00:02:45.280 --> 00:02:48.800
+is actually told to it internally and
+
+78
+00:02:47.360 --> 00:02:50.239
+then you see how do you fit whatever
+
+79
+00:02:48.800 --> 00:02:52.160
+you're whatever else you're feeding to
+
+80
+00:02:50.239 --> 00:02:53.360
+it externally to see the two things kind
+
+81
+00:02:52.160 --> 00:02:53.680
+of like gel well together.
+
+82
+00:02:53.360 --> 00:02:56.400
+&gt;&gt; Yeah.
+
+83
+00:02:53.680 --> 00:02:57.760
+&gt;&gt; So that's been the the the underlying uh
+
+84
+00:02:56.400 --> 00:02:59.280
+thought behind the research right like
+
+85
+00:02:57.760 --> 00:03:00.720
+let's see what is in those agents what
+
+86
+00:02:59.280 --> 00:03:01.040
+is being told to them. So let's talk
+
+87
+00:03:00.720 --> 00:03:02.640
+about
+
+88
+00:03:01.040 --> 00:03:04.159
+&gt;&gt; and you gave this as a lunch and learn
+
+89
+00:03:02.640 --> 00:03:06.319
+here in the office. Uh in fact there's a
+
+90
+00:03:04.159 --> 00:03:08.319
+lunch and learn happening right now uh
+
+91
+00:03:06.319 --> 00:03:11.840
+from Maria who actually was on the
+
+92
+00:03:08.319 --> 00:03:13.920
+podcast gosh um well actually uh last
+
+93
+00:03:11.840 --> 00:03:16.560
+week in fact she it was released last
+
+94
+00:03:13.920 --> 00:03:18.800
+week and she's yeah giving a another
+
+95
+00:03:16.560 --> 00:03:20.959
+wonderful uh session today. You gave
+
+96
+00:03:18.800 --> 00:03:21.440
+this session a week ago uh as a lunch
+
+97
+00:03:20.959 --> 00:03:22.159
+and learn
+
+98
+00:03:21.440 --> 00:03:23.840
+&gt;&gt; at lunch and learn
+
+99
+00:03:22.159 --> 00:03:25.280
+&gt;&gt; and we thought wow we were blown away by
+
+100
+00:03:23.840 --> 00:03:26.400
+the information first off and then we
+
+101
+00:03:25.280 --> 00:03:27.760
+were like oh we should we definitely
+
+102
+00:03:26.400 --> 00:03:30.000
+have to get this on the podcast we need
+
+103
+00:03:27.760 --> 00:03:33.360
+to share this um but this information is
+
+104
+00:03:30.000 --> 00:03:34.720
+is for our own for Tesla's really own
+
+105
+00:03:33.360 --> 00:03:36.560
+knowledge initially it wasn't something
+
+106
+00:03:34.720 --> 00:03:38.640
+that we were originally going to share
+
+107
+00:03:36.560 --> 00:03:41.360
+um it was for our learnings right
+
+108
+00:03:38.640 --> 00:03:44.560
+&gt;&gt; it's so so we started looking into this
+
+109
+00:03:41.360 --> 00:03:46.159
+I I can't remember when did we start as
+
+110
+00:03:44.560 --> 00:03:48.080
+soon as Tesla started basically as soon
+
+111
+00:03:46.159 --> 00:03:50.400
+as agents appeared we definitely started
+
+112
+00:03:48.080 --> 00:03:52.640
+looking at how do they work kind of like
+
+113
+00:03:50.400 --> 00:03:54.640
+packaging it up a bit and and preparing
+
+114
+00:03:52.640 --> 00:03:56.239
+for presentation was for for a meetup
+
+115
+00:03:54.640 --> 00:03:57.840
+that was happening here in London and
+
+116
+00:03:56.239 --> 00:03:59.519
+then we said okay maybe we'll do like an
+
+117
+00:03:57.840 --> 00:04:01.200
+extended director's cut for lunch and
+
+118
+00:03:59.519 --> 00:04:03.040
+learn and then afterwards we said hey
+
+119
+00:04:01.200 --> 00:04:04.159
+maybe there's content for a podcast here
+
+120
+00:04:03.040 --> 00:04:05.120
+so let's do that cool
+
+121
+00:04:04.159 --> 00:04:06.560
+&gt;&gt; so here we are
+
+122
+00:04:05.120 --> 00:04:08.319
+&gt;&gt; so we're going to we're going to kick
+
+123
+00:04:06.560 --> 00:04:10.239
+off with I guess a little bit about
+
+124
+00:04:08.319 --> 00:04:12.400
+about some baseline statistics for
+
+125
+00:04:10.239 --> 00:04:14.159
+agents some of the some of the top tier
+
+126
+00:04:12.400 --> 00:04:16.239
+agents that I guess most people of our
+
+127
+00:04:14.159 --> 00:04:19.359
+listeners would probably uh maybe use
+
+128
+00:04:16.239 --> 00:04:20.799
+today then we're going look at what kind
+
+129
+00:04:19.359 --> 00:04:23.040
+of things will actually change that
+
+130
+00:04:20.799 --> 00:04:25.840
+performance, better enable agents to
+
+131
+00:04:23.040 --> 00:04:27.440
+perform their tasks uh more effectively.
+
+132
+00:04:25.840 --> 00:04:29.120
+Everything from looking at system
+
+133
+00:04:27.440 --> 00:04:32.880
+prompts to the to the information that's
+
+134
+00:04:29.120 --> 00:04:34.960
+given um in a prompt. Uh then looking at
+
+135
+00:04:32.880 --> 00:04:36.800
+things like the tool usage, what tools
+
+136
+00:04:34.960 --> 00:04:40.320
+are available to agents and how that
+
+137
+00:04:36.800 --> 00:04:42.240
+affects uh their their capability uh and
+
+138
+00:04:40.320 --> 00:04:43.199
+more. So where do we start unique?
+
+139
+00:04:42.240 --> 00:04:45.919
+Should we have a look at the the
+
+140
+00:04:43.199 --> 00:04:47.680
+baseline for how uh how agents work
+
+141
+00:04:45.919 --> 00:04:49.759
+today? If I can like one thing we we
+
+142
+00:04:47.680 --> 00:04:51.440
+should remember before we we'll we'll
+
+143
+00:04:49.759 --> 00:04:52.080
+talk exactly about about the baseline or
+
+144
+00:04:51.440 --> 00:04:53.040
+like the
+
+145
+00:04:52.080 --> 00:04:54.720
+&gt;&gt; the [clears throat] agent with nothing
+
+146
+00:04:53.040 --> 00:04:56.880
+in it basically to start with right like
+
+147
+00:04:54.720 --> 00:04:59.120
+yeah but before we do that just just a
+
+148
+00:04:56.880 --> 00:05:00.560
+quick reminder to everyone uh we're
+
+149
+00:04:59.120 --> 00:05:02.160
+doing this to best understand what
+
+150
+00:05:00.560 --> 00:05:04.080
+context to give agents
+
+151
+00:05:02.160 --> 00:05:06.720
+&gt;&gt; we we cannot speak on behalf while we're
+
+152
+00:05:04.080 --> 00:05:08.479
+talking about like flagship agents that
+
+153
+00:05:06.720 --> 00:05:10.400
+you may have heard of. We can't speak on
+
+154
+00:05:08.479 --> 00:05:12.160
+behalf of those companies. Uh we don't
+
+155
+00:05:10.400 --> 00:05:13.520
+have any internal material from them.
+
+156
+00:05:12.160 --> 00:05:16.720
+We're trying to understand how to best
+
+157
+00:05:13.520 --> 00:05:18.560
+use uh the product we're being given and
+
+158
+00:05:16.720 --> 00:05:20.560
+uh and so some of the things we say I
+
+159
+00:05:18.560 --> 00:05:21.520
+hope they're right they might also be
+
+160
+00:05:20.560 --> 00:05:23.600
+wrong. If you have a different
+
+161
+00:05:21.520 --> 00:05:26.240
+perspective if your understanding of how
+
+162
+00:05:23.600 --> 00:05:29.440
+say Claude code or Gemini works like
+
+163
+00:05:26.240 --> 00:05:31.440
+please uh let us know and and we yeah
+
+164
+00:05:29.440 --> 00:05:32.400
+it's we're showing you the research as
+
+165
+00:05:31.440 --> 00:05:34.240
+it's happening basically.
+
+166
+00:05:32.400 --> 00:05:35.840
+&gt;&gt; Absolutely. Sounds good. Let's jump in
+
+167
+00:05:34.240 --> 00:05:38.240
+&gt;&gt; with this. Let's let's go to the the
+
+168
+00:05:35.840 --> 00:05:40.479
+minimalistic agent. Right. Yeah. Okay.
+
+169
+00:05:38.240 --> 00:05:44.240
+So, uh on the screen, what we can see
+
+170
+00:05:40.479 --> 00:05:46.560
+here is um the code for something I
+
+171
+00:05:44.240 --> 00:05:48.720
+called nano agent in for for the meetup.
+
+172
+00:05:46.560 --> 00:05:49.919
+I basically vibe coded in like an hour.
+
+173
+00:05:48.720 --> 00:05:51.520
+There's there's nothing particularly
+
+174
+00:05:49.919 --> 00:05:53.520
+interesting here
+
+175
+00:05:51.520 --> 00:05:54.880
+&gt;&gt; other than the fact that there is
+
+176
+00:05:53.520 --> 00:05:56.400
+nothing particularly interesting. Like
+
+177
+00:05:54.880 --> 00:05:59.120
+the interesting thing is that this is a
+
+178
+00:05:56.400 --> 00:06:02.000
+working coding agent that uh I wouldn't
+
+179
+00:05:59.120 --> 00:06:03.759
+say uh would win you any awards uh but
+
+180
+00:06:02.000 --> 00:06:04.720
+is actually quite capable. Quite
+
+181
+00:06:03.759 --> 00:06:05.759
+capable. So,
+
+182
+00:06:04.720 --> 00:06:07.199
+&gt;&gt; this is Python, right?
+
+183
+00:06:05.759 --> 00:06:09.280
+&gt;&gt; This is in Python. I wouldn't say it's
+
+184
+00:06:07.199 --> 00:06:11.039
+quite capable and it's, you know, it's
+
+185
+00:06:09.280 --> 00:06:12.000
+&gt;&gt; it's not as capable if we wrote it in a
+
+186
+00:06:11.039 --> 00:06:14.080
+100 lines of Java.
+
+187
+00:06:12.000 --> 00:06:15.600
+&gt;&gt; There we go. At least 100 lines.
+
+188
+00:06:14.080 --> 00:06:17.600
+&gt;&gt; At least 100 lines of
+
+189
+00:06:15.600 --> 00:06:19.360
+&gt;&gt; and then some library and some XML.
+
+190
+00:06:17.600 --> 00:06:21.120
+Exactly. Exactly. To get started. Okay.
+
+191
+00:06:19.360 --> 00:06:23.120
+But no, but but in Python, this is what
+
+192
+00:06:21.120 --> 00:06:24.720
+I wrote. And frankly, I think I could
+
+193
+00:06:23.120 --> 00:06:26.720
+have done without the write file and
+
+194
+00:06:24.720 --> 00:06:28.479
+read file tools. I think just execute
+
+195
+00:06:26.720 --> 00:06:30.880
+and the run agent loop would have been
+
+196
+00:06:28.479 --> 00:06:33.039
+enough. But if if we look at the the the
+
+197
+00:06:30.880 --> 00:06:34.880
+bits here, we have the system prompt
+
+198
+00:06:33.039 --> 00:06:36.720
+which which you can read is like 250
+
+199
+00:06:34.880 --> 00:06:39.199
+bytes and it just says hey you're a
+
+200
+00:06:36.720 --> 00:06:42.319
+coding agent do well and the execute
+
+201
+00:06:39.199 --> 00:06:44.240
+commands allow the the model to run any
+
+202
+00:06:42.319 --> 00:06:45.759
+command on whatever is the environment
+
+203
+00:06:44.240 --> 00:06:47.919
+this is running on. I'm running it in a
+
+204
+00:06:45.759 --> 00:06:49.520
+container and then write file and read
+
+205
+00:06:47.919 --> 00:06:51.680
+file because I felt that will be uh
+
+206
+00:06:49.520 --> 00:06:52.960
+easier for a human to understand that if
+
+207
+00:06:51.680 --> 00:06:54.720
+we would have seen the model doing an
+
+208
+00:06:52.960 --> 00:06:56.880
+execute command and trying to like you
+
+209
+00:06:54.720 --> 00:06:58.960
+know echo something into something or
+
+210
+00:06:56.880 --> 00:07:00.720
+cat something to read a file. So just to
+
+211
+00:06:58.960 --> 00:07:03.840
+have explicit tools for read and write
+
+212
+00:07:00.720 --> 00:07:06.800
+would probably be okay uh even with just
+
+213
+00:07:03.840 --> 00:07:09.919
+execute but maybe the the heart of the
+
+214
+00:07:06.800 --> 00:07:11.759
+agent is the run agent uh function where
+
+215
+00:07:09.919 --> 00:07:13.360
+we see we're initializing the model
+
+216
+00:07:11.759 --> 00:07:15.120
+we're giving it the tools right like the
+
+217
+00:07:13.360 --> 00:07:17.520
+other functions are given to it as tools
+
+218
+00:07:15.120 --> 00:07:19.440
+I'm using here the a library called LLM
+
+219
+00:07:17.520 --> 00:07:20.080
+by Simon Willis great library in my
+
+220
+00:07:19.440 --> 00:07:22.000
+opinion
+
+221
+00:07:20.080 --> 00:07:23.520
+&gt;&gt; and then we're creating a conversation
+
+222
+00:07:22.000 --> 00:07:26.240
+where we're starting with the system
+
+223
+00:07:23.520 --> 00:07:28.560
+prompt and whatever the user has told
+
+224
+00:07:26.240 --> 00:07:30.639
+the the agent to do so like the goal and
+
+225
+00:07:28.560 --> 00:07:33.840
+now the agent runs in a loop saying okay
+
+226
+00:07:30.639 --> 00:07:35.120
+what can I do to achieve this goal and
+
+227
+00:07:33.840 --> 00:07:36.560
+we're counting on the model the
+
+228
+00:07:35.120 --> 00:07:39.039
+underlying model that we're using to
+
+229
+00:07:36.560 --> 00:07:41.840
+power this thing uh this I I ran it with
+
+230
+00:07:39.039 --> 00:07:44.639
+sonet 4.5 but whatever recent model
+
+231
+00:07:41.840 --> 00:07:46.160
+you'd use to say oh well given this goal
+
+232
+00:07:44.639 --> 00:07:47.919
+and given this prompt and given that I
+
+233
+00:07:46.160 --> 00:07:49.440
+have this tool I need to understand
+
+234
+00:07:47.919 --> 00:07:51.199
+what's going on here I need to start
+
+235
+00:07:49.440 --> 00:07:53.360
+reading what files already exist in the
+
+236
+00:07:51.199 --> 00:07:54.879
+file system I need to run ls I need to
+
+237
+00:07:53.360 --> 00:07:57.440
+run a read I need to understand what's
+
+238
+00:07:54.879 --> 00:07:59.280
+going on and then start actually getting
+
+239
+00:07:57.440 --> 00:08:01.280
+towards the goal. If I tell it make me a
+
+240
+00:07:59.280 --> 00:08:03.280
+to-do app, I need to start writing
+
+241
+00:08:01.280 --> 00:08:04.960
+files. I need to execute a test. I need
+
+242
+00:08:03.280 --> 00:08:07.440
+to check that things are working until
+
+243
+00:08:04.960 --> 00:08:09.520
+eventually uh this wild tool calls and
+
+244
+00:08:07.440 --> 00:08:11.120
+the number of available turns uh is
+
+245
+00:08:09.520 --> 00:08:13.120
+done. So there the model saying I don't
+
+246
+00:08:11.120 --> 00:08:14.960
+want to call any more tools or we've ran
+
+247
+00:08:13.120 --> 00:08:15.520
+out of turns and then we have something
+
+248
+00:08:14.960 --> 00:08:16.319
+complete.
+
+249
+00:08:15.520 --> 00:08:19.120
+&gt;&gt; Mhm.
+
+250
+00:08:16.319 --> 00:08:22.000
+&gt;&gt; So that's it. And in a 100 lines you get
+
+251
+00:08:19.120 --> 00:08:23.599
+an agent and you're thinking, well, it's
+
+252
+00:08:22.000 --> 00:08:24.319
+probably not a very capable agent, is
+
+253
+00:08:23.599 --> 00:08:26.400
+it?
+
+254
+00:08:24.319 --> 00:08:29.039
+&gt;&gt; And I I can't say it's very capable. I
+
+255
+00:08:26.400 --> 00:08:31.280
+mean, I'm sure it's not very capable,
+
+256
+00:08:29.039 --> 00:08:32.719
+but if you if you you ask it to, hey,
+
+257
+00:08:31.280 --> 00:08:34.560
+make me a to-do app. Don't over
+
+258
+00:08:32.719 --> 00:08:36.080
+complicate it. This is for a demo. Just,
+
+259
+00:08:34.560 --> 00:08:38.000
+you know, put something nice on the
+
+260
+00:08:36.080 --> 00:08:39.680
+screen and make it look good and so on.
+
+261
+00:08:38.000 --> 00:08:42.560
+You get a working to-do app from this
+
+262
+00:08:39.680 --> 00:08:44.640
+like underund line uh agent. It looks
+
+263
+00:08:42.560 --> 00:08:46.480
+great. It works. Like you click around,
+
+264
+00:08:44.640 --> 00:08:49.200
+you can manage your to-dos. I don't
+
+265
+00:08:46.480 --> 00:08:51.200
+know. You can vibe code with this. Uh I
+
+266
+00:08:49.200 --> 00:08:54.080
+wouldn't say as well as you would with
+
+267
+00:08:51.200 --> 00:08:56.240
+the flagship agents, but but absolutely
+
+268
+00:08:54.080 --> 00:08:58.320
+works and provides good results. Mhm.
+
+269
+00:08:56.240 --> 00:09:00.160
+&gt;&gt; And this isn't a new observation that
+
+270
+00:08:58.320 --> 00:09:01.279
+that I've made or I don't know Tesla
+
+271
+00:09:00.160 --> 00:09:03.600
+have made. Like I said, I wouldn't say
+
+272
+00:09:01.279 --> 00:09:05.040
+it's a very capable agent, but if you
+
+273
+00:09:03.600 --> 00:09:08.160
+actually look at the scores for a
+
+274
+00:09:05.040 --> 00:09:10.560
+terminal bench, uh terminal bench, a
+
+275
+00:09:08.160 --> 00:09:11.360
+popular and I think quite a respectable
+
+276
+00:09:10.560 --> 00:09:12.720
+uh benchmark.
+
+277
+00:09:11.360 --> 00:09:14.720
+&gt;&gt; We use it we use it internally.
+
+278
+00:09:12.720 --> 00:09:16.720
+&gt;&gt; We use it also internally. Exactly. For
+
+279
+00:09:14.720 --> 00:09:20.399
+for EVOs that that we run.
+
+280
+00:09:16.720 --> 00:09:22.000
+&gt;&gt; Uh you see there only 15th place. So
+
+281
+00:09:20.399 --> 00:09:24.480
+okay, not first place and not second
+
+282
+00:09:22.000 --> 00:09:27.360
+place but not 100th place. only 15th
+
+283
+00:09:24.480 --> 00:09:29.519
+place is mini sui agent uh from the same
+
+284
+00:09:27.360 --> 00:09:33.440
+lab that made su bench and and su agent
+
+285
+00:09:29.519 --> 00:09:36.320
+and so on and uh you see that they have
+
+286
+00:09:33.440 --> 00:09:38.160
+minu agent which is also under 100 lines
+
+287
+00:09:36.320 --> 00:09:39.839
+they do 100 lines for the the core
+
+288
+00:09:38.160 --> 00:09:41.519
+agentic loop and then I think they they
+
+289
+00:09:39.839 --> 00:09:42.640
+give themselves another 100 lines for I
+
+290
+00:09:41.519 --> 00:09:44.240
+don't remember if it's tool use or
+
+291
+00:09:42.640 --> 00:09:46.320
+something else but still you can read
+
+292
+00:09:44.240 --> 00:09:47.920
+the code in one sitting very very
+
+293
+00:09:46.320 --> 00:09:50.320
+comfortably
+
+294
+00:09:47.920 --> 00:09:52.399
+&gt;&gt; and yet it gets to a very respectable
+
+295
+00:09:50.320 --> 00:09:54.240
+15th place and also if you see kind of
+
+296
+00:09:52.399 --> 00:09:56.080
+like the distribution of scores is it's
+
+297
+00:09:54.240 --> 00:09:58.560
+not like 15th place and really really
+
+298
+00:09:56.080 --> 00:10:01.600
+far below 14th place or 13th place. It's
+
+299
+00:09:58.560 --> 00:10:04.880
+it's actually uh in a pretty good cohort
+
+300
+00:10:01.600 --> 00:10:07.440
+and I would say uh maybe on par maybe a
+
+301
+00:10:04.880 --> 00:10:09.120
+bit below uh actual like serious agents.
+
+302
+00:10:07.440 --> 00:10:10.560
+So what is what is this telling us is
+
+303
+00:10:09.120 --> 00:10:12.080
+the kind of like the thing which makes
+
+304
+00:10:10.560 --> 00:10:13.760
+agents
+
+305
+00:10:12.080 --> 00:10:16.800
+you know that much better.
+
+306
+00:10:13.760 --> 00:10:19.360
+&gt;&gt; Based based on this uh alone I would say
+
+307
+00:10:16.800 --> 00:10:21.120
+well looks like maybe tools and context
+
+308
+00:10:19.360 --> 00:10:23.680
+are not that important
+
+309
+00:10:21.120 --> 00:10:25.200
+&gt;&gt; because uh even with very little tool
+
+310
+00:10:23.680 --> 00:10:27.200
+with very little tools and with very
+
+311
+00:10:25.200 --> 00:10:29.200
+little context look at 100 lines you
+
+312
+00:10:27.200 --> 00:10:31.040
+don't have much to work with.
+
+313
+00:10:29.200 --> 00:10:31.920
+&gt;&gt; Uh you can you can get to a good score.
+
+314
+00:10:31.040 --> 00:10:34.800
+Mhm.
+
+315
+00:10:31.920 --> 00:10:37.680
+&gt;&gt; Uh so uh you you might think that it
+
+316
+00:10:34.800 --> 00:10:39.040
+could also suspect that that there are
+
+317
+00:10:37.680 --> 00:10:39.440
+things that terminal bench doesn't
+
+318
+00:10:39.040 --> 00:10:39.760
+cover.
+
+319
+00:10:39.440 --> 00:10:40.720
+&gt;&gt; Yeah.
+
+320
+00:10:39.760 --> 00:10:43.279
+&gt;&gt; Right. And at the end of the day,
+
+321
+00:10:40.720 --> 00:10:45.360
+benchmarking is an art and an extremely
+
+322
+00:10:43.279 --> 00:10:47.120
+difficult and like challenging task to
+
+323
+00:10:45.360 --> 00:10:48.640
+do like really well.
+
+324
+00:10:47.120 --> 00:10:52.079
+&gt;&gt; Uh perhaps there are real world
+
+325
+00:10:48.640 --> 00:10:54.160
+situations where uh the the flagship
+
+326
+00:10:52.079 --> 00:10:56.320
+agents the the the big brothers of many
+
+327
+00:10:54.160 --> 00:10:57.600
+agent would do better because they have
+
+328
+00:10:56.320 --> 00:10:59.519
+this additional context, additional
+
+329
+00:10:57.600 --> 00:11:01.600
+tools and and so on. M.
+
+330
+00:10:59.519 --> 00:11:02.800
+&gt;&gt; So, uh, is it that context doesn't
+
+331
+00:11:01.600 --> 00:11:04.560
+really matter? If it doesn't really
+
+332
+00:11:02.800 --> 00:11:05.680
+matter, how come the flagship agents all
+
+333
+00:11:04.560 --> 00:11:07.279
+come with loads of context? And
+
+334
+00:11:05.680 --> 00:11:07.839
+actually, what kind of context do they
+
+335
+00:11:07.279 --> 00:11:09.200
+come in with?
+
+336
+00:11:07.839 --> 00:11:09.760
+&gt;&gt; And the context you're talking about the
+
+337
+00:11:09.200 --> 00:11:10.880
+question we're asking.
+
+338
+00:11:09.760 --> 00:11:12.720
+&gt;&gt; And the context you're talking about
+
+339
+00:11:10.880 --> 00:11:13.040
+here is specifically the system context,
+
+340
+00:11:12.720 --> 00:11:14.959
+right?
+
+341
+00:11:13.040 --> 00:11:17.040
+&gt;&gt; Correct. Correct. I I should be clear
+
+342
+00:11:14.959 --> 00:11:18.880
+about that because when we say context,
+
+343
+00:11:17.040 --> 00:11:21.680
+we usually mean the context that you add
+
+344
+00:11:18.880 --> 00:11:23.519
+to the agent, right? So we we don't
+
+345
+00:11:21.680 --> 00:11:25.360
+usually think about the context that
+
+346
+00:11:23.519 --> 00:11:27.760
+comes built in in the agent
+
+347
+00:11:25.360 --> 00:11:29.040
+&gt;&gt; and that is primarily the system context
+
+348
+00:11:27.760 --> 00:11:32.000
+and tool descriptions.
+
+349
+00:11:29.040 --> 00:11:34.079
+&gt;&gt; Yes. So uh if if you're thinking about
+
+350
+00:11:32.000 --> 00:11:35.600
+the the the the call that being that's
+
+351
+00:11:34.079 --> 00:11:37.279
+being made to the LLM, there are certain
+
+352
+00:11:35.600 --> 00:11:38.800
+amount of input tokens
+
+353
+00:11:37.279 --> 00:11:40.399
+&gt;&gt; at the end of them is somewhere as
+
+354
+00:11:38.800 --> 00:11:42.079
+though it doesn't have to be the end
+
+355
+00:11:40.399 --> 00:11:44.480
+typically at the end would be the user's
+
+356
+00:11:42.079 --> 00:11:46.880
+request. Make me a to-do app.
+
+357
+00:11:44.480 --> 00:11:48.880
+&gt;&gt; But first there's a lot of uh your cloud
+
+358
+00:11:46.880 --> 00:11:50.720
+code or your Gemini or your codeex.
+
+359
+00:11:48.880 --> 00:11:52.240
+You're a helpful agent. This is what you
+
+360
+00:11:50.720 --> 00:11:54.079
+do. This is how you behave.
+
+361
+00:11:52.240 --> 00:11:55.600
+&gt;&gt; Here are all the tools available to you
+
+362
+00:11:54.079 --> 00:11:56.720
+and for each tool this is the schema of
+
+363
+00:11:55.600 --> 00:11:57.760
+the tool. This is the description of the
+
+364
+00:11:56.720 --> 00:11:59.600
+tool. This is when you should be using
+
+365
+00:11:57.760 --> 00:12:02.000
+the tool. So this is exactly kind of
+
+366
+00:11:59.600 --> 00:12:04.240
+like what we'd like to be looking into.
+
+367
+00:12:02.000 --> 00:12:05.839
+&gt;&gt; What do the big labs choose to equip
+
+368
+00:12:04.240 --> 00:12:07.360
+their agents with like the built-in
+
+369
+00:12:05.839 --> 00:12:08.320
+context, not the context that is being
+
+370
+00:12:07.360 --> 00:12:10.560
+added to it.
+
+371
+00:12:08.320 --> 00:12:12.639
+&gt;&gt; So what do they choose to put built in?
+
+372
+00:12:10.560 --> 00:12:14.240
+What uh descriptions and what tools do
+
+373
+00:12:12.639 --> 00:12:16.320
+they choose to make available and how
+
+374
+00:12:14.240 --> 00:12:17.279
+does that affect um agent performance
+
+375
+00:12:16.320 --> 00:12:18.800
+and how does that affect
+
+376
+00:12:17.279 --> 00:12:20.720
+&gt;&gt; and of course colleagues will give
+
+377
+00:12:18.800 --> 00:12:22.000
+&gt;&gt; to add some context if you don't mind
+
+378
+00:12:20.720 --> 00:12:24.160
+the pun. I'm sure you enjoyed that.
+
+379
+00:12:22.000 --> 00:12:25.600
+&gt;&gt; I do mind the pun but you know you know
+
+380
+00:12:24.160 --> 00:12:26.720
+we've been working together for a while.
+
+381
+00:12:25.600 --> 00:12:29.360
+&gt;&gt; Once it's out I can't take it.
+
+382
+00:12:26.720 --> 00:12:31.200
+&gt;&gt; Exactly. Exactly. to to add some overall
+
+383
+00:12:29.360 --> 00:12:33.200
+context to the research. What you're
+
+384
+00:12:31.200 --> 00:12:34.880
+interested in or what and what Tesla is
+
+385
+00:12:33.200 --> 00:12:37.839
+interested in is of course adding our
+
+386
+00:12:34.880 --> 00:12:40.000
+own context or adding context that uh
+
+387
+00:12:37.839 --> 00:12:42.320
+allows the agent to perform a certain
+
+388
+00:12:40.000 --> 00:12:45.760
+task then better and it's additional
+
+389
+00:12:42.320 --> 00:12:47.760
+agent which is very uh core to that task
+
+390
+00:12:45.760 --> 00:12:49.360
+so that the agent has a better chance of
+
+391
+00:12:47.760 --> 00:12:51.920
+actually being able to complete that
+
+392
+00:12:49.360 --> 00:12:55.040
+task. Whereas the system is kind of like
+
+393
+00:12:51.920 --> 00:12:58.040
+a generic context that just makes a
+
+394
+00:12:55.040 --> 00:12:58.040
+perform
+
+395
+00:13:00.959 --> 00:13:05.600
+here going to be next focused on system
+
+396
+00:13:03.680 --> 00:13:07.760
+prompt and the system context. I'd love
+
+397
+00:13:05.600 --> 00:13:09.680
+to kind of like you know learn some of
+
+398
+00:13:07.760 --> 00:13:11.360
+your findings in in that system context.
+
+399
+00:13:09.680 --> 00:13:12.880
+And we said the the reason we're looking
+
+400
+00:13:11.360 --> 00:13:14.639
+into it is that at the end of the day
+
+401
+00:13:12.880 --> 00:13:15.600
+when you're doing when you're invoking
+
+402
+00:13:14.639 --> 00:13:17.440
+the model
+
+403
+00:13:15.600 --> 00:13:19.440
+&gt;&gt; all of that context gets mixed together
+
+404
+00:13:17.440 --> 00:13:21.519
+and the model it gets mixed together in
+
+405
+00:13:19.440 --> 00:13:23.440
+some order with some words that would
+
+406
+00:13:21.519 --> 00:13:24.959
+describe here is the section that you
+
+407
+00:13:23.440 --> 00:13:26.560
+should be reading in this sense or
+
+408
+00:13:24.959 --> 00:13:28.399
+whatever but still it all gets mixed
+
+409
+00:13:26.560 --> 00:13:30.079
+together and gets shipped to the model.
+
+410
+00:13:28.399 --> 00:13:31.360
+&gt;&gt; So you need to understand the the
+
+411
+00:13:30.079 --> 00:13:32.880
+built-in context. I don't know that
+
+412
+00:13:31.360 --> 00:13:34.560
+there is a term of art for this but the
+
+413
+00:13:32.880 --> 00:13:36.959
+system prompt and the tool descriptions
+
+414
+00:13:34.560 --> 00:13:38.160
+in order to add your own context. At the
+
+415
+00:13:36.959 --> 00:13:39.600
+end of the day, the whole thing gets you
+
+416
+00:13:38.160 --> 00:13:41.360
+to including the user prompt and
+
+417
+00:13:39.600 --> 00:13:44.000
+including everything and the model needs
+
+418
+00:13:41.360 --> 00:13:46.399
+to start creating output tokens. So we
+
+419
+00:13:44.000 --> 00:13:48.160
+we better understand these things to
+
+420
+00:13:46.399 --> 00:13:49.200
+learn from the big labs. Probably they
+
+421
+00:13:48.160 --> 00:13:51.760
+know what they're doing in terms of
+
+422
+00:13:49.200 --> 00:13:53.120
+creating tools but also to be compatible
+
+423
+00:13:51.760 --> 00:13:54.959
+with the big labs and ensure that the
+
+424
+00:13:53.120 --> 00:13:56.959
+context we're providing doesn't
+
+425
+00:13:54.959 --> 00:13:58.000
+contradict and sits well with the
+
+426
+00:13:56.959 --> 00:13:59.680
+context that we know is there.
+
+427
+00:13:58.000 --> 00:14:00.959
+&gt;&gt; Yeah. So we can effective is that
+
+428
+00:13:59.680 --> 00:14:01.680
+&gt;&gt; so we can be more effective in our
+
+429
+00:14:00.959 --> 00:14:03.279
+external cont.
+
+430
+00:14:01.680 --> 00:14:05.120
+&gt;&gt; What I love to call uh mechanical
+
+431
+00:14:03.279 --> 00:14:06.959
+sympathy. It's understanding what is
+
+432
+00:14:05.120 --> 00:14:09.360
+under the covers. Like I don't need to
+
+433
+00:14:06.959 --> 00:14:12.000
+understand I don't need to understand a
+
+434
+00:14:09.360 --> 00:14:14.079
+gearbox how it works perfectly in order
+
+435
+00:14:12.000 --> 00:14:15.279
+to use it because my use of it is
+
+436
+00:14:14.079 --> 00:14:17.760
+literally using the the you know the
+
+437
+00:14:15.279 --> 00:14:19.360
+gear stick but as a formula 1 driver
+
+438
+00:14:17.760 --> 00:14:21.680
+them understanding how it works under
+
+439
+00:14:19.360 --> 00:14:24.639
+the covers will actually make allow them
+
+440
+00:14:21.680 --> 00:14:25.360
+to get every benefit of that of and so
+
+441
+00:14:24.639 --> 00:14:27.279
+this is essentially
+
+442
+00:14:25.360 --> 00:14:28.720
+&gt;&gt; 100% 100% right like know where are the
+
+443
+00:14:27.279 --> 00:14:30.079
+studs when you want to hang a picture
+
+444
+00:14:28.720 --> 00:14:30.800
+right like you need to understand what's
+
+445
+00:14:30.079 --> 00:14:34.079
+behind the wall.
+
+446
+00:14:30.800 --> 00:14:35.760
+&gt;&gt; Yeah exactly. So uh if you want to look
+
+447
+00:14:34.079 --> 00:14:37.199
+I want to look at context I want to read
+
+448
+00:14:35.760 --> 00:14:40.639
+the system prompt
+
+449
+00:14:37.199 --> 00:14:42.320
+&gt;&gt; um you can but depends how how you do it
+
+450
+00:14:40.639 --> 00:14:43.920
+how would you extract and so on but you
+
+451
+00:14:42.320 --> 00:14:45.040
+you can because it's English right if if
+
+452
+00:14:43.920 --> 00:14:46.240
+you've read a book you can read the
+
+453
+00:14:45.040 --> 00:14:47.600
+system prompt right
+
+454
+00:14:46.240 --> 00:14:49.839
+&gt;&gt; but also it's pretty difficult to show
+
+455
+00:14:47.600 --> 00:14:51.279
+it in a podcast because it's not that
+
+456
+00:14:49.839 --> 00:14:52.800
+interesting as like showing someone
+
+457
+00:14:51.279 --> 00:14:54.639
+reading a book or I I could show you the
+
+458
+00:14:52.800 --> 00:14:56.720
+pages of the book to the camera.
+
+459
+00:14:54.639 --> 00:14:58.399
+&gt;&gt; It's interesting to to talk about size
+
+460
+00:14:56.720 --> 00:15:00.880
+first like yes that's something we can
+
+461
+00:14:58.399 --> 00:15:03.360
+talk about in a podcast. Uh we're
+
+462
+00:15:00.880 --> 00:15:05.199
+talking about around 12 kilobytes of
+
+463
+00:15:03.360 --> 00:15:05.920
+context that we've seen in claude.
+
+464
+00:15:05.199 --> 00:15:09.360
+&gt;&gt; Yeah.
+
+465
+00:15:05.920 --> 00:15:12.079
+&gt;&gt; Around uh 10 kilobytes of context I mean
+
+466
+00:15:09.360 --> 00:15:14.399
+specifically system prompt. 10 or 10.7
+
+467
+00:15:12.079 --> 00:15:17.199
+kilobytes that we've seen in codeex
+
+468
+00:15:14.399 --> 00:15:18.639
+&gt;&gt; and around 14 14.7 kilobytes that we've
+
+469
+00:15:17.199 --> 00:15:20.240
+seen in Gemini. And obviously they're
+
+470
+00:15:18.639 --> 00:15:21.680
+they're adjusting this a bit as the
+
+471
+00:15:20.240 --> 00:15:23.360
+versions of these agents change. I don't
+
+472
+00:15:21.680 --> 00:15:25.120
+know if that's exactly what what you'll
+
+473
+00:15:23.360 --> 00:15:26.399
+be seeing for your version but that's
+
+474
+00:15:25.120 --> 00:15:27.680
+roughly the the amounts we're talking
+
+475
+00:15:26.399 --> 00:15:29.040
+about 12 10 14
+
+476
+00:15:27.680 --> 00:15:30.480
+&gt;&gt; and Claude and Gemini here. We're
+
+477
+00:15:29.040 --> 00:15:31.120
+talking about claude code and Gemini
+
+478
+00:15:30.480 --> 00:15:32.320
+CLI.
+
+479
+00:15:31.120 --> 00:15:33.839
+&gt;&gt; Correct. Correct. Yeah. Should be
+
+480
+00:15:32.320 --> 00:15:36.160
+clarified. Exactly.
+
+481
+00:15:33.839 --> 00:15:38.160
+&gt;&gt; But now, okay, so 12 kilobytes, 10
+
+482
+00:15:36.160 --> 00:15:39.120
+kilobytes, 14 kilobytes, about 12 pages
+
+483
+00:15:38.160 --> 00:15:41.440
+of text.
+
+484
+00:15:39.120 --> 00:15:43.360
+&gt;&gt; What what goes into those pages of text?
+
+485
+00:15:41.440 --> 00:15:45.920
+I felt that this visualization, right,
+
+486
+00:15:43.360 --> 00:15:48.000
+like the the tree map with colors is a
+
+487
+00:15:45.920 --> 00:15:49.680
+useful way to to give you a sense of
+
+488
+00:15:48.000 --> 00:15:51.199
+what is in the system prompt without,
+
+489
+00:15:49.680 --> 00:15:51.839
+you know, sitting down with a book and
+
+490
+00:15:51.199 --> 00:15:54.079
+reading it.
+
+491
+00:15:51.839 --> 00:15:55.920
+&gt;&gt; Mhm. So uh to to me this is like
+
+492
+00:15:54.079 --> 00:15:58.639
+creating a sort of like an index or a
+
+493
+00:15:55.920 --> 00:16:01.360
+legend for for the book and giving you a
+
+494
+00:15:58.639 --> 00:16:04.639
+chance to see out of the system prompt
+
+495
+00:16:01.360 --> 00:16:06.560
+how many words were spent talking about
+
+496
+00:16:04.639 --> 00:16:09.360
+uh the process or how the agent should
+
+497
+00:16:06.560 --> 00:16:11.759
+work versus about safety versus about
+
+498
+00:16:09.360 --> 00:16:13.440
+how to communicate with the user uh how
+
+499
+00:16:11.759 --> 00:16:15.279
+to write tests and so on and so forth.
+
+500
+00:16:13.440 --> 00:16:17.680
+Right? Like you can see the the tree map
+
+501
+00:16:15.279 --> 00:16:19.440
+on the screen. the difference is is
+
+502
+00:16:17.680 --> 00:16:20.079
+quite you know you would you would have
+
+503
+00:16:19.440 --> 00:16:20.320
+thought
+
+504
+00:16:20.079 --> 00:16:23.040
+&gt;&gt; yes
+
+505
+00:16:20.320 --> 00:16:25.519
+&gt;&gt; they would have similar learnings as a
+
+506
+00:16:23.040 --> 00:16:26.560
+result have kind of like similar splits
+
+507
+00:16:25.519 --> 00:16:29.519
+particularly with some of the biggest
+
+508
+00:16:26.560 --> 00:16:31.279
+ones that they've got but looking here
+
+509
+00:16:29.519 --> 00:16:33.759
+&gt;&gt; I mean you look at the two biggest
+
+510
+00:16:31.279 --> 00:16:35.759
+sections on Claude it's different to the
+
+511
+00:16:33.759 --> 00:16:39.600
+two biggest sections on codeex and then
+
+512
+00:16:35.759 --> 00:16:42.000
+with Gemini actually it uses one of each
+
+513
+00:16:39.600 --> 00:16:43.040
+of the biggest two it's it's surprising
+
+514
+00:16:42.000 --> 00:16:44.800
+how different they are
+
+515
+00:16:43.040 --> 00:16:46.160
+&gt;&gt; the the the difference was surprising to
+
+516
+00:16:44.800 --> 00:16:48.399
+me that's [clears throat] True. And
+
+517
+00:16:46.160 --> 00:16:50.160
+especially surprising given that in the
+
+518
+00:16:48.399 --> 00:16:51.920
+back of my mind I keep remembering sort
+
+519
+00:16:50.160 --> 00:16:53.759
+of like the null hypothesis or the the
+
+520
+00:16:51.920 --> 00:16:55.920
+zero agent, right?
+
+521
+00:16:53.759 --> 00:16:58.160
+&gt;&gt; It also works without any of this stuff.
+
+522
+00:16:55.920 --> 00:17:00.399
+So what makes them put in 10 kilobytes,
+
+523
+00:16:58.160 --> 00:17:02.079
+12 kilob, 14 kilobyt when I'm knowing
+
+524
+00:17:00.399 --> 00:17:03.680
+that it works pretty well. Like
+
+525
+00:17:02.079 --> 00:17:06.160
+&gt;&gt; I imagine there needs to be quite a lot
+
+526
+00:17:03.680 --> 00:17:08.480
+of value in in the system prompt for
+
+527
+00:17:06.160 --> 00:17:11.360
+them to bo to put it in.
+
+528
+00:17:08.480 --> 00:17:14.079
+&gt;&gt; Uh so I don't know exactly why are the
+
+529
+00:17:11.360 --> 00:17:15.839
+differences as they are. I think you can
+
+530
+00:17:14.079 --> 00:17:17.039
+look at the chart yourself and sort of
+
+531
+00:17:15.839 --> 00:17:18.160
+like have have a sense for what you're
+
+532
+00:17:17.039 --> 00:17:19.839
+saying. You can go and read the text
+
+533
+00:17:18.160 --> 00:17:23.520
+yourself and have a sense for what
+
+534
+00:17:19.839 --> 00:17:26.480
+you're saying. But um to me like reading
+
+535
+00:17:23.520 --> 00:17:28.480
+it as as an outsider uh it's it felt
+
+536
+00:17:26.480 --> 00:17:30.960
+like there are certain properties or
+
+537
+00:17:28.480 --> 00:17:32.559
+traits that the model came out with out
+
+538
+00:17:30.960 --> 00:17:34.240
+of training and out of after
+
+539
+00:17:32.559 --> 00:17:35.360
+reinforcement and post- training and
+
+540
+00:17:34.240 --> 00:17:38.000
+everything
+
+541
+00:17:35.360 --> 00:17:40.559
+&gt;&gt; and were things that the the the lab
+
+542
+00:17:38.000 --> 00:17:44.080
+wanted to emphasize or wanted to subdue
+
+543
+00:17:40.559 --> 00:17:47.039
+a bit. Right? So all prompts talk about
+
+544
+00:17:44.080 --> 00:17:48.880
+be direct, be clear, do not waste tokens
+
+545
+00:17:47.039 --> 00:17:52.480
+like uh follow follow the instruction of
+
+546
+00:17:48.880 --> 00:17:54.799
+the user that kind of thing. But now I'm
+
+547
+00:17:52.480 --> 00:17:58.160
+making a hypothesis. I don't know. uh
+
+548
+00:17:54.799 --> 00:18:00.320
+maybe there's more about uh use of tests
+
+549
+00:17:58.160 --> 00:18:02.080
+uh in claude than in the other agents
+
+550
+00:18:00.320 --> 00:18:03.520
+because they felt that after the model
+
+551
+00:18:02.080 --> 00:18:06.880
+came out of training it needs a bit more
+
+552
+00:18:03.520 --> 00:18:10.480
+leg up on tests or there was uh more
+
+553
+00:18:06.880 --> 00:18:12.480
+about um the the the process and how to
+
+554
+00:18:10.480 --> 00:18:14.880
+manage your work right like when I say
+
+555
+00:18:12.480 --> 00:18:17.440
+process I mean making to-dos or how how
+
+556
+00:18:14.880 --> 00:18:19.840
+to decide how to plan ahead because
+
+557
+00:18:17.440 --> 00:18:21.600
+after training uh for Gemini and Claude
+
+558
+00:18:19.840 --> 00:18:24.480
+they felt they wanted to to assist the
+
+559
+00:18:21.600 --> 00:18:26.160
+model more. Yeah. So that's my it's I
+
+560
+00:18:24.480 --> 00:18:27.520
+don't know if that's a very good way to
+
+561
+00:18:26.160 --> 00:18:29.520
+think about it, but a bit like a patch
+
+562
+00:18:27.520 --> 00:18:31.200
+in software, right? Like you're patching
+
+563
+00:18:29.520 --> 00:18:32.640
+the bits where the model didn't do
+
+564
+00:18:31.200 --> 00:18:34.640
+exactly as you wanted. So you're giving
+
+565
+00:18:32.640 --> 00:18:35.120
+it a leg up using the context, using the
+
+566
+00:18:34.640 --> 00:18:36.960
+system prompt.
+
+567
+00:18:35.120 --> 00:18:38.720
+&gt;&gt; And of course, we can't like directly
+
+568
+00:18:36.960 --> 00:18:40.320
+compare each of these to say, oh,
+
+569
+00:18:38.720 --> 00:18:41.200
+Claude's doing it this way, Codex is
+
+570
+00:18:40.320 --> 00:18:42.640
+doing it that way. Because of course,
+
+571
+00:18:41.200 --> 00:18:44.080
+they're different models as well. So the
+
+572
+00:18:42.640 --> 00:18:46.000
+different models are going to act
+
+573
+00:18:44.080 --> 00:18:47.520
+differently and potentially require
+
+574
+00:18:46.000 --> 00:18:48.960
+different support in different areas or
+
+575
+00:18:47.520 --> 00:18:51.360
+different direction rules in different
+
+576
+00:18:48.960 --> 00:18:53.039
+areas to be able for both of those
+
+577
+00:18:51.360 --> 00:18:55.600
+models to actually achieve the same
+
+578
+00:18:53.039 --> 00:18:58.400
+thing. So this obviously specific to
+
+579
+00:18:55.600 --> 00:19:00.320
+each model as well but incredibly
+
+580
+00:18:58.400 --> 00:19:05.120
+curious which were you most surprised at
+
+581
+00:19:00.320 --> 00:19:08.240
+would you say? Um I think I think for me
+
+582
+00:19:05.120 --> 00:19:10.400
+the way uh the way that Claude manages
+
+583
+00:19:08.240 --> 00:19:12.720
+process and manages planning
+
+584
+00:19:10.400 --> 00:19:14.960
+&gt;&gt; uh was quite distinct from Codex and
+
+585
+00:19:12.720 --> 00:19:17.200
+Gemini and doesn't necessarily even uh
+
+586
+00:19:14.960 --> 00:19:18.320
+is not so visible in the chart. Codex
+
+587
+00:19:17.200 --> 00:19:21.200
+you can see there's very little on
+
+588
+00:19:18.320 --> 00:19:23.120
+process. Gemini there's more but it's uh
+
+589
+00:19:21.200 --> 00:19:25.919
+differently framed and like used
+
+590
+00:19:23.120 --> 00:19:28.080
+differently. We'll see that again a bit
+
+591
+00:19:25.919 --> 00:19:30.320
+further on when we talk about tool use
+
+592
+00:19:28.080 --> 00:19:32.720
+and the tools uh that are available to
+
+593
+00:19:30.320 --> 00:19:34.320
+to each of these agents and how does
+
+594
+00:19:32.720 --> 00:19:36.880
+Claude use the to-do tool very
+
+595
+00:19:34.320 --> 00:19:38.960
+differently to to the other uh two
+
+596
+00:19:36.880 --> 00:19:41.520
+&gt;&gt; but also Claude leans very heavily on
+
+597
+00:19:38.960 --> 00:19:43.760
+the idea of sub agents and on delegating
+
+598
+00:19:41.520 --> 00:19:45.679
+tasks to sort of like a separate agentic
+
+599
+00:19:43.760 --> 00:19:46.960
+loop with its own context and its own
+
+600
+00:19:45.679 --> 00:19:49.360
+use of tokens. M
+
+601
+00:19:46.960 --> 00:19:52.160
+&gt;&gt; so saying okay you go and do this task
+
+602
+00:19:49.360 --> 00:19:53.360
+for me afterwards I don't care what what
+
+603
+00:19:52.160 --> 00:19:55.280
+context you've built while doing the
+
+604
+00:19:53.360 --> 00:19:58.080
+task I just care about the result and
+
+605
+00:19:55.280 --> 00:19:59.600
+I'll continue from there and um Claude
+
+606
+00:19:58.080 --> 00:20:00.320
+is using that in the most flexible
+
+607
+00:19:59.600 --> 00:20:01.760
+manner I would say
+
+608
+00:20:00.320 --> 00:20:03.280
+&gt;&gt; and that's captured in the process
+
+609
+00:20:01.760 --> 00:20:04.559
+presumably or is it more in the tools
+
+610
+00:20:03.280 --> 00:20:06.480
+process okay
+
+611
+00:20:04.559 --> 00:20:08.799
+&gt;&gt; would be useful to to say a word about
+
+612
+00:20:06.480 --> 00:20:10.960
+how do they come up uh with with these
+
+613
+00:20:08.799 --> 00:20:13.679
+dream maps uh basically taking the text
+
+614
+00:20:10.960 --> 00:20:16.240
+of the system prompt and then uh sort of
+
+615
+00:20:13.679 --> 00:20:18.799
+like asking a model to come up with a
+
+616
+00:20:16.240 --> 00:20:19.600
+classification for every line in the
+
+617
+00:20:18.799 --> 00:20:21.520
+text.
+
+618
+00:20:19.600 --> 00:20:24.799
+&gt;&gt; So if if we switch to to another slide
+
+619
+00:20:21.520 --> 00:20:26.320
+for example is it's it it looks like a
+
+620
+00:20:24.799 --> 00:20:27.919
+bar chart but it's not really a bar
+
+621
+00:20:26.320 --> 00:20:29.200
+chart. I' I've used a bar chart to
+
+622
+00:20:27.919 --> 00:20:31.120
+represent the text. So imagine that
+
+623
+00:20:29.200 --> 00:20:33.840
+every pixel is a word or a letter. I
+
+624
+00:20:31.120 --> 00:20:35.919
+don't remember which I've used and uh
+
+625
+00:20:33.840 --> 00:20:37.600
+the the labels that I've added are the
+
+626
+00:20:35.919 --> 00:20:39.200
+things that are determining the color of
+
+627
+00:20:37.600 --> 00:20:42.080
+the line. So it's a bit like the mini
+
+628
+00:20:39.200 --> 00:20:43.760
+map in in your editor like many VS code
+
+629
+00:20:42.080 --> 00:20:45.280
+and other editors often have like this
+
+630
+00:20:43.760 --> 00:20:47.280
+mini map of the code on the side with
+
+631
+00:20:45.280 --> 00:20:49.840
+syntax highlighting. So this is not
+
+632
+00:20:47.280 --> 00:20:52.159
+syntax highlighting. This is context
+
+633
+00:20:49.840 --> 00:20:54.400
+classification category highlighting.
+
+634
+00:20:52.159 --> 00:20:56.000
+&gt;&gt; So for every line we're adding oh this
+
+635
+00:20:54.400 --> 00:20:57.440
+is about coding philosophy. This is
+
+636
+00:20:56.000 --> 00:20:59.120
+about an approach to testing. This is
+
+637
+00:20:57.440 --> 00:21:00.720
+about safety. This is about process and
+
+638
+00:20:59.120 --> 00:21:01.679
+whatever. And then we're coloring the
+
+639
+00:21:00.720 --> 00:21:02.240
+lines appropriately.
+
+640
+00:21:01.679 --> 00:21:04.480
+&gt;&gt; Mh.
+
+641
+00:21:02.240 --> 00:21:06.159
+&gt;&gt; You get a sense for volume and for line
+
+642
+00:21:04.480 --> 00:21:07.919
+length. You can see how many lines there
+
+643
+00:21:06.159 --> 00:21:09.440
+are and how long they are. Mhm.
+
+644
+00:21:07.919 --> 00:21:12.640
+&gt;&gt; Not hugely different, but somewhat
+
+645
+00:21:09.440 --> 00:21:14.480
+different. And you get a sense for um
+
+646
+00:21:12.640 --> 00:21:16.240
+what are the lines about, right? Like
+
+647
+00:21:14.480 --> 00:21:16.880
+the label that that we see through the
+
+648
+00:21:16.240 --> 00:21:19.360
+color [clears throat]
+
+649
+00:21:16.880 --> 00:21:20.080
+&gt;&gt; and and we see these like substantial
+
+650
+00:21:19.360 --> 00:21:20.559
+differences.
+
+651
+00:21:20.080 --> 00:21:23.760
+&gt;&gt; Yeah.
+
+652
+00:21:20.559 --> 00:21:25.280
+&gt;&gt; I've also seen some things that I I
+
+653
+00:21:23.760 --> 00:21:27.360
+don't know why these things were added.
+
+654
+00:21:25.280 --> 00:21:29.600
+It's it's it's curious, but I've seen
+
+655
+00:21:27.360 --> 00:21:32.880
+some things that I felt were surprising
+
+656
+00:21:29.600 --> 00:21:35.600
+in the sense of an instruction to uh
+
+657
+00:21:32.880 --> 00:21:37.200
+only follow like only allow certain
+
+658
+00:21:35.600 --> 00:21:39.360
+kinds of tasks, especially around
+
+659
+00:21:37.200 --> 00:21:41.840
+security, right? You should not be used
+
+660
+00:21:39.360 --> 00:21:43.760
+for offensive uh security tasks. You
+
+661
+00:21:41.840 --> 00:21:45.520
+should only be used for defensive tasks.
+
+662
+00:21:43.760 --> 00:21:47.280
+Um evenarding
+
+663
+00:21:45.520 --> 00:21:50.159
+&gt;&gt; safeguarding. Yeah. Even in capture the
+
+664
+00:21:47.280 --> 00:21:52.240
+flag or like um like penetration testing
+
+665
+00:21:50.159 --> 00:21:54.559
+exercises, only do that with appropriate
+
+666
+00:21:52.240 --> 00:21:56.320
+authorization. just the text reads a bit
+
+667
+00:21:54.559 --> 00:21:57.760
+weird. I don't know how will the model
+
+668
+00:21:56.320 --> 00:21:58.720
+know that there is appropriate
+
+669
+00:21:57.760 --> 00:21:59.039
+authorization.
+
+670
+00:21:58.720 --> 00:22:00.480
+&gt;&gt; Yeah.
+
+671
+00:21:59.039 --> 00:22:02.080
+&gt;&gt; What are we imaging that looking like?
+
+672
+00:22:00.480 --> 00:22:03.039
+Like that the agent will ask me, hey, is
+
+673
+00:22:02.080 --> 00:22:04.240
+this authorized?
+
+674
+00:22:03.039 --> 00:22:06.400
+&gt;&gt; I'll say yes.
+
+675
+00:22:04.240 --> 00:22:07.600
+&gt;&gt; And is it still fair to say that a user
+
+676
+00:22:06.400 --> 00:22:10.880
+prompt
+
+677
+00:22:07.600 --> 00:22:13.039
+&gt;&gt; kind of is essentially part of the same
+
+678
+00:22:10.880 --> 00:22:15.120
+ultimately context as the system prompt
+
+679
+00:22:13.039 --> 00:22:18.720
+when it goes to the model. And so I
+
+680
+00:22:15.120 --> 00:22:21.039
+think um gosh maybe a year ago when when
+
+681
+00:22:18.720 --> 00:22:23.760
+um I think it was GIO who had a previous
+
+682
+00:22:21.039 --> 00:22:26.159
+session with uh with someone uh Caleb
+
+683
+00:22:23.760 --> 00:22:29.360
+Sema he talked about how the data plane
+
+684
+00:22:26.159 --> 00:22:31.200
+and the control plane um you know all
+
+685
+00:22:29.360 --> 00:22:33.280
+the information in the context was was
+
+686
+00:22:31.200 --> 00:22:35.200
+pushed into the data plane including the
+
+687
+00:22:33.280 --> 00:22:36.880
+the system context including the user
+
+688
+00:22:35.200 --> 00:22:38.159
+context and any data and it's very hard
+
+689
+00:22:36.880 --> 00:22:39.840
+for the models to be able to work out
+
+690
+00:22:38.159 --> 00:22:41.760
+the difference. Is there still that that
+
+691
+00:22:39.840 --> 00:22:43.520
+that danger of course that any context
+
+692
+00:22:41.760 --> 00:22:44.880
+we add on top whether it's whether it's
+
+693
+00:22:43.520 --> 00:22:46.799
+a user prompt whether it's any
+
+694
+00:22:44.880 --> 00:22:49.039
+additional context and data that's
+
+695
+00:22:46.799 --> 00:22:50.480
+really just getting mushed alongside the
+
+696
+00:22:49.039 --> 00:22:52.480
+system prompt and it's the model that
+
+697
+00:22:50.480 --> 00:22:54.159
+then has to kind of like work out what
+
+698
+00:22:52.480 --> 00:22:56.240
+to do with those conflicts.
+
+699
+00:22:54.159 --> 00:22:58.080
+&gt;&gt; It it's it's a great point and it's it's
+
+700
+00:22:56.240 --> 00:23:00.880
+an area of of active research and
+
+701
+00:22:58.080 --> 00:23:03.360
+development. Even the terminology system
+
+702
+00:23:00.880 --> 00:23:06.240
+prompt and user prompt it's it's a bit
+
+703
+00:23:03.360 --> 00:23:08.480
+dated at this point. uh but we do not
+
+704
+00:23:06.240 --> 00:23:10.000
+have standardized terminology right like
+
+705
+00:23:08.480 --> 00:23:11.679
+uh some developers call them the the
+
+706
+00:23:10.000 --> 00:23:14.159
+developer messages where there's a user
+
+707
+00:23:11.679 --> 00:23:17.039
+messages trying to create a hierarchy
+
+708
+00:23:14.159 --> 00:23:19.200
+called like hierarchy of authority you
+
+709
+00:23:17.039 --> 00:23:21.760
+must always do what is in the system
+
+710
+00:23:19.200 --> 00:23:23.280
+prompt and uh and you should follow the
+
+711
+00:23:21.760 --> 00:23:24.799
+user prompt only if it doesn't
+
+712
+00:23:23.280 --> 00:23:26.799
+contradict the system prompt you should
+
+713
+00:23:24.799 --> 00:23:28.000
+always follow what the developer promp
+
+714
+00:23:26.799 --> 00:23:29.520
+so they're trying to create this
+
+715
+00:23:28.000 --> 00:23:32.159
+hierarchy
+
+716
+00:23:29.520 --> 00:23:34.960
+um in in my experimentation and in our
+
+717
+00:23:32.159 --> 00:23:36.880
+our evaluation sorry um
+
+718
+00:23:34.960 --> 00:23:38.080
+Yes, models are getting better at
+
+719
+00:23:36.880 --> 00:23:40.880
+following that distinction in that
+
+720
+00:23:38.080 --> 00:23:42.320
+hierarchy. Better is not yet perfect,
+
+721
+00:23:40.880 --> 00:23:45.200
+right? And it's um
+
+722
+00:23:42.320 --> 00:23:48.400
+&gt;&gt; I think I think that this issue of um
+
+723
+00:23:45.200 --> 00:23:49.760
+conflation of the situation is um is
+
+724
+00:23:48.400 --> 00:23:51.520
+something that that models still need to
+
+725
+00:23:49.760 --> 00:23:54.320
+work on, right? If
+
+726
+00:23:51.520 --> 00:23:56.559
+&gt;&gt; it's it's a bit of the um how does the
+
+727
+00:23:54.320 --> 00:23:58.559
+the Star Wars quote uh go, right? Like
+
+728
+00:23:56.559 --> 00:23:59.600
+the Jedi mind trick, you have not seen
+
+729
+00:23:58.559 --> 00:24:01.440
+anything, right? [laughter]
+
+730
+00:23:59.600 --> 00:24:03.360
+So so that is something that a human
+
+731
+00:24:01.440 --> 00:24:05.039
+wouldn't get wrong and models still
+
+732
+00:24:03.360 --> 00:24:06.640
+might, right? like a model guarding at
+
+733
+00:24:05.039 --> 00:24:08.000
+the door. Your instructions are to let
+
+734
+00:24:06.640 --> 00:24:10.080
+me in. Oh, my instructions are to let
+
+735
+00:24:08.000 --> 00:24:11.360
+you in. That's great, right? So, still
+
+736
+00:24:10.080 --> 00:24:13.279
+something to get better at.
+
+737
+00:24:11.360 --> 00:24:17.360
+&gt;&gt; Okay, so we learned a little bit about
+
+738
+00:24:13.279 --> 00:24:20.000
+the the size of the prompts, the the um
+
+739
+00:24:17.360 --> 00:24:22.159
+the I I guess split between the the
+
+740
+00:24:20.000 --> 00:24:25.120
+style of what is in the prompt, where
+
+741
+00:24:22.159 --> 00:24:27.279
+they where that sits in in the order.
+
+742
+00:24:25.120 --> 00:24:29.360
+What was next? Did we go into kind of
+
+743
+00:24:27.279 --> 00:24:31.679
+like the tool usage most important?
+
+744
+00:24:29.360 --> 00:24:33.840
+Because if we look at Claude that seems
+
+745
+00:24:31.679 --> 00:24:36.159
+extremely high on the in terms of the
+
+746
+00:24:33.840 --> 00:24:38.000
+the the system prompt for describing how
+
+747
+00:24:36.159 --> 00:24:39.440
+the model should use the tools. what was
+
+748
+00:24:38.000 --> 00:24:41.760
+the differences in terms of
+
+749
+00:24:39.440 --> 00:24:43.440
+&gt;&gt; so I think here there's okay so if we if
+
+750
+00:24:41.760 --> 00:24:45.039
+we look at tools I agree with you that
+
+751
+00:24:43.440 --> 00:24:46.480
+in a sense was the thing that was most
+
+752
+00:24:45.039 --> 00:24:49.600
+surprising to me
+
+753
+00:24:46.480 --> 00:24:51.919
+&gt;&gt; uh looking at at uh these things the
+
+754
+00:24:49.600 --> 00:24:53.440
+system promps are are interesting and it
+
+755
+00:24:51.919 --> 00:24:54.799
+is it is surprising that there's a
+
+756
+00:24:53.440 --> 00:24:55.919
+difference such a difference between the
+
+757
+00:24:54.799 --> 00:24:59.200
+agents
+
+758
+00:24:55.919 --> 00:25:00.480
+&gt;&gt; but uh at the end of the day the amount
+
+759
+00:24:59.200 --> 00:25:01.840
+something about kind of like the the
+
+760
+00:25:00.480 --> 00:25:04.080
+vibe that you get from the system
+
+761
+00:25:01.840 --> 00:25:07.120
+prompts is pretty similar
+
+762
+00:25:04.080 --> 00:25:08.000
+&gt;&gt; tools on the other hand claude has 17
+
+763
+00:25:07.120 --> 00:25:09.919
+tools Mh.
+
+764
+00:25:08.000 --> 00:25:13.039
+&gt;&gt; And if you take uh just the the
+
+765
+00:25:09.919 --> 00:25:14.480
+descriptions and the the kind of like
+
+766
+00:25:13.039 --> 00:25:16.080
+the oneliner description and the
+
+767
+00:25:14.480 --> 00:25:19.440
+in-depth description if I remember
+
+768
+00:25:16.080 --> 00:25:22.640
+correctly you get to about 41 kilobytes
+
+769
+00:25:19.440 --> 00:25:25.200
+of of text with claw for the tools.
+
+770
+00:25:22.640 --> 00:25:26.320
+Codex has only seven tools, less than
+
+771
+00:25:25.200 --> 00:25:28.799
+half
+
+772
+00:25:26.320 --> 00:25:31.200
+&gt;&gt; and only 1 kilobyte, 1 point something
+
+773
+00:25:28.799 --> 00:25:32.960
+kilobyte of description for those tools
+
+774
+00:25:31.200 --> 00:25:35.360
+and Gemini is somewhere in the middle
+
+775
+00:25:32.960 --> 00:25:36.159
+with with a 12 and 11 at the version
+
+776
+00:25:35.360 --> 00:25:38.320
+that I've looked at
+
+777
+00:25:36.159 --> 00:25:39.919
+&gt;&gt; and and briefly just like mention what
+
+778
+00:25:38.320 --> 00:25:41.520
+is a tool what is what is a tool for an
+
+779
+00:25:39.919 --> 00:25:43.279
+LLM or an agent to use.
+
+780
+00:25:41.520 --> 00:25:45.440
+&gt;&gt; Yeah. Yeah. So if we remember sort of
+
+781
+00:25:43.279 --> 00:25:47.520
+like the minu agent or the nano agent
+
+782
+00:25:45.440 --> 00:25:49.919
+we've shown at the at the beginning
+
+783
+00:25:47.520 --> 00:25:51.840
+&gt;&gt; a model is just just the brain, right?
+
+784
+00:25:49.919 --> 00:25:54.159
+All it can do is receive the tokens that
+
+785
+00:25:51.840 --> 00:25:57.520
+that uh we're sending it and emit tokens
+
+786
+00:25:54.159 --> 00:25:59.520
+that it's emitting back out. Um if you
+
+787
+00:25:57.520 --> 00:26:01.279
+were sort of like imagine a Chad GPT
+
+788
+00:25:59.520 --> 00:26:02.960
+kind of thing, well before Chad GPT
+
+789
+00:26:01.279 --> 00:26:05.919
+itself had tools, you're telling Chad
+
+790
+00:26:02.960 --> 00:26:07.520
+GPT, hey um how would I find the largest
+
+791
+00:26:05.919 --> 00:26:09.200
+file on my hard drive? It could give you
+
+792
+00:26:07.520 --> 00:26:10.559
+the command but it cannot run the
+
+793
+00:26:09.200 --> 00:26:12.000
+command on your hard drive. You then
+
+794
+00:26:10.559 --> 00:26:13.360
+need to copy the command and paste it
+
+795
+00:26:12.000 --> 00:26:14.960
+into your terminal and be like okay now
+
+796
+00:26:13.360 --> 00:26:16.480
+I actually run this thing. And then
+
+797
+00:26:14.960 --> 00:26:18.799
+maybe there's a syntax error or maybe
+
+798
+00:26:16.480 --> 00:26:20.640
+there's a there's the the tool that Chad
+
+799
+00:26:18.799 --> 00:26:22.240
+GPT wanted to use doesn't exist. Okay,
+
+800
+00:26:20.640 --> 00:26:23.840
+so I'm copying the error and I'm passing
+
+801
+00:26:22.240 --> 00:26:24.960
+it pasting it back to Chad GPT and now
+
+802
+00:26:23.840 --> 00:26:26.400
+it's telling, oh well, you should be
+
+803
+00:26:24.960 --> 00:26:28.880
+using this other command and now I'm
+
+804
+00:26:26.400 --> 00:26:31.600
+copying back and forth back and forth.
+
+805
+00:26:28.880 --> 00:26:34.000
+By tool use, we're able to just just
+
+806
+00:26:31.600 --> 00:26:35.919
+bypass all of that and let the model
+
+807
+00:26:34.000 --> 00:26:38.400
+have sort of like a side channel where
+
+808
+00:26:35.919 --> 00:26:39.840
+it is saying, okay, this is not text
+
+809
+00:26:38.400 --> 00:26:41.919
+that I'm emitting. These are tokens that
+
+810
+00:26:39.840 --> 00:26:44.240
+I'm not emitting for the user to read.
+
+811
+00:26:41.919 --> 00:26:45.760
+These are tokens that I'm emitting uh to
+
+812
+00:26:44.240 --> 00:26:47.440
+tell the thing that is invoking me to
+
+813
+00:26:45.760 --> 00:26:49.919
+tell the program or the the agentic
+
+814
+00:26:47.440 --> 00:26:51.600
+harness that is invoking the model.
+
+815
+00:26:49.919 --> 00:26:54.159
+&gt;&gt; Stop for a second. You should run a
+
+816
+00:26:51.600 --> 00:26:56.080
+certain function or a certain well tool
+
+817
+00:26:54.159 --> 00:26:58.000
+is is the word we use. Here are the
+
+818
+00:26:56.080 --> 00:27:00.720
+parameters. Here are the arguments.
+
+819
+00:26:58.000 --> 00:27:02.880
+&gt;&gt; Once it's ran, the output from that
+
+820
+00:27:00.720 --> 00:27:04.960
+command execution should go back to the
+
+821
+00:27:02.880 --> 00:27:07.679
+model. So if the model is choosing to to
+
+822
+00:27:04.960 --> 00:27:10.400
+use the execute tool and it's giving the
+
+823
+00:27:07.679 --> 00:27:11.760
+parameter ls, it wants to run ls and now
+
+824
+00:27:10.400 --> 00:27:13.360
+we get the list of files in the current
+
+825
+00:27:11.760 --> 00:27:15.520
+directory that should be sent back to
+
+826
+00:27:13.360 --> 00:27:17.200
+the model. So now it has additional uh
+
+827
+00:27:15.520 --> 00:27:18.799
+input and now it can oh now I know what
+
+828
+00:27:17.200 --> 00:27:20.720
+are the files in the directory.
+
+829
+00:27:18.799 --> 00:27:21.440
+&gt;&gt; Now the model can decide what next it
+
+830
+00:27:20.720 --> 00:27:21.840
+would like to do.
+
+831
+00:27:21.440 --> 00:27:24.640
+&gt;&gt; Yeah.
+
+832
+00:27:21.840 --> 00:27:26.960
+&gt;&gt; Uh do a read file tool in order to read
+
+833
+00:27:24.640 --> 00:27:28.880
+what's in the files or do a delete file
+
+834
+00:27:26.960 --> 00:27:31.279
+if it thinks or edit and so on and so
+
+835
+00:27:28.880 --> 00:27:32.799
+forth. So the tools are actually the the
+
+836
+00:27:31.279 --> 00:27:34.400
+tools combined with the context and the
+
+837
+00:27:32.799 --> 00:27:36.080
+model and the agentic harness around all
+
+838
+00:27:34.400 --> 00:27:38.640
+of that is the thing that makes an agent
+
+839
+00:27:36.080 --> 00:27:40.320
+an agent as opposed to sort of like just
+
+840
+00:27:38.640 --> 00:27:42.159
+the model which is like a brain in a
+
+841
+00:27:40.320 --> 00:27:43.600
+jar. It cannot do anything. Now it's an
+
+842
+00:27:42.159 --> 00:27:44.080
+agent that can operate in the
+
+843
+00:27:43.600 --> 00:27:46.640
+environment.
+
+844
+00:27:44.080 --> 00:27:49.120
+&gt;&gt; Yeah. Okay. Cool. So when you then look
+
+845
+00:27:46.640 --> 00:27:52.320
+at that the 41k
+
+846
+00:27:49.120 --> 00:27:54.960
+&gt;&gt; Yes. uh versus the 1.1k between Claude
+
+847
+00:27:52.320 --> 00:27:56.880
+and Codeex. That's super significant in
+
+848
+00:27:54.960 --> 00:27:59.840
+terms of you're you're essentially, you
+
+849
+00:27:56.880 --> 00:28:02.399
+know, it feels like Claude is just so
+
+850
+00:27:59.840 --> 00:28:04.159
+much more enabled to to use these
+
+851
+00:28:02.399 --> 00:28:07.440
+various functions, be able to run these
+
+852
+00:28:04.159 --> 00:28:09.120
+actual commands. Um, talk us through
+
+853
+00:28:07.440 --> 00:28:10.159
+kind of like I guess the split in the
+
+854
+00:28:09.120 --> 00:28:12.000
+tools. Y
+
+855
+00:28:10.159 --> 00:28:14.799
+&gt;&gt; what what were the what were the
+
+856
+00:28:12.000 --> 00:28:16.720
+capabilities that that Claude has I
+
+857
+00:28:14.799 --> 00:28:19.760
+guess that Codeex may may miss with
+
+858
+00:28:16.720 --> 00:28:20.960
+these? You would you would I I wouldn't
+
+859
+00:28:19.760 --> 00:28:23.360
+be surprised if someone would understand
+
+860
+00:28:20.960 --> 00:28:25.600
+it that way. Oh, way more tools way more
+
+861
+00:28:23.360 --> 00:28:27.440
+powerful. But it doesn't have to be
+
+862
+00:28:25.600 --> 00:28:29.600
+actually there's a lot you could do with
+
+863
+00:28:27.440 --> 00:28:31.120
+very basic tools if you're able to use
+
+864
+00:28:29.600 --> 00:28:31.520
+them really really well,
+
+865
+00:28:31.120 --> 00:28:34.399
+&gt;&gt; right?
+
+866
+00:28:31.520 --> 00:28:36.880
+&gt;&gt; And we know from uh from our own use of
+
+867
+00:28:34.399 --> 00:28:39.360
+the tools from benchmark results is that
+
+868
+00:28:36.880 --> 00:28:41.600
+I don't want to be the like in a side
+
+869
+00:28:39.360 --> 00:28:43.760
+comment crowning the the best agent.
+
+870
+00:28:41.600 --> 00:28:45.520
+What does even best agent mean? But we
+
+871
+00:28:43.760 --> 00:28:48.159
+know that both of them are very capable
+
+872
+00:28:45.520 --> 00:28:50.000
+agents like flagship top-of-the-line
+
+873
+00:28:48.159 --> 00:28:51.679
+right. So even though they have this
+
+874
+00:28:50.000 --> 00:28:52.960
+very distinct difference in them
+
+875
+00:28:51.679 --> 00:28:54.159
+&gt;&gt; and I would think about it more as a
+
+876
+00:28:52.960 --> 00:28:54.559
+difference in philosophy.
+
+877
+00:28:54.159 --> 00:28:56.559
+&gt;&gt; Mhm.
+
+878
+00:28:54.559 --> 00:28:56.880
+&gt;&gt; Codex does a lot with little.
+
+879
+00:28:56.559 --> 00:28:59.440
+&gt;&gt; Yeah.
+
+880
+00:28:56.880 --> 00:29:02.399
+&gt;&gt; Right. It has these seven basic tools it
+
+881
+00:28:59.440 --> 00:29:03.919
+doesn't even have a read file tool. It
+
+882
+00:29:02.399 --> 00:29:07.360
+just you know if it wants to read a file
+
+883
+00:29:03.919 --> 00:29:08.799
+it executes a cat command to to read GB
+
+884
+00:29:07.360 --> 00:29:11.039
+or whatever like some a command that
+
+885
+00:29:08.799 --> 00:29:14.399
+will let it take something from the
+
+886
+00:29:11.039 --> 00:29:16.159
+file. And the descriptions for the tools
+
+887
+00:29:14.399 --> 00:29:19.279
+are very very short.
+
+888
+00:29:16.159 --> 00:29:21.679
+&gt;&gt; As in um if we we'll show here a few
+
+889
+00:29:19.279 --> 00:29:24.080
+descriptions of some of Codex's tools,
+
+890
+00:29:21.679 --> 00:29:27.120
+we can see it's like here's the the I
+
+891
+00:29:24.080 --> 00:29:29.440
+don't know apply diff tool and this is
+
+892
+00:29:27.120 --> 00:29:31.440
+how you use it and that's about it.
+
+893
+00:29:29.440 --> 00:29:34.399
+Whereas if we now look at the definition
+
+894
+00:29:31.440 --> 00:29:35.840
+of a tool from Claude, we can see it's a
+
+895
+00:29:34.399 --> 00:29:38.159
+lot more detailed.
+
+896
+00:29:35.840 --> 00:29:39.440
+&gt;&gt; Here's the tool. When should you use it?
+
+897
+00:29:38.159 --> 00:29:42.000
+What should you do in this case? What
+
+898
+00:29:39.440 --> 00:29:43.840
+should you do in that case? sort of like
+
+899
+00:29:42.000 --> 00:29:46.240
+supporting the model a lot more in
+
+900
+00:29:43.840 --> 00:29:47.679
+understanding when and how and what is
+
+901
+00:29:46.240 --> 00:29:48.720
+good and what is bad and giving it
+
+902
+00:29:47.679 --> 00:29:52.880
+examples and so on.
+
+903
+00:29:48.720 --> 00:29:54.960
+&gt;&gt; Mhm. Now uh again hypothesis I don't
+
+904
+00:29:52.880 --> 00:29:57.279
+know that this is true but I I believe
+
+905
+00:29:54.960 --> 00:30:00.559
+that this suggests something about the
+
+906
+00:29:57.279 --> 00:30:03.520
+underlying training of the models right
+
+907
+00:30:00.559 --> 00:30:06.000
+&gt;&gt; I don't know but I would be surprised if
+
+908
+00:30:03.520 --> 00:30:08.000
+Codex can achieve these kinds of results
+
+909
+00:30:06.000 --> 00:30:09.360
+without any kind of training for these
+
+910
+00:30:08.000 --> 00:30:12.320
+tools in particular
+
+911
+00:30:09.360 --> 00:30:14.240
+&gt;&gt; and we also know that that codeex at the
+
+912
+00:30:12.320 --> 00:30:17.279
+time of recording at least we're running
+
+913
+00:30:14.240 --> 00:30:19.760
+it with GPT 5.1-codex
+
+914
+00:30:17.279 --> 00:30:22.399
+not with the general purpose GPT5 5.1
+
+915
+00:30:19.760 --> 00:30:24.480
+but with a specific GPT 5.1 that was
+
+916
+00:30:22.399 --> 00:30:27.120
+then further uh trained and further
+
+917
+00:30:24.480 --> 00:30:28.880
+fine-tuned or RL to to to use these
+
+918
+00:30:27.120 --> 00:30:30.880
+tools and to better work for so you're
+
+919
+00:30:28.880 --> 00:30:32.720
+not so this is outside of the 1.1K which
+
+920
+00:30:30.880 --> 00:30:34.240
+is the tool description you're talking
+
+921
+00:30:32.720 --> 00:30:36.000
+about an actual something that's baked
+
+922
+00:30:34.240 --> 00:30:37.520
+into the training to allow it to use
+
+923
+00:30:36.000 --> 00:30:40.640
+this and the descriptions are therefore
+
+924
+00:30:37.520 --> 00:30:42.799
+just almost decorative so that the agent
+
+925
+00:30:40.640 --> 00:30:46.000
+with its training knows which ones to
+
+926
+00:30:42.799 --> 00:30:47.840
+use but the the core piece so so very
+
+927
+00:30:46.000 --> 00:30:49.039
+interesting and maybe and I guess this
+
+928
+00:30:47.840 --> 00:30:51.360
+you know there's there's There's a lot
+
+929
+00:30:49.039 --> 00:30:53.600
+of guessing here probably, but you know,
+
+930
+00:30:51.360 --> 00:30:55.679
+perhaps Claude has maybe had less of
+
+931
+00:30:53.600 --> 00:30:58.960
+that training for in the tools because
+
+932
+00:30:55.679 --> 00:31:00.960
+of the amount of verbosity in the uh in
+
+933
+00:30:58.960 --> 00:31:02.480
+the in the descriptions cuz it's
+
+934
+00:31:00.960 --> 00:31:04.080
+probably you're looking at around twice
+
+935
+00:31:02.480 --> 00:31:06.720
+as much verosity in the in the
+
+936
+00:31:04.080 --> 00:31:07.919
+description given you're around uh Oh,
+
+937
+00:31:06.720 --> 00:31:10.240
+no.
+
+938
+00:31:07.919 --> 00:31:11.600
+&gt;&gt; It's it's about 20 times. Yeah. Because
+
+939
+00:31:10.240 --> 00:31:13.200
+if you look at the difference in tools,
+
+940
+00:31:11.600 --> 00:31:13.520
+yeah, you're looking at about 20 times
+
+941
+00:31:13.200 --> 00:31:14.480
+more.
+
+942
+00:31:13.520 --> 00:31:15.840
+&gt;&gt; It's it's quite a lot.
+
+943
+00:31:14.480 --> 00:31:16.960
+&gt;&gt; Very interesting. Very interesting. And
+
+944
+00:31:15.840 --> 00:31:18.880
+of course we can speculate here because
+
+945
+00:31:16.960 --> 00:31:20.960
+we can't see the training but it's very
+
+946
+00:31:18.880 --> 00:31:23.440
+very interesting data and differences
+
+947
+00:31:20.960 --> 00:31:25.039
+between them. We can speculate and there
+
+948
+00:31:23.440 --> 00:31:28.000
+are other things that we see right like
+
+949
+00:31:25.039 --> 00:31:30.320
+in our own evaluations we've had better
+
+950
+00:31:28.000 --> 00:31:34.640
+success in and at the moment our our
+
+951
+00:31:30.320 --> 00:31:37.279
+sense is that uh set 45 opus 45 do
+
+952
+00:31:34.640 --> 00:31:39.200
+better than the the codeex models in
+
+953
+00:31:37.279 --> 00:31:40.799
+using other tools tools that they
+
+954
+00:31:39.200 --> 00:31:41.519
+haven't seen before right like custom
+
+955
+00:31:40.799 --> 00:31:44.159
+tools
+
+956
+00:31:41.519 --> 00:31:45.679
+&gt;&gt; and so while yes of course codeex and
+
+957
+00:31:44.159 --> 00:31:48.080
+claude and gemini all of them support
+
+958
+00:31:45.679 --> 00:31:50.080
+MCP you can add tools on top of them you
+
+959
+00:31:48.080 --> 00:31:51.760
+can just invoke the model in your own
+
+960
+00:31:50.080 --> 00:31:53.120
+code right like just we've seen in with
+
+961
+00:31:51.760 --> 00:31:54.159
+nano agents and give it whatever tools
+
+962
+00:31:53.120 --> 00:31:56.480
+you want.
+
+963
+00:31:54.159 --> 00:31:59.600
+&gt;&gt; We've had at least better success making
+
+964
+00:31:56.480 --> 00:32:00.559
+set make use of arbitrary new tools than
+
+965
+00:31:59.600 --> 00:32:00.880
+we've had with codeex.
+
+966
+00:32:00.559 --> 00:32:03.840
+&gt;&gt; Interesting.
+
+967
+00:32:00.880 --> 00:32:06.080
+&gt;&gt; Not saying codeex GPT 5.1 C codeex and
+
+968
+00:32:03.840 --> 00:32:08.640
+GP 5.1 in general. Not saying it cannot
+
+969
+00:32:06.080 --> 00:32:09.039
+use tools but not as flexibly.
+
+970
+00:32:08.640 --> 00:32:10.559
+&gt;&gt; Mhm.
+
+971
+00:32:09.039 --> 00:32:12.720
+&gt;&gt; And then there's a trade-off. What what
+
+972
+00:32:10.559 --> 00:32:14.159
+do you prefer? Right? Like these tokens
+
+973
+00:32:12.720 --> 00:32:15.840
+always being in the context, they're
+
+974
+00:32:14.159 --> 00:32:17.919
+expensive. They cost you something even
+
+975
+00:32:15.840 --> 00:32:19.679
+with with caching, right? They take some
+
+976
+00:32:17.919 --> 00:32:21.440
+of the the context window and and they
+
+977
+00:32:19.679 --> 00:32:23.360
+they cost us something. But they give
+
+978
+00:32:21.440 --> 00:32:25.039
+you this additional flexibility. You
+
+979
+00:32:23.360 --> 00:32:27.279
+don't need to retrain the model in order
+
+980
+00:32:25.039 --> 00:32:29.279
+to swap the tools. There is reason to
+
+981
+00:32:27.279 --> 00:32:31.200
+believe that the model would be uh sort
+
+982
+00:32:29.279 --> 00:32:32.720
+of like more capable. And again, this is
+
+983
+00:32:31.200 --> 00:32:36.000
+something that we're also seeing in
+
+984
+00:32:32.720 --> 00:32:38.080
+separate benchmarks uh with new tools
+
+985
+00:32:36.000 --> 00:32:40.159
+that it's never seen because it's like
+
+986
+00:32:38.080 --> 00:32:41.440
+more of a generalist as opposed to has
+
+987
+00:32:40.159 --> 00:32:41.919
+been trained on those tools in
+
+988
+00:32:41.440 --> 00:32:44.320
+particular.
+
+989
+00:32:41.919 --> 00:32:46.000
+&gt;&gt; Yep. Interesting. So you mentioned
+
+990
+00:32:44.320 --> 00:32:48.000
+before there's a difference in planning.
+
+991
+00:32:46.000 --> 00:32:49.039
+Um what does that I guess what does that
+
+992
+00:32:48.000 --> 00:32:50.399
+look like? What are the what are the
+
+993
+00:32:49.039 --> 00:32:51.039
+differences in planning across models
+
+994
+00:32:50.399 --> 00:32:53.200
+and agents?
+
+995
+00:32:51.039 --> 00:32:56.880
+&gt;&gt; Yeah. Yeah. Yeah. So, one thing that
+
+996
+00:32:53.200 --> 00:32:59.279
+that I um I lumped into planning is use
+
+997
+00:32:56.880 --> 00:33:01.519
+of cy sub agents like invoking a whole
+
+998
+00:32:59.279 --> 00:33:03.279
+separate agent. We could talk about
+
+999
+00:33:01.519 --> 00:33:04.960
+that. I wasn't sure if it was the right
+
+1000
+00:33:03.279 --> 00:33:08.159
+thing to lump it into planning because
+
+1001
+00:33:04.960 --> 00:33:09.919
+it's it's a whole very very rich space.
+
+1002
+00:33:08.159 --> 00:33:12.080
+&gt;&gt; But when we say planning normally,
+
+1003
+00:33:09.919 --> 00:33:14.960
+right, ignoring sub agents for a second,
+
+1004
+00:33:12.080 --> 00:33:18.000
+we mean exactly this. the model is
+
+1005
+00:33:14.960 --> 00:33:20.159
+instructed, hey, uh if it's a complex
+
+1006
+00:33:18.000 --> 00:33:21.760
+task, don't just try to to do it
+
+1007
+00:33:20.159 --> 00:33:24.240
+willy-nilly and and do whatever you
+
+1008
+00:33:21.760 --> 00:33:26.640
+want. First of all, write to yourself
+
+1009
+00:33:24.240 --> 00:33:28.159
+and there's there's a lot of research
+
+1010
+00:33:26.640 --> 00:33:29.360
+supporting that models do better when
+
+1011
+00:33:28.159 --> 00:33:31.519
+they first kind of like reason through
+
+1012
+00:33:29.360 --> 00:33:33.600
+the problem and and create a plan
+
+1013
+00:33:31.519 --> 00:33:35.200
+&gt;&gt; and just say what what is the plan or
+
+1014
+00:33:33.600 --> 00:33:37.760
+write they don't say they they write the
+
+1015
+00:33:35.200 --> 00:33:39.279
+plan and tokens out like to be added to
+
+1016
+00:33:37.760 --> 00:33:40.080
+their context and now they'll be
+
+1017
+00:33:39.279 --> 00:33:44.000
+following the plan.
+
+1018
+00:33:40.080 --> 00:33:46.799
+&gt;&gt; Yeah. So both uh codeex and Gemini have
+
+1019
+00:33:44.000 --> 00:33:48.799
+a tool called update plan or something
+
+1020
+00:33:46.799 --> 00:33:50.559
+along these lines and what they do what
+
+1021
+00:33:48.799 --> 00:33:52.240
+they do in that tool is just the the the
+
+1022
+00:33:50.559 --> 00:33:53.760
+model is invoking the tool saying here
+
+1023
+00:33:52.240 --> 00:33:55.279
+are the steps I'd like to go through.
+
+1024
+00:33:53.760 --> 00:33:56.880
+These steps are then added to the
+
+1025
+00:33:55.279 --> 00:33:58.640
+conversation history
+
+1026
+00:33:56.880 --> 00:34:01.120
+&gt;&gt; and that's it. There's nothing else that
+
+1027
+00:33:58.640 --> 00:34:02.480
+reminds the model to follow the plan.
+
+1028
+00:34:01.120 --> 00:34:04.159
+There's nothing that would would tell
+
+1029
+00:34:02.480 --> 00:34:06.320
+the model, oh you you've skipped a step
+
+1030
+00:34:04.159 --> 00:34:08.639
+or whatever. anytime the model wants it
+
+1031
+00:34:06.320 --> 00:34:10.399
+can just emit a new update plan and the
+
+1032
+00:34:08.639 --> 00:34:11.919
+user will be seeing whatever is the
+
+1033
+00:34:10.399 --> 00:34:13.200
+latest plan that the model has has
+
+1034
+00:34:11.919 --> 00:34:16.000
+shown.
+
+1035
+00:34:13.200 --> 00:34:17.679
+Um, usually the model doesn't change to
+
+1036
+00:34:16.000 --> 00:34:20.079
+to change the plan willy-nilly. And so
+
+1037
+00:34:17.679 --> 00:34:22.399
+if it had steps 1 2 3 4, it does an
+
+1038
+00:34:20.079 --> 00:34:24.639
+update plan. Now I'm doing one update
+
+1039
+00:34:22.399 --> 00:34:26.480
+plan, same 1 2 3 4, but one is crossed
+
+1040
+00:34:24.639 --> 00:34:28.399
+out. Update plan two is crossed out. And
+
+1041
+00:34:26.480 --> 00:34:29.839
+so and we get a sense of progression,
+
+1042
+00:34:28.399 --> 00:34:30.960
+but actually the model can do whatever
+
+1043
+00:34:29.839 --> 00:34:33.200
+it wants.
+
+1044
+00:34:30.960 --> 00:34:35.119
+&gt;&gt; There's nothing in the uh aetic harness
+
+1045
+00:34:33.200 --> 00:34:37.760
+that is running be around the model that
+
+1046
+00:34:35.119 --> 00:34:39.359
+would remind it of things.
+
+1047
+00:34:37.760 --> 00:34:43.359
+&gt;&gt; Claude takes a different approach here.
+
+1048
+00:34:39.359 --> 00:34:45.760
+CL has several uh planning tools and
+
+1049
+00:34:43.359 --> 00:34:48.560
+update plan task complete these kind of
+
+1050
+00:34:45.760 --> 00:34:50.240
+things like more uh nuanced and the
+
+1051
+00:34:48.560 --> 00:34:53.200
+agentic harness actually kind of like
+
+1052
+00:34:50.240 --> 00:34:55.359
+supports the model by reminding it oh
+
+1053
+00:34:53.200 --> 00:34:56.800
+you're done with step two let me remind
+
+1054
+00:34:55.359 --> 00:35:00.240
+you that before you said that you should
+
+1055
+00:34:56.800 --> 00:35:02.880
+be doing step three now and so actually
+
+1056
+00:35:00.240 --> 00:35:05.119
+the plan is nothing it's just tokens
+
+1057
+00:35:02.880 --> 00:35:06.640
+that the model is saying in codeex and
+
+1058
+00:35:05.119 --> 00:35:08.320
+Gemini it gets added to the message
+
+1059
+00:35:06.640 --> 00:35:09.760
+history and now now the model is more
+
+1060
+00:35:08.320 --> 00:35:12.240
+likely to follow that because it sees
+
+1061
+00:35:09.760 --> 00:35:14.160
+that in the the context that's gone by.
+
+1062
+00:35:12.240 --> 00:35:17.520
+&gt;&gt; Whereas the plan is an actual sort of
+
+1063
+00:35:14.160 --> 00:35:20.320
+like um uh element of flow control or
+
+1064
+00:35:17.520 --> 00:35:21.680
+element of of control in in claude.
+
+1065
+00:35:20.320 --> 00:35:23.359
+There is something that is not the
+
+1066
+00:35:21.680 --> 00:35:24.720
+model. The agentic harness is actually
+
+1067
+00:35:23.359 --> 00:35:25.760
+reminding it hey are you sticking to the
+
+1068
+00:35:24.720 --> 00:35:26.560
+plan? Are you following the plan? Did
+
+1069
+00:35:25.760 --> 00:35:29.280
+you finish the plan?
+
+1070
+00:35:26.560 --> 00:35:31.760
+&gt;&gt; Yeah. So that's again pretty substantial
+
+1071
+00:35:29.280 --> 00:35:33.440
+difference I think on something that you
+
+1072
+00:35:31.760 --> 00:35:35.839
+can see how often agents are planning
+
+1073
+00:35:33.440 --> 00:35:38.400
+right like planning is a very um
+
+1074
+00:35:35.839 --> 00:35:40.720
+important aspect of of agentic behavior
+
+1075
+00:35:38.400 --> 00:35:43.440
+&gt;&gt; and yet such a difference in philosophy
+
+1076
+00:35:40.720 --> 00:35:45.040
+&gt;&gt; but again all of these are very capable
+
+1077
+00:35:43.440 --> 00:35:46.560
+agents all of them end up like doing
+
+1078
+00:35:45.040 --> 00:35:47.839
+their plans pretty well even though the
+
+1079
+00:35:46.560 --> 00:35:49.440
+the underlying implementation is quite
+
+1080
+00:35:47.839 --> 00:35:51.040
+different. Yeah, it almost feels like,
+
+1081
+00:35:49.440 --> 00:35:53.839
+you know, there's no right way or wrong
+
+1082
+00:35:51.040 --> 00:35:55.119
+way by the sound of it because different
+
+1083
+00:35:53.839 --> 00:35:57.200
+models are picking different things and
+
+1084
+00:35:55.119 --> 00:35:59.119
+like you say, it's such a crucial thing.
+
+1085
+00:35:57.200 --> 00:36:00.880
+If there was one way that was kind of
+
+1086
+00:35:59.119 --> 00:36:02.720
+like showing, you know, much better
+
+1087
+00:36:00.880 --> 00:36:04.320
+value, you'd think all models would
+
+1088
+00:36:02.720 --> 00:36:06.240
+navigate to that immediately, right? So,
+
+1089
+00:36:04.320 --> 00:36:08.480
+it's probably just more the way that it
+
+1090
+00:36:06.240 --> 00:36:11.520
+was it was a choice of implementation
+
+1091
+00:36:08.480 --> 00:36:14.160
+versus any major um difference. But
+
+1092
+00:36:11.520 --> 00:36:16.880
+yeah, super interesting to see such big,
+
+1093
+00:36:14.160 --> 00:36:18.480
+you know, high-profile models just
+
+1094
+00:36:16.880 --> 00:36:19.920
+choosing completely different ways of
+
+1095
+00:36:18.480 --> 00:36:20.720
+doing these things and then sticking to
+
+1096
+00:36:19.920 --> 00:36:22.880
+it as well
+
+1097
+00:36:20.720 --> 00:36:25.359
+&gt;&gt; and then sticking to it. We'll see like
+
+1098
+00:36:22.880 --> 00:36:27.440
+uh I I don't remember if it was Codex or
+
+1099
+00:36:25.359 --> 00:36:29.760
+Gemini. One of them already is beginning
+
+1100
+00:36:27.440 --> 00:36:31.760
+to have cuz the the the repo is is open
+
+1101
+00:36:29.760 --> 00:36:34.320
+source is already beginning to have
+
+1102
+00:36:31.760 --> 00:36:36.400
+changes to some of its tools to be like
+
+1103
+00:36:34.320 --> 00:36:39.200
+more geared more towards kind like the
+
+1104
+00:36:36.400 --> 00:36:40.480
+the rich set. So maybe they are changing
+
+1105
+00:36:39.200 --> 00:36:42.560
+tech and like maybe they're approaching
+
+1106
+00:36:40.480 --> 00:36:43.359
+it like they're making a change over
+
+1107
+00:36:42.560 --> 00:36:45.599
+time.
+
+1108
+00:36:43.359 --> 00:36:47.200
+&gt;&gt; Uh but yes the
+
+1109
+00:36:45.599 --> 00:36:49.760
+&gt;&gt; seeing Claude and Codex that the
+
+1110
+00:36:47.200 --> 00:36:51.200
+distinction is is so big between them.
+
+1111
+00:36:49.760 --> 00:36:53.119
+&gt;&gt; Clearly they thought about it like this
+
+1112
+00:36:51.200 --> 00:36:54.720
+is not the first version like we've been
+
+1113
+00:36:53.119 --> 00:36:55.760
+out there for some time and there's a
+
+1114
+00:36:54.720 --> 00:36:57.440
+marked difference in philosophy.
+
+1115
+00:36:55.760 --> 00:37:00.000
+&gt;&gt; This isn't their first LLM rodeo is
+
+1116
+00:36:57.440 --> 00:37:02.000
+&gt;&gt; yes the first Exactly.
+
+1117
+00:37:00.000 --> 00:37:03.520
+&gt;&gt; So now we're going to go behind the
+
+1118
+00:37:02.000 --> 00:37:05.200
+scenes. We're going to see some demo.
+
+1119
+00:37:03.520 --> 00:37:06.960
+We're going to see what happens uh
+
+1120
+00:37:05.200 --> 00:37:07.680
+behind the scenes between the agent and
+
+1121
+00:37:06.960 --> 00:37:09.200
+the LLM.
+
+1122
+00:37:07.680 --> 00:37:13.280
+&gt;&gt; Exactly. Take it away.
+
+1123
+00:37:09.200 --> 00:37:15.280
+&gt;&gt; So uh to start, there's nothing uh like
+
+1124
+00:37:13.280 --> 00:37:16.880
+incredibly novel here, but still we need
+
+1125
+00:37:15.280 --> 00:37:18.480
+to understand the setup a bit and and
+
+1126
+00:37:16.880 --> 00:37:20.160
+what we had to do in order to to
+
+1127
+00:37:18.480 --> 00:37:23.200
+understand the communication between uh
+
+1128
+00:37:20.160 --> 00:37:25.119
+the agent and the model. Um we have like
+
+1129
+00:37:23.200 --> 00:37:27.119
+this small open source tool called
+
+1130
+00:37:25.119 --> 00:37:30.160
+contain agent. Not not a huge amount
+
+1131
+00:37:27.119 --> 00:37:31.200
+there, but basically uh drops you into a
+
+1132
+00:37:30.160 --> 00:37:33.359
+container
+
+1133
+00:37:31.200 --> 00:37:34.800
+&gt;&gt; mounting the current working directory
+
+1134
+00:37:33.359 --> 00:37:36.880
+inside the container.
+
+1135
+00:37:34.800 --> 00:37:38.800
+&gt;&gt; The container comes pre-installed with
+
+1136
+00:37:36.880 --> 00:37:41.520
+many popular agents and you can run
+
+1137
+00:37:38.800 --> 00:37:43.359
+stuff there. Very very basic like many
+
+1138
+00:37:41.520 --> 00:37:44.079
+many other things like it around.
+
+1139
+00:37:43.359 --> 00:37:46.880
+&gt;&gt; Yep.
+
+1140
+00:37:44.079 --> 00:37:48.720
+&gt;&gt; Um probably other other tools like it
+
+1141
+00:37:46.880 --> 00:37:50.160
+also have such features. I don't know.
+
+1142
+00:37:48.720 --> 00:37:52.240
+But it's something that we've spent a
+
+1143
+00:37:50.160 --> 00:37:54.400
+bit more effort on contain agent is
+
+1144
+00:37:52.240 --> 00:37:57.520
+everything around proxying or
+
+1145
+00:37:54.400 --> 00:38:00.320
+transparent proxying of uh the the
+
+1146
+00:37:57.520 --> 00:38:02.000
+agentic harness to model traffic
+
+1147
+00:38:00.320 --> 00:38:04.800
+&gt;&gt; when we're doing the recording.
+
+1148
+00:38:02.000 --> 00:38:07.119
+&gt;&gt; So if I do contain agent here, I just
+
+1149
+00:38:04.800 --> 00:38:10.000
+get dropped into a shell and now I can
+
+1150
+00:38:07.119 --> 00:38:12.720
+do ls here and like okay there's there's
+
+1151
+00:38:10.000 --> 00:38:18.800
+nothing much here. Uh but if we do
+
+1152
+00:38:12.720 --> 00:38:22.599
+contain agent dash dump uh claude hello
+
+1153
+00:38:18.800 --> 00:38:22.599
+man-in-the-middle dump
+
+1154
+00:38:22.880 --> 00:38:25.839
+we're getting the same thing. I'm
+
+1155
+00:38:24.240 --> 00:38:27.359
+getting jumped into into the same
+
+1156
+00:38:25.839 --> 00:38:30.880
+directory. Now I'm in the container and
+
+1157
+00:38:27.359 --> 00:38:33.359
+so on. But the difference is that now uh
+
+1158
+00:38:30.880 --> 00:38:35.599
+MITM proxy the the the transparent pro
+
+1159
+00:38:33.359 --> 00:38:37.280
+well the proxy multi-tool that can do
+
+1160
+00:38:35.599 --> 00:38:39.680
+all sorts of proxying has been started
+
+1161
+00:38:37.280 --> 00:38:42.480
+in the background and the environment
+
+1162
+00:38:39.680 --> 00:38:46.000
+variables have been set so that the the
+
+1163
+00:38:42.480 --> 00:38:48.320
+agent uh will proxy its traffic through
+
+1164
+00:38:46.000 --> 00:38:51.359
+uh through the proxy. And now if I do
+
+1165
+00:38:48.320 --> 00:38:55.839
+something like uh Claude
+
+1166
+00:38:51.359 --> 00:38:58.000
+and say hello world,
+
+1167
+00:38:55.839 --> 00:39:00.320
+Claude will think about it for a bit and
+
+1168
+00:38:58.000 --> 00:39:02.240
+then just say hello world. That's great.
+
+1169
+00:39:00.320 --> 00:39:04.400
+I can finish my session with Claude,
+
+1170
+00:39:02.240 --> 00:39:07.599
+close the container
+
+1171
+00:39:04.400 --> 00:39:11.560
+and now I have this dump of the traffic
+
+1172
+00:39:07.599 --> 00:39:11.560
+which I can later analyze.
+
+1173
+00:39:12.720 --> 00:39:19.440
+So uh after I I have this recording I
+
+1174
+00:39:15.680 --> 00:39:21.200
+can do like again a a simple uh script
+
+1175
+00:39:19.440 --> 00:39:25.119
+that we've made to to parse the the
+
+1176
+00:39:21.200 --> 00:39:27.440
+manal and uh MITM dump dump files and do
+
+1177
+00:39:25.119 --> 00:39:29.680
+something like
+
+1178
+00:39:27.440 --> 00:39:32.800
+this.
+
+1179
+00:39:29.680 --> 00:39:35.599
+And now what we have under output, we
+
+1180
+00:39:32.800 --> 00:39:37.839
+have a standardized uh JSON file that
+
+1181
+00:39:35.599 --> 00:39:39.760
+includes uh the system prompt that was
+
+1182
+00:39:37.839 --> 00:39:43.680
+sent to the agent, the model that was
+
+1183
+00:39:39.760 --> 00:39:46.560
+used, the um uh the tools that was given
+
+1184
+00:39:43.680 --> 00:39:48.160
+to it and so on and so forth. Uh we we
+
+1185
+00:39:46.560 --> 00:39:50.720
+see interesting things like uh looking
+
+1186
+00:39:48.160 --> 00:39:54.160
+at these things, we see how uh Claude
+
+1187
+00:39:50.720 --> 00:39:55.760
+sends traffic to uh to the model even
+
+1188
+00:39:54.160 --> 00:39:58.560
+when it's just invoked to start
+
+1189
+00:39:55.760 --> 00:40:01.119
+pre-warming caches. We see how uh Claude
+
+1190
+00:39:58.560 --> 00:40:03.280
+is using different models because it has
+
+1191
+00:40:01.119 --> 00:40:04.960
+these different sub agents and it's uh
+
+1192
+00:40:03.280 --> 00:40:06.240
+starting up sort of like here's the
+
+1193
+00:40:04.960 --> 00:40:08.000
+definition of the agent that would do
+
+1194
+00:40:06.240 --> 00:40:09.920
+code exploration and would be using
+
+1195
+00:40:08.000 --> 00:40:12.320
+haiku and is small and fast and can
+
+1196
+00:40:09.920 --> 00:40:13.920
+navigate quite quickly versus whatever
+
+1197
+00:40:12.320 --> 00:40:16.880
+the main agent that is actually writing
+
+1198
+00:40:13.920 --> 00:40:18.000
+code and is like smarter and like using
+
+1199
+00:40:16.880 --> 00:40:19.599
+more intelligence.
+
+1200
+00:40:18.000 --> 00:40:20.960
+&gt;&gt; Awesome. Thank you for sharing that and
+
+1201
+00:40:19.599 --> 00:40:23.359
+and I guess kind of like you know this
+
+1202
+00:40:20.960 --> 00:40:25.200
+is an initial piece of research that
+
+1203
+00:40:23.359 --> 00:40:26.800
+that that you and the team have done.
+
+1204
+00:40:25.200 --> 00:40:28.560
+What does this unlock now? What are the
+
+1205
+00:40:26.800 --> 00:40:30.160
+next steps that you kind of like want to
+
+1206
+00:40:28.560 --> 00:40:32.880
+take to to learn new things?
+
+1207
+00:40:30.160 --> 00:40:34.720
+&gt;&gt; Absolutely. I think the I I say the the
+
+1208
+00:40:32.880 --> 00:40:35.973
+the outcome of all research is that we
+
+1209
+00:40:34.720 --> 00:40:37.680
+should be doing more research.
+
+1210
+00:40:35.973 --> 00:40:38.079
+[laughter] It feels it feels in this
+
+1211
+00:40:37.680 --> 00:40:39.280
+case
+
+1212
+00:40:38.079 --> 00:40:39.680
+&gt;&gt; it asks more questions than give
+
+1213
+00:40:39.280 --> 00:40:42.320
+answers.
+
+1214
+00:40:39.680 --> 00:40:44.320
+&gt;&gt; Absolutely. Absolutely. I think uh two
+
+1215
+00:40:42.320 --> 00:40:48.079
+things that that I'd be uh interested
+
+1216
+00:40:44.320 --> 00:40:50.640
+in. One is an ablation study around
+
+1217
+00:40:48.079 --> 00:40:52.880
+tools and around prompts. Uh I would
+
+1218
+00:40:50.640 --> 00:40:55.040
+love to I would love to try and take
+
+1219
+00:40:52.880 --> 00:40:57.200
+sort of like the agentic harness of of
+
+1220
+00:40:55.040 --> 00:40:58.960
+one of the the the big agents and see
+
+1221
+00:40:57.200 --> 00:40:59.760
+what what happens if we remove a tool
+
+1222
+00:40:58.960 --> 00:41:01.280
+from it
+
+1223
+00:40:59.760 --> 00:41:02.960
+&gt;&gt; or if we remove parts of the system
+
+1224
+00:41:01.280 --> 00:41:05.359
+prompt or even all of the system prompt
+
+1225
+00:41:02.960 --> 00:41:06.960
+right like take cloud code as is with
+
+1226
+00:41:05.359 --> 00:41:09.200
+all of its tools and everything but
+
+1227
+00:41:06.960 --> 00:41:11.040
+instead of the 14 kilobyte uh system
+
+1228
+00:41:09.200 --> 00:41:13.119
+prompt like or 12 I don't remember how
+
+1229
+00:41:11.040 --> 00:41:15.359
+much is closed code like uh like make it
+
+1230
+00:41:13.119 --> 00:41:17.599
+250 bytes like minu agents right what
+
+1231
+00:41:15.359 --> 00:41:20.000
+happens in that case so that's one thing
+
+1232
+00:41:17.599 --> 00:41:22.400
+&gt;&gt; and uh the other thing I think would be
+
+1233
+00:41:20.000 --> 00:41:25.760
+sort of like a crossbenchmark where we
+
+1234
+00:41:22.400 --> 00:41:29.280
+take the agentic harness of uh say uh
+
+1235
+00:41:25.760 --> 00:41:32.640
+codec cli and we we try to run it with
+
+1236
+00:41:29.280 --> 00:41:36.400
+sonet 4.5 or vice versa
+
+1237
+00:41:32.640 --> 00:41:39.359
+&gt;&gt; hypothesis if if if what we're imagining
+
+1238
+00:41:36.400 --> 00:41:42.160
+here is true I would expect that sonet
+
+1239
+00:41:39.359 --> 00:41:45.200
+4.5 should be able to kind of like drive
+
+1240
+00:41:42.160 --> 00:41:46.960
+the other car better because uh our our
+
+1241
+00:41:45.200 --> 00:41:49.920
+current understanding is more generic
+
+1242
+00:41:46.960 --> 00:41:52.079
+and it's not as as well trained for this
+
+1243
+00:41:49.920 --> 00:41:53.920
+particular car, but for cars in general.
+
+1244
+00:41:52.079 --> 00:41:55.359
+&gt;&gt; But it would be interesting to to even
+
+1245
+00:41:53.920 --> 00:41:56.960
+just, you know, running running a
+
+1246
+00:41:55.359 --> 00:41:58.560
+terminal bench on it and and seeing the
+
+1247
+00:41:56.960 --> 00:42:01.520
+results after we've done the the
+
+1248
+00:41:58.560 --> 00:42:02.720
+rewiring of the model behind the Aentic.
+
+1249
+00:42:01.520 --> 00:42:04.319
+&gt;&gt; So, yeah, cool. Cool things to look
+
+1250
+00:42:02.720 --> 00:42:07.040
+&gt;&gt; super interesting and love to kind of
+
+1251
+00:42:04.319 --> 00:42:08.160
+want to know the answer now. [laughter]
+
+1252
+00:42:07.040 --> 00:42:09.520
+&gt;&gt; Also need the time.
+
+1253
+00:42:08.160 --> 00:42:11.359
+&gt;&gt; Yeah, of course. Of course. Well, if
+
+1254
+00:42:09.520 --> 00:42:12.960
+anyone if anyone any of our listeners
+
+1255
+00:42:11.359 --> 00:42:14.079
+kind of like, you know, want to want to
+
+1256
+00:42:12.960 --> 00:42:15.680
+want to share maybe some of their
+
+1257
+00:42:14.079 --> 00:42:17.680
+research or or or have done similar
+
+1258
+00:42:15.680 --> 00:42:19.119
+things, please do let us know. But for
+
+1259
+00:42:17.680 --> 00:42:20.640
+now, Yanife, thank you for everything.
+
+1260
+00:42:19.119 --> 00:42:22.160
+Thank you for all the all the info and
+
+1261
+00:42:20.640 --> 00:42:24.240
+uh it's it's wonderful to see what you
+
+1262
+00:42:22.160 --> 00:42:26.480
+and the team are are learning and
+
+1263
+00:42:24.240 --> 00:42:27.280
+sharing. Look forward to look forward to
+
+1264
+00:42:26.480 --> 00:42:28.720
+seeing more.
+
+1265
+00:42:27.280 --> 00:42:30.000
+&gt;&gt; Absolutely. Thank you, Simon. Thanks for
+
+1266
+00:42:28.720 --> 00:42:31.680
+&gt;&gt; Thank you. I appreciate it. Thank you
+
+1267
+00:42:30.000 --> 00:42:33.220
+everyone for listening and uh tune in to
+
+1268
+00:42:31.680 --> 00:42:35.240
+the next episode soon. Bye for now.
+
+1269
+00:42:33.220 --> 00:42:35.240
+[clears throat]

@@ -1,0 +1,2401 @@
+WEBVTT
+
+1
+00:00:09.040 --> 00:00:12.080
+And right now we're going to kick off
+
+2
+00:00:10.480 --> 00:00:13.599
+with Neil Ford. Neil Ford, a
+
+3
+00:00:12.080 --> 00:00:15.040
+distinguished engineer at ThoughtWorks.
+
+4
+00:00:13.599 --> 00:00:17.520
+And one of the big things that we very
+
+5
+00:00:15.040 --> 00:00:19.760
+often forget about when we uh when we
+
+6
+00:00:17.520 --> 00:00:22.400
+use AI coding assistants and coding
+
+7
+00:00:19.760 --> 00:00:24.240
+agents is the long-term maintenance, the
+
+8
+00:00:22.400 --> 00:00:26.160
+long-term debt that we really add in
+
+9
+00:00:24.240 --> 00:00:28.320
+when we when we are, you know, rapidly
+
+10
+00:00:26.160 --> 00:00:30.240
+building with AI. And so Neil's going to
+
+11
+00:00:28.320 --> 00:00:33.440
+give us a great insight into fitness
+
+12
+00:00:30.240 --> 00:00:35.040
+functions uh or fitness functiondriven
+
+13
+00:00:33.440 --> 00:00:36.559
+architecture and making sure we think
+
+14
+00:00:35.040 --> 00:00:37.760
+about the longerterm design, the
+
+15
+00:00:36.559 --> 00:00:39.520
+longerterm architecture of the
+
+16
+00:00:37.760 --> 00:00:41.040
+applications that we build. So with
+
+17
+00:00:39.520 --> 00:00:42.239
+that, Neil, it's a pleasure to welcome
+
+18
+00:00:41.040 --> 00:00:43.520
+you to Native DevCon.
+
+19
+00:00:42.239 --> 00:00:47.600
+&gt;&gt; Thank you very much. Thanks for having
+
+20
+00:00:43.520 --> 00:00:49.920
+me. So, uh, I'm going to talk about the
+
+21
+00:00:47.600 --> 00:00:51.920
+looming disaster of code quality and
+
+22
+00:00:49.920 --> 00:00:53.680
+sustainable software a little bit, but
+
+23
+00:00:51.920 --> 00:00:55.840
+mostly what I'm going to do is tie
+
+24
+00:00:53.680 --> 00:00:58.559
+together a bunch of things that exist
+
+25
+00:00:55.840 --> 00:01:01.600
+out in the world. Uh, so let's first
+
+26
+00:00:58.559 --> 00:01:04.159
+start talking about this concept of an
+
+27
+00:01:01.600 --> 00:01:05.760
+architectural fitness function. This is
+
+28
+00:01:04.159 --> 00:01:07.280
+something we defined in the book
+
+29
+00:01:05.760 --> 00:01:10.240
+building evolution architectures
+
+30
+00:01:07.280 --> 00:01:12.479
+originally back in 2017. And this is
+
+31
+00:01:10.240 --> 00:01:14.799
+sort of like a unit test but for
+
+32
+00:01:12.479 --> 00:01:17.759
+architecture capabilities.
+
+33
+00:01:14.799 --> 00:01:19.360
+Uh we want to verify that as we build
+
+34
+00:01:17.759 --> 00:01:21.840
+our architecture that we don't break
+
+35
+00:01:19.360 --> 00:01:23.680
+stuff. And so our definition is any
+
+36
+00:01:21.840 --> 00:01:25.200
+mechanism that gives you an objective
+
+37
+00:01:23.680 --> 00:01:26.880
+integrity assessment on some
+
+38
+00:01:25.200 --> 00:01:29.040
+architecture characteristic. But that's
+
+39
+00:01:26.880 --> 00:01:31.600
+how these are different than something
+
+40
+00:01:29.040 --> 00:01:34.640
+like fitness functions or than unit test
+
+41
+00:01:31.600 --> 00:01:36.560
+because these have a much broader scope.
+
+42
+00:01:34.640 --> 00:01:39.200
+Software metrics for example. I will
+
+43
+00:01:36.560 --> 00:01:41.840
+actually give you my preferred metric
+
+44
+00:01:39.200 --> 00:01:43.360
+for detecting AI slop in your codebase
+
+45
+00:01:41.840 --> 00:01:45.280
+from an architecture standpoint a little
+
+46
+00:01:43.360 --> 00:01:47.040
+bit later in this talk. Code level
+
+47
+00:01:45.280 --> 00:01:49.119
+metrics let you assess things about your
+
+48
+00:01:47.040 --> 00:01:50.240
+architecture. Unit testing libraries
+
+49
+00:01:49.119 --> 00:01:52.399
+which I'll talk about that are
+
+50
+00:01:50.240 --> 00:01:56.000
+specialized for this. But we also use
+
+51
+00:01:52.399 --> 00:01:57.439
+things like monitors and observability.
+
+52
+00:01:56.000 --> 00:01:58.640
+These are all things that we need to
+
+53
+00:01:57.439 --> 00:02:00.479
+know about architecture because
+
+54
+00:01:58.640 --> 00:02:05.360
+architecture is not just our codebase.
+
+55
+00:02:00.479 --> 00:02:07.840
+It's also data and uh um
+
+56
+00:02:05.360 --> 00:02:09.200
+integration architecture and all the
+
+57
+00:02:07.840 --> 00:02:11.200
+other things that go into our
+
+58
+00:02:09.200 --> 00:02:13.599
+ecosystems. Chaos engineering is a
+
+59
+00:02:11.200 --> 00:02:16.000
+perfect example of this idea of an
+
+60
+00:02:13.599 --> 00:02:17.520
+architectural fitness function. And over
+
+61
+00:02:16.000 --> 00:02:20.480
+time we've seen more and more of these
+
+62
+00:02:17.520 --> 00:02:24.000
+mechanisms come about and I'll show you
+
+63
+00:02:20.480 --> 00:02:26.560
+how that applies in the real world uh
+
+64
+00:02:24.000 --> 00:02:28.879
+kind of scenarios. The second part of
+
+65
+00:02:26.560 --> 00:02:31.440
+this is it needs to have an objective
+
+66
+00:02:28.879 --> 00:02:33.519
+integrity check. So that's the way you
+
+67
+00:02:31.440 --> 00:02:35.040
+verify something is you come up with an
+
+68
+00:02:33.519 --> 00:02:37.280
+objective value for it and then it's
+
+69
+00:02:35.040 --> 00:02:39.280
+either true or false or it's a number or
+
+70
+00:02:37.280 --> 00:02:43.360
+so that's how we verify things. And we
+
+71
+00:02:39.280 --> 00:02:45.200
+also look at not just code but also
+
+72
+00:02:43.360 --> 00:02:47.440
+things that impact architecture like
+
+73
+00:02:45.200 --> 00:02:49.599
+data. If we're in a distributed
+
+74
+00:02:47.440 --> 00:02:50.879
+architecture and splitting data, we
+
+75
+00:02:49.599 --> 00:02:52.640
+would still like to have referential
+
+76
+00:02:50.879 --> 00:02:54.640
+integrity between our databases. That's
+
+77
+00:02:52.640 --> 00:02:56.640
+an architectural concern. if we're in a
+
+78
+00:02:54.640 --> 00:03:00.319
+distributed architecture. And so it's
+
+79
+00:02:56.640 --> 00:03:02.080
+broader than just code bases.
+
+80
+00:03:00.319 --> 00:03:04.239
+I typically at this point want to show
+
+81
+00:03:02.080 --> 00:03:06.959
+you a very simple example of one of
+
+82
+00:03:04.239 --> 00:03:10.000
+these things. Uh but this one is
+
+83
+00:03:06.959 --> 00:03:12.400
+particularly apt
+
+84
+00:03:10.000 --> 00:03:14.480
+cyclic dependencies.
+
+85
+00:03:12.400 --> 00:03:16.560
+If I'm writing a software system that
+
+86
+00:03:14.480 --> 00:03:18.400
+composes of components and most of them
+
+87
+00:03:16.560 --> 00:03:20.720
+if they're any complexity have
+
+88
+00:03:18.400 --> 00:03:22.560
+components in them, one of the things I
+
+89
+00:03:20.720 --> 00:03:23.840
+want to try to avoid are cyclic
+
+90
+00:03:22.560 --> 00:03:25.680
+dependencies.
+
+91
+00:03:23.840 --> 00:03:27.840
+That's where one component references
+
+92
+00:03:25.680 --> 00:03:29.840
+another component which refers a third
+
+93
+00:03:27.840 --> 00:03:33.599
+one which references the original one.
+
+94
+00:03:29.840 --> 00:03:36.239
+Again, the reason this is bad is because
+
+95
+00:03:33.599 --> 00:03:38.080
+now if I reuse one of these components,
+
+96
+00:03:36.239 --> 00:03:40.319
+I have to take the whole rat's nest with
+
+97
+00:03:38.080 --> 00:03:42.239
+me. And if one of these is also
+
+98
+00:03:40.319 --> 00:03:44.720
+cyclically bound up with another one,
+
+99
+00:03:42.239 --> 00:03:47.200
+then now I'm having to pull this entire
+
+100
+00:03:44.720 --> 00:03:49.280
+uh tree of relationships. If I try to
+
+101
+00:03:47.200 --> 00:03:51.599
+reuse something, this is generally
+
+102
+00:03:49.280 --> 00:03:54.000
+considered an antiattern in software
+
+103
+00:03:51.599 --> 00:03:57.120
+architecture.
+
+104
+00:03:54.000 --> 00:03:59.439
+But it's subtle because if I have one of
+
+105
+00:03:57.120 --> 00:04:01.439
+these in my codebase, it's not a big
+
+106
+00:03:59.439 --> 00:04:03.280
+deal. If I have a hundred of these in my
+
+107
+00:04:01.439 --> 00:04:05.360
+codebase, my codebase is a piece of
+
+108
+00:04:03.280 --> 00:04:07.920
+trash. And so there's a a tipping point
+
+109
+00:04:05.360 --> 00:04:10.480
+here somewhere where it gets bad enough
+
+110
+00:04:07.920 --> 00:04:13.120
+to become really bad. The problem though
+
+111
+00:04:10.480 --> 00:04:15.840
+is that developers as they're coding
+
+112
+00:04:13.120 --> 00:04:17.199
+along and their IDE pops up a dialogue
+
+113
+00:04:15.840 --> 00:04:18.880
+and says, "You want me to autoimp import
+
+114
+00:04:17.199 --> 00:04:20.560
+that for you?" They never read that
+
+115
+00:04:18.880 --> 00:04:22.560
+dialogue. They just swat it away and
+
+116
+00:04:20.560 --> 00:04:24.880
+keep doing what they're doing. Most of
+
+117
+00:04:22.560 --> 00:04:27.840
+the time it's okay, every once in a
+
+118
+00:04:24.880 --> 00:04:30.400
+while it's this. And even worse, unless
+
+119
+00:04:27.840 --> 00:04:32.720
+you explicitly tell your agent, don't do
+
+120
+00:04:30.400 --> 00:04:35.120
+this. It's going to do this all the time
+
+121
+00:04:32.720 --> 00:04:36.479
+because it doesn't know that this is not
+
+122
+00:04:35.120 --> 00:04:39.120
+something you should be doing. This is
+
+123
+00:04:36.479 --> 00:04:41.360
+just something that it wants to do. How
+
+124
+00:04:39.120 --> 00:04:43.520
+do you prevent this from happening?
+
+125
+00:04:41.360 --> 00:04:45.199
+Because I can't spend all of my day
+
+126
+00:04:43.520 --> 00:04:46.560
+going through every line of code that's
+
+127
+00:04:45.199 --> 00:04:48.960
+been created to make sure nobody's
+
+128
+00:04:46.560 --> 00:04:50.720
+created cycles in my codebase. You
+
+129
+00:04:48.960 --> 00:04:52.639
+create an architectural fitness function
+
+130
+00:04:50.720 --> 00:04:55.680
+for this. This is using the tool called
+
+131
+00:04:52.639 --> 00:04:58.320
+ArcUnit that understands dependencies
+
+132
+00:04:55.680 --> 00:05:00.400
+and code bases. I wire this into my
+
+133
+00:04:58.320 --> 00:05:03.120
+continuous build and whether I write
+
+134
+00:05:00.400 --> 00:05:05.680
+this code or another human writes this
+
+135
+00:05:03.120 --> 00:05:08.479
+code or machine writes this code, I
+
+136
+00:05:05.680 --> 00:05:10.639
+don't get cycles in my codebase anymore.
+
+137
+00:05:08.479 --> 00:05:13.360
+This is a way that I can create more
+
+138
+00:05:10.639 --> 00:05:16.240
+sustainable code bases by building guard
+
+139
+00:05:13.360 --> 00:05:18.639
+rails around the important parts of my
+
+140
+00:05:16.240 --> 00:05:21.440
+architecture that I want to preserve for
+
+141
+00:05:18.639 --> 00:05:23.280
+long periods of time. Fortunately, there
+
+142
+00:05:21.440 --> 00:05:26.320
+are a lot of tools and frameworks that
+
+143
+00:05:23.280 --> 00:05:28.160
+have come out in this space. ArcUnit is
+
+144
+00:05:26.320 --> 00:05:30.320
+a library in the Java world. That's the
+
+145
+00:05:28.160 --> 00:05:31.759
+code I just showed you is ArcUnit, but
+
+146
+00:05:30.320 --> 00:05:34.479
+there are also a couple in the net
+
+147
+00:05:31.759 --> 00:05:36.400
+world. This is ArcUnit Net and Net Arc
+
+148
+00:05:34.479 --> 00:05:40.000
+test, both of which work in the .NET
+
+149
+00:05:36.400 --> 00:05:44.080
+world. Here is Piest Arc, which is from
+
+150
+00:05:40.000 --> 00:05:46.240
+the u uh Python world. This is ArcUnit
+
+151
+00:05:44.080 --> 00:05:49.919
+TS in the TypeScript, JavaScript,
+
+152
+00:05:46.240 --> 00:05:51.840
+ECMAScript world. And here is Arc Go in
+
+153
+00:05:49.919 --> 00:05:54.080
+the Go language world. And so pretty
+
+154
+00:05:51.840 --> 00:05:56.800
+much all the platforms, technologies,
+
+155
+00:05:54.080 --> 00:05:58.320
+and frameworks you can think about have
+
+156
+00:05:56.800 --> 00:05:59.919
+tools that let you write these
+
+157
+00:05:58.320 --> 00:06:02.080
+architectural fitness functions to
+
+158
+00:05:59.919 --> 00:06:03.600
+validate that the architectural concerns
+
+159
+00:06:02.080 --> 00:06:06.240
+in your code are actually working
+
+160
+00:06:03.600 --> 00:06:10.639
+correctly.
+
+161
+00:06:06.240 --> 00:06:13.354
+Okay, that's fine and good, but
+
+162
+00:06:10.639 --> 00:06:14.880
+limiting
+
+163
+00:06:13.354 --> 00:06:16.479
+[snorts] because here's the thing I
+
+164
+00:06:14.880 --> 00:06:17.759
+really want to write a fitness function
+
+165
+00:06:16.479 --> 00:06:19.919
+for.
+
+166
+00:06:17.759 --> 00:06:22.400
+I have microservices.
+
+167
+00:06:19.919 --> 00:06:24.479
+I have an orchestrator order placement,
+
+168
+00:06:22.400 --> 00:06:26.880
+payment, and inventory. And the way I've
+
+169
+00:06:24.479 --> 00:06:28.720
+designed my architecture, I don't want
+
+170
+00:06:26.880 --> 00:06:30.319
+the domain services talking to each
+
+171
+00:06:28.720 --> 00:06:32.080
+other because the orchestrators holding
+
+172
+00:06:30.319 --> 00:06:34.240
+on to the state of my workflow. And if
+
+173
+00:06:32.080 --> 00:06:37.919
+they talk to one another, my state gets
+
+174
+00:06:34.240 --> 00:06:40.400
+out of whack and bad things happen.
+
+175
+00:06:37.919 --> 00:06:43.600
+Where can I write my arcunit fitness
+
+176
+00:06:40.400 --> 00:06:45.360
+function to validate that that the
+
+177
+00:06:43.600 --> 00:06:47.680
+domain services only communicate with
+
+178
+00:06:45.360 --> 00:06:49.360
+the orchestrator? Where's the tool or
+
+179
+00:06:47.680 --> 00:06:51.919
+the framework or library I can download
+
+180
+00:06:49.360 --> 00:06:54.800
+to do that?
+
+181
+00:06:51.919 --> 00:06:58.240
+Unfortunately, that does not exist
+
+182
+00:06:54.800 --> 00:06:59.280
+nor can it exist.
+
+183
+00:06:58.240 --> 00:07:01.759
+The problem when you get into
+
+184
+00:06:59.280 --> 00:07:03.199
+architecture is variability.
+
+185
+00:07:01.759 --> 00:07:05.520
+What have I written these things in?
+
+186
+00:07:03.199 --> 00:07:06.960
+This is microservices. These may all be
+
+187
+00:07:05.520 --> 00:07:08.800
+written in different platforms or
+
+188
+00:07:06.960 --> 00:07:10.720
+technology stacks. So, who knows what
+
+189
+00:07:08.800 --> 00:07:12.080
+these things are written in? How are
+
+190
+00:07:10.720 --> 00:07:14.560
+they communicating with each other? Is
+
+191
+00:07:12.080 --> 00:07:17.039
+it REST? Is it SOAP? Is it message cues?
+
+192
+00:07:14.560 --> 00:07:18.880
+Is it gRPC? what kind of database are
+
+193
+00:07:17.039 --> 00:07:21.840
+they? It's it's so many variables.
+
+194
+00:07:18.880 --> 00:07:24.960
+There's no way you can find a pre-built
+
+195
+00:07:21.840 --> 00:07:26.880
+framework to do this for you. And so a
+
+196
+00:07:24.960 --> 00:07:29.280
+lot of architects just look at this and
+
+197
+00:07:26.880 --> 00:07:32.680
+just give up hope. But that's the wrong
+
+198
+00:07:29.280 --> 00:07:32.680
+approach to
+
+199
+00:07:33.120 --> 00:07:36.960
+the book that we're writing right now is
+
+200
+00:07:34.720 --> 00:07:40.479
+a book called architecture as code which
+
+201
+00:07:36.960 --> 00:07:42.720
+is encouraging architects to treat their
+
+202
+00:07:40.479 --> 00:07:45.599
+software development ecosystem as if it
+
+203
+00:07:42.720 --> 00:07:48.720
+were a codebase. And one of the mantras
+
+204
+00:07:45.599 --> 00:07:51.599
+in our book is what data do I need and
+
+205
+00:07:48.720 --> 00:07:53.919
+where does that data live?
+
+206
+00:07:51.599 --> 00:07:56.080
+So if I ask this question about this
+
+207
+00:07:53.919 --> 00:07:57.919
+particular problem,
+
+208
+00:07:56.080 --> 00:07:59.599
+what data do I need? Well, I need to
+
+209
+00:07:57.919 --> 00:08:02.400
+know who these domain services are
+
+210
+00:07:59.599 --> 00:08:04.879
+talking to. Where does that data live?
+
+211
+00:08:02.400 --> 00:08:07.520
+It lives in log files that they can
+
+212
+00:08:04.879 --> 00:08:10.319
+produce. And I can guarantee that they
+
+213
+00:08:07.520 --> 00:08:13.039
+produce. And so my fitness function
+
+214
+00:08:10.319 --> 00:08:15.120
+looks like this. for each one of those
+
+215
+00:08:13.039 --> 00:08:17.520
+services. Import the logs for the last
+
+216
+00:08:15.120 --> 00:08:20.560
+24 hours. And unless they're calling the
+
+217
+00:08:17.520 --> 00:08:23.700
+orchestrator, they're cheating. Yell at
+
+218
+00:08:20.560 --> 00:08:24.960
+them. They violated my fitness function.
+
+219
+00:08:23.700 --> 00:08:26.639
+[snorts]
+
+220
+00:08:24.960 --> 00:08:28.319
+This is actually written in Ruby, which
+
+221
+00:08:26.639 --> 00:08:30.560
+is one of my favorite little scripting
+
+222
+00:08:28.319 --> 00:08:32.479
+languages. And in fact, most of these
+
+223
+00:08:30.560 --> 00:08:34.479
+architecture fitness functions are not
+
+224
+00:08:32.479 --> 00:08:35.839
+written in the platform or technology
+
+225
+00:08:34.479 --> 00:08:37.039
+stack that you're implementing your
+
+226
+00:08:35.839 --> 00:08:39.519
+solution in. and they're written in
+
+227
+00:08:37.039 --> 00:08:41.519
+little tiny scripting languages that
+
+228
+00:08:39.519 --> 00:08:43.120
+aggregate data that's already laying
+
+229
+00:08:41.519 --> 00:08:45.839
+around in your ecosystem that you're
+
+230
+00:08:43.120 --> 00:08:47.680
+just not taking advantage of. Uh most of
+
+231
+00:08:45.839 --> 00:08:49.360
+these fitness functions are 10 or 15
+
+232
+00:08:47.680 --> 00:08:51.120
+lines of code that's just piecing
+
+233
+00:08:49.360 --> 00:08:53.519
+together some things that are already
+
+234
+00:08:51.120 --> 00:08:56.880
+there. So what we're doing in
+
+235
+00:08:53.519 --> 00:08:59.200
+architecture is code is looking at all
+
+236
+00:08:56.880 --> 00:09:00.800
+the ways that architecture intersects
+
+237
+00:08:59.200 --> 00:09:03.200
+with the software development ecosystem
+
+238
+00:09:00.800 --> 00:09:06.240
+and trying to define those intersections
+
+239
+00:09:03.200 --> 00:09:07.920
+with fitness functions. Architecture and
+
+240
+00:09:06.240 --> 00:09:10.560
+implementation is obvious because we
+
+241
+00:09:07.920 --> 00:09:13.200
+have to implement architecture in code
+
+242
+00:09:10.560 --> 00:09:14.959
+to actually make it work. But we all can
+
+243
+00:09:13.200 --> 00:09:16.480
+look at architecture and engineering
+
+244
+00:09:14.959 --> 00:09:18.240
+practices.
+
+245
+00:09:16.480 --> 00:09:21.680
+One of the problems we perpetually have
+
+246
+00:09:18.240 --> 00:09:23.920
+is I need to make a bad choice. I've got
+
+247
+00:09:21.680 --> 00:09:26.240
+to choose between a monor repo or repo
+
+248
+00:09:23.920 --> 00:09:28.160
+per service. And the problem is they
+
+249
+00:09:26.240 --> 00:09:30.240
+both suck, but they both suck in
+
+250
+00:09:28.160 --> 00:09:32.720
+different ways.
+
+251
+00:09:30.240 --> 00:09:35.120
+Using this, you can find a way to write
+
+252
+00:09:32.720 --> 00:09:37.279
+code that mitigates the negative side
+
+253
+00:09:35.120 --> 00:09:39.040
+effects of the choices you have to make.
+
+254
+00:09:37.279 --> 00:09:41.200
+Anyway, that's [snorts] an example of
+
+255
+00:09:39.040 --> 00:09:42.880
+engineering practices. You can build
+
+256
+00:09:41.200 --> 00:09:45.279
+intersections around things like team
+
+257
+00:09:42.880 --> 00:09:46.880
+topologies or integration architecture
+
+258
+00:09:45.279 --> 00:09:48.851
+or the enterprise, which I'll talk about
+
+259
+00:09:46.880 --> 00:09:50.640
+in more depth in just a second. And
+
+260
+00:09:48.851 --> 00:09:54.000
+[snorts] of course, generative AI and
+
+261
+00:09:50.640 --> 00:09:55.600
+infrastructure and data and things like
+
+262
+00:09:54.000 --> 00:09:58.720
+the business environment. And in fact,
+
+263
+00:09:55.600 --> 00:10:03.880
+let's look at an example of this this
+
+264
+00:09:58.720 --> 00:10:03.880
+intersection with data and architecture.
+
+265
+00:10:06.399 --> 00:10:10.640
+The architect says, "I've decided to
+
+266
+00:10:08.640 --> 00:10:14.000
+split the database into two domain
+
+267
+00:10:10.640 --> 00:10:15.760
+databases for better fault tolerance,
+
+268
+00:10:14.000 --> 00:10:17.440
+better change control, and better
+
+269
+00:10:15.760 --> 00:10:19.600
+scalability."
+
+270
+00:10:17.440 --> 00:10:22.079
+The product owner says,"Great, but make
+
+271
+00:10:19.600 --> 00:10:27.079
+sure we don't lose any trouble tickets
+
+272
+00:10:22.079 --> 00:10:27.079
+that both domains have the same tickets.
+
+273
+00:10:28.240 --> 00:10:32.480
+Where is this information documented? I
+
+274
+00:10:30.880 --> 00:10:34.720
+just recently did a workshop and the
+
+275
+00:10:32.480 --> 00:10:36.880
+universal answer to this question was in
+
+276
+00:10:34.720 --> 00:10:39.120
+some spreadsheet somewhere." And alas,
+
+277
+00:10:36.880 --> 00:10:42.800
+that is probably true. Some spreadsheet
+
+278
+00:10:39.120 --> 00:10:47.079
+somewhere holds on to this information.
+
+279
+00:10:42.800 --> 00:10:47.079
+But how are we verifying that?
+
+280
+00:10:47.279 --> 00:10:52.079
+So here's the scenario. I have customers
+
+281
+00:10:50.160 --> 00:10:53.920
+and I have tickets and I've had to split
+
+282
+00:10:52.079 --> 00:10:55.920
+the database apart for architectural
+
+283
+00:10:53.920 --> 00:10:58.937
+reasons because I want better fault
+
+284
+00:10:55.920 --> 00:11:01.120
+tolerance and scalability.
+
+285
+00:10:58.937 --> 00:11:04.000
+[snorts] But now I need to make sure
+
+286
+00:11:01.120 --> 00:11:05.839
+that all the tickets have corresponding
+
+287
+00:11:04.000 --> 00:11:07.920
+customers because I don't want to have
+
+288
+00:11:05.839 --> 00:11:12.240
+tickets without a customer. That doesn't
+
+289
+00:11:07.920 --> 00:11:15.040
+make sense. So what data do I need and
+
+290
+00:11:12.240 --> 00:11:17.200
+where does it live?
+
+291
+00:11:15.040 --> 00:11:19.519
+What I'm going to do is go to this
+
+292
+00:11:17.200 --> 00:11:22.000
+database and grab the set of customer
+
+293
+00:11:19.519 --> 00:11:24.800
+keys from there. Go to my ticket
+
+294
+00:11:22.000 --> 00:11:27.920
+database and grab the ticket foreign
+
+295
+00:11:24.800 --> 00:11:30.560
+customer keys there. And [snorts] when
+
+296
+00:11:27.920 --> 00:11:34.720
+my Q has no messages pending, in other
+
+297
+00:11:30.560 --> 00:11:38.160
+words, it is at rest, assert that TC is
+
+298
+00:11:34.720 --> 00:11:41.120
+a member of C. In other words, assert
+
+299
+00:11:38.160 --> 00:11:42.959
+that there are no tickets in that
+
+300
+00:11:41.120 --> 00:11:45.200
+database that do not exist in this
+
+301
+00:11:42.959 --> 00:11:47.360
+database. I am now verifying the
+
+302
+00:11:45.200 --> 00:11:49.200
+referential integrity between these two
+
+303
+00:11:47.360 --> 00:11:51.440
+databases as if it were a single
+
+304
+00:11:49.200 --> 00:11:53.279
+database but doing it at the
+
+305
+00:11:51.440 --> 00:11:54.959
+architecture level because I need a
+
+306
+00:11:53.279 --> 00:11:57.600
+distributed architecture. This is an
+
+307
+00:11:54.959 --> 00:11:59.519
+example of the data intersection of
+
+308
+00:11:57.600 --> 00:12:03.920
+architecture as code and this works
+
+309
+00:11:59.519 --> 00:12:08.320
+great. We've done this a lot. Problem is
+
+310
+00:12:03.920 --> 00:12:10.399
+it's hard to do at an enterprise scale.
+
+311
+00:12:08.320 --> 00:12:13.360
+So this works fantastic. We've been
+
+312
+00:12:10.399 --> 00:12:15.760
+doing this for years at the uh
+
+313
+00:12:13.360 --> 00:12:17.600
+application level.
+
+314
+00:12:15.760 --> 00:12:21.120
+But now I want to talk about something
+
+315
+00:12:17.600 --> 00:12:22.399
+that I'm calling a meta bounded context.
+
+316
+00:12:21.120 --> 00:12:24.320
+When we talk about software
+
+317
+00:12:22.399 --> 00:12:26.399
+architecture, we talk about bounded
+
+318
+00:12:24.320 --> 00:12:28.800
+context all the time as it pertains to
+
+319
+00:12:26.399 --> 00:12:30.320
+the domain that we're writing. But
+
+320
+00:12:28.800 --> 00:12:33.360
+projects
+
+321
+00:12:30.320 --> 00:12:35.760
+have a meta bounded context which is the
+
+322
+00:12:33.360 --> 00:12:40.000
+way they've implemented well stuff like
+
+323
+00:12:35.760 --> 00:12:42.000
+this highly specific to this project
+
+324
+00:12:40.000 --> 00:12:44.639
+because I have details about the
+
+325
+00:12:42.000 --> 00:12:46.639
+databases that are used in this project
+
+326
+00:12:44.639 --> 00:12:48.720
+that I'm implementing for this fitness
+
+327
+00:12:46.639 --> 00:12:50.320
+function.
+
+328
+00:12:48.720 --> 00:12:52.959
+Hold on to that thought for just a
+
+329
+00:12:50.320 --> 00:12:55.600
+second because now I want to touch on
+
+330
+00:12:52.959 --> 00:12:57.600
+this intersection of architecture and
+
+331
+00:12:55.600 --> 00:13:01.120
+the enterprise.
+
+332
+00:12:57.600 --> 00:13:03.839
+We have a defined role called enterprise
+
+333
+00:13:01.120 --> 00:13:06.800
+architect who does this intersection
+
+334
+00:13:03.839 --> 00:13:08.000
+with architecture and enterprise. And in
+
+335
+00:13:06.800 --> 00:13:10.399
+fact there are a bunch of different
+
+336
+00:13:08.000 --> 00:13:13.120
+things that enterprise architects end up
+
+337
+00:13:10.399 --> 00:13:16.639
+doing in terms of software architecture
+
+338
+00:13:13.120 --> 00:13:20.399
+including things like global governance
+
+339
+00:13:16.639 --> 00:13:23.040
+uh um global code quality governance.
+
+340
+00:13:20.399 --> 00:13:25.680
+That's what I'm after here. This, by the
+
+341
+00:13:23.040 --> 00:13:28.720
+way, normalize distance from the main
+
+342
+00:13:25.680 --> 00:13:33.440
+sequence. If you're looking for one
+
+343
+00:13:28.720 --> 00:13:35.360
+single metric that identifies AI slop in
+
+344
+00:13:33.440 --> 00:13:38.240
+your codebase,
+
+345
+00:13:35.360 --> 00:13:41.200
+that's it. It looks for code that has
+
+346
+00:13:38.240 --> 00:13:43.360
+been built by brute force with a lack of
+
+347
+00:13:41.200 --> 00:13:45.920
+abstraction and too much implementation
+
+348
+00:13:43.360 --> 00:13:47.680
+details. Scores poorly on normalized
+
+349
+00:13:45.920 --> 00:13:49.600
+distance from the main sequence. So just
+
+350
+00:13:47.680 --> 00:13:51.839
+buy what by the way if you're looking
+
+351
+00:13:49.600 --> 00:13:55.760
+for actual metrics that find AI
+
+352
+00:13:51.839 --> 00:13:58.320
+generated code that's it and this is the
+
+353
+00:13:55.760 --> 00:14:01.600
+only thing that we've really seen a lot
+
+354
+00:13:58.320 --> 00:14:03.279
+of success with because as a group of
+
+355
+00:14:01.600 --> 00:14:06.560
+enterprise architects I would like to
+
+356
+00:14:03.279 --> 00:14:08.399
+govern a lot of stuff in my ecosystem
+
+357
+00:14:06.560 --> 00:14:10.720
+but this is really the only kind of
+
+358
+00:14:08.399 --> 00:14:13.839
+stuff we found that is universally
+
+359
+00:14:10.720 --> 00:14:16.079
+useful these kind of holistic governance
+
+360
+00:14:13.839 --> 00:14:18.560
+uh code quality things like cyclatic
+
+361
+00:14:16.079 --> 00:14:21.199
+complexity No code base benefits from
+
+362
+00:14:18.560 --> 00:14:23.760
+having overly complex code or poorly
+
+363
+00:14:21.199 --> 00:14:25.680
+structured code. But the problem we've
+
+364
+00:14:23.760 --> 00:14:28.079
+run into is we'd like to be a lot more
+
+365
+00:14:25.680 --> 00:14:30.880
+hands-on. In fact, our largest global
+
+366
+00:14:28.079 --> 00:14:33.279
+client has within their enterprise
+
+367
+00:14:30.880 --> 00:14:34.959
+architecture group a role called an
+
+368
+00:14:33.279 --> 00:14:37.279
+evolutionary architect and they are
+
+369
+00:14:34.959 --> 00:14:39.839
+going around implementing fitness
+
+370
+00:14:37.279 --> 00:14:43.519
+functions within their ecosystem to try
+
+371
+00:14:39.839 --> 00:14:46.000
+to govern things from the enterprise
+
+372
+00:14:43.519 --> 00:14:48.639
+level.
+
+373
+00:14:46.000 --> 00:14:51.839
+But there's a problem with that. We've
+
+374
+00:14:48.639 --> 00:14:55.040
+been doing this since 2017 2018 and
+
+375
+00:14:51.839 --> 00:14:58.959
+we've discovered the issues with that
+
+376
+00:14:55.040 --> 00:15:01.839
+that fortunately Agentic AI has come to
+
+377
+00:14:58.959 --> 00:15:06.079
+the rescue for. So let's talk for a
+
+378
+00:15:01.839 --> 00:15:09.839
+second about architecture and Agentic AI
+
+379
+00:15:06.079 --> 00:15:11.680
+and MCP. Before MCP, if I wanted to call
+
+380
+00:15:09.839 --> 00:15:14.160
+something directly, I had to know
+
+381
+00:15:11.680 --> 00:15:16.320
+exactly what that API was and know the
+
+382
+00:15:14.160 --> 00:15:19.279
+details and the metadata and the format.
+
+383
+00:15:16.320 --> 00:15:21.519
+MCP is like the best ever integration
+
+384
+00:15:19.279 --> 00:15:24.959
+hub because it gives you a way to query
+
+385
+00:15:21.519 --> 00:15:27.360
+capabilities or tools, etc., and allows
+
+386
+00:15:24.959 --> 00:15:29.120
+you to wire things together in a much
+
+387
+00:15:27.360 --> 00:15:30.959
+more generic way because you can query
+
+388
+00:15:29.120 --> 00:15:33.440
+capabilities and come back and iterate
+
+389
+00:15:30.959 --> 00:15:35.680
+on those capabilities and do things on
+
+390
+00:15:33.440 --> 00:15:37.920
+behalf of them. the MCP primitives which
+
+391
+00:15:35.680 --> 00:15:39.519
+I'm sure you're familiar with tools that
+
+392
+00:15:37.920 --> 00:15:41.519
+are tools that are available that you
+
+393
+00:15:39.519 --> 00:15:45.839
+can call and do stuff for like database
+
+394
+00:15:41.519 --> 00:15:48.480
+calls u resources like uh logs file
+
+395
+00:15:45.839 --> 00:15:50.639
+contents this is where I get logs very
+
+396
+00:15:48.480 --> 00:15:54.079
+often when I'm doing those kinds of
+
+397
+00:15:50.639 --> 00:15:55.920
+compare logs in my fitness functions I
+
+398
+00:15:54.079 --> 00:15:57.519
+can do that through something like MCP
+
+399
+00:15:55.920 --> 00:15:59.279
+because log contents are one of the
+
+400
+00:15:57.519 --> 00:16:01.519
+things it can deliver and of course
+
+401
+00:15:59.279 --> 00:16:04.399
+prompt libraries to let you piece things
+
+402
+00:16:01.519 --> 00:16:07.120
+together within that uh that MC MCP kind
+
+403
+00:16:04.399 --> 00:16:08.959
+of universe. So let's talk about how
+
+404
+00:16:07.120 --> 00:16:12.279
+this solves
+
+405
+00:16:08.959 --> 00:16:12.279
+this problem.
+
+406
+00:16:13.040 --> 00:16:18.079
+As an enterprise architect,
+
+407
+00:16:16.000 --> 00:16:20.240
+I want to be able to write these kind of
+
+408
+00:16:18.079 --> 00:16:22.560
+fitness functions because I as an
+
+409
+00:16:20.240 --> 00:16:24.399
+enterprise architect want to guarantee
+
+410
+00:16:22.560 --> 00:16:25.839
+that the projects I have have
+
+411
+00:16:24.399 --> 00:16:27.839
+referential integrity between the
+
+412
+00:16:25.839 --> 00:16:30.160
+databases.
+
+413
+00:16:27.839 --> 00:16:31.839
+Here's the problem. is the meta bounded
+
+414
+00:16:30.160 --> 00:16:34.079
+context
+
+415
+00:16:31.839 --> 00:16:35.839
+because as an enterprise architect I'm
+
+416
+00:16:34.079 --> 00:16:39.120
+sitting way far away from that
+
+417
+00:16:35.839 --> 00:16:41.600
+application and if I write this code and
+
+418
+00:16:39.120 --> 00:16:45.040
+they change the implementation
+
+419
+00:16:41.600 --> 00:16:47.839
+it breaks and that's the fundamental
+
+420
+00:16:45.040 --> 00:16:50.079
+problem of trying to implement these far
+
+421
+00:16:47.839 --> 00:16:51.680
+distance fitness functions is
+
+422
+00:16:50.079 --> 00:16:54.160
+brutaleness
+
+423
+00:16:51.680 --> 00:16:57.360
+because to be able to do that I have to
+
+424
+00:16:54.160 --> 00:16:59.920
+pierce the metabounded context to get to
+
+425
+00:16:57.360 --> 00:17:03.120
+the implementation detail tails and that
+
+426
+00:16:59.920 --> 00:17:04.880
+makes it brittle and that reduces its
+
+427
+00:17:03.120 --> 00:17:07.120
+effectiveness because if these things
+
+428
+00:17:04.880 --> 00:17:08.959
+break a lot because of incidental
+
+429
+00:17:07.120 --> 00:17:10.880
+reasons you get frustrated with them and
+
+430
+00:17:08.959 --> 00:17:14.559
+go ah this is not worth the trouble
+
+431
+00:17:10.880 --> 00:17:17.760
+don't want to do that anymore
+
+432
+00:17:14.559 --> 00:17:20.799
+that's where MCP comes in
+
+433
+00:17:17.760 --> 00:17:22.880
+because enterprise architects can now
+
+434
+00:17:20.799 --> 00:17:24.559
+through the service mesh which is the
+
+435
+00:17:22.880 --> 00:17:27.360
+thing that generally executes all of
+
+436
+00:17:24.559 --> 00:17:29.120
+these things say I want to validate
+
+437
+00:17:27.360 --> 00:17:32.640
+referential integrity
+
+438
+00:17:29.120 --> 00:17:35.520
+The project itself can set up an MCP
+
+439
+00:17:32.640 --> 00:17:38.080
+server inside their metabounded context
+
+440
+00:17:35.520 --> 00:17:40.320
+that knows the details of how to do that
+
+441
+00:17:38.080 --> 00:17:42.400
+and can offer this as a tool for the
+
+442
+00:17:40.320 --> 00:17:43.440
+enterprise architects.
+
+443
+00:17:42.400 --> 00:17:44.880
+I [snorts] want you to validate
+
+444
+00:17:43.440 --> 00:17:46.320
+referential integrity. When it gets
+
+445
+00:17:44.880 --> 00:17:48.400
+that, it says, "Oh, well, I know what
+
+446
+00:17:46.320 --> 00:17:52.799
+that means. When Q is equal to zero,
+
+447
+00:17:48.400 --> 00:17:55.360
+assert that TC is an element of C."
+
+448
+00:17:52.799 --> 00:17:59.280
+But then when the implementation
+
+449
+00:17:55.360 --> 00:18:01.600
+changes, which it inevitably does, I
+
+450
+00:17:59.280 --> 00:18:04.000
+need to add experts over there who also
+
+451
+00:18:01.600 --> 00:18:06.720
+have tickets, who also have foreign key
+
+452
+00:18:04.000 --> 00:18:08.640
+relationships between things. Now the
+
+453
+00:18:06.720 --> 00:18:11.200
+implementation of my fitness function
+
+454
+00:18:08.640 --> 00:18:14.960
+has to change,
+
+455
+00:18:11.200 --> 00:18:18.160
+but the intent doesn't.
+
+456
+00:18:14.960 --> 00:18:21.280
+This is huge as an empowering for
+
+457
+00:18:18.160 --> 00:18:23.600
+enterprise architects to be able to
+
+458
+00:18:21.280 --> 00:18:26.080
+state intent like this at the
+
+459
+00:18:23.600 --> 00:18:28.160
+architecture level without having to
+
+460
+00:18:26.080 --> 00:18:30.320
+know the implementation details of how
+
+461
+00:18:28.160 --> 00:18:32.799
+things work and still be able to
+
+462
+00:18:30.320 --> 00:18:34.559
+implement this kind of holistic
+
+463
+00:18:32.799 --> 00:18:38.080
+governance across the entire
+
+464
+00:18:34.559 --> 00:18:40.160
+organization. This having MCP as this
+
+465
+00:18:38.080 --> 00:18:43.039
+ultimate sort of integration layer is
+
+466
+00:18:40.160 --> 00:18:44.880
+fantastic because now it separates the
+
+467
+00:18:43.039 --> 00:18:47.520
+intent from the implementation in a way
+
+468
+00:18:44.880 --> 00:18:50.240
+that's very very useful for enterprise
+
+469
+00:18:47.520 --> 00:18:52.880
+architects. So could not have come along
+
+470
+00:18:50.240 --> 00:18:55.200
+at a better time for us. And so mesh
+
+471
+00:18:52.880 --> 00:18:57.520
+architectures like service mesh plus
+
+472
+00:18:55.200 --> 00:19:00.720
+agentic capabilities plus fitness
+
+473
+00:18:57.520 --> 00:19:03.679
+functions is what we're calling uh
+
+474
+00:19:00.720 --> 00:19:06.640
+fitness functiondriven architecture or
+
+475
+00:19:03.679 --> 00:19:08.640
+alternatively very ambitiously 21st
+
+476
+00:19:06.640 --> 00:19:10.720
+century enterprise architecture because
+
+477
+00:19:08.640 --> 00:19:12.960
+that's really what we're after here
+
+478
+00:19:10.720 --> 00:19:15.919
+because what this allows us to do and
+
+479
+00:19:12.960 --> 00:19:20.080
+this is one other interesting use for AI
+
+480
+00:19:15.919 --> 00:19:22.320
+that's a sort of a bonus use here
+
+481
+00:19:20.080 --> 00:19:24.240
+as an architect.
+
+482
+00:19:22.320 --> 00:19:26.400
+I design a lot of stuff. I design
+
+483
+00:19:24.240 --> 00:19:28.480
+components around domains and
+
+484
+00:19:26.400 --> 00:19:30.720
+relationships and dependencies between
+
+485
+00:19:28.480 --> 00:19:32.880
+these components and put a lot of
+
+486
+00:19:30.720 --> 00:19:34.720
+thought into this as an architect. This
+
+487
+00:19:32.880 --> 00:19:36.640
+is what we do as an architect is figure
+
+488
+00:19:34.720 --> 00:19:40.360
+out coupling and cohesion around
+
+489
+00:19:36.640 --> 00:19:40.360
+components etc.
+
+490
+00:19:40.880 --> 00:19:46.600
+But then I hand this off to a group of
+
+491
+00:19:42.559 --> 00:19:46.600
+developers to implement it.
+
+492
+00:19:47.039 --> 00:19:53.440
+After it's implemented, I look at it
+
+493
+00:19:48.960 --> 00:19:55.280
+again and I go, "What? what
+
+494
+00:19:53.440 --> 00:20:00.000
+ticket assignment disappeared at some
+
+495
+00:19:55.280 --> 00:20:01.840
+point during the implementation and uh
+
+496
+00:20:00.000 --> 00:20:03.840
+customer registration's not there and
+
+497
+00:20:01.840 --> 00:20:07.280
+this new thing showed up that I never
+
+498
+00:20:03.840 --> 00:20:09.280
+designed as part of my architecture and
+
+499
+00:20:07.280 --> 00:20:11.600
+all this chaos has occurred and this is
+
+500
+00:20:09.280 --> 00:20:14.080
+actually what got implemented
+
+501
+00:20:11.600 --> 00:20:16.320
+despite my nice clean design when I
+
+502
+00:20:14.080 --> 00:20:19.120
+handed this to developers and schedule
+
+503
+00:20:16.320 --> 00:20:21.360
+pressure showed up and things changed
+
+504
+00:20:19.120 --> 00:20:24.160
+and I ended up implementing in chaos
+
+505
+00:20:21.360 --> 00:20:26.880
+like this. This idea of architecture as
+
+506
+00:20:24.160 --> 00:20:31.000
+code. What this allows us to do is
+
+507
+00:20:26.880 --> 00:20:31.000
+actually define things
+
+508
+00:20:31.039 --> 00:20:35.360
+as code.
+
+509
+00:20:33.120 --> 00:20:37.600
+Define our domains. Define the
+
+510
+00:20:35.360 --> 00:20:39.760
+relationships between them. This is our
+
+511
+00:20:37.600 --> 00:20:42.080
+architecture as code pseudo code. And
+
+512
+00:20:39.760 --> 00:20:44.880
+then assert that classes are only
+
+513
+00:20:42.080 --> 00:20:47.360
+contained within classes within those
+
+514
+00:20:44.880 --> 00:20:48.720
+domains. This is the other use that we
+
+515
+00:20:47.360 --> 00:20:51.919
+have found is quite useful for
+
+516
+00:20:48.720 --> 00:20:54.240
+generative AI. the second L in LLM
+
+517
+00:20:51.919 --> 00:20:56.880
+because you hand it this pseudo code and
+
+518
+00:20:54.240 --> 00:21:00.640
+tell it to produce me a fitness function
+
+519
+00:20:56.880 --> 00:21:02.159
+in Java ornet and it will do so and what
+
+520
+00:21:00.640 --> 00:21:04.159
+this is of course doing is validating
+
+521
+00:21:02.159 --> 00:21:06.400
+the directory structure. So you hand
+
+522
+00:21:04.159 --> 00:21:08.960
+this to an LLM and it will produce
+
+523
+00:21:06.400 --> 00:21:11.840
+concrete fitness functions for you. This
+
+524
+00:21:08.960 --> 00:21:14.400
+is nice because I can keep my rules in
+
+525
+00:21:11.840 --> 00:21:17.039
+pseudo code and then if I have a Java
+
+526
+00:21:14.400 --> 00:21:19.200
+codebase or Golang codebase orn net
+
+527
+00:21:17.039 --> 00:21:22.720
+codebase or python codebase I can
+
+528
+00:21:19.200 --> 00:21:24.880
+generate all of the uh the pertinent
+
+529
+00:21:22.720 --> 00:21:27.120
+fitness functions for those that
+
+530
+00:21:24.880 --> 00:21:29.919
+validate the structure as I write my
+
+531
+00:21:27.120 --> 00:21:32.480
+code. Just like a building architect
+
+532
+00:21:29.919 --> 00:21:33.919
+creates a plan for how the build of the
+
+533
+00:21:32.480 --> 00:21:36.240
+room should be laid out and the
+
+534
+00:21:33.919 --> 00:21:39.360
+relationships like where plumbing goes.
+
+535
+00:21:36.240 --> 00:21:41.440
+I can now as an architect define how I
+
+536
+00:21:39.360 --> 00:21:44.159
+want things put together in my
+
+537
+00:21:41.440 --> 00:21:46.799
+ecosystem. That is this idea of a
+
+538
+00:21:44.159 --> 00:21:49.039
+fitness function-driven architecture and
+
+539
+00:21:46.799 --> 00:21:51.440
+it's a way to enhance collaboration
+
+540
+00:21:49.039 --> 00:21:52.799
+between architects and developers to
+
+541
+00:21:51.440 --> 00:21:54.480
+make sure that they are building the
+
+542
+00:21:52.799 --> 00:21:56.159
+things that I actually want them to
+
+543
+00:21:54.480 --> 00:21:58.480
+build. This is what we were referring to
+
+544
+00:21:56.159 --> 00:22:02.240
+as fitness function-driven architecture
+
+545
+00:21:58.480 --> 00:22:04.880
+and it's similar to so fitness functions
+
+546
+00:22:02.240 --> 00:22:07.440
+are like unit tests in that it allows
+
+547
+00:22:04.880 --> 00:22:09.520
+you to verify things as we go along
+
+548
+00:22:07.440 --> 00:22:11.039
+preferably on each change and it makes
+
+549
+00:22:09.520 --> 00:22:13.360
+sure that we haven't broken anything
+
+550
+00:22:11.039 --> 00:22:15.200
+that we're building on.
+
+551
+00:22:13.360 --> 00:22:18.400
+Fitness functions are not like unit
+
+552
+00:22:15.200 --> 00:22:20.080
+tests in that failures are placeholders
+
+553
+00:22:18.400 --> 00:22:21.760
+for conversations about design
+
+554
+00:22:20.080 --> 00:22:23.840
+decisions.
+
+555
+00:22:21.760 --> 00:22:25.039
+As an architect, I build one of those
+
+556
+00:22:23.840 --> 00:22:27.200
+things that say, "Here are the
+
+557
+00:22:25.039 --> 00:22:30.000
+components I need." And then somebody
+
+558
+00:22:27.200 --> 00:22:32.960
+builds a new component.
+
+559
+00:22:30.000 --> 00:22:35.280
+That's not an error. That's a
+
+560
+00:22:32.960 --> 00:22:36.559
+placeholder for conversation.
+
+561
+00:22:35.280 --> 00:22:38.240
+I'm going to I don't want to yell at
+
+562
+00:22:36.559 --> 00:22:40.080
+them about it. I just want to know that
+
+563
+00:22:38.240 --> 00:22:43.520
+it happened. And so, architecture is
+
+564
+00:22:40.080 --> 00:22:45.200
+code is really a fast feedback framework
+
+565
+00:22:43.520 --> 00:22:47.679
+for anything that happened in
+
+566
+00:22:45.200 --> 00:22:51.600
+architecture that I care about, let me
+
+567
+00:22:47.679 --> 00:22:53.039
+know about it so that I can react to it.
+
+568
+00:22:51.600 --> 00:22:54.880
+Fitness function-driven architecture is
+
+569
+00:22:53.039 --> 00:22:57.200
+like test-driven development that we
+
+570
+00:22:54.880 --> 00:22:59.919
+both build things and constantly verify
+
+571
+00:22:57.200 --> 00:23:03.039
+them as we go along. It's unlike
+
+572
+00:22:59.919 --> 00:23:04.880
+test-driven development in that it is
+
+573
+00:23:03.039 --> 00:23:07.600
+the mechanics for evolutionary
+
+574
+00:23:04.880 --> 00:23:10.640
+architecture. It's not meant to cover
+
+575
+00:23:07.600 --> 00:23:12.000
+every detail, just the important stuff.
+
+576
+00:23:10.640 --> 00:23:13.919
+And this is really an important
+
+577
+00:23:12.000 --> 00:23:15.840
+perspective. We're not trying to create
+
+578
+00:23:13.919 --> 00:23:18.559
+an architecture police state here. We're
+
+579
+00:23:15.840 --> 00:23:22.080
+trying to create an ecosystem where we
+
+580
+00:23:18.559 --> 00:23:24.480
+can work within the context of a project
+
+581
+00:23:22.080 --> 00:23:27.039
+and define rules at the enterprise
+
+582
+00:23:24.480 --> 00:23:29.280
+architecture level that I really want to
+
+583
+00:23:27.039 --> 00:23:31.360
+implement but I don't want to get into
+
+584
+00:23:29.280 --> 00:23:33.520
+details of how to implement that.
+
+585
+00:23:31.360 --> 00:23:37.039
+Agentic AI is a really really nice way
+
+586
+00:23:33.520 --> 00:23:39.120
+to do that and it gives us a way to uh
+
+587
+00:23:37.039 --> 00:23:40.880
+build this kind of holistic governance
+
+588
+00:23:39.120 --> 00:23:43.440
+in a way that doesn't create this sort
+
+589
+00:23:40.880 --> 00:23:46.400
+of brittle breakage all the time. So
+
+590
+00:23:43.440 --> 00:23:47.679
+very very nice more and more details of
+
+591
+00:23:46.400 --> 00:23:49.200
+this coming out. In fact, we just
+
+592
+00:23:47.679 --> 00:23:52.400
+published an article about this on the
+
+593
+00:23:49.200 --> 00:23:54.400
+O'Reilly website um talking about these
+
+594
+00:23:52.400 --> 00:23:55.919
+details. So u much more of this coming
+
+595
+00:23:54.400 --> 00:23:57.520
+in the architectures code book which
+
+596
+00:23:55.919 --> 00:23:59.039
+should be out sometime later this next
+
+597
+00:23:57.520 --> 00:24:01.039
+year.
+
+598
+00:23:59.039 --> 00:24:04.346
+And that's it. 30 seconds to spare.
+
+599
+00:24:01.039 --> 00:24:04.346
+Thanks very much. [music]
+
+600
+00:24:07.280 --> 00:24:10.280
+Heat. Heat.

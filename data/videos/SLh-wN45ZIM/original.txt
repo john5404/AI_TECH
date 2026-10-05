@@ -1,0 +1,172 @@
+[00:00:00.240] Back in June at AI DevCon in London, we got four completely different answers
+[00:00:04.760] to what sounds like a simple question where should the agent actually run?
+[00:00:09.640] Let's first hear from Oleg Šelajev at Docker, who built a sandbox on containers,
+[00:00:14.920] was told by enterprise security teams that containers are not a boundary
+[00:00:18.960] they trust and went and rebuilt it on micro VMs.
+[00:00:23.560] All right. Hi,
+[00:00:26.720] my name is Oleg.
+[00:00:27.560] I work at Docker.
+[00:00:29.360] I'm a member of the DevRel team, doing all things
+[00:00:32.440] AI at Docker, we thought about this,
+[00:00:35.880] and when we were building sandboxes, we built one version with containers.
+[00:00:41.400] We went out, we talked to a bunch of security teams
+[00:00:45.000] at enterprises, and all security teams said that no, containers
+[00:00:48.280] are not the isolation boundary that we can trust.
+[00:00:52.800] So being great engineers, what did we do?
+[00:00:55.600] We rewrote that using micro VMs.
+[00:00:59.080] So containers for micro VMs might not sound like
+[00:01:02.840] such a big difference, but if you're sharing a kernel,
+[00:01:05.800] if you have a number of security vulnerabilities for exploiting
+[00:01:08.920] from outside of the container, that is not something that,
+[00:01:13.040] well, a security team can sign off because it's going to be,
+[00:01:18.280] well, their jobs and their reputation when the leaks will happen.
+[00:01:22.120] And yeah, I'll bite.
+[00:01:23.280] Container escaping exploits are not frequent.
+[00:01:27.400] There are like a dozen over the last maybe six or seven or eight years.
+[00:01:31.880] But as we discussed, you only need to be breached once and then it's.
+[00:01:37.800] And then it's bad.
+[00:01:38.680] So you want the hardware sort of virtual machine isolated primitive.
+[00:01:43.960] And this is what Docker has built for the sandboxes, the SBX
+[00:01:49.200] thingy that runs in micro on your machine.
+[00:01:52.960] And then your agent is put there within the container.
+[00:01:57.000] In addition to that you can this micro can run other containers.
+[00:02:00.920] So if you are doing using agents for software development,
+[00:02:04.760] the agent within this micro can do exactly what you would do.
+[00:02:08.160] It can run tests.
+[00:02:09.800] Your tests might spin up some containers, maybe with Testcontainers libraries,
+[00:02:13.880] maybe
+[00:02:14.880] just a normal Docker Compose approach, but they can create the full environment,
+[00:02:18.760] run your applications, and that gives you much more control
+[00:02:21.720] over how your agent can develop software, because it can do
+[00:02:24.800] whatever you would do on your machine, just fully isolated.
+[00:02:28.640] So and within that sandbox, within that,
+[00:02:32.760] there is no access to the host file system.
+[00:02:35.880] You choose what you share with the thing.
+[00:02:39.000] You have the networking proxy.
+[00:02:40.600] So all the requests out of the sandbox go through that.
+[00:02:43.280] So you have control saying, please forbid all access to Pastebin.
+[00:02:48.280] So if the agent wants to steal the keys, it cannot do that this way.
+[00:02:52.720] And there is also a secrets injection mechanism.
+[00:02:56.360] So the agent inside doesn't have access to your private data
+[00:02:59.760] while still be able to do things on your behalf.
+[00:03:03.240] We also heard from Luke Marsden, CEO of Helix ML,
+[00:03:07.200] who takes the opposite view — from your laptop, entirely.
+[00:03:11.200] Put the agents on the organization's infrastructure
+[00:03:14.280] so the work can be handed between people in different time zones.
+[00:03:17.800] His line is that you should give each agent their own computer.
+[00:03:21.640] The first big
+[00:03:24.320] decision, in my opinion, is: do you want to carry on
+[00:03:27.520] letting every developer run whatever agent they like, or maybe
+[00:03:32.560] the same agent that everyone uses in the company,
+[00:03:36.040] but on their own specific development environment?
+[00:03:38.600] That's kind of like a snowflake.
+[00:03:40.360] Or do you want to create a pool of
+[00:03:46.240] agents that run on your organization's infrastructure
+[00:03:50.600] that many humans can interact with?
+[00:03:53.600] And my strong argument is that.
+[00:03:59.560] Going for the centralized approach
+[00:04:01.400] and I say centralized, it doesn't mean you have to
+[00:04:03.720] hand over all your data to OpenAI or run on their infrastructure or anything.
+[00:04:07.440] You can run it on your own infrastructure.
+[00:04:09.360] Still on Kubernetes or something, but there are
+[00:04:12.800] some significant benefits from having a centralized approach.
+[00:04:17.040] For example, you can have a globally distributed team
+[00:04:23.200] all around the world, and you can say
+[00:04:26.440] that when the sun sets in Tokyo and rises in London,
+[00:04:31.440] whoever a different human can carry on doing the work
+[00:04:35.920] that a certain agent was working on, especially if that agent truly
+[00:04:40.240] has its own computer for that specific task.
+[00:04:43.880] And so there's a really nice
+[00:04:46.240] article written by by someone.
+[00:04:49.400] We've been working with a company called Dev Icon,
+[00:04:53.400] and what they said was, to be honest, agentic coding is not new.
+[00:04:58.000] Going from doing it the easier way, which is the way on the left
+[00:05:00.560] which is unsafe and per engineer to something global per company
+[00:05:03.600] and safe is what they found interesting in this approach.
+[00:05:07.440] So that's kind of my argument.
+[00:05:08.760] My opinion number one is
+[00:05:11.640] you should
+[00:05:12.440] give each agent their own computer, not each human.
+[00:05:15.720] It's almost like you wouldn't hire
+[00:05:17.080] a team of software developers and ask them all to share one computer.
+[00:05:20.360] You should give each agent their own computer.
+[00:05:23.720] Lars Trieloff is a principal scientist at Adobe, and he built an agent
+[00:05:27.840] that runs inside the browser and drives the browser it's running in.
+[00:05:31.720] There's also a reveal at the end of his talk that I'll let him deliver himself.
+[00:05:36.880] How do we get started with this?
+[00:05:38.480] And the.
+[00:05:42.000] The idea that I came up with was an agent that is sitting in the browser.
+[00:05:46.800] It's actually running in the browser, which means it's not a cloud runtime
+[00:05:51.280] where the agent loop runs and you're just displaying in the browser,
+[00:05:56.240] but it's actually the actual agent loop is in the browser.
+[00:05:59.560] To close the browser tab, the agent loop starts,
+[00:06:02.920] and at the same time this agent should be able to control itself.
+[00:06:08.400] It should control it should
+[00:06:10.800] it should control the browser that it's running inside.
+[00:06:13.400] And this is how I came up with this notion of the self-licking ice cream cone.
+[00:06:18.080] And that's why you find it at SLICC,
+[00:06:24.560] sliccy.com
+[00:06:25.560] And while building it,
+[00:06:29.960] there are a bunch of things that I was absolutely sure.
+[00:06:33.440] Well it's a browser right.
+[00:06:35.360] It can display HTML pages.
+[00:06:36.960] But there are a lot of things that it suddenly cannot do right.
+[00:06:39.800] So cannot transcode videos.
+[00:06:42.280] It suddenly cannot access my local file system.
+[00:06:45.800] But I'm fine with these constraints.
+[00:06:48.760] But in reality, I found during this exploration
+[00:06:53.080] that there are so many things
+[00:06:54.200] that my browser can do that I didn't even dare to think about.
+[00:06:59.400] And that was one of the things that made this exploration extremely fun.
+[00:07:04.080] And now you're wondering what this what this slide means.
+[00:07:08.960] And this slide means that I haven't been showing
+[00:07:11.800] you a presentation for the past ten minutes.
+[00:07:14.800] I've been showing you SLICC.
+[00:07:16.360] I've been showing you the very agent that we are going to talk about.
+[00:07:20.120] And to close, Steve Ruiz, founder and CEO of tldraw, with the answer
+[00:07:25.360] nobody else gave the agents live on the canvas
+[00:07:29.240] as little characters you can pick up, throw, and talk to.
+[00:07:33.360] Then he selects three at once and they elect a leader.
+[00:07:37.160] We wanted to bring it onto the canvas in the same way that, like,
+[00:07:40.880] you know, other users are on the canvas.
+[00:07:44.120] So that led us to.
+[00:07:48.080] To fairies.
+[00:07:51.480] To these guys.
+[00:07:52.840] So each one of these is an instance of that,
+[00:07:57.240] that harness that lives kind of on the canvas.
+[00:08:02.600] And while it started with just being like a way of visualizing the
+[00:08:07.040] agents — number one, like, just where are they?
+[00:08:10.840] Which ones exist, which one is which. Right.
+[00:08:13.880] You can kind of configure them
+[00:08:16.880] and change their hat
+[00:08:20.280] Or, because we needed two things, like, you can change the length of their legs.
+[00:08:23.560] I don't know if you can see that, whatever — you can toss them around.
+[00:08:28.320] You can hold them.
+[00:08:29.360] They don't like that.
+[00:08:30.880] Yeah. Right on.
+[00:08:33.160] But you can talk to them as well.
+[00:08:35.520] Make a move as X and you can
+[00:08:39.200] you can visualize the state of the agent as well.
+[00:08:44.200] So whether it's thinking or reviewing or working
+[00:08:49.840] cool.
+[00:08:51.040] Make a move as
+[00:08:53.880] Oh, and you can ask them to do things.
+[00:08:57.160] And again, it's pretty much the same harness as
+[00:08:59.720] we looked at with the whole cat on the table thing.
+[00:09:02.040] But there they can exist simultaneously.
+[00:09:05.520] They know about where each other are.
+[00:09:08.240] This is worse on live coding, by the way.
+[00:09:10.200] Let me try this.
+[00:09:13.640] Maybe we can get them to work as a team.
+[00:09:15.920] So if I grab all three of them and I say play a full
+[00:09:21.920] game of tic tac toe.
+[00:09:27.080] Then they will operate as a unit.
+[00:09:29.680] One of them will be elected leader and will draft a plan.
+[00:09:33.880] Their wings will change colors to indicate that they're on the same team.
+[00:09:37.000] By the way, this is also collaborative.
+[00:09:38.360] You could have multiple people kind of sharing the same experience.
+[00:09:43.520] Coordinator comes up with a to-do list and then delegates
+[00:09:46.120] those tasks to different fairies, different agents.
+[00:09:49.320] Thanks for watching.
+[00:09:50.640] Be sure to join us for the next AI DevCon this November in New York City.
+[00:09:55.840] Visit ainativedev.io to learn more and book your ticket

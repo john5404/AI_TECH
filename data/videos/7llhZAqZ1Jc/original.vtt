@@ -1,0 +1,2097 @@
+WEBVTT
+
+1
+00:00:04.584 --> 00:00:06.604
+[music]
+
+2
+00:00:09.679 --> 00:00:15.920
+Um, yep. I'm Bill Maxwell. I'm at Hobot
+
+3
+00:00:13.120 --> 00:00:18.800
+AI. We build a open-source uh MCP
+
+4
+00:00:15.920 --> 00:00:20.880
+management platform. And over the next
+
+5
+00:00:18.800 --> 00:00:24.800
+20 25 minutes or so, we're going to talk
+
+6
+00:00:20.880 --> 00:00:26.800
+about uh why agents and MCP are good and
+
+7
+00:00:24.800 --> 00:00:30.880
+what MCP
+
+8
+00:00:26.800 --> 00:00:32.719
+is and the basic primitives that you
+
+9
+00:00:30.880 --> 00:00:34.880
+probably aren't aware of that make for
+
+10
+00:00:32.719 --> 00:00:38.000
+an actual good development experience
+
+11
+00:00:34.880 --> 00:00:40.719
+with uh MCP.
+
+12
+00:00:38.000 --> 00:00:42.719
+So the reason you know we know coding
+
+13
+00:00:40.719 --> 00:00:45.200
+agents are good probably the best
+
+14
+00:00:42.719 --> 00:00:47.600
+pattern for agents right now the most
+
+15
+00:00:45.200 --> 00:00:51.280
+successful anyway right we are
+
+16
+00:00:47.600 --> 00:00:54.559
+definitely seeing value getting um
+
+17
+00:00:51.280 --> 00:00:57.600
+making progress with these agents and so
+
+18
+00:00:54.559 --> 00:01:00.239
+uh they primarily work on code and code
+
+19
+00:00:57.600 --> 00:01:01.920
+is typically part of a larger process
+
+20
+00:01:00.239 --> 00:01:04.960
+your software development life cycle and
+
+21
+00:01:01.920 --> 00:01:07.119
+so as you're trying to work with these
+
+22
+00:01:04.960 --> 00:01:09.040
+with your code it also would be nice to
+
+23
+00:01:07.119 --> 00:01:11.600
+be the work with your repositories, your
+
+24
+00:01:09.040 --> 00:01:13.840
+issues, your tickets, pull requests, uh
+
+25
+00:01:11.600 --> 00:01:15.280
+the pipeline, the build status, you just
+
+26
+00:01:13.840 --> 00:01:18.640
+really trying to understand kind of the
+
+27
+00:01:15.280 --> 00:01:20.320
+endto-end picture of what's going on in
+
+28
+00:01:18.640 --> 00:01:23.200
+your, you know, software delivery life
+
+29
+00:01:20.320 --> 00:01:25.119
+cycle. And so the reason the way you
+
+30
+00:01:23.200 --> 00:01:28.880
+need to do that is you need the ability
+
+31
+00:01:25.119 --> 00:01:30.560
+to connect to systems. And there's lots
+
+32
+00:01:28.880 --> 00:01:32.640
+of different ways that you can connect
+
+33
+00:01:30.560 --> 00:01:34.720
+to these systems. I mean, you have a
+
+34
+00:01:32.640 --> 00:01:36.960
+coding agent. So you can just tell it,
+
+35
+00:01:34.720 --> 00:01:39.360
+hey, connect to this system. here's some
+
+36
+00:01:36.960 --> 00:01:41.759
+API keys and have at it and it could
+
+37
+00:01:39.360 --> 00:01:45.360
+possibly write you a function for that.
+
+38
+00:01:41.759 --> 00:01:47.439
+Um, tool calling I think I heard you
+
+39
+00:01:45.360 --> 00:01:50.240
+know came out with OpenAI a long time
+
+40
+00:01:47.439 --> 00:01:53.119
+ago now and uh so you could do it that
+
+41
+00:01:50.240 --> 00:01:54.960
+way but really you want a repeatable
+
+42
+00:01:53.119 --> 00:01:57.680
+process and a way of interacting with
+
+43
+00:01:54.960 --> 00:01:59.439
+these systems so that it becomes
+
+44
+00:01:57.680 --> 00:02:01.040
+portable. you're not reduplicating
+
+45
+00:01:59.439 --> 00:02:03.360
+effort or basically every time you
+
+46
+00:02:01.040 --> 00:02:05.280
+switch coding agents or clients that you
+
+47
+00:02:03.360 --> 00:02:07.600
+have to rebuild this tooling and these
+
+48
+00:02:05.280 --> 00:02:10.800
+systems interactions with these other
+
+49
+00:02:07.600 --> 00:02:14.239
+systems. And so that's where uh model
+
+50
+00:02:10.800 --> 00:02:17.920
+context protocol comes in. Um, this is
+
+51
+00:02:14.239 --> 00:02:21.440
+MCP and it's really a system designed uh
+
+52
+00:02:17.920 --> 00:02:24.959
+to connect your LLM models and your
+
+53
+00:02:21.440 --> 00:02:27.520
+systems together so that you can
+
+54
+00:02:24.959 --> 00:02:29.920
+uh interact with uh all of these
+
+55
+00:02:27.520 --> 00:02:32.319
+different um
+
+56
+00:02:29.920 --> 00:02:34.720
+systems and capabilities. And so just
+
+57
+00:02:32.319 --> 00:02:37.760
+really the way to think about it is that
+
+58
+00:02:34.720 --> 00:02:40.080
+it's the USBC port uh for these
+
+59
+00:02:37.760 --> 00:02:43.680
+applications for connecting AI
+
+60
+00:02:40.080 --> 00:02:47.440
+applications to uh tools and data
+
+61
+00:02:43.680 --> 00:02:49.280
+structures and other systems within the
+
+62
+00:02:47.440 --> 00:02:51.120
+your ecosystem.
+
+63
+00:02:49.280 --> 00:02:53.599
+And so
+
+64
+00:02:51.120 --> 00:02:57.920
+at a high level uh there's really a few
+
+65
+00:02:53.599 --> 00:02:59.599
+parts to the MCP ecos um architecture
+
+66
+00:02:57.920 --> 00:03:02.560
+that you're looking at. So, you've got
+
+67
+00:02:59.599 --> 00:03:04.959
+an MCP host, which is probably uh your
+
+68
+00:03:02.560 --> 00:03:07.280
+AI application. That could be like a VS
+
+69
+00:03:04.959 --> 00:03:09.760
+Code. It could be your cloud. Uh it
+
+70
+00:03:07.280 --> 00:03:12.640
+could be just a regular chat client. Um
+
+71
+00:03:09.760 --> 00:03:17.680
+and within each of those, you define
+
+72
+00:03:12.640 --> 00:03:20.800
+these client connections to um your MCP
+
+73
+00:03:17.680 --> 00:03:23.519
+servers. And so really when you're
+
+74
+00:03:20.800 --> 00:03:27.040
+interacting with MCP, it's it's these
+
+75
+00:03:23.519 --> 00:03:28.640
+two pieces interacting together um that
+
+76
+00:03:27.040 --> 00:03:31.200
+really sort of bring out the whole
+
+77
+00:03:28.640 --> 00:03:33.360
+experience. And so if you have a really
+
+78
+00:03:31.200 --> 00:03:35.519
+great MCP server that doesn't have all
+
+79
+00:03:33.360 --> 00:03:36.799
+of the capabilities uh with a client
+
+80
+00:03:35.519 --> 00:03:39.200
+that doesn't have all the capabilities
+
+81
+00:03:36.799 --> 00:03:41.280
+to support all of the functions, then
+
+82
+00:03:39.200 --> 00:03:43.599
+you're sort of, you know, in a in a
+
+83
+00:03:41.280 --> 00:03:44.959
+weird space. So when we look at this,
+
+84
+00:03:43.599 --> 00:03:48.400
+we're going to look at sort of the two
+
+85
+00:03:44.959 --> 00:03:51.519
+sides of uh the MCP bits and where those
+
+86
+00:03:48.400 --> 00:03:53.920
+primitives are. And so server side,
+
+87
+00:03:51.519 --> 00:03:57.280
+you're looking primarily at tools, uh
+
+88
+00:03:53.920 --> 00:04:00.799
+prompts, and resources. And so those
+
+89
+00:03:57.280 --> 00:04:03.599
+capabilities are put into the the MCP
+
+90
+00:04:00.799 --> 00:04:06.799
+server as uh and as the developer of
+
+91
+00:04:03.599 --> 00:04:10.799
+that server. And then on the client side
+
+92
+00:04:06.799 --> 00:04:13.680
+you have uh capabilities like sampling
+
+93
+00:04:10.799 --> 00:04:15.920
+uh elicitations and roots. And so if
+
+94
+00:04:13.680 --> 00:04:19.120
+your client supports these capabilities
+
+95
+00:04:15.920 --> 00:04:21.519
+you can now start to get a much better
+
+96
+00:04:19.120 --> 00:04:23.919
+UX or experience design developer
+
+97
+00:04:21.519 --> 00:04:26.560
+experience or user experience around the
+
+98
+00:04:23.919 --> 00:04:28.160
+MCP kind of context that you're working
+
+99
+00:04:26.560 --> 00:04:31.360
+with.
+
+100
+00:04:28.160 --> 00:04:33.199
+And so each of these primitives really
+
+101
+00:04:31.360 --> 00:04:34.880
+shapes,
+
+102
+00:04:33.199 --> 00:04:36.960
+you know, how you how you're going to
+
+103
+00:04:34.880 --> 00:04:39.120
+interact with these systems. So having a
+
+104
+00:04:36.960 --> 00:04:41.280
+tool that just calls something that maps
+
+105
+00:04:39.120 --> 00:04:43.520
+to an API may or may not be useful.
+
+106
+00:04:41.280 --> 00:04:47.680
+These primitives give you the ability to
+
+107
+00:04:43.520 --> 00:04:51.120
+get feedback to interact with um
+
+108
+00:04:47.680 --> 00:04:52.960
+uh you know the confirm and actually
+
+109
+00:04:51.120 --> 00:04:57.120
+have safety and actually have the
+
+110
+00:04:52.960 --> 00:05:01.040
+ability to um work with these tools and
+
+111
+00:04:57.120 --> 00:05:03.759
+systems in a safe way because agents and
+
+112
+00:05:01.040 --> 00:05:05.759
+AI the models they don't always do the
+
+113
+00:05:03.759 --> 00:05:08.320
+same thing twice. So you want to give it
+
+114
+00:05:05.759 --> 00:05:12.160
+as much context information as possible
+
+115
+00:05:08.320 --> 00:05:15.520
+to make the right choice.
+
+116
+00:05:12.160 --> 00:05:18.720
+So, first let's dive into tools. This
+
+117
+00:05:15.520 --> 00:05:21.759
+is, I think, what most people believe uh
+
+118
+00:05:18.720 --> 00:05:24.160
+MCP is. Uh when you hear MCP server,
+
+119
+00:05:21.759 --> 00:05:26.160
+you're thinking tool calls. Uh I think
+
+120
+00:05:24.160 --> 00:05:28.320
+on Twitter, they fight that, you know,
+
+121
+00:05:26.160 --> 00:05:30.880
+we can do tool calls 100 different ways.
+
+122
+00:05:28.320 --> 00:05:33.840
+We don't need MCP. But really, this is
+
+123
+00:05:30.880 --> 00:05:36.479
+the action surface and probably the most
+
+124
+00:05:33.840 --> 00:05:38.240
+value uh oriented piece of the MCP
+
+125
+00:05:36.479 --> 00:05:42.320
+server that people really want is they
+
+126
+00:05:38.240 --> 00:05:44.000
+need that ability to be able to get um
+
+127
+00:05:42.320 --> 00:05:46.080
+uh information from something else and
+
+128
+00:05:44.000 --> 00:05:47.520
+put it in uh to the context so they can
+
+129
+00:05:46.080 --> 00:05:51.360
+continue working with it, build a
+
+130
+00:05:47.520 --> 00:05:54.160
+presentation. And so these tools in as
+
+131
+00:05:51.360 --> 00:05:56.720
+you're developing or evaluating an MCP
+
+132
+00:05:54.160 --> 00:06:00.880
+server, you're really looking for clear
+
+133
+00:05:56.720 --> 00:06:02.639
+tool names. uh you're looking for uh the
+
+134
+00:06:00.880 --> 00:06:06.000
+descriptions to be accurate. You're
+
+135
+00:06:02.639 --> 00:06:07.919
+looking for uh clear inputs so that you
+
+136
+00:06:06.000 --> 00:06:10.479
+understand what's going to happen. So
+
+137
+00:06:07.919 --> 00:06:12.080
+for instance, this get github issue uh
+
+138
+00:06:10.479 --> 00:06:13.759
+you takes an issue ID. It's very
+
+139
+00:06:12.080 --> 00:06:15.680
+self-explanatory. It's like I'm
+
+140
+00:06:13.759 --> 00:06:17.440
+conversing with you which means the
+
+141
+00:06:15.680 --> 00:06:22.759
+model has a better shot of actually
+
+142
+00:06:17.440 --> 00:06:22.759
+understanding that tool and its purpose.
+
+143
+00:06:23.120 --> 00:06:30.479
+And so really when you're evaluating or
+
+144
+00:06:26.560 --> 00:06:34.400
+building the uh the utility that you'll
+
+145
+00:06:30.479 --> 00:06:36.479
+actually be able to get from it um is is
+
+146
+00:06:34.400 --> 00:06:41.199
+largely dependent on how this is built.
+
+147
+00:06:36.479 --> 00:06:43.039
+So if the tool name is ambiguous like uh
+
+148
+00:06:41.199 --> 00:06:45.600
+you know doesn't necessarily say like
+
+149
+00:06:43.039 --> 00:06:47.600
+get github issue and you happen to have
+
+150
+00:06:45.600 --> 00:06:51.600
+just get issue and you're also using it
+
+151
+00:06:47.600 --> 00:06:52.800
+with a bit bucket or a gitlab MTP server
+
+152
+00:06:51.600 --> 00:06:56.960
+and sort of the same because your
+
+153
+00:06:52.800 --> 00:06:59.520
+enterprise does everything um then you
+
+154
+00:06:56.960 --> 00:07:01.520
+sort of end up in this thing the model
+
+155
+00:06:59.520 --> 00:07:04.800
+can get confused right because if you
+
+156
+00:07:01.520 --> 00:07:07.360
+say something casually get this issue it
+
+157
+00:07:04.800 --> 00:07:11.680
+may or may not know which system you're
+
+158
+00:07:07.360 --> 00:07:14.400
+actually talking about. Um, and so,
+
+159
+00:07:11.680 --> 00:07:16.479
+um, you also want these tools to be
+
+160
+00:07:14.400 --> 00:07:19.520
+somewhat focused on the intention piece.
+
+161
+00:07:16.479 --> 00:07:20.960
+So, I want to create an issue, right? I
+
+162
+00:07:19.520 --> 00:07:23.360
+don't want to have to go get all the
+
+163
+00:07:20.960 --> 00:07:25.360
+different pieces that I would need uh to
+
+164
+00:07:23.360 --> 00:07:27.280
+actually create that issue on the
+
+165
+00:07:25.360 --> 00:07:30.080
+backend system and being able to call
+
+166
+00:07:27.280 --> 00:07:32.160
+with the different uh tools.
+
+167
+00:07:30.080 --> 00:07:35.280
+And so
+
+168
+00:07:32.160 --> 00:07:37.520
+um yeah, so looking at it uh a little
+
+169
+00:07:35.280 --> 00:07:39.840
+bit higher level at you know a good
+
+170
+00:07:37.520 --> 00:07:41.599
+design versus a bad design uh we're
+
+171
+00:07:39.840 --> 00:07:44.639
+going to focus on the intention of the
+
+172
+00:07:41.599 --> 00:07:47.199
+user. So, add note to contact and it
+
+173
+00:07:44.639 --> 00:07:49.599
+takes a contact name and the note. Uh,
+
+174
+00:07:47.199 --> 00:07:52.240
+that's clear. The parameters are clear.
+
+175
+00:07:49.599 --> 00:07:54.479
+Um, it's mapping to exactly what I might
+
+176
+00:07:52.240 --> 00:07:56.479
+want and casually say in the
+
+177
+00:07:54.479 --> 00:07:59.280
+conversation, it's it's sticking with
+
+178
+00:07:56.479 --> 00:08:01.440
+kind of that userbased language. and a
+
+179
+00:07:59.280 --> 00:08:04.479
+bad design and depending on which CRM
+
+180
+00:08:01.440 --> 00:08:08.080
+system you've ever used um you know and
+
+181
+00:08:04.479 --> 00:08:10.000
+you map things directly to an API uh you
+
+182
+00:08:08.080 --> 00:08:12.560
+have these different tools that are like
+
+183
+00:08:10.000 --> 00:08:15.919
+get the contact ID get the record get
+
+184
+00:08:12.560 --> 00:08:18.000
+the note and depending on the model or
+
+185
+00:08:15.919 --> 00:08:20.800
+you know somewhere it needs to be
+
+186
+00:08:18.000 --> 00:08:23.360
+instructed to do this right like the in
+
+187
+00:08:20.800 --> 00:08:25.199
+order for the agent to actually succeed
+
+188
+00:08:23.360 --> 00:08:27.280
+um either the model needs to know the
+
+189
+00:08:25.199 --> 00:08:28.879
+CRM and that's what it needs to do which
+
+190
+00:08:27.280 --> 00:08:31.039
+is unlikely if you're doing something
+
+191
+00:08:28.879 --> 00:08:34.080
+with like a local model and possibly
+
+192
+00:08:31.039 --> 00:08:35.839
+even with the frontier models is is uh
+
+193
+00:08:34.080 --> 00:08:37.919
+you know not likely that it would be
+
+194
+00:08:35.839 --> 00:08:40.560
+able to guess this. So then as a user
+
+195
+00:08:37.919 --> 00:08:42.640
+you're stuck prompting it and saying
+
+196
+00:08:40.560 --> 00:08:44.800
+okay do this do this do this which is
+
+197
+00:08:42.640 --> 00:08:48.720
+not a great experience for you as an end
+
+198
+00:08:44.800 --> 00:08:51.440
+user using these servers and so
+
+199
+00:08:48.720 --> 00:08:54.160
+um yeah that is
+
+200
+00:08:51.440 --> 00:08:56.240
+a bad design.
+
+201
+00:08:54.160 --> 00:08:58.560
+The other thing, you know, once we get
+
+202
+00:08:56.240 --> 00:09:00.880
+past tools, the other capabilities that
+
+203
+00:08:58.560 --> 00:09:03.040
+we have to at our disposal, building and
+
+204
+00:09:00.880 --> 00:09:04.720
+evaluating MCP servers are prompts.
+
+205
+00:09:03.040 --> 00:09:07.839
+Prompts are pre-built templates on the
+
+206
+00:09:04.720 --> 00:09:10.240
+server side that give the user clues or
+
+207
+00:09:07.839 --> 00:09:13.360
+actions to interact with the server and
+
+208
+00:09:10.240 --> 00:09:15.519
+actually have a chance at succeeding in
+
+209
+00:09:13.360 --> 00:09:18.000
+um being able to get the agent to do
+
+210
+00:09:15.519 --> 00:09:19.440
+what it wants or just in a casual
+
+211
+00:09:18.000 --> 00:09:22.000
+conversation.
+
+212
+00:09:19.440 --> 00:09:23.920
+um you know this is what gives people
+
+213
+00:09:22.000 --> 00:09:26.399
+sort of the action and the ability to
+
+214
+00:09:23.920 --> 00:09:28.080
+actually use these servers.
+
+215
+00:09:26.399 --> 00:09:30.000
+And so when you're looking at this in
+
+216
+00:09:28.080 --> 00:09:32.560
+claude or different clients you have
+
+217
+00:09:30.000 --> 00:09:34.959
+these slash commands and you'll see that
+
+218
+00:09:32.560 --> 00:09:37.839
+um there's basically they're like forms
+
+219
+00:09:34.959 --> 00:09:39.920
+and so you know you have create issue.
+
+220
+00:09:37.839 --> 00:09:42.240
+It's going to take like a title and a
+
+221
+00:09:39.920 --> 00:09:45.680
+and a repository name. It'll figure that
+
+222
+00:09:42.240 --> 00:09:47.680
+out for you. And so again, it's the
+
+223
+00:09:45.680 --> 00:09:49.920
+natural language way of interacting with
+
+224
+00:09:47.680 --> 00:09:52.240
+and as long as your tool names are good,
+
+225
+00:09:49.920 --> 00:09:55.959
+like it should just kind of line up and
+
+226
+00:09:52.240 --> 00:09:55.959
+have things succeed.
+
+227
+00:09:57.519 --> 00:10:04.800
+Um, yeah, the other one is resources.
+
+228
+00:10:01.120 --> 00:10:07.600
+And so resources are pretty powerful and
+
+229
+00:10:04.800 --> 00:10:12.000
+you know, a cool capability. Uh
+
+230
+00:10:07.600 --> 00:10:14.560
+yesterday I did a workshop um on on
+
+231
+00:10:12.000 --> 00:10:17.360
+building a chess client uh or chess
+
+232
+00:10:14.560 --> 00:10:20.399
+agent and so with resources we can
+
+233
+00:10:17.360 --> 00:10:22.640
+actually use something called MCP UI and
+
+234
+00:10:20.399 --> 00:10:24.640
+return HTML documents that then get
+
+235
+00:10:22.640 --> 00:10:26.480
+rendered in the chat client. So then you
+
+236
+00:10:24.640 --> 00:10:28.560
+can create these rich UX experiences
+
+237
+00:10:26.480 --> 00:10:30.640
+with drag and drop test pieces and the
+
+238
+00:10:28.560 --> 00:10:33.120
+MCP servers managing the states in the
+
+239
+00:10:30.640 --> 00:10:36.240
+background. But a resource in terms of
+
+240
+00:10:33.120 --> 00:10:38.240
+MCP can be really any bit of data. uh
+
+241
+00:10:36.240 --> 00:10:41.040
+these bits of data are not passed
+
+242
+00:10:38.240 --> 00:10:44.560
+directly to the LLM. Um it's controlled
+
+243
+00:10:41.040 --> 00:10:46.480
+by the user and so the user decides
+
+244
+00:10:44.560 --> 00:10:51.360
+whether or not they want to be able to
+
+245
+00:10:46.480 --> 00:10:54.000
+pass that. Um tools can uh create and
+
+246
+00:10:51.360 --> 00:10:56.079
+return uh resources so you can get the
+
+247
+00:10:54.000 --> 00:10:57.680
+record. So if I added a customer, I can
+
+248
+00:10:56.079 --> 00:10:59.839
+get the customer record back as a
+
+249
+00:10:57.680 --> 00:11:02.320
+resource.
+
+250
+00:10:59.839 --> 00:11:03.920
+And so, you know, when you're looking at
+
+251
+00:11:02.320 --> 00:11:06.480
+your client and how this impacts your
+
+252
+00:11:03.920 --> 00:11:09.040
+experience as a developer um interacting
+
+253
+00:11:06.480 --> 00:11:10.800
+with this, you can see once you have
+
+254
+00:11:09.040 --> 00:11:12.880
+resources, they're typically presented
+
+255
+00:11:10.800 --> 00:11:15.040
+to you in like a file structure or a
+
+256
+00:11:12.880 --> 00:11:17.279
+directory structure along those lines.
+
+257
+00:11:15.040 --> 00:11:19.519
+Um, it lets you select them and pass
+
+258
+00:11:17.279 --> 00:11:24.000
+them to the model. And again, a lot of
+
+259
+00:11:19.519 --> 00:11:26.160
+this is on the idea that you want to
+
+260
+00:11:24.000 --> 00:11:27.360
+control and have some say in where your
+
+261
+00:11:26.160 --> 00:11:29.440
+information is going, where your
+
+262
+00:11:27.360 --> 00:11:33.880
+documents are going, um, and what's
+
+263
+00:11:29.440 --> 00:11:33.880
+going back and forth between the model.
+
+264
+00:11:37.760 --> 00:11:41.800
+Sorry. Um,
+
+265
+00:11:44.000 --> 00:11:50.160
+next, uh, sampling. So sampling is a
+
+266
+00:11:47.279 --> 00:11:52.800
+weirdly named uh capability, but what
+
+267
+00:11:50.160 --> 00:11:57.519
+this does is it enables
+
+268
+00:11:52.800 --> 00:12:00.880
+the tool to request the client run an AI
+
+269
+00:11:57.519 --> 00:12:03.040
+query. And so if you want to get a bunch
+
+270
+00:12:00.880 --> 00:12:05.279
+of records and ask for a summary as part
+
+271
+00:12:03.040 --> 00:12:07.920
+of the tool, it can do that. And what it
+
+272
+00:12:05.279 --> 00:12:12.000
+does is it sends that back to the client
+
+273
+00:12:07.920 --> 00:12:13.760
+where the client then um gets to decide
+
+274
+00:12:12.000 --> 00:12:15.440
+um
+
+275
+00:12:13.760 --> 00:12:18.320
+does this make sense? do I want to run
+
+276
+00:12:15.440 --> 00:12:19.839
+this? And so in an ideal situation, uh
+
+277
+00:12:18.320 --> 00:12:21.760
+you would have a human in the loop that
+
+278
+00:12:19.839 --> 00:12:24.079
+actually approves that request that it
+
+279
+00:12:21.760 --> 00:12:25.920
+says yes, please do this. Uh that you
+
+280
+00:12:24.079 --> 00:12:29.120
+get to pick the model, maybe limit the
+
+281
+00:12:25.920 --> 00:12:31.680
+tokens. Um but basically again giving
+
+282
+00:12:29.120 --> 00:12:35.120
+back control to the end user through the
+
+283
+00:12:31.680 --> 00:12:38.639
+client. Um but still having a mechanism
+
+284
+00:12:35.120 --> 00:12:42.360
+to actually have the server leverage all
+
+285
+00:12:38.639 --> 00:12:42.360
+the benefits of AI.
+
+286
+00:12:45.120 --> 00:12:49.200
+So, elicitations,
+
+287
+00:12:47.360 --> 00:12:51.279
+again, some of these names, they're all
+
+288
+00:12:49.200 --> 00:12:54.560
+low-level protocol type of names, but
+
+289
+00:12:51.279 --> 00:12:57.200
+basically, this is confirmations or ways
+
+290
+00:12:54.560 --> 00:12:59.920
+to gather information from the end user.
+
+291
+00:12:57.200 --> 00:13:02.959
+So, a tool can confirm that you want to
+
+292
+00:12:59.920 --> 00:13:04.959
+take an action. It can present like,
+
+293
+00:13:02.959 --> 00:13:06.560
+hey, if you want to do this, I'm missing
+
+294
+00:13:04.959 --> 00:13:08.480
+this bit of information. instead of
+
+295
+00:13:06.560 --> 00:13:10.079
+failing and going back out to the LLM,
+
+296
+00:13:08.480 --> 00:13:12.160
+it can just prompt the user and say,
+
+297
+00:13:10.079 --> 00:13:14.079
+"Hey, you know, fill out this missing
+
+298
+00:13:12.160 --> 00:13:17.040
+bit of information and if you're ready,
+
+299
+00:13:14.079 --> 00:13:18.880
+then we can confirm uh that that's, you
+
+300
+00:13:17.040 --> 00:13:23.320
+know, what you want to have done and
+
+301
+00:13:18.880 --> 00:13:23.320
+actually go ahead and do it."
+
+302
+00:13:23.360 --> 00:13:29.600
+And so again, the the practical side of
+
+303
+00:13:26.320 --> 00:13:34.399
+it becomes sort of the
+
+304
+00:13:29.600 --> 00:13:36.639
+uh I say delete a database. It says
+
+305
+00:13:34.399 --> 00:13:38.720
+without an elicitation it says okay and
+
+306
+00:13:36.639 --> 00:13:41.200
+it just deletes whatever database it
+
+307
+00:13:38.720 --> 00:13:42.720
+happens to think you meant with an
+
+308
+00:13:41.200 --> 00:13:45.120
+elicitation you can say delete a
+
+309
+00:13:42.720 --> 00:13:47.200
+database it could say okay I'm going to
+
+310
+00:13:45.120 --> 00:13:50.079
+delete the production database are you
+
+311
+00:13:47.200 --> 00:13:53.040
+sure and then you can confirm or deny so
+
+312
+00:13:50.079 --> 00:13:56.160
+it builds this safety mechanism into the
+
+313
+00:13:53.040 --> 00:13:59.519
+um into the experience uh that becomes
+
+314
+00:13:56.160 --> 00:14:02.800
+really u pretty pretty critical I think
+
+315
+00:13:59.519 --> 00:14:05.279
+to good design of your MCP servers and
+
+316
+00:14:02.800 --> 00:14:06.639
+tools. So, as you're looking at
+
+317
+00:14:05.279 --> 00:14:09.680
+different servers, you're going to
+
+318
+00:14:06.639 --> 00:14:12.560
+definitely want to consider that
+
+319
+00:14:09.680 --> 00:14:15.279
+roots. Um
+
+320
+00:14:12.560 --> 00:14:17.519
+this one is basically the client when it
+
+321
+00:14:15.279 --> 00:14:19.839
+comes up it can say you know here's the
+
+322
+00:14:17.519 --> 00:14:22.480
+directories to this that you have access
+
+323
+00:14:19.839 --> 00:14:25.120
+to the service server side and the
+
+324
+00:14:22.480 --> 00:14:26.720
+server can then when it's referencing
+
+325
+00:14:25.120 --> 00:14:28.720
+things can say you know I need to list
+
+326
+00:14:26.720 --> 00:14:30.720
+directories or list files in this
+
+327
+00:14:28.720 --> 00:14:34.160
+directory and make sure it's within that
+
+328
+00:14:30.720 --> 00:14:36.880
+route and so uh these are not a security
+
+329
+00:14:34.160 --> 00:14:40.560
+enforcement boundary uh these are just
+
+330
+00:14:36.880 --> 00:14:42.639
+simply suggestions to the MCP server
+
+331
+00:14:40.560 --> 00:14:44.800
+uh you know to help scope and give the
+
+332
+00:14:42.639 --> 00:14:50.160
+agent some context on where it's working
+
+333
+00:14:44.800 --> 00:14:53.519
+and how that could look. Um you
+
+334
+00:14:50.160 --> 00:14:56.320
+uh yeah so again in a nice client it
+
+335
+00:14:53.519 --> 00:14:58.720
+would autodiscocover uh it might ask you
+
+336
+00:14:56.320 --> 00:15:00.720
+to provide this information and so you
+
+337
+00:14:58.720 --> 00:15:04.000
+can list different file paths the
+
+338
+00:15:00.720 --> 00:15:06.000
+different directories um and then you
+
+339
+00:15:04.000 --> 00:15:09.360
+can also confirm like do you want it to
+
+340
+00:15:06.000 --> 00:15:11.279
+have access to slash no I don't um but
+
+341
+00:15:09.360 --> 00:15:14.079
+basically
+
+342
+00:15:11.279 --> 00:15:17.519
+uh this gives you a way to uh specify
+
+343
+00:15:14.079 --> 00:15:20.639
+that and So now if we can walk through
+
+344
+00:15:17.519 --> 00:15:22.240
+sort of an example of how all of this
+
+345
+00:15:20.639 --> 00:15:24.160
+kind of comes together because there's a
+
+346
+00:15:22.240 --> 00:15:25.920
+lot of different pieces. If you can
+
+347
+00:15:24.160 --> 00:15:28.639
+think like I want to create the GitHub
+
+348
+00:15:25.920 --> 00:15:30.560
+issue, right? You're going to hit the
+
+349
+00:15:28.639 --> 00:15:32.720
+slash command as the user and that's
+
+350
+00:15:30.560 --> 00:15:34.800
+going to pull up a list of prompts. And
+
+351
+00:15:32.720 --> 00:15:37.760
+so there's a prompt that says create
+
+352
+00:15:34.800 --> 00:15:39.519
+issue in repo with the following
+
+353
+00:15:37.760 --> 00:15:41.519
+description. And then you're going to
+
+354
+00:15:39.519 --> 00:15:44.959
+submit that to the chat. the model's
+
+355
+00:15:41.519 --> 00:15:46.639
+going to uh you know process that and
+
+356
+00:15:44.959 --> 00:15:50.160
+then it sees that it's got a tool that's
+
+357
+00:15:46.639 --> 00:15:53.120
+available to make a to create an issue.
+
+358
+00:15:50.160 --> 00:15:55.600
+So it does that the tool is well written
+
+359
+00:15:53.120 --> 00:15:58.320
+and you know you also notice that it
+
+360
+00:15:55.600 --> 00:16:00.959
+didn't have a title field and so based
+
+361
+00:15:58.320 --> 00:16:02.720
+on the uh description that the user is
+
+362
+00:16:00.959 --> 00:16:06.079
+given it's going to send a sampling
+
+363
+00:16:02.720 --> 00:16:08.480
+request to the LLM to the client and say
+
+364
+00:16:06.079 --> 00:16:11.680
+hey generate a title for this issue
+
+365
+00:16:08.480 --> 00:16:13.600
+right and so the user can either uh see
+
+366
+00:16:11.680 --> 00:16:16.160
+that as a prompt or confirm but
+
+367
+00:16:13.600 --> 00:16:19.360
+basically now a title has been generated
+
+368
+00:16:16.160 --> 00:16:21.279
+by the model and is now
+
+369
+00:16:19.360 --> 00:16:24.000
+um goes back to the tool and then the
+
+370
+00:16:21.279 --> 00:16:25.440
+tool says okay let's confirm with the
+
+371
+00:16:24.000 --> 00:16:27.920
+user that this is what they meant and
+
+372
+00:16:25.440 --> 00:16:31.680
+it's okay to actually create this and so
+
+373
+00:16:27.920 --> 00:16:34.320
+here they say do you want to create uh
+
+374
+00:16:31.680 --> 00:16:37.360
+you know this bug based on the title
+
+375
+00:16:34.320 --> 00:16:39.040
+that was generated and here's the repo
+
+376
+00:16:37.360 --> 00:16:41.680
+we'll just assume that the description
+
+377
+00:16:39.040 --> 00:16:44.959
+is going to go in exactly as it was and
+
+378
+00:16:41.680 --> 00:16:46.880
+then the user confirms and says yeah and
+
+379
+00:16:44.959 --> 00:16:49.839
+the tool creates the issue and the model
+
+380
+00:16:46.880 --> 00:16:52.560
+simply responds great issue 2 1 2 3 4
+
+381
+00:16:49.839 --> 00:16:54.639
+has been created in /reo.
+
+382
+00:16:52.560 --> 00:16:57.120
+So that's how you like this is a good
+
+383
+00:16:54.639 --> 00:16:59.519
+use case of like how all the pieces can
+
+384
+00:16:57.120 --> 00:17:01.759
+come together more than just a simple
+
+385
+00:16:59.519 --> 00:17:05.600
+tool call and a hope that it did the
+
+386
+00:17:01.759 --> 00:17:07.839
+right thing. Um, yeah.
+
+387
+00:17:05.600 --> 00:17:09.919
+So, just coming back to it now, looking
+
+388
+00:17:07.839 --> 00:17:11.919
+and picking a good MCP server or if
+
+389
+00:17:09.919 --> 00:17:14.000
+you're a developer of MCP servers and
+
+390
+00:17:11.919 --> 00:17:17.039
+you're trying to figure out how do I
+
+391
+00:17:14.000 --> 00:17:18.959
+make this MCP safe and build trust with
+
+392
+00:17:17.039 --> 00:17:20.720
+my end users, then you're going to want
+
+393
+00:17:18.959 --> 00:17:23.199
+to make sure that you go through and you
+
+394
+00:17:20.720 --> 00:17:25.199
+have clearly defined tools. The name of
+
+395
+00:17:23.199 --> 00:17:27.280
+the tool is probably one of the most
+
+396
+00:17:25.199 --> 00:17:29.440
+important things in order to get the
+
+397
+00:17:27.280 --> 00:17:31.520
+agent to successfully call it. If you
+
+398
+00:17:29.440 --> 00:17:33.600
+ever get bored, give it random tool
+
+399
+00:17:31.520 --> 00:17:36.240
+names with really great descriptions and
+
+400
+00:17:33.600 --> 00:17:37.760
+it'll still get super confused.
+
+401
+00:17:36.240 --> 00:17:39.600
+Um,
+
+402
+00:17:37.760 --> 00:17:41.039
+again, you don't want your user staring
+
+403
+00:17:39.600 --> 00:17:43.039
+at a blank screen. So, you're going to
+
+404
+00:17:41.039 --> 00:17:45.039
+want to have prompts. Uh, you're going
+
+405
+00:17:43.039 --> 00:17:46.880
+to want to use elicitations for any
+
+406
+00:17:45.039 --> 00:17:48.480
+action that's going to have a side
+
+407
+00:17:46.880 --> 00:17:52.080
+effect. You're going to want to make
+
+408
+00:17:48.480 --> 00:17:55.120
+sure that they are able to basically
+
+409
+00:17:52.080 --> 00:17:57.120
+confirm or deny that is uh what you
+
+410
+00:17:55.120 --> 00:17:59.039
+want. You don't also necessarily if it's
+
+411
+00:17:57.120 --> 00:18:00.559
+been kind of a long conversation, you
+
+412
+00:17:59.039 --> 00:18:02.160
+don't want to just have it fail out and
+
+413
+00:18:00.559 --> 00:18:03.679
+have the user have to go back and enter
+
+414
+00:18:02.160 --> 00:18:05.840
+all that information. So, if you can
+
+415
+00:18:03.679 --> 00:18:07.840
+elicit and say, "Hey, you know, I need
+
+416
+00:18:05.840 --> 00:18:10.240
+this last bit of data. Can you please
+
+417
+00:18:07.840 --> 00:18:11.600
+provide that to me?" Um, again, that's
+
+418
+00:18:10.240 --> 00:18:14.400
+that's what you're going to want to see
+
+419
+00:18:11.600 --> 00:18:16.640
+or have available to you. If you are
+
+420
+00:18:14.400 --> 00:18:18.640
+making use of roots, say you're working
+
+421
+00:18:16.640 --> 00:18:20.720
+with source code, you don't want it to
+
+422
+00:18:18.640 --> 00:18:22.640
+move beyond sort of the repository
+
+423
+00:18:20.720 --> 00:18:24.080
+direct the git repository directory
+
+424
+00:18:22.640 --> 00:18:27.039
+you're already in, then you're going to
+
+425
+00:18:24.080 --> 00:18:29.120
+want to make sure that's there. Um,
+
+426
+00:18:27.039 --> 00:18:31.600
+and again, when you're picking an MCP
+
+427
+00:18:29.120 --> 00:18:33.919
+server, you're developing an MCP server,
+
+428
+00:18:31.600 --> 00:18:35.840
+the we didn't touch too much on this,
+
+429
+00:18:33.919 --> 00:18:38.799
+but there's two types of protocols that
+
+430
+00:18:35.840 --> 00:18:41.280
+an MCP server can uh typically interacts
+
+431
+00:18:38.799 --> 00:18:43.840
+with. There's standard IO, and these are
+
+432
+00:18:41.280 --> 00:18:46.720
+typically run on your laptop. And so
+
+433
+00:18:43.840 --> 00:18:48.240
+those are going to be given uh probably
+
+434
+00:18:46.720 --> 00:18:49.919
+an API key if they're going to be
+
+435
+00:18:48.240 --> 00:18:52.720
+running and communicating with remote
+
+436
+00:18:49.919 --> 00:18:54.480
+systems. Um if you're going to do a
+
+437
+00:18:52.720 --> 00:18:56.640
+streamable HTTP that gives you the
+
+438
+00:18:54.480 --> 00:18:58.960
+ability to host it centrally, set up
+
+439
+00:18:56.640 --> 00:19:01.039
+OOTH so that people are logging in and
+
+440
+00:18:58.960 --> 00:19:04.160
+you have uh centralized control over
+
+441
+00:19:01.039 --> 00:19:06.400
+that. Um you know, it's just a
+
+442
+00:19:04.160 --> 00:19:10.720
+consideration on on what you're using
+
+443
+00:19:06.400 --> 00:19:13.039
+and and how you're using them
+
+444
+00:19:10.720 --> 00:19:15.840
+on the client side. Uh when you're using
+
+445
+00:19:13.039 --> 00:19:17.280
+MCP servers, there's tons and tons of
+
+446
+00:19:15.840 --> 00:19:19.039
+clients. There's different agents.
+
+447
+00:19:17.280 --> 00:19:20.640
+There's different frameworks, but the
+
+448
+00:19:19.039 --> 00:19:22.720
+things that you're going to want to make
+
+449
+00:19:20.640 --> 00:19:24.640
+sure is that it does support the
+
+450
+00:19:22.720 --> 00:19:26.799
+elicitations bits. You're going to want
+
+451
+00:19:24.640 --> 00:19:28.559
+to make sure um when you're using a
+
+452
+00:19:26.799 --> 00:19:30.480
+client, if the server is asking you for
+
+453
+00:19:28.559 --> 00:19:32.480
+a confirmation, that you're actually
+
+454
+00:19:30.480 --> 00:19:36.880
+getting it and putting you in the loop.
+
+455
+00:19:32.480 --> 00:19:38.559
+Um the sampling bits, if your tool MCP
+
+456
+00:19:36.880 --> 00:19:40.400
+server is going to use it, it is a nice
+
+457
+00:19:38.559 --> 00:19:42.799
+thing to have. Not all clients support
+
+458
+00:19:40.400 --> 00:19:46.559
+this. Uh, but definitely you're going to
+
+459
+00:19:42.799 --> 00:19:47.760
+want the ability to uh rate limit those
+
+460
+00:19:46.559 --> 00:19:52.720
+requests. You're going to want to make
+
+461
+00:19:47.760 --> 00:19:54.799
+sure that these things are um Whoa,
+
+462
+00:19:52.720 --> 00:19:58.360
+sorry.
+
+463
+00:19:54.799 --> 00:19:58.360
+That surprised me.
+
+464
+00:19:59.919 --> 00:20:06.960
+Right. Um, yeah. So,
+
+465
+00:20:05.280 --> 00:20:09.440
+yep.
+
+466
+00:20:06.960 --> 00:20:11.840
+So then just we didn't talk too much
+
+467
+00:20:09.440 --> 00:20:13.760
+about uh the security side of thing. I
+
+468
+00:20:11.840 --> 00:20:18.559
+kind of just assumed that we wanted the
+
+469
+00:20:13.760 --> 00:20:20.320
+MCP servers. But with this your MCP
+
+470
+00:20:18.559 --> 00:20:22.880
+server potentially introduces new
+
+471
+00:20:20.320 --> 00:20:26.559
+vectors, but you shouldn't forget uh
+
+472
+00:20:22.880 --> 00:20:28.240
+your, you know, old school security and
+
+473
+00:20:26.559 --> 00:20:30.080
+do the due diligence that you would for
+
+474
+00:20:28.240 --> 00:20:33.520
+any other open- source piece of software
+
+475
+00:20:30.080 --> 00:20:36.159
+that you're going to run or consume. Um,
+
+476
+00:20:33.520 --> 00:20:39.039
+when you're selecting these MCP servers,
+
+477
+00:20:36.159 --> 00:20:40.880
+you are going to want to typically use
+
+478
+00:20:39.039 --> 00:20:43.760
+trusted third parties that have built
+
+479
+00:20:40.880 --> 00:20:45.440
+this. Uh, if you can use the remote, um,
+
+480
+00:20:43.760 --> 00:20:47.600
+and it makes sense for you, then that
+
+481
+00:20:45.440 --> 00:20:51.200
+makes sense. So, you know, the GitHub
+
+482
+00:20:47.600 --> 00:20:52.400
+host one remotely, Lassie host one. Um,
+
+483
+00:20:51.200 --> 00:20:54.720
+you know, just depending on the tool
+
+484
+00:20:52.400 --> 00:20:57.280
+sets and if it's available, you're going
+
+485
+00:20:54.720 --> 00:20:59.760
+to want to inspect all the tool names,
+
+486
+00:20:57.280 --> 00:21:01.360
+uh, parameters and descriptions. just
+
+487
+00:20:59.760 --> 00:21:03.120
+you're basically looking to make sure
+
+488
+00:21:01.360 --> 00:21:05.840
+it's not trying to inject something
+
+489
+00:21:03.120 --> 00:21:08.159
+malicious into your code. Uh it's a
+
+490
+00:21:05.840 --> 00:21:11.760
+little bit time consuming in the
+
+491
+00:21:08.159 --> 00:21:13.360
+enterprise. If you are running MCP
+
+492
+00:21:11.760 --> 00:21:15.360
+servers and you need to scale that out
+
+493
+00:21:13.360 --> 00:21:18.000
+for your whole organization, you might
+
+494
+00:21:15.360 --> 00:21:20.000
+consider using an MCP gateway like OOTTO
+
+495
+00:21:18.000 --> 00:21:22.080
+for audit logging and other things.
+
+496
+00:21:20.000 --> 00:21:25.120
+There's other open source alternatives
+
+497
+00:21:22.080 --> 00:21:26.559
+like uh MCP jungle for instance. Um,
+
+498
+00:21:25.120 --> 00:21:29.760
+you're going to want to scan your tool
+
+499
+00:21:26.559 --> 00:21:32.880
+names and parameters continuously um, in
+
+500
+00:21:29.760 --> 00:21:35.840
+case over time there's code that changes
+
+501
+00:21:32.880 --> 00:21:37.600
+uh, as things evolve. Um, and you're
+
+502
+00:21:35.840 --> 00:21:40.000
+going to want to centralize uh,
+
+503
+00:21:37.600 --> 00:21:41.360
+authentication. Uh, that's definitely
+
+504
+00:21:40.000 --> 00:21:43.520
+something that becomes pretty important
+
+505
+00:21:41.360 --> 00:21:46.880
+when you're scaling up consuming your
+
+506
+00:21:43.520 --> 00:21:49.200
+MCP servers. and then filtering um the
+
+507
+00:21:46.880 --> 00:21:51.200
+ability to inspect and make sure that
+
+508
+00:21:49.200 --> 00:21:53.679
+tool calls aren't taking data and
+
+509
+00:21:51.200 --> 00:21:55.039
+sticking that uh sending that to
+
+510
+00:21:53.679 --> 00:21:57.919
+different places that you don't want it
+
+511
+00:21:55.039 --> 00:22:00.320
+to go.
+
+512
+00:21:57.919 --> 00:22:03.440
+So, thank you. Uh if you've got
+
+513
+00:22:00.320 --> 00:22:05.679
+questions, I'll be here for a bit and
+
+514
+00:22:03.440 --> 00:22:07.760
+also at the Obot booth.
+
+515
+00:22:05.679 --> 00:22:09.600
+&gt;&gt; Thank you so much. I I feel a deep sense
+
+516
+00:22:07.760 --> 00:22:12.159
+of shame. I've I've personally developed
+
+517
+00:22:09.600 --> 00:22:13.679
+an MCP server and now I feel absolutely
+
+518
+00:22:12.159 --> 00:22:15.840
+terrible I didn't see this talk
+
+519
+00:22:13.679 --> 00:22:17.360
+beforehand. So, uh this is wonderful.
+
+520
+00:22:15.840 --> 00:22:20.840
+Thank you so much. I really appreciate
+
+521
+00:22:17.360 --> 00:22:20.840
+it. Thank you.
+
+522
+00:22:21.455 --> 00:22:23.475
+[music]
+
+523
+00:22:26.040 --> 00:22:28.060
+[music]
+
+524
+00:22:34.555 --> 00:22:36.575
+&gt;&gt; [music]

@@ -1,0 +1,502 @@
+[00:00:00.000] Thank you kindly.
+[00:00:01.640] We've only got a few sessions left this afternoon, and then it's
+[00:00:07.600] party time, I've been told.
+[00:00:09.360] And for you at home, watching on the live stream, you can have your own party.
+[00:00:14.520] Whatever kind of party you want to have.
+[00:00:16.160] I'm not going to judge.
+[00:00:17.360] So next up, we've got Ryan
+[00:00:23.920] close.
+[00:00:25.080] Sorry. Look, I'm so sorry.
+[00:00:27.840] Ryan from OpenAI.
+[00:00:29.760] I'll just get off stage because this guy.
+[00:00:31.400] Give him a big round of applause.
+[00:00:32.880] Thank you very much.
+[00:00:40.280] Hello.
+[00:00:40.920] AI Native DevCon!
+[00:00:42.440] Woo!
+[00:00:44.760] I'm excited to kind of be in the home stretch here on this first day,
+[00:00:49.000] which has been jam packed and super fun.
+[00:00:50.880] It has been super fun to be here, and I'm kind of excited
+[00:00:54.080] today to talk to you about harness engineering, which is a thing
+[00:00:57.200] that is kind of near and dear to my heart, kind of having invented the term here.
+[00:01:01.560] And to me,
+[00:01:05.360] the way that we go about working with these agents
+[00:01:08.200] is something that fundamentally is brand new
+[00:01:10.440] and we don't really know all the good parts yet.
+[00:01:13.080] But hopefully today I can walk you through some of what I believe
+[00:01:17.000] the good parts
+[00:01:17.720] of working with these agents are, and how to be effective in your own code bases.
+[00:01:21.640] To give a little bit of context on why you should listen to me about this.
+[00:01:26.280] Back in June of last year, when we had just had the earliest
+[00:01:31.480] reasoning models around o3
+[00:01:33.160] and the very earliest versions of Codex CLI, which is OpenAI's
+[00:01:37.240] coding agent, I had an insane idea that I would try and get this tool
+[00:01:43.320] to do my job, and at the time, with less capable models.
+[00:01:47.520] That wasn't true.
+[00:01:48.360] I asked the agent to read my alerts channel in slack and triage a page.
+[00:01:53.160] It would not do that, and kind of got myself into this
+[00:01:56.160] operating mode of presenting myself as a tool to the model
+[00:01:59.720] in order to empower it to solve problems issues and write code on my behalf,
+[00:02:05.160] and ended up in this very quickly accumulating snowball of effective
+[00:02:10.320] use of this tool by giving it more and more powerful tools
+[00:02:14.200] and more and more context around what it means to do the job.
+[00:02:17.960] There's a bunch of patterns here that make that effective and stack
+[00:02:22.040] really, really well for your teams that I'm going to go through today.
+[00:02:26.560] I know I'm preaching to the choir here.
+[00:02:28.440] Everybody's AI native.
+[00:02:29.600] That's why we're at the con here.
+[00:02:31.520] But the way we build software
+[00:02:34.840] has changed pretty significantly in the last six months.
+[00:02:38.000] I would say in December, with the introduction of GPT 5.2,
+[00:02:42.000] Opus 4.5, we really reach singularity levels of software engineering
+[00:02:46.560] and code production being something that these tools do insanely well.
+[00:02:51.200] And this is a level of disruption that I think we have typically only seen
+[00:02:55.960] once every decade here.
+[00:02:57.040] The last one that I can think of is probably like
+[00:02:59.080] the existence of the cloud as a tool to accelerate ourselves.
+[00:03:02.160] And with that sort of like cadence of disruptive innovation,
+[00:03:07.120] we have had a lot of time to internalize changes
+[00:03:10.520] to our workflows and the way we go about building.
+[00:03:13.640] But here
+[00:03:16.040] the technology keeps
+[00:03:17.720] changing so rapidly with every point release of these models
+[00:03:21.680] where I find myself very often having to reevaluate
+[00:03:25.120] my priors of what even is possible to achieve with these tools.
+[00:03:29.040] And I think if you're not in the habit
+[00:03:32.360] of kind of completely retooling your stack and the way you work with every point
+[00:03:37.040] release of the model, you are in a way missing out on
+[00:03:40.840] what it is that you can achieve with these tools.
+[00:03:45.760] The reasons that
+[00:03:47.320] the way we have built software has changed and continues
+[00:03:51.560] changing at an increasingly rapid pace is because we have kind of upended
+[00:03:55.760] some of the core axioms of what it means to build software.
+[00:04:00.720] Right now, I'm telling you, the models are good enough in order to do
+[00:04:04.040] significant parts of the software engineering lifecycle not just writing
+[00:04:07.840] code, but debugging, triaging, responding to customers, planning,
+[00:04:12.760] scheduling work, all these other bits that are outside of the core.
+[00:04:17.080] Would you say production function of a software engineer?
+[00:04:21.640] A lot of the way we have tooled
+[00:04:24.120] teams and organizations and roadmaps have been built around
+[00:04:27.120] this idea that the production of code is this very, very expensive thing
+[00:04:30.880] that is going to dominate most of our headcount resources and is slow.
+[00:04:34.760] And in this world where we can give a prompt to a coding agent
+[00:04:39.120] and get a PR or six out of it, that constraint is no longer true.
+[00:04:43.640] And we kind of have
+[00:04:46.640] these teams who were doing the bulk of the production
+[00:04:49.760] for software that need to figure out ways to increase their leverage
+[00:04:53.760] by delegating increasing parts of that responsibility to these machines.
+[00:04:58.480] So for all the software engineers and engineering managers and product
+[00:05:03.000] managers and designers
+[00:05:04.560] who are trying to incorporate this technology into your work,
+[00:05:08.240] all of your goals are to be how to unblock your execution team, these coding agents
+[00:05:13.960] from being able to make your ideas, your vision, and your products a reality.
+[00:05:21.520] So having just told
+[00:05:24.520] everybody here that the core constraints on software
+[00:05:28.080] engineering no longer apply, what are those core constraints, right.
+[00:05:31.320] We have kind of a new set of problems to contend with, using agents
+[00:05:35.080] in order to produce our software.
+[00:05:36.640] And to me, these three things are the foundational limits that remain
+[00:05:41.800] in a world where we are as a team of humans and agents producing software.
+[00:05:46.720] Human time is the fundamentally scarce resource that we have.
+[00:05:51.400] You know, I know I max out probably at three concurrent sessions on my laptop.
+[00:05:56.720] If I want to be more parallel and have higher throughput,
+[00:06:00.000] I must find ways to remove my own synchronous attention from the process.
+[00:06:06.280] Human and model attention.
+[00:06:07.560] Are these foundational limits right?
+[00:06:09.280] In the architecture of these llms, attention must sum to one
+[00:06:14.280] thrashing the agents by having them do more and more work
+[00:06:17.240] with conflicting and overbearing requirements in the course of a task
+[00:06:20.560] is something that is always going to degrade performance less
+[00:06:23.840] and less over time, but it is one of those core limits of the models.
+[00:06:27.680] So we need to retool the way we work in order to be more parallel.
+[00:06:32.000] Fork off a bunch more tasks, be willing to accept smaller or larger
+[00:06:36.560] or many more press in order to let the agents explore what it means to
+[00:06:41.120] do the job that we need them to do.
+[00:06:42.920] And finally, you all probably deeply live this model context window.
+[00:06:48.840] Things that get bigger over time.
+[00:06:50.200] Still a scarce resource, something we need to protect.
+[00:06:53.280] I will say, in my own experience with the GPT series of models,
+[00:06:56.960] auto compaction is fantastic.
+[00:06:58.480] I never think about a context window anymore.
+[00:07:00.760] I can let a task go for six, 12, 36 hours and still get good results,
+[00:07:05.960] but the context window being obliterated and rebuilt
+[00:07:09.560] over the course of these auto completions is something you must contend with.
+[00:07:13.080] And there are ways that we structure the context.
+[00:07:16.720] We give the model, or
+[00:07:17.600] continually resurface context to the model to deal with this
+[00:07:20.960] constraint, that context windows are continually being emptied and filled.
+[00:07:26.760] Okay, so
+[00:07:27.440] we've got these agents that we hope can produce more and more of our software,
+[00:07:31.720] that we can remove
+[00:07:32.640] humans more and more from the loop in order to produce more code,
+[00:07:35.720] more features, solve more user needs, address
+[00:07:38.840] more critical user journeys with higher quality and fidelity.
+[00:07:42.960] How do we make sure that we as a team with our agents, do a good job?
+[00:07:47.600] And I think
+[00:07:51.640] a new ish thing here is we have to actually articulate that.
+[00:07:54.480] We have to write it down.
+[00:07:56.080] I know, like it used to be the case.
+[00:07:59.440] Oh, we'll have people into the office.
+[00:08:01.160] We'll have meetings through osmosis.
+[00:08:03.120] People will understand what it means
+[00:08:04.640] for us as a team to write high quality software to work effectively together.
+[00:08:08.560] And agents just do not have that capability.
+[00:08:12.080] They don't have presence in our stand up.
+[00:08:14.560] They don't have this durable memory that accumulates context and battle
+[00:08:18.520] scars over time.
+[00:08:19.800] So we have to find ways to make all these nonfunctional
+[00:08:23.600] requirements of writing good software legible to the agent.
+[00:08:27.080] And as an LM, the thing that it craves, the thing that drives it is text.
+[00:08:32.760] So figuring out ways to take the definition of what it means
+[00:08:36.800] to do a good job and write it down is a.
+[00:08:40.760] Net new function for a software engineering team in 2026,
+[00:08:45.640] but it's not enough to just write things down.
+[00:08:47.920] We need to make sure that this text is a thing
+[00:08:51.560] that the agent will look at, because it doesn't do much to say.
+[00:08:55.480] You will write reliable network code by making sure that retries and timeouts
+[00:08:59.080] are consistently applied if that text never makes it to the agent.
+[00:09:03.280] So figuring out ways that not only we can write things down,
+[00:09:07.120] but also have them pulled into context at the right time
+[00:09:10.800] in ways that don't thrash the agent and still lead it to be creative.
+[00:09:15.200] And reason, which are the power of these models, is
+[00:09:18.520] the important thing.
+[00:09:21.960] So to kind of take a step back and look at some
+[00:09:26.480] in the small instances of context and what it means to kind of like
+[00:09:30.640] think systematically and close loops for the models and for your team.
+[00:09:36.240] If I were
+[00:09:36.840] onboarding a new engineer to my team and we were,
+[00:09:40.280] I was reviewing some react code that they had written.
+[00:09:43.600] And I knew for this particular set of components
+[00:09:47.360] we use suspense because that leads to better performance in the front end.
+[00:09:52.400] I would be able to give that feedback once to the human,
+[00:09:56.720] and they would incorporate it into their mental model of the code
+[00:09:59.800] base, what it means for these different screens to relate to each other.
+[00:10:03.240] Well, and I would largely solve that problem going forward by empowering
+[00:10:07.720] my teammate to know more about what it means to do a good job.
+[00:10:12.120] But I can't really do that with an agent in the same way.
+[00:10:15.480] So I kind of have to step back, give that review
+[00:10:18.440] feedback on an agent produced PR, and then myself
+[00:10:22.440] figure out a way to make these mistakes statically impossible going forward.
+[00:10:26.640] And it might be the case that I'm looking at all those review comments.
+[00:10:31.240] Seeing this is missing context, that the agent was not able
+[00:10:34.840] to pull in at the right time to know that the code that it wrote was misaligned.
+[00:10:38.800] How do I figure out where I can write it down, what links I can have fail?
+[00:10:44.160] What tests need to exist, whether or not I can empower a reviewer
+[00:10:48.000] agent to look at all the proposed diffs through the lens of these guardrails
+[00:10:51.640] to make it so that this feedback is actually durably encoded
+[00:10:55.560] as a static guardrail that we apply to every PR going forward.
+[00:11:00.160] It's not enough to do point in time fixes with these models.
+[00:11:03.600] We want to make every mistake something that is just not possible.
+[00:11:07.600] I never want to give the same review feedback twice,
+[00:11:11.600] and this
+[00:11:12.320] is really the core of what harness engineering is.
+[00:11:15.440] Harness engineering is making context around what it means to do
+[00:11:19.680] a good job, legible and then just in time, surface to the agent
+[00:11:23.760] over the course of its trajectories in order to steer and refine its output,
+[00:11:28.400] to make sure that every PR we get adheres to the golden thread
+[00:11:32.640] of what we consider to be acceptable, high quality aligned
+[00:11:36.640] software.
+[00:11:41.040] It's kind of funny when you work with these agents
+[00:11:44.840] that what I would normally consider to be like good practice
+[00:11:50.120] around DevOps and shifting left
+[00:11:51.760] as far as possible in order to make things cheaper earlier in the process.
+[00:11:55.640] I don't do that at all when working with agents.
+[00:11:58.840] In fact, I try and put my interventions as far right in the process as I can
+[00:12:03.880] in order to minimize my own synchronous time having to engage with these issues.
+[00:12:08.720] For example, if I'm working on a PR and I realize I get a bad result,
+[00:12:14.200] it might just be the case that I'll trash it, change my prompt,
+[00:12:16.760] and probably get something good out of it.
+[00:12:18.320] But that's not really a durable thing.
+[00:12:21.120] It's not reliable.
+[00:12:22.080] I don't socialize those improvements to my team,
+[00:12:24.520] so it's sort of the next level of shifting that left is to write it down.
+[00:12:28.920] And if writing it down is not enough,
+[00:12:32.040] writing down and then empowering or a view agent to
+[00:12:36.000] judge every diff is another way I can shift that left,
+[00:12:38.920] and then I can shift it left further into statically verifiable links
+[00:12:42.280] and guardrails and tests and on and on and on earlier in the process.
+[00:12:46.520] And we think about this as needing to surface to the agent,
+[00:12:52.760] all those sets of nonfunctional requirements.
+[00:12:57.280] It is not the case that these agents don't know how to write high quality software.
+[00:13:00.800] They absolutely do.
+[00:13:01.960] But as artifacts of their training, they have seen every possible
+[00:13:07.240] permutation of every possible choice that goes into producing software.
+[00:13:11.400] And it's up to us to prune latent space
+[00:13:14.640] to tell it which choices we want to make.
+[00:13:19.800] If I am using these things
+[00:13:21.560] to prototype a new data science model in a Jupyter notebook,
+[00:13:25.440] I have a very different set of choices I make in the production of those diffs
+[00:13:29.200] than I do if I am working on adding a new index type
+[00:13:33.400] to a database, you're just fundamentally different tasks.
+[00:13:36.400] So it's up to us, as owners of our code bases, to make legible
+[00:13:41.160] the sets of decisions that we make in order to produce our code,
+[00:13:44.280] what it means for something to be a prototype versus production
+[00:13:48.400] feature that requires a stage rollout with a B test and feature flags.
+[00:13:52.160] And if we write this down and give the agent some tools to reason
+[00:13:57.800] about what type of changes being made to find, run books that are appropriate
+[00:14:02.040] to refining its output over the course of its PR and epics.
+[00:14:07.120] We can give it bounds and context, but still give it the space to reason.
+[00:14:12.360] Be creative and cook.
+[00:14:16.480] One maybe
+[00:14:18.080] non-obvious thing is that because the agents crave text,
+[00:14:22.200] every bit of text that we feed them is in some sense prompting.
+[00:14:27.400] It's going to inform what tokens get predicted,
+[00:14:29.960] which means it's going to inform the code and the diffs that we produce.
+[00:14:33.440] This means all the code in the repository of itself,
+[00:14:36.280] outside of the documentation knowledge base is also prompts.
+[00:14:39.800] So if we think about aligning
+[00:14:43.640] the code base or unifying it all on the same patterns, we kind of limit
+[00:14:48.200] the amount of attention the model needs in order to do a good job.
+[00:14:52.160] If I am able to standardize on across my entire stack.
+[00:14:56.120] For example, when the model thinks observable,
+[00:14:59.360] it's able to translate context that it sees in one part of the repository
+[00:15:03.200] over to something halfway across the code base
+[00:15:05.240] without any loss of quality or intelligence.
+[00:15:08.160] But if I have six observable stacks in the code base,
+[00:15:12.000] the model is going to have
+[00:15:12.760] to spend a lot more time figuring out which one do I use here?
+[00:15:16.680] Is this migrated or not?
+[00:15:18.520] What is canonically good?
+[00:15:22.520] So over the course of the PR, there's
+[00:15:24.400] sort of three phases I think about when we're talking about context delivery.
+[00:15:28.960] And because we are curating the code base in order to make it efficient
+[00:15:34.160] to deliver context to these agents, we also want to encode that
+[00:15:37.160] in the operating loop, we give the model.
+[00:15:39.200] To me, the most important thing that ends up in that agent
+[00:15:42.560] file is a numbered set of steps that we expect the model
+[00:15:46.640] to go through over every rollout that we do over every session,
+[00:15:51.040] we first want it to ground itself in the documentation
+[00:15:54.280] knowledge base in the ticket that is proposed.
+[00:15:57.520] We want it to spider through our history of address and design docs,
+[00:16:01.480] to figure out how this might impact other features of our code base.
+[00:16:05.320] We want it to look at the critical user journeys to inform itself around what
+[00:16:09.480] screens and user surfaces are impacted, so it can keep the QA plan in mind.
+[00:16:14.120] Over the course of its execution.
+[00:16:16.120] We expect some amount of slowness during this process,
+[00:16:19.120] because we want to page in all the context around
+[00:16:22.720] what it means for this feature to slot in globally.
+[00:16:26.320] Then there's sort of a messy middle part of the run where the agent is writing
+[00:16:31.520] code, running test, exploring the code base, and for that,
+[00:16:36.640] we exploit the fact that these agents are going to call a bunch of tools,
+[00:16:41.360] run a bunch of tests in order to use them to just in time, prompt
+[00:16:45.240] inject the agent to steer its output back to baseline.
+[00:16:49.440] The tests we write, the lists
+[00:16:51.560] we write for agents are very different than the ones that we write for humans.
+[00:16:55.320] They by default recognize that agents are going to truncate
+[00:17:00.640] tool call outputs, that they respond really well to descriptive error messages
+[00:17:04.240] that point them to run books for remediation steps.
+[00:17:07.240] And we are willing to have very many of these things
+[00:17:11.720] that are kind of fiddly to write.
+[00:17:12.920] And I wouldn't normally think
+[00:17:13.960] about to go back to this sort of network code example.
+[00:17:18.040] I am sure all of you have been paged at some point in your careers
+[00:17:21.920] around an outage that boiled down to a missing
+[00:17:25.080] timeout and a retry on a cross service network call, and
+[00:17:28.800] the collective amount of engineering time
+[00:17:30.760] that has been spent on this very common failure mode is astounding.
+[00:17:34.720] But still today,
+[00:17:36.200] like there's there's there's no code that asserts that we pass retries around.
+[00:17:40.920] There's no ES lint plugin that I can slot into my code
+[00:17:44.160] base that's going to do this for me.
+[00:17:45.680] But because the production of code is very, very cheap now,
+[00:17:48.920] we can absolutely vibe a set of guardrails into place with 100% code
+[00:17:53.840] coverage and exhaustive table driven tests, and migrate the code base
+[00:17:57.760] all in one go and just in time surface this failure to the model
+[00:18:01.920] every time it writes another fetch call and never have to worry about this again.
+[00:18:05.760] And because we don't have to pollute context window up front,
+[00:18:10.520] and we can exploit the fact that a tool called output is going to be
+[00:18:13.840] given less weight during an auto compaction.
+[00:18:16.160] We just in time, correct the model and still let it go off
+[00:18:20.840] and do the complex work that we wanted to in our original prompt.
+[00:18:24.640] And then sort of after the run, we have a much easier
+[00:18:27.880] task of determining whether or not the code, the diff,
+[00:18:30.480] the artifact is aligned because it's a static thing, and we have static
+[00:18:34.320] sets of guardrails and can use very, very many LM
+[00:18:38.160] as judge to look at the code,
+[00:18:41.240] operationalize it with a set or three of static guardrails.
+[00:18:45.600] This is what it means to write reliable code.
+[00:18:47.920] This is what it means to write performant react and make a determination.
+[00:18:52.840] Is this good or bad?
+[00:18:53.840] And if it's bad, why is it bad?
+[00:18:56.600] Because the LMS crave text.
+[00:18:58.960] These LMS judges can collaborate with the implementation agent over that
+[00:19:03.320] PR thread, give more text back to the implementation agent,
+[00:19:06.760] and further realign the proposed diff back to baseline.
+[00:19:12.280] So we've got agents
+[00:19:13.880] kind of as this map that shows where the context is during
+[00:19:17.680] what types of work the model might want to look at that text,
+[00:19:21.040] but otherwise not being prescriptive around any of the guardrails.
+[00:19:24.880] We don't want to jam a ton of rules in here,
+[00:19:28.320] because we're going to chop up latent space too much.
+[00:19:31.880] We're going to make it difficult for the model to spider through the code base.
+[00:19:36.400] With creativity.
+[00:19:39.160] I find it very, very useful from this
+[00:19:42.680] to point to a curated set of review
+[00:19:45.720] personas that are essentially bulleted list of guardrails.
+[00:19:49.240] And I find this really, really neat for an interfacing with the other humans
+[00:19:52.960] on the team perspective, because it is so cheap
+[00:19:57.560] as a team to have a slack conversation in a thread around
+[00:20:01.560] what it means to
+[00:20:02.680] fix that performance regression, and then mention the agent in it to say,
+[00:20:07.200] you want all of this and put up a PR that adds it to our static set of guardrails.
+[00:20:12.040] So cheap.
+[00:20:12.760] In order to continually refine and improve the output of our agents in that way.
+[00:20:17.480] I also think it's really neat
+[00:20:19.080] to take that same sort of pattern and apply it toward
+[00:20:23.800] documenting what your product features are, or what the critical user
+[00:20:26.960] journeys are, or why your apps even exist, what user problems they solve.
+[00:20:32.000] All this context that we can give the agent helps
+[00:20:35.760] ground it in what we are trying to do and why.
+[00:20:38.880] How our team thinks about working.
+[00:20:41.040] Because all of this is going to produce more and more aligned output.
+[00:20:47.040] In that messy middle.
+[00:20:48.320] We can kind of use tests on the AST,
+[00:20:52.160] tests on the structure of the files on disk, really blunt
+[00:20:57.040] hammers around file line counts, or whether or not snapshot tests exist.
+[00:21:01.360] These very, very coarse grained tools, in order
+[00:21:04.400] to make the model do what we know is good,
+[00:21:07.960] just requiring that every react
+[00:21:10.240] component in our codebase has a snapshot test
+[00:21:13.400] that gives 100% branch coverage,
+[00:21:15.960] means that the model
+[00:21:17.040] is naturally decomposing these things and making them pure where possible,
+[00:21:21.080] and not doing prop drilling and putting hooks close to where the data is used,
+[00:21:25.360] because that makes it easier for it to fill
+[00:21:27.040] the requirement that there must be snapshot tests.
+[00:21:29.640] And we can do this.
+[00:21:31.920] We can assert this because it's free to produce the code that spiders through
+[00:21:35.840] disk, and matches up the snapshot test to the underlying component.
+[00:21:42.400] Another failure mode that I hear folks talk about a bunch
+[00:21:46.120] is that these agents are doing type shaped probing all the time.
+[00:21:50.720] I end up with these anys or unknowns all over the code
+[00:21:53.080] base, and the way I've approached it is to just statically disallow
+[00:21:57.720] any function that has a type of any or unknown, unless it's
+[00:22:01.840] pausing input in a root handler or from the database.
+[00:22:05.640] Other than that, with ES lint, we just ban the existence of that type.
+[00:22:09.840] We require the code base to be 100% typed, which means all this bad
+[00:22:14.200] behavior and weird type probing just kind of falls out.
+[00:22:17.760] Because we require 100% code coverage.
+[00:22:20.200] These functions cannot possibly be exercised because the unknown types can
+[00:22:24.000] exist, and we get more aligned code, more aligned code that I would consider
+[00:22:28.960] acceptable, high quality, maintainable, and all these other sorts of properties.
+[00:22:34.000] And having these
+[00:22:35.080] failing checks tell the agent why they failed, and what to do instead
+[00:22:39.600] means that it's able to self heal.
+[00:22:43.320] Ultimately, as we move into
+[00:22:45.280] that third phase of review and merge, we want to treat the model
+[00:22:50.400] as if it's another member of the team and it needs to convince me to merge
+[00:22:54.160] its code.
+[00:22:55.280] I'm not shoulder surfing any of my teammates in VS code or vim
+[00:23:00.880] when they put up a PR, and they attest that they tested the code,
+[00:23:04.000] I take their word, you know?
+[00:23:05.720] And if I am unsure, I'll ask them to show me the logs from the staging deploy
+[00:23:09.840] or to post a screenshot of them exercising the feature in the app.
+[00:23:14.880] And we can require these agents to do the same thing.
+[00:23:19.040] It says a lot easier these days.
+[00:23:22.320] Now that we have things like computer use and browser use,
+[00:23:25.640] the Codex app is fantastic. Highly recommended.
+[00:23:28.400] But even without that, you know, vibing yourself up on X corks,
+[00:23:32.960] connected headless display in a Docker container and wiring up
+[00:23:37.440] FFM peg to that stream to record a reproduction video is within reach.
+[00:23:41.520] Because I don't care about how gross this code is, and Codex is able to sling
+[00:23:46.160] ffmpeg better than anybody in this room, probably.
+[00:23:52.080] On the back half of things
+[00:23:53.800] where we are looking for ways to accept the diff.
+[00:23:58.840] I'm treating it again like I would my human teammates benefit of the doubt
+[00:24:02.640] biased toward merge.
+[00:24:03.880] What are the P2 and above things that would be necessary for me
+[00:24:07.160] to accept this code?
+[00:24:08.720] Use the reviewer agents, which is really just a matrix CI job
+[00:24:12.200] that points out a bunch of markdown files to judge this thing, drive
+[00:24:16.880] these remediation to completion,
+[00:24:20.520] get the coding agent to pick them up,
+[00:24:23.280] implement it, get the reviewers to be happy, and off we go.
+[00:24:26.720] And this sort of process with me observing along the way
+[00:24:31.040] of which review feedback is regularly getting surfaced.
+[00:24:34.120] Why is it making it to this part of the pipeline?
+[00:24:36.600] Maybe I need to use
+[00:24:37.680] that as a signal that I need to shift some of these guardrails left,
+[00:24:40.680] and then I can spend my time and the reviewer agents can spend
+[00:24:44.120] their time on more bespoke or
+[00:24:47.200] more complex changes that we need them to look at.
+[00:24:52.480] Another thing
+[00:24:53.880] that you should be thinking about doing as a team is how to systematize capturing
+[00:24:58.320] all of this human feedback,
+[00:25:00.000] every review comment, every time you have had to interrupt the agent,
+[00:25:03.720] every agent intervention, every failed build, every exception in production.
+[00:25:10.240] All of these, in some sense, are signals that context was missing
+[00:25:14.520] to the implementation agent, that it did not consider the full end
+[00:25:18.240] to end consequences of the code that it wrote,
+[00:25:20.240] and whether or not it would be successfully deployed.
+[00:25:22.560] And what we are trying to do, which I expect you'll learn
+[00:25:26.560] about in the next talk, is slurp all this data up and dream over it
+[00:25:30.680] every night, pointing a bunch of sub agents at it, trying to distill
+[00:25:35.240] whether or not
+[00:25:36.320] there's anything that humans can do better
+[00:25:38.000] in their prompting, whether there's missing guardrails
+[00:25:40.320] that should exist in the code
+[00:25:41.320] base that disallow this behavior, and how we can get to a world where
+[00:25:45.000] we're more and more headless, less human, interrupt dependent, and able
+[00:25:50.040] to trust the agent to do more and more complex things helplessly.
+[00:25:57.080] I think
+[00:25:57.440] vibe coding is a big part of what it takes to be successful here,
+[00:26:00.440] because there's a ton of guardrails that only affect my local development process.
+[00:26:04.480] This code can be gross, but it brings into possibility
+[00:26:08.960] this idea that I don't need
+[00:26:11.440] to care about some parts of the software production function.
+[00:26:14.800] This lets me operate like a group tech lead or an org lead, where
+[00:26:18.560] I don't have visibility into every single engineers activity on the keyboard.
+[00:26:23.440] But the thing I care about are invariants, interfaces, whether or not
+[00:26:27.760] the components that they're producing
+[00:26:29.280] do what they say on the tin with high reliability.
+[00:26:32.360] And with that, I'll just leave it with y'all can go build things.
+[00:26:36.240] These tools are fantastic. Go get after it.
+[00:26:38.840] I'll take some questions now.
+[00:26:42.640] Thank you so much.
+[00:26:44.360] Thank you.
+[00:26:46.680] Pao, that hand went up really fast.
+[00:26:50.040] Hold on one second.
+[00:26:51.320] I want to grab that one.
+[00:26:54.680] Hello.
+[00:26:55.360] Great talk.
+[00:26:56.760] You mentioned earlier in your talk that you find
+[00:27:00.640] that you don't need to shift left as much as before.
+[00:27:04.880] You stay more. Right.
+[00:27:05.960] And I'm curious about that, because isn't it better for agents
+[00:27:11.440] to see something in a lint rule rather than as review feedback, for example?
+[00:27:17.440] Like what do you mean by staying more right and not shifting left?
+[00:27:23.320] So I think once you kind of put these structures in place to surface
+[00:27:27.400] these requirements to the models at the right time, it becomes pretty easy
+[00:27:32.560] to rely on them for the most part to auto discover this stuff.
+[00:27:36.160] It is very often the case that our agents
+[00:27:40.840] paints a picture of which guardrail files are relevant,
+[00:27:43.920] for which categories of changes backend working on the design system,
+[00:27:47.720] these sorts of things where the models will just naturally page
+[00:27:51.080] those sets of persona oriented guardrails into into context,
+[00:27:54.600] which means I very often just don't see patterns of misbehavior in that way.
+[00:28:00.320] Only if, for example,
+[00:28:03.240] guardrails are commonly required over tasks that span 15 context windows,
+[00:28:09.280] and by then the context in those guardrail files has been auto compacted away,
+[00:28:13.200] then that's the sort of thing that I would use as a signal that, okay,
+[00:28:16.720] this is the thing that I need to shift shift left further on.
+[00:28:19.960] But I do recognize here that it is sort of predicated
+[00:28:24.440] on making sure that those auto discovery functions are things that are reliable.
+[00:28:31.640] I probably got time for one more here.
+[00:28:35.040] Is there a practical implementation of those of the harness
+[00:28:40.360] you've just mentioned, in terms of some end to end implementation
+[00:28:45.440] of those capabilities during, before, during, and after?
+[00:28:50.280] I have started to bring some of these techniques to my open source work.
+[00:28:54.640] I used to long ago build a Ruby interpreter in Russ called Artichoke.
+[00:29:00.440] There's a bunch of crates out of that work that I still actively maintain.
+[00:29:04.240] Probably the most interesting one for you to take a peek
+[00:29:07.880] at is rand-mt — artichoke-rand-mt.
+[00:29:11.360] It's a sort of Mersenne Twister implementation.
+[00:29:13.920] Been doing a lot of fun stuff exploiting automations in the Codex app
+[00:29:19.160] to basically take my hands
+[00:29:20.440] off the wheel for a ton of the maintenance tasks of this OSS work.
+[00:29:23.440] I haven't quite gotten to putting those review agents in
+[00:29:25.840] place yet, but it's coming.
+[00:29:28.760] Any final questions?
+[00:29:32.080] Nope.
+[00:29:32.480] Okay, big round of applause for Ryan. Thank you so much.
+[00:29:35.120] Thank you everyone. Thank you.

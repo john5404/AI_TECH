@@ -1,0 +1,618 @@
+[00:00:04.584] [music]
+[00:00:09.679] I'm George Fam, the founder and CEO of
+[00:00:11.840] Stackback. When I'm not trying to create
+[00:00:14.880] like cartoon versions of myself, I'm
+[00:00:16.800] really into developer experience and
+[00:00:18.800] security, which are usually two things
+[00:00:20.240] that don't mix well. And we're building
+[00:00:23.119] an open source agent for DevOps. So the
+[00:00:27.039] we're trying to solve this problem
+[00:00:28.400] because like people as they realize on
+[00:00:30.880] on X that like LLM's are the worst at
+[00:00:34.480] the worst part at least like coding um
+[00:00:37.120] of the coding which is actually setup
+[00:00:39.360] and deployments and yeah a year later
+[00:00:42.320] this guy like literally gave up and said
+[00:00:44.320] okay it's AGI when LMS can do DevOps and
+[00:00:46.559] can configure my pipelines and deploy in
+[00:00:48.960] a cloud provider.
+[00:00:50.879] So we set up to to try fix this. There
+[00:00:53.039] are theoretical reasons why this
+[00:00:54.960] happens. I mean I'm sure you tried it
+[00:00:56.480] out if you're using agents like who's
+[00:00:57.840] using clock code or agents in general
+[00:00:59.520] who tried using agents to do devops work
+[00:01:02.160] yeah which is a big umbrella things okay
+[00:01:03.920] so one of the reasons is like lms they
+[00:01:06.240] suck at domain specific languages and
+[00:01:09.200] specifically knowledge that's fresh and
+[00:01:11.200] in DevOps infrastructure you have both
+[00:01:12.799] you have a lot of domain specific
+[00:01:14.000] languages and YAML scheas but they also
+[00:01:16.320] have knowledge that changes frequently
+[00:01:18.400] um that's one of the reason they're bad
+[00:01:20.240] at this so that's why we built stack
+[00:01:23.040] which is an open source agent in rust
+[00:01:24.880] that's trying to solve this and it
+[00:01:26.240] started doing that. So like the past two
+[00:01:27.759] weeks there are hundred of 100
+[00:01:29.040] developers that tried doing different
+[00:01:30.960] things with the agent and were
+[00:01:32.240] successful like contization of specific
+[00:01:33.920] stacks almost reach 100% success rate.
+[00:01:36.400] But like all this doesn't matter if you
+[00:01:39.280] something like that happens. So here I'm
+[00:01:41.759] not singling out replet this happened
+[00:01:43.759] with Amazon Q almost happened with
+[00:01:46.880] Amazon Q and GitHub copilot. Um, and it
+[00:01:49.759] happens with all of you like how many
+[00:01:51.119] times have cursor deleted something or
+[00:01:52.960] like deleted your file system or like
+[00:01:54.399] did something funny. So this happens and
+[00:01:56.079] this kills the trust we put in agents.
+[00:01:58.159] So if we're trying to make
+[00:01:59.520] infrastructure self-driving like we're
+[00:02:01.439] trying to do at Stackback, this just
+[00:02:03.280] kills the trust. It it's not possible.
+[00:02:05.360] So while we're trying to make agents
+[00:02:08.239] accurate and better infrastructure, we
+[00:02:10.000] found this bigger problem that needs
+[00:02:11.440] solving and that's what we're going to
+[00:02:13.120] talk about today. So if you stick
+[00:02:14.560] around, you would see me leaking our
+[00:02:16.239] production secrets on YouTube and nuking
+[00:02:19.120] our production infrastructure. So hang
+[00:02:21.280] on till the end cuz it's it's going to
+[00:02:23.280] be interesting. Yeah, that's your reward
+[00:02:25.920] for for attending this talk. So to start
+[00:02:28.959] off this, I imagine like you use agent,
+[00:02:31.040] you know at least a little bit how
+[00:02:32.160] agents work. So here we're going to
+[00:02:33.760] build a very simple threat model. And
+[00:02:36.000] threat model is basically you trying to
+[00:02:37.920] figure out everything that can go wrong
+[00:02:40.000] and then try to design your way around
+[00:02:41.599] it or like prevent it from going wrong.
+[00:02:43.040] So this is a very simple threat model.
+[00:02:45.120] Um here you would see like there are
+[00:02:47.920] components of building an agent. There's
+[00:02:49.599] an agent client or an MCP client if
+[00:02:51.599] you're using MCP which is the part that
+[00:02:53.599] takes user input and calls an LLM. And
+[00:02:56.239] there's also the tools which can be an
+[00:02:57.680] MCP set of MCP servers or it can be
+[00:02:59.760] built in the agent depending on which
+[00:03:01.599] agent you're using but like this general
+[00:03:03.599] is the same. And this is the security
+[00:03:05.440] context. Security context in thread
+[00:03:06.800] models are usually like a physical
+[00:03:08.480] machine or like an imaginary boundary of
+[00:03:10.159] things that have like high trust between
+[00:03:12.000] each other. So the agent trusts its own
+[00:03:13.599] tools. Assumption like it's an
+[00:03:15.680] assumption. And then the tools interact
+[00:03:18.400] with the local or remote device file
+[00:03:20.000] system. If it's a remote server over SSH
+[00:03:22.080] or SFTP or if it's a local machine if
+[00:03:24.400] you're working with it locally and then
+[00:03:26.560] through the network and MCP tools can go
+[00:03:28.400] like through the stack or system calls,
+[00:03:29.840] they can make external API calls to the
+[00:03:31.519] cloud and try do weird stuff like try
+[00:03:35.360] provision, destroy or like manage cloud
+[00:03:37.599] infrastructure or an external API. So
+[00:03:39.599] here we're going to share our experience
+[00:03:41.040] and the research of some of the stuff we
+[00:03:42.799] did on securing agents making them like
+[00:03:45.200] guided so they won't destroy stuff your
+[00:03:47.120] database for example but this applies if
+[00:03:49.280] you're also building agents that
+[00:03:50.319] interact with APIs in general. Uh so you
+[00:03:52.239] might find a little bit of this talk
+[00:03:53.519] useful. So the first threat we're
+[00:03:56.480] actually going to talk about is leaking
+[00:03:57.760] sensitive data to the LM provider. We're
+[00:03:59.760] not going to talk much about like
+[00:04:00.879] leaking stuff through LM tools because
+[00:04:02.480] in our case this was the main concern
+[00:04:04.080] because we were building the tools um at
+[00:04:07.040] least most of the tools the the people
+[00:04:08.720] need. Uh but like you would also be
+[00:04:10.560] worried about leaking secrets to the a
+[00:04:12.400] provider. Another threat is trying to
+[00:04:14.480] break production systems. So breaking
+[00:04:16.160] configurations on a live server or your
+[00:04:17.759] local machine and breaking the machine
+[00:04:19.759] for example. This is another threat. A
+[00:04:22.160] third threat is trying to modify cloud
+[00:04:24.639] resources which is the most juicy part
+[00:04:26.320] as you will see in the talk. um like
+[00:04:28.479] trying to destroy a bucket, delete a
+[00:04:29.759] database and so on. You see here I'm
+[00:04:31.680] highlighting the red lines because
+[00:04:33.040] usually when you're crossing like the
+[00:04:34.639] data flow is crossing a security
+[00:04:36.560] boundary, this is where most of the
+[00:04:38.400] interesting weird and scary stuff
+[00:04:40.800] happens. Um there's also injection, but
+[00:04:43.680] we're not going to talk about injection
+[00:04:45.440] mainly because a lot of people already
+[00:04:47.040] like looked into injection and what to
+[00:04:48.639] do about it and because it is a vector
+[00:04:51.199] to other threats. So injection in by
+[00:04:53.040] itself is not scary, but the things the
+[00:04:55.520] agent can do when it's injected is the
+[00:04:57.600] scary stuff. It can leak data, it can
+[00:04:58.960] break configurations, it can modify
+[00:05:00.639] resources in a tended way. So we're
+[00:05:02.320] going to take each of these three
+[00:05:03.680] threats and we're going to talk about
+[00:05:05.840] the design space, what we considered and
+[00:05:07.759] why it doesn't work. Some of the stuff
+[00:05:08.960] we considered and the actual
+[00:05:10.240] implementations we set alone. Some of
+[00:05:11.919] times it's not perfect, but sometimes
+[00:05:13.759] we're very happy with it. But that's the
+[00:05:15.680] goal of this talk like to spark this
+[00:05:17.600] discussion. Okay. So the first one thing
+[00:05:20.560] about leaking sensitive data what's the
+[00:05:22.479] most obvious thing to do not leave
+[00:05:25.120] secrets in plain text right very obvious
+[00:05:28.160] but like we can do that like we still
+[00:05:30.240] use M files we still somehow need to
+[00:05:32.880] generate these secrets to set them in
+[00:05:34.400] the first place and if you want your
+[00:05:35.759] agent to run your infrastructure
+[00:05:37.840] autonomously it would have to generate
+[00:05:39.840] secrets and actually use them so this
+[00:05:41.919] doesn't work like if it had worked we
+[00:05:44.160] wouldn't have any of these issues or
+[00:05:45.520] like no OpenAI API keys on GitHub
+[00:05:49.199] A second solution would be to redact
+[00:05:51.280] secrets. Who thinks this is a good uh
+[00:05:53.520] idea?
+[00:05:55.039] Please raise your hand. Okay, so at
+[00:05:58.479] first it seems like a good idea, but if
+[00:06:00.160] you want your agent to actually work
+[00:06:01.680] with the secrets, like compare secrets
+[00:06:03.120] to the buck stuff, it wouldn't work
+[00:06:04.720] because the secrets are all redacted.
+[00:06:06.560] Like how would the agent be able to
+[00:06:07.759] reason about the secrets, set them, and
+[00:06:09.440] compare them to the buck stuff if it's
+[00:06:11.600] all redacted?
+[00:06:13.520] A third solution which is like the most
+[00:06:15.759] obvious one and the most like popular
+[00:06:17.520] one is to ask the LLM nicely to handle
+[00:06:19.280] the secret properly and yeah you know
+[00:06:21.360] how that ends. So let's not get there.
+[00:06:24.160] So what we decided to do is to use
+[00:06:26.080] secret substitution. So we detect the
+[00:06:28.319] secrets. So what we did here is we took
+[00:06:29.919] the git leaks public um rule set and
+[00:06:32.800] then we implemented that in rust because
+[00:06:34.240] we wanted to be implemented in the
+[00:06:35.360] agent. We didn't want to have a lot of
+[00:06:36.880] third party dependencies and it's
+[00:06:38.319] actually open source. It's Apache 2.0
+[00:06:40.160] And what it does is between the agent
+[00:06:42.080] and its tools which is the hands. So the
+[00:06:43.440] agent is the brain. It thinks about
+[00:06:45.039] stuff and it takes actions with the with
+[00:06:47.280] the tools. And between the tools and the
+[00:06:48.800] agent we inserted this secret
+[00:06:50.319] substitution layer which is like this
+[00:06:52.240] ether sort of weird laser boundary that
+[00:06:55.520] turns the secret into a unique ID and
+[00:06:58.479] then shows this ID or placeholder to the
+[00:07:00.319] agent. The agent works with the unique
+[00:07:02.160] placeholder and then writes it back and
+[00:07:04.880] whenever it's written back the it would
+[00:07:07.440] substitute it back. So yeah uh a demo is
+[00:07:11.759] uh worth a thousand words. So let me
+[00:07:13.680] show you. So here I started a stack pack
+[00:07:15.520] instance on our live production
+[00:07:17.759] connected to our live production
+[00:07:19.360] environment. Whoa.
+[00:07:24.080] So I asked it like what permissions you
+[00:07:25.599] have in AWS and you can see this is not
+[00:07:27.840] a secret per se but it started already
+[00:07:30.639] redacting things um like the account ID.
+[00:07:34.240] Uh here I'm running in privacy mode
+[00:07:35.599] that's why it's redacting account ids
+[00:07:36.880] and public IPs but these are not secrets
+[00:07:40.160] but yeah so you can see like how it
+[00:07:42.479] looks that when it's actually like being
+[00:07:45.280] parsed by the remember this like um I
+[00:07:47.680] now have administrative access to my
+[00:07:49.520] account this is important for later on
+[00:07:51.360] and then I can ask it to list my EC2s
+[00:07:56.240] and because privacy mode is on the
+[00:07:58.639] public IP should be hidden and yeah I
+[00:08:02.400] can ask it to do something like um dump
+[00:08:05.520] the i eval
+[00:08:08.960] uh public IP to a file.
+[00:08:16.240] >> Sorry.
+[00:08:18.000] >> Yeah, sure.
+[00:08:20.319] So it dumped the stuff in a file. You
+[00:08:21.680] can see how the LLM sees things. But
+[00:08:24.160] like if you go here and we try to look
+[00:08:26.960] at it, you see the actual IP because
+[00:08:29.840] this is like the weird layer we talked
+[00:08:32.320] about like it translates the secrets
+[00:08:33.760] into IPs and so on and it remembers the
+[00:08:35.760] stuff and this is like for the moment
+[00:08:37.360] it's stored in local file system. This
+[00:08:38.800] is open source you can check it out but
+[00:08:40.320] in the future it can integrate with
+[00:08:42.560] third like um other secret managers.
+[00:08:46.240] So future work here we are bubbling like
+[00:08:49.040] refactoring this into a local MCP proxy.
+[00:08:51.680] So you can have this secret substitution
+[00:08:53.120] with any thirdparty MCP servers you can
+[00:08:54.800] use, not just like the tools we built
+[00:08:56.080] stack pack initially. But there's also
+[00:08:57.760] something very interesting. There's a
+[00:08:58.959] project on GitHub called fuzzforge that
+[00:09:01.440] compared using LLM with rules like
+[00:09:04.480] deterministic static analysis tools like
+[00:09:06.000] GitLinks and Truffle Hog to do this. And
+[00:09:07.600] LM are actually much better at detecting
+[00:09:09.519] more secrets. But then like the first
+[00:09:12.320] glance like you think this is stupid
+[00:09:13.760] like we're trying to prevent LM from
+[00:09:15.200] seeing the secret based on our thread
+[00:09:16.560] model. But like again take this further
+[00:09:18.160] like what if we can take this and build
+[00:09:19.839] a small language model or fine tune a
+[00:09:21.360] small language model that can run
+[00:09:22.399] locally on your machine to augment these
+[00:09:24.080] tools because according to this LMS are
+[00:09:26.560] much better at detecting like well
+[00:09:27.920] hidden secret or like dynamically
+[00:09:29.360] constructed secrets than git leaks and
+[00:09:31.839] git leaks has like yeah there are some
+[00:09:33.920] caveats to the rules they don't always
+[00:09:35.680] work so this would be perfect. So this
+[00:09:37.600] is something we're going to explore in
+[00:09:38.800] the future is take building smaller
+[00:09:40.480] language models that can augment these
+[00:09:42.720] uh static analysis tools to figure out
+[00:09:44.720] like harder to find secrets and redact
+[00:09:46.320] them before they go to the lams on the
+[00:09:48.320] cloud.
+[00:09:50.000] So the second threat breaking
+[00:09:51.440] configuration files. So the first
+[00:09:53.680] solution is to codify everything like do
+[00:09:56.080] turn everything into infrastructure as
+[00:09:57.279] code and there's a reason reason there
+[00:09:59.200] are like five or six companies trying to
+[00:10:01.600] help people codify infrastructure like
+[00:10:03.440] companies are never done codifying
+[00:10:04.959] infrastructure and there's always like
+[00:10:06.399] an escape hatch where you do stuff
+[00:10:07.680] manually so this doesn't always work
+[00:10:10.080] like this works in the perfect world but
+[00:10:11.360] like in reality it's it's very hard
+[00:10:13.200] second thing is to back up everything
+[00:10:14.720] which also works in in like in
+[00:10:16.720] theoretically but in practice yeah
+[00:10:18.560] there's a reason why ransomwarees are
+[00:10:20.160] still like a threat is we don't all back
+[00:10:23.519] up things.
+[00:10:25.680] Another one is file system overlays.
+[00:10:27.680] This is a perfect way to do this where
+[00:10:29.920] you see a true like change and look like
+[00:10:32.079] edit stuff on an overlay and then
+[00:10:33.600] persist them later on. So you can like
+[00:10:34.880] rever these changes but requires root
+[00:10:36.800] access. So this is the perfect uh
+[00:10:38.560] solution for this problem at least from
+[00:10:40.079] our perspective but we're still
+[00:10:41.600] investigating this. So we didn't end up
+[00:10:42.959] in like implementing this um as the
+[00:10:44.880] current solution. What we did is we
+[00:10:47.600] built recoverable file system operations
+[00:10:49.440] which is not perfect. I mean the LM can
+[00:10:51.200] still like decide not to obey you like
+[00:10:53.519] the data gif I I I showed you earlier u
+[00:10:57.440] and it feels trivial initially but like
+[00:10:59.519] there's some nuances here so for create
+[00:11:01.200] it's very easy like you can just delete
+[00:11:02.399] the file created by exploring the
+[00:11:04.640] history uh like looking to the lm
+[00:11:06.480] history but string replace you would
+[00:11:08.399] think it's trivial just like reverse the
+[00:11:10.399] operations but it's not like this is an
+[00:11:13.040] example like this like four or five line
+[00:11:16.079] Python code if you're trying to replace
+[00:11:18.399] hello with hey
+[00:11:20.079] it would replace it correctly. But if
+[00:11:21.839] we're trying to reverse the operands, it
+[00:11:23.360] wouldn't work. And this is one example
+[00:11:25.360] of a lot of examples. So this like if I
+[00:11:27.440] can yeah this would output false. Um and
+[00:11:30.320] there are a lot of examples where this
+[00:11:31.519] doesn't work. So the way we got around
+[00:11:33.040] this is we the string replace to output
+[00:11:35.680] is actually um a udiff of the operation.
+[00:11:38.240] So then it's perfectly reversible
+[00:11:39.600] because it includes context on where the
+[00:11:41.279] stuff changed. Uh so you can actually
+[00:11:42.959] reverse it. And the same thing with
+[00:11:45.120] backups by removing files. We added a
+[00:11:47.279] remove tool. I know the LLM doesn't
+[00:11:49.440] necessarily have to uh respect that but
+[00:11:52.079] yeah that backups remote files when the
+[00:11:54.800] editing operation is done on a remote
+[00:11:56.240] system and backs them locally if we're
+[00:11:58.640] working on a local system because people
+[00:12:00.079] use stack pack over SSH a lot you can
+[00:12:02.800] see here so
+[00:12:05.600] remove the file you created
+[00:12:11.200] it also works for directories
+[00:12:12.560] recursively
+[00:12:16.480] so I called the remote tool
+[00:12:18.240] and in the context it returns like the
+[00:12:20.560] tool result it returns the backup um
+[00:12:23.360] location. So here if I list it there's
+[00:12:25.440] nothing and then store it.
+[00:12:30.240] I know you don't have to use an LM to
+[00:12:31.680] restore it but like yeah
+[00:12:34.240] now you can see the file is back. This
+[00:12:36.240] works for directories as well. It's
+[00:12:38.000] basically like reimplementing trash
+[00:12:39.600] again uh in the terminal.
+[00:12:44.800] Yeah. So for future work we want to
+[00:12:46.320] revisit overlays find ways to do this in
+[00:12:48.240] user space. Uh but there's also some
+[00:12:50.399] interesting things happening like agent
+[00:12:52.399] FS which build helps you build like an
+[00:12:54.480] overlay like our file system within
+[00:12:56.160] SQLite which is super cool like so then
+[00:12:58.480] you can inspect all the operations rever
+[00:12:59.920] it and so on. So this is also something
+[00:13:01.519] I just read about and I want to dig
+[00:13:03.040] deeper uh into.
+[00:13:05.920] Okay, the third one and the final one
+[00:13:07.839] and the most interesting one like you
+[00:13:09.200] see we went down a rabbit hole in this
+[00:13:10.639] one is preventing agents from actually
+[00:13:12.880] destroying your cloud infrastructure
+[00:13:14.720] which is like the most scary thing like
+[00:13:16.160] I would I wouldn't use stack packback
+[00:13:17.519] myself if this didn't work because how
+[00:13:19.920] can you rely on agent to investigate
+[00:13:21.279] something in the background using a CLI
+[00:13:22.720] tool if you're not sure what it's going
+[00:13:24.160] to do um so the most obvious solution as
+[00:13:26.959] well here is give agents this privilege
+[00:13:29.120] access and there's a reason why this
+[00:13:31.279] have been very hard to do for humans for
+[00:13:33.360] years like it's very hard to figure out
+[00:13:36.000] beforehand what kind of access you would
+[00:13:38.160] need before you need it because like if
+[00:13:40.079] you're in the middle of investigating an
+[00:13:41.360] incident and you turns out you give
+[00:13:43.040] yourself only read access and you can't
+[00:13:44.399] revert stuff then it's a it's a bad
+[00:13:45.920] thing like you you need this access but
+[00:13:48.160] also because you have a lot of APIs like
+[00:13:50.000] if you have a cloud native environment
+[00:13:51.519] you have a kubernetes access you have
+[00:13:52.800] AWS access uh GitHub access so all these
+[00:13:55.680] kind of like it's very hard to manage
+[00:13:56.800] these and there are companies like built
+[00:13:59.199] exclusively for managing access across
+[00:14:00.800] different APIs so this is very tough to
+[00:14:02.880] do in practice so we We need to add
+[00:14:05.839] security in depth. Like even if we get
+[00:14:07.519] to do least privilege access and we want
+[00:14:09.199] these agents to be autonomous and
+[00:14:10.560] capable and be able to change cloud, how
+[00:14:12.639] should we how can we control this?
+[00:14:15.440] The second solution which is the most
+[00:14:17.040] popular um is whitelisting blacklisting
+[00:14:19.600] commands and using hooks to help you
+[00:14:22.000] prevent the agent from doing destructive
+[00:14:23.519] things. Um, agents are super creative
+[00:14:27.279] like um I gave an earlier talk in in
+[00:14:29.920] like in the um like the cloud native
+[00:14:32.480] meetup in New York earlier this year and
+[00:14:34.320] we were forcing agents to generate 100%
+[00:14:36.720] valid Terraform syntax. So it can only
+[00:14:38.959] talk in terapform like it can't do
+[00:14:40.720] anything else and when we asked it to
+[00:14:42.560] define itself or like to do something it
+[00:14:44.079] was not a supposed to be able to do by
+[00:14:46.000] generating terapform it generated like a
+[00:14:47.360] null resource that echoes a script in
+[00:14:49.519] the file system and then runs the
+[00:14:50.720] script.
+[00:14:51.920] They're really hacky. Like they're
+[00:14:53.120] they're super creative. So if you try
+[00:14:54.480] blacklist or whitelist a command, it
+[00:14:56.079] would just like yeah find another way to
+[00:14:58.800] do this, right? A Python script or
+[00:15:00.639] download a third party tool to do this
+[00:15:02.320] and so on. They're very creative. So
+[00:15:03.760] blacklisting, whitelisting,
+[00:15:05.760] yeah, it doesn't work all the time. It
+[00:15:07.360] doesn't give you the trust or the
+[00:15:08.560] guarantees you need to be able to do
+[00:15:10.399] this.
+[00:15:13.360] A third solution is using code
+[00:15:15.120] sandboxes. Like who thinks this is a
+[00:15:17.279] good solution?
+[00:15:20.079] This is where our threat model is
+[00:15:21.519] actually important. So remember in the
+[00:15:22.720] threat model, we were not trying to
+[00:15:25.040] prevent like in this case, we were
+[00:15:26.560] trying to prevent the agent from
+[00:15:28.399] destroying cloud resources over an API.
+[00:15:30.560] The sandbox wouldn't prevent you from
+[00:15:32.880] doing that. Like if you if you're
+[00:15:34.079] running this on a via virtual machine
+[00:15:35.440] and you give it an API key to the API,
+[00:15:37.839] it will still be able to make API calls.
+[00:15:39.920] So this coding sandboxes at least how we
+[00:15:43.199] like how most people define it now it's
+[00:15:45.199] not enough because according to our
+[00:15:47.040] threat model the one we started with we
+[00:15:48.880] want to prevent it from making external
+[00:15:50.880] calls to break things not local file
+[00:15:52.880] system changes right so this doesn't
+[00:15:54.800] work like people think this would work
+[00:15:56.160] but it doesn't in practice
+[00:15:58.959] another fourth base solution is using AI
+[00:16:00.959] based detection who thinks this is a
+[00:16:02.720] good option
+[00:16:05.519] okay I'm giving myself away like
+[00:16:07.446] [laughter] okay So here for example like
+[00:16:10.720] for AI based detection people build
+[00:16:12.959] specialized models that can detect with
+[00:16:14.560] 99.9999%
+[00:16:16.160] accuracy that these commands are
+[00:16:18.480] malicious or something is going wrong so
+[00:16:20.079] you can prevent it and so on. The issue
+[00:16:22.160] here is of adversarial machine learning
+[00:16:24.480] which is the domain of finding a single
+[00:16:27.279] example that would break a neural
+[00:16:28.639] network and make it do the right wrong
+[00:16:30.639] thing. Either um it's a language model
+[00:16:32.720] and trick it into bypassing the
+[00:16:34.480] guardrails like trying to jailbreak JPT
+[00:16:38.240] or a vision model like this one. So one
+[00:16:40.240] of the oldest papers I think it was in
+[00:16:41.759] 2017 um it resulted um a neural net to
+[00:16:45.600] mistake a hamster for a nipple. And this
+[00:16:48.320] is not very malicious, but you get the
+[00:16:49.920] idea. Like it's very easy to change a
+[00:16:51.600] single pixel in the image to mclassify
+[00:16:54.560] um a command that is actually yeah
+[00:16:57.120] benign while it's malicious. And
+[00:16:59.199] something more dangerous happened a
+[00:17:00.560] couple of years later in 2021 um which
+[00:17:03.920] you can 3D print actual objects that are
+[00:17:06.880] adversarial examples to self-driving
+[00:17:08.640] vehicles. This would attack like um
+[00:17:11.360] multi-ensor fusion networks where like
+[00:17:13.120] they mix lidars with images with a lot
+[00:17:15.199] of other sensors and they like
+[00:17:17.039] researchers claimed for a long time that
+[00:17:18.640] this makes the network more robust. But
+[00:17:20.640] actually like 3D printing a small like
+[00:17:22.720] white cube like that one would trick the
+[00:17:24.720] self-driving vehicle or this model into
+[00:17:26.480] like taking actions the attackers
+[00:17:28.480] intended to or design this model for it.
+[00:17:30.880] So there always be an adversarial
+[00:17:32.799] examples at least theoretically that
+[00:17:34.640] would be able to do that. And the reason
+[00:17:35.840] you would find it and how you' find it
+[00:17:37.280] is actually training another network to
+[00:17:38.559] do this. So this is always bypassable
+[00:17:40.960] like you can't trust this 100%. That's
+[00:17:42.480] why most of the techniques we're using
+[00:17:44.000] in this talk is all the are all
+[00:17:45.840] deterministic.
+[00:17:47.679] So what did we end up doing here? We
+[00:17:49.919] ended up designing uh something we call
+[00:17:52.080] warden which is a transparent proxy that
+[00:17:54.320] like soaks in all the traffic from the
+[00:17:56.320] agent and the MCP tools and then applies
+[00:17:58.960] policies in Cedar like what Ry mentioned
+[00:18:00.880] and Cedar is like has some nice
+[00:18:03.039] properties. We still haven't made use of
+[00:18:04.799] all of them, but it's very simple to
+[00:18:07.520] define a policy that like blocks every
+[00:18:09.600] all access in just like 30 lines of
+[00:18:12.000] code. Um, and would prevent your agent
+[00:18:14.640] its tools or all any of its dependencies
+[00:18:16.559] from making destructive stuff on the
+[00:18:18.160] network because like intercepts it
+[00:18:19.440] locally on your machine before it goes
+[00:18:21.120] out of the network to do stuff. Um, and
+[00:18:24.000] you can see here like this is the 30
+[00:18:25.840] line policy and it even includes a rule
+[00:18:29.280] that would allow the agent to call back
+[00:18:30.640] to the stack pack API because this is
+[00:18:32.000] where we do the inference.
+[00:18:34.240] So this 30 line rule allows you to work
+[00:18:37.360] on AWS without breaking anything. But
+[00:18:39.440] let's let's try that. I like I promised
+[00:18:40.880] you we would try to break our production
+[00:18:42.240] infrastructure and let's do it. So nuke
+[00:18:44.799] all the EC2s. Can you see this?
+[00:18:48.160] Yeah. So let's try destroy everything.
+[00:18:54.000] My team would not be very happy.
+[00:18:57.840] >> Just do it.
+[00:18:59.120] >> Yeah. Okay.
+[00:19:06.960] Z Cloud thinks I'm crazy. Okay. Yeah. So
+[00:19:09.440] here Warden intercepted the network
+[00:19:11.440] request to destroy this instance and
+[00:19:12.880] prevented it and echoed back. Okay. This
+[00:19:16.160] is denied. This is not allowed. And this
+[00:19:17.600] is done on the network layer. So
+[00:19:19.440] regardless of what kind of tool you use,
+[00:19:21.280] so you can use a CLI, custom Python
+[00:19:22.720] script, terapform, it doesn't matter.
+[00:19:23.840] Like this is done on a lower layer and
+[00:19:25.919] you're sure this policy engine will work
+[00:19:27.520] every single time and it's yeah, we call
+[00:19:29.760] it network sandboxing.
+[00:19:33.280] So there's still more things to do. Um
+[00:19:35.120] here mainly the issue is the UX like I
+[00:19:37.120] had to start worden like stack pack with
+[00:19:39.280] all its dependencies inside a single
+[00:19:40.720] sandbox. But I want to scope this down
+[00:19:42.400] like what if you can create a sandbox
+[00:19:44.080] for a single command or like a single
+[00:19:45.440] MCP server instead of everything. So
+[00:19:46.960] then you can do a mix of safe operations
+[00:19:49.039] and unsafe stuff. Um we want to allow
+[00:19:52.000] people to turn it on and off mid
+[00:19:53.280] session. Want to be able to customize
+[00:19:54.960] the policies on the fly because like
+[00:19:56.799] Cedar is really nice. Like if you have
+[00:19:58.320] two or three versions of a policy, you
+[00:20:00.160] can actually decide uh deterministically
+[00:20:03.280] whether they're equivalent or not or
+[00:20:04.400] like subsets or not. So you can allow
+[00:20:05.520] LLM to write policies on the fly and
+[00:20:07.840] have some guarantees about them.
+[00:20:09.280] Finally, we want to try turn this into a
+[00:20:11.039] standard. Um, so I want to collaborate
+[00:20:12.880] with people building agents to improve
+[00:20:14.720] this experience and have some sort of
+[00:20:16.480] spec on how to build these kind of
+[00:20:18.000] sandboxes and the different kinds of
+[00:20:19.360] sandboxes. So this is an invitation like
+[00:20:21.600] come talk to me so we can try figure out
+[00:20:24.320] like ways we can make this better and
+[00:20:25.840] like we can reuse this in other projects
+[00:20:27.440] as well. So I'm chatting out to a
+[00:20:28.799] couple. I think there's an engineer at
+[00:20:30.400] Enthropic that built a similar sandbox,
+[00:20:32.720] but like in ways it like it's not a
+[00:20:35.679] transparent proxy like it relies on CLI
+[00:20:37.520] tools using like respecting system proxy
+[00:20:40.320] settings which are not possible in all
+[00:20:42.080] HTTP clients. That's why we need
+[00:20:43.600] transparent proxy. There's also strong
+[00:20:45.200] DM. Uh they just like released something
+[00:20:47.039] called leash which does exactly the same
+[00:20:49.200] thing in terms of network sandboxing but
+[00:20:50.720] they also have some stuff going on and
+[00:20:53.039] like intercepting system to calls to
+[00:20:54.799] file system changes as well. So we're
+[00:20:57.039] trying to bring these efforts together
+[00:20:58.320] by talking to these people and you if
+[00:21:00.080] you're interested so we can reuse this
+[00:21:02.720] stuff.
+[00:21:04.240] Okay. So reach out to me on LinkedIn to
+[00:21:07.120] discuss this or like hang around and
+[00:21:09.840] yeah thank you all for having the
+[00:21:11.840] patience. [applause]
+[00:21:17.264] [music]
+[00:21:20.480] Heat. Heat.

@@ -1,0 +1,497 @@
+[00:00:00.400] Hello and welcome back to the Latent Space.
+[00:00:06.040] I'm Katie Roberts.
+[00:00:07.160] I'm here all day, and now we have Lars Trieloff.
+[00:00:12.680] He is a principal principal scientist.
+[00:00:15.920] Sorry.
+[00:00:16.600] Adobe working on cloud native content and API first architectures.
+[00:00:22.840] And you are going to be talking about this exciting building
+[00:00:27.720] AI agents in the browser for the browser of the browser.
+[00:00:32.200] This is hugely exciting talk, so please give it up for Lars.
+[00:00:39.160] Thanks everyone.
+[00:00:41.440] So every every story has to start somewhere.
+[00:00:47.240] And this story starts with inspiration.
+[00:00:50.400] And inspiration has to to meet you somewhere
+[00:00:55.440] and for unexplainable reasons,
+[00:00:58.960] inspiration hit me.
+[00:01:02.440] Well you're going to see where it hit me.
+[00:01:05.960] It hit me right here in the Ikea restaurant,
+[00:01:10.640] holding a hot dog and a soft serve ice cream.
+[00:01:16.240] And I was thinking of lobsters,
+[00:01:19.840] OpenClaw in particular. And
+[00:01:24.360] I've been I've been equally fascinated
+[00:01:28.920] and scared by this particular species of lobster.
+[00:01:34.600] One, because it gives it.
+[00:01:40.400] It is the dream of the agent, right?
+[00:01:42.720] It is such an intelligence that is just able to live in the world,
+[00:01:47.520] in the world that matters to you, in this case
+[00:01:50.120] your computer, your Mac mini, and control it.
+[00:01:53.560] But at the same time, this is also very, very scary.
+[00:01:56.640] Which is why people have been thinking about how can we constrain this power,
+[00:02:00.360] how can we put it in harness, how we can can we put it in a container?
+[00:02:05.080] And this was exactly the thought that I had.
+[00:02:08.160] And I knew, I knew of, of OpenClaw.
+[00:02:12.160] I knew of NanoClaw, which is putting this idea of a claw
+[00:02:18.240] inside a little container, almost a Docker container.
+[00:02:22.760] But then I remembered, number one, I hate Docker and dealing with it,
+[00:02:26.960] and I don't want this to be installed in my system.
+[00:02:30.160] One of the reasons is my system is under enterprise management,
+[00:02:34.320] so it is going to find out if I'm installing Docker
+[00:02:37.440] and they're going to send me an email where I need to justify myself.
+[00:02:40.760] And as much as I like hot dogs and ice cream,
+[00:02:44.520] I really hate justifying myself to it. And
+[00:02:49.400] the second,
+[00:02:51.360] the second part of it was that I thought, hey, I've got a container at home,
+[00:02:56.720] I've got a browser, and the browser is pretty self-contained.
+[00:03:00.640] It couldn't we couldn't we combine.
+[00:03:03.840] So the this,
+[00:03:08.040] this notion of where is the agent and how is it
+[00:03:12.000] constrained is a two sided thought. Right.
+[00:03:15.360] We want the agent to be in a box.
+[00:03:18.560] But on the other hand, every time we put the agent in the box,
+[00:03:21.680] it becomes less useful and less powerful.
+[00:03:24.840] So the the interesting thing for me
+[00:03:28.320] is that the box where most of my work happens
+[00:03:33.600] happens to be a web browser, like I'm using working in a big company.
+[00:03:39.520] So we have literally thousands of SaaS applications,
+[00:03:43.400] most of which I never have to use, some of which
+[00:03:47.040] I use regularly and withdraw, and some of them
+[00:03:51.440] I have to use every couple of months, and I
+[00:03:54.760] despise it. So,
+[00:03:59.680] the other thing
+[00:04:00.880] is, I've noticed that a lot of applications that we are building
+[00:04:05.720] are essentially putting agents in a little sidebar next
+[00:04:09.600] to whatever product you're building on. Right.
+[00:04:11.920] And this is essentially the the step of agent enablement.
+[00:04:17.000] You think of your existing UI.
+[00:04:18.480] And if you think, wouldn't that be great?
+[00:04:20.480] If we had a sidebar with an agent sitting right next to it?
+[00:04:23.920] And I think the canonical implementation of this is is copilot,
+[00:04:30.160] you have it sitting
+[00:04:31.040] next to you about document and you ask it, can you revise that?
+[00:04:35.400] Well document and copilot the same I'm sorry I don't know which
+[00:04:39.960] well documented talking about or you haven't been Gemini
+[00:04:45.240] in in Google Docs and it says, yeah, I know exactly what document
+[00:04:48.840] you're talking about.
+[00:04:49.480] I can see it. Sorry.
+[00:04:50.920] I can edit it.
+[00:04:52.040] And and then you have tools where you say,
+[00:04:55.880] actually, I have some of my information in slack.
+[00:04:57.880] I have other information in GitHub, I have other information here and there.
+[00:05:02.520] And whenever it comes to connecting these, it's not just enough
+[00:05:07.320] that I want it, and it's not just enough that the age of it.
+[00:05:10.560] It's also that the interconnection needs to be implemented
+[00:05:14.360] by whoever built the agent harness, and it needs to be enabled by it.
+[00:05:20.000] And it, at least in my case, is very cautious and very slow
+[00:05:25.360] in approving these things.
+[00:05:26.520] So we are, we are still waiting to roll
+[00:05:30.280] out, Copilot functions. So
+[00:05:34.840] my idea
+[00:05:35.480] was, what if we have one agent that is sitting in the browser
+[00:05:39.040] that is able to connect to all of my tools, right.
+[00:05:42.080] That is just able to talk to all of these who whatever APIs they have.
+[00:05:46.960] And when you think about this.
+[00:05:49.160] What are the APIs that web applications have?
+[00:05:52.240] These APIs are typically things like HTTP,
+[00:05:55.600] JSON, HTML, a bit of Dom,
+[00:05:59.160] a bit of here and bit of there, and we can figure it out. And.
+[00:06:06.000] We also have the problem that if we give access
+[00:06:09.320] to all of these tools, that the agent doesn't know how to deal with all of that,
+[00:06:14.320] some of the APIs the agents are
+[00:06:18.280] and the models, I should say, are intimately familiar with.
+[00:06:21.520] Right.
+[00:06:21.800] You can say, hey, just start remote controlling slack.
+[00:06:24.520] And the only thing it asks you, what is your token on other APIs?
+[00:06:29.800] It's going to say, hey,
+[00:06:30.680] I've never heard of this strange thing that you cooked up there.
+[00:06:34.280] How do I deal with this?
+[00:06:36.160] And this is where skills come.
+[00:06:38.320] This is where skills come to play, right?
+[00:06:40.800] And skills really come.
+[00:06:42.560] The agent from theoretically powerful.
+[00:06:49.200] A powerful
+[00:06:49.680] machine into a practically powerful machine.
+[00:06:53.200] So how do we how do we get started with this?
+[00:06:58.760] And the.
+[00:07:02.280] The idea that I came up with was an agent that is sitting in the browser.
+[00:07:07.080] It's actually running in the browser, which means it's not a cloud runtime
+[00:07:11.560] where the agent loop runs and you're just displaying in the browser,
+[00:07:16.520] but it's actually the actual agent loop is in the browser.
+[00:07:19.840] To close the browser tab, the agent loop starts,
+[00:07:23.200] and at the same time this agent should be able to control itself.
+[00:07:28.680] It should control it should
+[00:07:31.080] it should control the browser that it's running inside.
+[00:07:33.680] And this is how I come up with this notion of the self licking ice cream cone.
+[00:07:38.360] And and that's why you find it at slcc
+[00:07:44.840] slcc.com
+[00:07:45.840] and and there and while building it
+[00:07:50.240] there are a bunch of things that I was absolutely sure.
+[00:07:53.720] Well it's a browser right.
+[00:07:55.640] It can display HTML pages.
+[00:07:57.240] But there are a lot of things that it suddenly cannot do right.
+[00:08:00.080] So cannot transcode videos.
+[00:08:02.560] It suddenly cannot access my local file system.
+[00:08:06.080] But I'm fine with these constraints.
+[00:08:09.040] But in reality, I found during this exploration
+[00:08:13.360] that there are so many things
+[00:08:14.480] that my browser can do that I didn't even dare to think about.
+[00:08:19.680] And that was one of the things that made this exploration extremely fun.
+[00:08:24.360] And now you're wondering what this what this slide means.
+[00:08:29.240] And this slide means that I haven't been showing
+[00:08:32.080] you a presentation for the past ten minutes.
+[00:08:35.080] I've been showing you Slick.
+[00:08:36.640] I've been showing you the very agent that we are going to talk about.
+[00:08:40.400] And let's let's flip the instruction manual around
+[00:08:45.480] and move it back to move it back to the sidebar.
+[00:08:51.640] So and
+[00:08:56.200] one of the big ideas in slick
+[00:08:58.760] is this idea of ad hoc generated user interfaces.
+[00:09:03.960] Right.
+[00:09:05.000] We've been hearing how software is becoming,
+[00:09:08.120] how software is becoming very, very easy to build.
+[00:09:11.480] And I'm saying, yeah, it's becoming disposable.
+[00:09:14.440] Like you can build software that is good for just one presentation.
+[00:09:18.720] And, and this, this particular slide here, which is using three.js
+[00:09:24.080] and which is using which is using weird animations is exactly that, right?
+[00:09:29.160] It's a one off.
+[00:09:31.120] It's a one of it's a one off
+[00:09:35.240] application. And.
+[00:09:44.120] How many are we.
+[00:09:54.000] And I just hope that
+[00:09:57.080] that Slick is not going to judge me for my terrible typing.
+[00:10:00.600] Hello to all 80 of you in the latent space.
+[00:10:03.120] It's a pleasure to finally meet the humans I've only heard about through Lars.
+[00:10:07.240] Thanks for coming.
+[00:10:09.400] Okay,
+[00:10:10.480] well, it took it took say very literally. And.
+[00:10:14.200] And if you know that, say it's actually a command on sales,
+[00:10:19.280] actually a command on, on macros that I thought was fun.
+[00:10:23.560] So I had it poured it over.
+[00:10:25.440] And with this we can continue and go into the first
+[00:10:30.600] can go into the first into the first concept.
+[00:10:35.040] And these are sprinkles.
+[00:10:37.360] Yeah.
+[00:10:46.040] And sprinkles are essentially HTML files
+[00:10:50.400] running in an iframe that are being loaded in the sidebar.
+[00:10:55.040] So I'm slipping around this concept of oh yeah, the agent is on the sidebar.
+[00:10:58.400] No, the apps on the sidebar, the agent is the main thing,
+[00:11:02.880] and it has the ability.
+[00:11:05.920] It has the ability to
+[00:11:09.400] it has the ability to,
+[00:11:13.680] it has the
+[00:11:14.560] ability to self inspect what sprinkles are there, open sprinkles and so on.
+[00:11:18.760] And one of the most interesting things is, is that there's interactivity
+[00:11:24.200] or interaction between the sprinkles and the agent itself.
+[00:11:28.080] So whenever I advance the slide, I said send an event over to the agent.
+[00:11:34.000] This event is called LIC because we are talking about ice cream here.
+[00:11:38.000] And and this is how you see, this is how you see the agent commenting
+[00:11:43.880] on every single commenting
+[00:11:46.840] on every single on every single slide is controlling.
+[00:11:51.040] I've had applications where I said, yeah, you know,
+[00:11:54.840] you know what, we are just going to have a button.
+[00:11:56.760] And when you click the button,
+[00:11:58.200] you just tell
+[00:11:58.960] the agent that the button has been clicked and the agent is going to find out
+[00:12:02.320] what to do next, right? So and
+[00:12:06.360] I think I have a
+[00:12:09.880] so here we have an example of this
+[00:12:13.120] which is I can I can click a button here.
+[00:12:18.920] This is sending an event to this.
+[00:12:21.560] Sending an event to slick.
+[00:12:23.400] And Slick is then saying, yeah, what is the cone in the Slick architecture.
+[00:12:28.320] Well the cone that's the piece.
+[00:12:30.800] That's the piece of the ice cream
+[00:12:32.160] that you that is the user interface that you're interacting with.
+[00:12:36.080] And and it can either,
+[00:12:40.000] it can either change the UI on the fly or just spawned in the chat.
+[00:12:44.840] So the.
+[00:12:48.800] Here we go.
+[00:12:50.120] Here's my let's bring this back to full screen.
+[00:12:57.000] So and to make this to make this fun,
+[00:13:00.640] one of the additional things that we have in selected not so fast.
+[00:13:05.000] One of the additional things that we have in Slick is,
+[00:13:09.000] is that licks cannot just be fired from inside the sprinkle,
+[00:13:14.480] but you can also have a cron job as the link, right?
+[00:13:18.400] If you in case you want to have a repeated jobs, you can have
+[00:13:23.480] you can also register a webhook, which is basically a public URL
+[00:13:28.600] that whenever an HTTP requests
+[00:13:31.480] coming in, is sending an event over to either the cone
+[00:13:35.680] or to one of the sub agents. And
+[00:13:41.560] now, yeah.
+[00:13:44.600] So that okay, so,
+[00:14:07.680] We do have the
+[00:14:10.600] so the.
+[00:14:16.560] Dammit.
+[00:14:17.040] Oh, interesting. Okay.
+[00:14:18.840] So I, I broke something the, the the webhooks
+[00:14:23.680] actually working through, through WebRTC using WebRTC gateways.
+[00:14:28.560] Sometimes it's going to sleep and it's forgetting about it.
+[00:14:32.120] It doesn't matter.
+[00:14:36.920] Okay, here we go.
+[00:14:38.000] So the QR code has been replaced.
+[00:14:39.920] I think the QR code might not work, but, but that doesn't.
+[00:14:45.240] Oh, here we go.
+[00:14:46.840] Right.
+[00:14:47.160] So, you might be able to try this.
+[00:14:50.280] There's a chance that they are not going to come through.
+[00:14:54.560] Oh. It's localhost.
+[00:14:59.760] Again.
+[00:15:00.600] Yeah. I'm not you know what?
+[00:15:02.880] I'm going to skip this and I'm not going to reload this.
+[00:15:05.200] But we actually have so we have a, a host on silicon
+[00:15:10.160] AI which allows us to have non log.
+[00:15:13.960] Right. Sending you to localhost
+[00:15:17.720] is basically giving you
+[00:15:18.800] public public webhooks, which is really useful
+[00:15:21.800] if you're doing things like browser automation.
+[00:15:25.320] Right.
+[00:15:25.560] Let's say
+[00:15:26.320] you want to have a notification whenever a new slack message is coming in.
+[00:15:30.680] The way you would build, that is, you would intercept, new slack messages
+[00:15:34.680] in the slack application and say in JavaScript, say every time
+[00:15:39.000] that happens, just send a post to that particular webhook,
+[00:15:42.840] which is then going to which is then going to the agent. And.
+[00:15:51.160] We you've already seen you've already seen dips.
+[00:15:55.000] Dips.
+[00:15:55.440] It's the same idea, just much, much faster, much, much shorter.
+[00:15:59.160] It's rendering that HTML writing the chat again, it's a it's an iframe.
+[00:16:04.160] So it's properly isolated.
+[00:16:05.600] But it gives you this real time interactivity right here and there.
+[00:16:10.440] And now why are we holding
+[00:16:15.280] ice cream cones now hand at all.
+[00:16:18.160] And the answer is of course because they contain ice cream schools.
+[00:16:22.720] And the same thing is true here.
+[00:16:24.800] So in slick we have the ability to have some agents.
+[00:16:28.160] Some agents are called scoops.
+[00:16:30.360] And and I can I can show you.
+[00:17:23.320] So we had a couple of I don't know what it did.
+[00:17:27.600] So we have five scoops here.
+[00:17:29.640] We have an Ikea presentation.
+[00:17:31.040] We have a poet that shipped a haiku,
+[00:17:34.400] mathematician that shifted Dunbar calculation.
+[00:17:37.880] And the comedian that shaped a joke. Okay.
+[00:17:40.880] 80 people is approximately Dunbar's number divided by two.
+[00:17:46.320] Well, okay.
+[00:17:48.360] Nice, I.
+[00:17:54.280] Okay, so here's another scoop.
+[00:17:58.040] This is the conference agenda scoop that I just said.
+[00:18:01.520] Get going.
+[00:18:02.200] And it's actually starting to work on this in the background
+[00:18:07.760] so I can continue with my with my presentation.
+[00:18:11.480] And let's see, let's see how optimistic or pessimistic slickers
+[00:18:16.560] with regards to to the scoop capabilities.
+[00:18:21.360] So let's talk a bit about architecture.
+[00:18:24.160] How does this how does this work.
+[00:18:26.560] And there
+[00:18:28.600] there are a couple of they essentially four pieces that I want to talk about.
+[00:18:32.120] The first one is this
+[00:18:35.880] this mushy mass that we have
+[00:18:37.440] here, which is the right and slick supports.
+[00:18:41.280] Essentially any LLM that you can think of.
+[00:18:44.440] We have we have support for your Codex subscription,
+[00:18:49.200] for your copilot subscription for your ex AI grok subscription.
+[00:18:53.400] You can bring your anthropic API key, you can bring your bedrock
+[00:18:57.120] API key, open root and a bunch of others.
+[00:19:00.880] And the better the model you pick, the more fun
+[00:19:04.360] you're going to have with slick.
+[00:19:05.840] One of the things that I built in there to make sure that you're not having
+[00:19:09.000] a bad time is, and preventing all mini and nano models from running the cone.
+[00:19:14.920] You.
+[00:19:15.920] The cone can still delegate these models for a sub agent,
+[00:19:20.120] but you never want this to be your main agent because your main agent
+[00:19:23.400] is is powerful and you don't want somebody stupid to be powerful.
+[00:19:31.320] The the second piece is the agenda group,
+[00:19:35.360] and the agenda group is powered by Pi agent, which is exactly the same agent
+[00:19:40.120] and written originally by Mario Zechner,
+[00:19:43.680] which is powering OpenClaw, which is also powering NanoClaw.
+[00:19:47.720] There's going to be a talk about Pi in detail
+[00:19:50.640] this afternoon, so I can fully recommend it.
+[00:19:53.960] It's a fantastic system and I've I've been using Pi
+[00:19:59.760] as an framework for months before I even started
+[00:20:04.160] using it as a or looking into it as, as a coding agent.
+[00:20:08.200] The next piece of this is the is the terminal.
+[00:20:12.760] And you've seen you've seen these little
+[00:20:17.880] you've seen these little commands that have been running here.
+[00:20:21.560] Some of these sprinkle commands.
+[00:20:23.360] But if we go back just a bit, we see for instance
+[00:20:27.080] here, this is this is where we actually call
+[00:20:30.600] this is where we actually call a bash, a bash command.
+[00:20:35.160] And I can open the terminal.
+[00:20:36.840] And I'm not going to say test, test, test again.
+[00:20:40.520] And we can see
+[00:20:43.280] we can see everything that's running here.
+[00:20:52.600] Here we go.
+[00:20:55.960] We have a list of skills.
+[00:20:59.920] Here you go.
+[00:21:01.400] Actually, we actually have a GitHub skill.
+[00:21:04.640] And you can run you can run git inside.
+[00:21:10.360] You can run git inside the browser as well.
+[00:21:12.840] This is powered by isomorphic git which is a tiny git implementation of JavaScript.
+[00:21:19.200] Really cool and elegant.
+[00:21:20.520] And the the last piece of the architecture
+[00:21:25.240] quickly want to show is.
+[00:21:29.520] You see this?
+[00:21:31.040] You see this cock wheel at the bottom.
+[00:21:33.640] It's really important because this is a web browser.
+[00:21:37.280] When I first started building this, basically everything was running nicely
+[00:21:40.840] in the main thread, which was fantastic because it was super simple architecture.
+[00:21:46.520] And then I started doing things like, let's pull
+[00:21:50.760] in, let's, let's open the,
+[00:21:53.800] the code directory where Slick's code itself is located.
+[00:21:59.680] And I'm using block trees for essentially every single feature.
+[00:22:04.480] And most of the time I don't delete them
+[00:22:07.480] after I'm done and I'm keeping them in the same directory.
+[00:22:10.560] So when I then said, hey slick, look in your own source code and find this
+[00:22:15.520] particular thing, Slick said, hey, I'm just going to run find.
+[00:22:19.560] What I didn't know was that find was running over
+[00:22:23.200] a 50 gigabyte huge directory, right?
+[00:22:28.600] Dozens of dozens of work trees.
+[00:22:31.560] Many, many, many, many copies of node modules.
+[00:22:34.800] And that wasn't just slow.
+[00:22:37.640] It completely froze. The main,
+[00:22:41.960] completely froze the rendering.
+[00:22:43.720] I thought, oh my God, oh my God, what is happening?
+[00:22:46.920] Figure it out quite easily.
+[00:22:48.920] But one of the cool things about this is that with this
+[00:22:53.120] we get, with this we actually get a process management
+[00:22:58.560] so I can run PS.
+[00:23:08.080] Here we go.
+[00:23:09.400] I can, I can run PSA, and it's actually giving me
+[00:23:13.760] all of the prompts and all of the commands that have been run
+[00:23:17.640] since the, should I say the system booted.
+[00:23:22.040] No, actually since page on load. Right.
+[00:23:24.960] I think that's the that's the correct term.
+[00:23:27.440] So it, it's giving us it's giving us
+[00:23:30.560] the ability to interrupt processes
+[00:23:34.320] whenever they are going.
+[00:23:37.640] Yes. It's the presentation.
+[00:23:40.400] So back to the presentation.
+[00:23:42.360] The, the next part of this is that
+[00:23:47.240] the protocols that are powering slick are really interesting.
+[00:23:51.400] So first of all, and I should mention it
+[00:23:54.280] because it's obvious is HTTP right.
+[00:23:57.600] So we are we're accessing it through HTTP.
+[00:24:01.160] And and
+[00:24:05.120] and HTTP is what the agent is using to interact with the rest of the world.
+[00:24:09.080] It has the ability to run curl.
+[00:24:10.880] It has the ability to, to to see the world through curl.
+[00:24:15.520] Right.
+[00:24:15.880] Secondly, it is the Chrome DevTools Protocol.
+[00:24:20.120] So through the Chrome DevTools Protocol it is then able to do things like opening new
+[00:24:24.560] tabs, controlling tabs, changing the font in a tab and and so on.
+[00:24:30.360] So the Chrome DevTools Protocol again is is extremely powerful protocol.
+[00:24:35.880] And the way how slick works with it is
+[00:24:39.640] Slick has a Playwright CLI installed.
+[00:24:42.840] Oh well it has something that looks like Playwright client is like it's
+[00:24:46.720] actually just a very, very tiny rapper around the CDP protocol,
+[00:24:50.480] like the real Playwright CLI.
+[00:24:52.560] So I had the opportunity to look into Playwright CLI to find out
+[00:24:56.840] that the that the mysterious substance that they're cooking with
+[00:25:00.840] is actually water.
+[00:25:03.840] We have
+[00:25:05.400] we have additionally WebRTC as a key protocol and WebRTC
+[00:25:10.760] is what enables the what enables the remote links that you've seen before.
+[00:25:16.880] The thing that didn't work because it didn't reload properly
+[00:25:20.280] and freely, we might, you know,
+[00:25:24.120] we might run.
+[00:25:39.400] So we can we can try that later.
+[00:25:41.480] But WebRTC allows us to take multiple
+[00:25:45.520] Slick instances and connect them together.
+[00:25:48.680] This is especially powerful because we have a tool called Slick Start.
+[00:25:53.360] And slick start allows you to not just to start
+[00:25:57.360] to start Chrome with slick enabled,
+[00:26:00.640] but it's also able to find all of the it's also able to find all of the electron
+[00:26:06.560] apps that you are running, and it's then able to run, launch
+[00:26:09.800] these electron apps in debug mode and inject the loading code,
+[00:26:15.160] the bootstrap code for slick into this electron app.
+[00:26:18.120] Really powerful, especially if you have things that you want to access.
+[00:26:22.360] And funny thing is, breaking into slack was super easy.
+[00:26:29.280] Really child's play.
+[00:26:31.200] And the hardest to break into was Claude and I was
+[00:26:36.640] I was completely surprised by this
+[00:26:38.320] because I thought, hey, this is a vibe coded application.
+[00:26:41.640] How can how can they have these security guards
+[00:26:45.160] and they have electrons users, which are essentially triggers that kill the binary.
+[00:26:50.560] Whenever you notice somebody's trying to access the debug port,
+[00:26:53.800] really cool engineering.
+[00:26:55.440] Turns out the person who wrote electron is working for anthropic,
+[00:26:59.880] and he's working on and he's working on, on the cloud desktop application.
+[00:27:05.440] But I can still break into it because we can patch the
+[00:27:10.000] we can patch the binary, remove the fuzes and create you.
+[00:27:14.720] Right.
+[00:27:14.960] So you can you can just do things.
+[00:27:21.760] And I'm getting I'm getting time checked here.
+[00:27:27.080] So where were we.
+[00:27:28.520] We were talking about tools.
+[00:27:30.720] There's a full box of there's a full toolbox available here.
+[00:27:35.560] Right. We have we have
+[00:27:37.320] we have bash and everything you would expect from core U-boats.
+[00:27:40.480] We have SQLite, we have a Python interpreter there.
+[00:27:43.760] We have image magic in there.
+[00:27:46.120] We have tools for dealing with with PDFs.
+[00:27:50.400] Last week I've added support for I've added support for biome
+[00:27:55.600] and the TypeScript compiler because,
+[00:27:59.360] Slick was opening pairs against slick, of course, but all of these were failing
+[00:28:04.720] in the linting step because we felt that in the last session spreading sloppy code.
+[00:28:09.960] So I'm giving slick a Linda that it can, that it can run inside,
+[00:28:14.840] inside the inside the the sandbox.
+[00:28:18.520] And we also have support for MCP.
+[00:28:22.440] How does MCP support work?
+[00:28:25.120] Well, in the end there's an MCC.
+[00:28:29.200] Don't know what's happening here.
+[00:28:30.640] There's an MCP command line which allows you to add an MCP URL.
+[00:28:35.720] And I'm only supporting right there.
+[00:28:38.240] There are multiple transports for for MCP.
+[00:28:43.520] Still the most common is standard in standard out
+[00:28:46.080] which I don't support but I support the Https based transport.
+[00:28:49.440] So if you have an MSC server somewhere you can use it.
+[00:28:54.880] Max is going to talk about MCC
+[00:28:57.200] later on when CP is also something that can be supported and slick.
+[00:29:01.480] Actually getting WebMCP support into Slick is just tell
+[00:29:05.720] slick hey, search for web MCP support.
+[00:29:08.680] It's going to find the fitting skill.
+[00:29:10.760] It's going to say, oh yeah, WebMCP is really easy.
+[00:29:13.240] It's just another property on the document that I can interact with that.
+[00:29:16.640] And we have.
+[00:29:21.400] We have I mentioned,
+[00:29:24.240] you know what I I'm running my slides out of order here.
+[00:29:27.320] But you've already heard about remote controlling slack remote
+[00:29:31.080] controlling teams.
+[00:29:32.720] Remote controlling
+[00:29:34.360] I don't know what email client that is that is running in in electron.
+[00:29:38.080] But you can probably probably actually teams is one of these that.
+[00:29:43.920] Yeah the icons though.
+[00:29:45.760] So the the last the last part
+[00:29:49.720] that I quickly want to talk about is
+[00:29:53.120] we have an oath token command.
+[00:29:55.880] And I think the best way to talk about
+[00:29:59.200] this is to,
+[00:30:04.120] Oh, yeah.
+[00:30:05.040] So, Okay.
+[00:30:12.560] Perfect.
+[00:30:13.520] Look at look at this.
+[00:30:16.360] So we have all of, we have all of token as a little command line and o off token
+[00:30:21.960] allows you to go through the of flow
+[00:30:25.800] and keep the token stored.
+[00:30:28.360] And we actually hiding the tokens from the lens
+[00:30:30.960] so that they never actually leak into the context.
+[00:30:33.880] Which leaves me with one last slide, which is,
+[00:30:39.800] let's get Slick to take a photo of me.
+[00:30:43.000] And, you know,
+[00:30:44.520] everyone knows how to take a photo on the command line if you run ffmpeg,
+[00:30:48.320] and then to open this folder to look at it,
+[00:30:51.680] and finally to deliver,
+[00:30:55.360] to deliver a roast of whatever Slick is seen here.
+[00:30:59.040] Three shades of black, a headset mike, fearless beard,
+[00:31:02.400] and two scoop shaped spotlights floating behind your head.
+[00:31:05.640] Lars, the comb really does follow you everywhere, even on stage.
+[00:31:11.320] So here we go.
+[00:31:12.680] My time is over.
+[00:31:13.600] Thank you very much.
+[00:31:14.840] If you want to learn more,
+[00:31:17.360] go to.
+[00:31:19.120] If you want to learn more.
+[00:31:20.080] Go to.
+[00:31:23.600] I or just run npx
+[00:31:27.080] clicky and and you're ready to go.
+[00:31:30.000] Thank you.
+[00:31:34.280] Thank you.

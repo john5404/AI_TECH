@@ -1,0 +1,997 @@
+[00:00:00.000] We wanted Codex to be able to connect to our Electron app.
+[00:00:05.040] Chrome DevTools protocol.
+[00:00:06.560] The MCP was how we started out.
+[00:00:08.120] Eventually, I kind of took a peek at the code and it was entirely different.
+[00:00:11.320] Still, Codex was connecting to the Electron app over Chrome Dev Tools
+[00:00:15.200] protocol, but it was actually a local TypeScript daemon that was being spun up
+[00:00:18.920] that was providing a little CLI interface instead of the MCP,
+[00:00:22.440] because we found that there were only 2 or 3 tool calls that we actually needed.
+[00:00:26.880] So more context efficient was faster, and this had happened
+[00:00:30.480] underneath me, without me knowing.
+[00:00:33.120] My workflow was not interrupted.
+[00:00:34.680] That same dependency edge and entity relationship existed,
+[00:00:38.960] but I almost didn't have to know how it was implemented.
+[00:00:42.120] Did you find that cool or worrying?
+[00:00:43.760] I found it shocking.
+[00:00:47.040] The AI Native Dev is a podcast for developers and engineering
+[00:00:50.320] leads at the cutting edge of AI and agentic coding.
+[00:00:53.640] Join your hosts, Guy Podjarny and me, Simon Maple,
+[00:00:56.640] every week as we chat with the most exciting voices in
+[00:00:59.840] AI and tackle the biggest questions facing developers today.
+[00:01:04.240] This is the AI Native Dev. ﻿
+[00:01:09.680] Hey everyone!
+[00:01:10.480] Hope you're enjoying the episode so far.
+[00:01:12.760] Our team is working really hard behind the scenes to bring you the best guests,
+[00:01:16.640] so we can have the most informative conversations about agentic development,
+[00:01:20.960] whether that's talking about the latest
+[00:01:22.600] tools, the most efficient workflows, or defining best practices.
+[00:01:26.400] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:01:30.320] If you're enjoying the podcast and want us to continue to bring you
+[00:01:33.360] the very best content, please do us a favor
+[00:01:34.640] and hit that subscribe button.
+[00:01:37.120] It really does make a difference and lets us continue to improve
+[00:01:40.480] the quality of our guests and build an even better product for you.
+[00:01:44.920] All right, back to the episode. ﻿
+[00:01:46.640] Hello and welcome to another episode of the AI Native Dev.
+[00:01:51.080] And we're here live at AI Native Dev Con 2026 in London.
+[00:01:56.800] And joining me is Ryan Lopopolo, who is a member of technical staff at OpenAI.
+[00:02:02.400] So hey folks, Ryan, how are you doing?
+[00:02:04.960] Great. Excited to be here with Cliff is popping.
+[00:02:07.440] It's really fun. I go on stage later today.
+[00:02:10.480] I'm just excited to get after it.
+[00:02:12.280] Absolutely.
+[00:02:12.720] Looking forward and tell us a little bit about the session
+[00:02:14.320] that you're giving later.
+[00:02:15.440] Yeah.
+[00:02:15.800] So I'm going to be talking about
+[00:02:17.720] all things harness engineering, which is sort of,
+[00:02:19.880] I guess, kind of like
+[00:02:20.800] some of the discourse that I helped define earlier in the year
+[00:02:23.360] here, where talk about what it means to kind of set up
+[00:02:27.560] agents to do highly complex, autonomous software engineering,
+[00:02:31.280] like work in your code bases
+[00:02:32.680] with high confidence and almost headless nature if you can get to it.
+[00:02:36.800] Yeah, a lot of fancy context management techniques in order to get these agents
+[00:02:41.000] to learn from their own mistakes, produce high quality code,
+[00:02:44.640] and go for a very long time without human intervention.
+[00:02:47.000] Absolutely.
+[00:02:47.360] And we're going to talk about
+[00:02:48.200] harness engineering,
+[00:02:49.080] and we'll talk about some of the
+[00:02:50.360] methodologies that you've used internally at OpenAI and talk through maybe some
+[00:02:55.200] some of the bits that have been enjoyable, some of the bits that have been scary.
+[00:02:57.920] And it's going to be great fun.
+[00:02:59.000] So so, Ryan, why don't we kick off with harness engineering for for the layman.
+[00:03:04.840] What is Harness engineering?
+[00:03:06.560] Yeah.
+[00:03:06.960] So we have these wonderful technology in these coding agents
+[00:03:11.600] and these fantastic models that are very smart and able to produce
+[00:03:16.160] a ton of code and harness engineering is this idea that to produce code
+[00:03:21.600] that is acceptable, to produce code that we trust, that we can build
+[00:03:25.360] confidence and business systems around?
+[00:03:27.280] There are a bunch of little decisions that go into the process of producing
+[00:03:31.600] PRS, producing systems that we have to make along the way, and in order
+[00:03:36.680] to get the agent to know and understand those, we have to write it down.
+[00:03:39.840] We have to make sure that, like the content of those choices,
+[00:03:44.040] all those nonfunctional requirements that go into making good code, get surface
+[00:03:47.880] to the agent at the right time.
+[00:03:49.200] So it's a combination of getting context into the repository in a place
+[00:03:54.440] where these coding agents can see it, surfacing it to the agent
+[00:03:58.360] at the right time, and making sure that all the code that we produce kind of like
+[00:04:02.440] follows the golden thread of what it means for us to produce high quality software.
+[00:04:06.600] Reviewer agents, tests, lints,
+[00:04:09.720] big refactoring loops, all sorts of ways to get the agent to close the loop
+[00:04:14.240] and make sure that it proves to me and the rest of the team
+[00:04:17.600] that the code it has produced is acceptable and can be merged.
+[00:04:21.520] So we've had prompt engineering, context engineering, and harness engineering.
+[00:04:24.960] Now, what would you say?
+[00:04:25.680] The kind of
+[00:04:26.040] like the main differences
+[00:04:26.960] or overlap between context engineering and harness engineering?
+[00:04:30.280] I think really
+[00:04:32.840] the two
+[00:04:34.320] only levers you have when interacting with agents
+[00:04:37.560] is which context you provide and which tools you provide.
+[00:04:41.120] And harness engineering is kind of
+[00:04:42.840] a combination of both, with the goal of making sure the context that we give
+[00:04:46.920] the agent is correct so that it can work its reasoning magic to produce good code.
+[00:04:51.840] And one thing that I think is unique about harness engineering is we're actually
+[00:04:56.120] using the tool calls to prompt inject the agent to manage its context window.
+[00:05:01.760] One thing that's pretty neat here is the way
+[00:05:04.640] that we structure tests and lints and well-formed
+[00:05:08.440] tests in the code base is actually very different
+[00:05:11.400] than how I would structure those messages for a human right.
+[00:05:14.800] I would have an exhaustive list of failures that I give the human,
+[00:05:18.400] and have them wade through the logs in order to figure out what's wrong.
+[00:05:21.600] Whereas with agents, you know, due to the nature
+[00:05:24.560] of how they invoke tools, we want those messages
+[00:05:26.760] to be somewhat compressed, but also semantically meaningful, right?
+[00:05:30.760] Rather than giving sort of a mechanical eslint
+[00:05:34.040] failure, for example, I can give a prose error message
+[00:05:38.000] that says, you screwed it up in this way, in this file, you know,
+[00:05:41.760] please open it and follow the run book in file X, y, z to go fix it.
+[00:05:46.520] Because we've seen you make this mistake before,
+[00:05:48.360] and we know that we can trust you to do the right thing.
+[00:05:51.120] Yeah.
+[00:05:51.480] And that that level of integration, that deeper integration really unlocks
+[00:05:54.920] that next step right now. Interesting.
+[00:05:57.360] I'm like looking at some of the some of your background here.
+[00:06:00.240] You built stripes
+[00:06:01.080] efficiency engineering team led developer productivity at Brex for 350 engineers.
+[00:06:05.480] There's a bunch of kind of like infrastructure and background there.
+[00:06:09.120] Would you say that helped you or hindered
+[00:06:11.080] you from the point of view of harness engineering?
+[00:06:13.600] I definitely helped.
+[00:06:14.600] It kind of got me used to this idea of working through others.
+[00:06:20.000] You know, when I'm trying to improve productivity
+[00:06:23.200] for an engineering organization of 350 engineers,
+[00:06:26.640] I can't be hands on in the weeds of every PR that's being produced,
+[00:06:30.720] and I can't work directly on the underlying systems.
+[00:06:34.840] I kind of have to steer from the background,
+[00:06:37.160] make sure that the right things are happening.
+[00:06:39.640] By default,
+[00:06:40.360] the right systems are in place in order to have high trust
+[00:06:42.960] in the organization to do good work.
+[00:06:44.640] And that's exactly what it means in order to be high functioning with these agents,
+[00:06:48.880] in order to move beyond sort of coding agents as pair
+[00:06:52.920] programing assistance to go massively parallel where I've got the 15 team
+[00:06:57.680] windows open, I need to be able to take my hands off the wheel to a certain extent.
+[00:07:02.040] So this way of operating this sort of systems thinking mentality
+[00:07:06.040] kind of comes naturally to me, because that's kind of the expertise
+[00:07:09.440] I've had to build up over the course of my career.
+[00:07:11.280] Yeah, yeah. Interesting.
+[00:07:12.800] Would actually touch a little bit about, I guess, the part of that which is, well,
+[00:07:16.760] how much is how much trust do you need then to have those 15 open.
+[00:07:19.560] But we'll cover that in just a second. I'd love to.
+[00:07:22.400] You know, when you have those 15 open, there's
+[00:07:24.360] obviously a huge amount of age in written code
+[00:07:26.440] and various different roles in the in the workflow and the pipeline.
+[00:07:30.600] Now, a really interesting constraint that you imposed on yourself
+[00:07:34.240] and the team was no human written code.
+[00:07:37.680] That's right. And I guess, first of all,
+[00:07:42.080] how how fearful were you at the time
+[00:07:44.680] when you said, look, no one's to write any code here in this project?
+[00:07:48.120] How confident were you that that was the right course?
+[00:07:51.200] It was definitely a bit of a radical idea at the time.
+[00:07:54.560] Kind of when I started out building in this way
+[00:07:58.040] was even before we had proper reasoning models.
+[00:08:01.840] GPT five came out in August of 2025,
+[00:08:05.480] and I started working in this hands off way in June.
+[00:08:09.200] So this is, you know, oh three era Codex Mini
+[00:08:13.160] had just came out the very first versions of Codex CLI.
+[00:08:16.960] And to be honest, back then the models were way less capable.
+[00:08:21.080] It was very painful in order to operate hands off like this,
+[00:08:24.840] and sort of by necessity,
+[00:08:28.520] working with the model, working with the coding agent,
+[00:08:31.720] I kind of had to stick myself in as a very chunky tool for the model
+[00:08:36.560] to delegate to if it got stuck, or if it needed to do something.
+[00:08:40.360] The only thing it could do at the beginning was ask Ryan to do something
+[00:08:44.280] for it, and eventually I get tired of being asked the same thing all the time.
+[00:08:48.400] Initially, back then it was installing dependencies with cargo.
+[00:08:52.760] This is just not something that that Codex was able to do reliably back then.
+[00:08:56.680] So I would type the commands in my terminal and,
+[00:08:58.880] you know, give the agent some dependencies to work with and sort of automating.
+[00:09:03.120] That was the first step, and it kind of got me in this mode
+[00:09:06.960] of paying very close attention to where I'm spending my time figuring out ways
+[00:09:12.000] to build up a tool call that removes the need for me to spend that time.
+[00:09:16.360] So then I can kind of figure out the other ways that I can help the agent
+[00:09:20.040] get more and more chunky tools, to give it more capability.
+[00:09:23.040] And to start with zero like that, you kind of.
+[00:09:30.000] Viscerally
+[00:09:30.800] experience the failure of the agent,
+[00:09:34.400] I think, to kind of have a good sense of
+[00:09:39.600] the tool calls as they are making the mistakes the agent is making.
+[00:09:42.800] Sort of in the process of writing
+[00:09:44.360] the code is really, really important in order to build confidence in it,
+[00:09:47.600] because to see what mistakes it's making, I'm also able to see
+[00:09:51.640] the parts that it does really good at, and it can start to retool.
+[00:09:54.840] The way I go about my week to lean into the stuff Codex is really good at.
+[00:09:59.400] It's really good at following instructions.
+[00:10:02.320] It's really good at writing tests and calling them.
+[00:10:05.400] So collapsing a lot of the engineering process into these, like
+[00:10:10.240] very well paved roads for the agent helps me build confidence in it.
+[00:10:14.480] It's funny how you say it's
+[00:10:15.720] really good at following instructions and and really good at writing tests.
+[00:10:18.880] And I'm thinking, wow, the complete opposite of most developers grid is that
+[00:10:22.240] is that maybe that's wrong to say.
+[00:10:23.760] But so that's really interesting.
+[00:10:25.520] And I guess when you think about your team like this is a decision that you made,
+[00:10:29.600] but when you think about your team, how how comfortable was
+[00:10:33.880] how on board was everyone in joining this?
+[00:10:37.480] I got very lucky that as we grew the team, we grew it all
+[00:10:42.240] with new hires to the company, so they can't get dropped into this insane
+[00:10:46.400] environment and being like, oh, I guess this is just the way we do things now.
+[00:10:49.560] Let me just go whole hog at it.
+[00:10:51.880] It usually took about two weeks for folks to ramp up to this way
+[00:10:56.000] of operating some growing pains very early on in growing the team.
+[00:11:00.880] Probably a good amount of dog feeding as well. Yeah.
+[00:11:03.120] Of course, back to the team.
+[00:11:04.200] I mean, the the product we were building to also helped a bunch.
+[00:11:07.160] We were building sort of a data analyst agent,
+[00:11:10.360] a data analyst agent using Codex inside in order
+[00:11:14.400] to write SQL and cold Databricks and all these sort of things
+[00:11:19.480] means a lot of the techniques that we were using to write
+[00:11:21.920] the code were techniques we needed to deploy into this agent,
+[00:11:24.640] to have it be effective of a very cool, virtuous cycle.
+[00:11:26.880] There took about two weeks for folks to onboard, initially very painful
+[00:11:31.800] in terms of figuring out how to coach folks to not produce slop.
+[00:11:36.440] A big part of maintaining a high velocity with these tools is just not permitting
+[00:11:40.720] slop to enter the code base.
+[00:11:42.320] But once we sort of had figured it out, by the time we got our fifth,
+[00:11:46.080] sixth, or seventh hire onto the team, within those two weeks,
+[00:11:49.680] we were actually seeing like velocity and PR throughput go up five,
+[00:11:54.480] ten, 15%, which is again, not the common path.
+[00:11:58.440] When you onboard quickly to a team like the the precinct time.
+[00:12:02.800] Right.
+[00:12:03.240] And the reason for that is because as we accrued more
+[00:12:08.760] and more context, more and more capability into the code base, sort of everyone
+[00:12:13.600] invoking Codex as the sole entry point to the code base was getting the best parts
+[00:12:17.520] of everybody by default, rather than having to spend
+[00:12:21.880] one, two, three months absorbing the best practices of the team,
+[00:12:26.640] they're already there, which means new hires to the team
+[00:12:29.800] were able to very quickly supply their best judgment and context,
+[00:12:34.360] which means now everybody is being more effective very, very quickly.
+[00:12:38.160] You're effectively onboarding the new hire through the agent already.
+[00:12:41.400] That's right. Yeah. That's right. Brilliant.
+[00:12:43.240] So there's a really nice phrase. I'm sure you've heard.
+[00:12:46.200] I've said it a million times as well.
+[00:12:47.920] You can go fast.
+[00:12:49.680] You can only go fast when you have breaks.
+[00:12:51.800] Right now going in this scenario going fast is using,
+[00:12:57.360] you know, Codex and AI agents to to generate that code for us
+[00:13:02.120] at a faster velocity, that then, then we would be able to manually
+[00:13:05.920] write the breaks. Of course.
+[00:13:07.720] Are those tests, those reviews that that, you know, validate
+[00:13:11.800] the code that show and highlight where we need to actually spend time
+[00:13:15.280] and fix and adjust before we go live.
+[00:13:18.760] Another interesting thing that is the Zero Human review.
+[00:13:23.240] Now, this is almost you're putting AI to be
+[00:13:26.480] the brakes now, which is which is a little bit more worrying.
+[00:13:30.720] In terms of, I guess,
+[00:13:35.040] you know, an alarming and an alarming proposal.
+[00:13:38.320] How comfortable were the engineers when you said, right,
+[00:13:41.600] we're now going to do zero human review on this code.
+[00:13:44.680] We're going to we want, you know, agents to be able to do that review.
+[00:13:48.720] Yeah.
+[00:13:49.040] So sort of like the idea of post merge code review if at all
+[00:13:53.080] sort of thing is, you know, kind of like not not a new thing.
+[00:13:57.280] Right?
+[00:13:57.520] When I started my career back in the early 20 tens, like this was
+[00:14:01.040] this was a normal part of what it meant to write.
+[00:14:03.200] Software is kind of have a high trust environment with your team,
+[00:14:06.560] bias to action, bias to throughput, and,
+[00:14:09.680] you know, have some representative sample of the code that you are looking at,
+[00:14:12.840] but you know, otherwise have lots of synchronous communication
+[00:14:15.840] on it as a team to make sure that everyone has the same mental model of the system.
+[00:14:19.600] And it's very cool to kind of like have this come back into vogue
+[00:14:23.480] with agents, because if the entry point to the code
+[00:14:27.800] base is always the agent, it's really not required for every engineer
+[00:14:32.720] on the team to have a full and complete mental model of the system,
+[00:14:36.200] so long as that they are able to trust that everyone else on the team
+[00:14:40.360] is enabling Codex to have that level of expertise.
+[00:14:43.960] Which is not to say that like there is no review at all in the system, right?
+[00:14:49.200] Like to kind of provide a little bit more nuance here.
+[00:14:52.360] We do have some cases where we require like
+[00:14:56.240] two party traditional review pre-merger, and most of the time that is centered
+[00:15:00.920] around things like highly complex plans, sort of phase milestones
+[00:15:07.000] that would take place over the course of an actual week, these sorts of things.
+[00:15:10.560] And the reason for that is these plans, these milestones,
+[00:15:14.400] these exec plans function as the prompt you're going to give the agents.
+[00:15:18.840] And if you are relying on a text document to drive implementation,
+[00:15:24.680] being crisp around what words are in there and whether or not
+[00:15:28.240] they fully under or specify the task is quite important
+[00:15:32.000] because if you specify the task upfront, you are going to get garbage.
+[00:15:35.920] So that's kind of where we focus the the bulk of the human review.
+[00:15:39.000] And so the review here
+[00:15:40.280] like it's different to how we would normally think of a code.
+[00:15:42.680] Yeah. It's up front right. Yeah.
+[00:15:43.840] It's like first of all a code review.
+[00:15:46.120] You know we will argue about details and naming and things like, you know,
+[00:15:50.000] almost more style guide style comments
+[00:15:53.400] or rather that's what sometimes happens, unfortunately.
+[00:15:57.200] Whereas now what we're looking at is actually a much more
+[00:15:59.680] I guess there's probably a couple of reasons.
+[00:16:01.080] One, because it's actually more interesting to actually,
+[00:16:03.400] you know, review at that higher level anyway, because they're more meaningful
+[00:16:06.920] input from, from our, our point of view, where we need to kind of like much more,
+[00:16:11.320] think about what's the greatest value I can provide here.
+[00:16:13.480] And it is that more meaningful decision making at the top.
+[00:16:16.320] But also, I guess we're probably more abstracted away from the code.
+[00:16:20.040] So there is an amount that we just have to trust.
+[00:16:22.200] Or actually
+[00:16:22.720] it'll it's almost a waste of our time to go too
+[00:16:24.840] deep into the implementation because we need that to be abstracted away.
+[00:16:28.720] And we need mechanisms of where testing just occurs to make sure that
+[00:16:32.560] that succeeds. That's right.
+[00:16:34.320] This is sort of again, that sort of like group tech lead sort of mentality.
+[00:16:38.400] Right.
+[00:16:38.680] Like when when I lead developer productivity at Brex.
+[00:16:42.320] Right.
+[00:16:42.560] Like I don't have my hands in the weeds of every bit of Terraform.
+[00:16:47.040] Every team is writing.
+[00:16:48.160] But I do care at a high level about like guiding principles.
+[00:16:51.600] Right? I want the infrastructure to be reproducible.
+[00:16:54.160] I want it to provision quickly.
+[00:16:56.160] I want us to have modules in place that solve common developer workflows.
+[00:17:00.920] But like how you structure
+[00:17:02.880] your underlying modules, whether you're using for each in an idiomatic way.
+[00:17:06.680] I don't really care too much about that, as long as the code is like,
+[00:17:10.000] locally coherent and actually solves the business problems that I'm hoping.
+[00:17:13.520] To do.
+[00:17:13.800] And ideally that's a decision that maybe even change over time
+[00:17:16.960] of how something should be structured.
+[00:17:18.480] So it's not something we should always be so connected to, at all times.
+[00:17:22.960] Anyway, I think we mentioned kind of like trust a little bit,
+[00:17:26.600] I can't remember what the, the magic ratio of trust is, where it doesn't matter
+[00:17:29.720] how many times something works, it's it's how frequently
+[00:17:31.880] something doesn't work is the key which which breaks the trust.
+[00:17:35.440] But I guess at what stage were you and the team like,
+[00:17:39.160] truly thinking, oh, actually, do you know what?
+[00:17:40.880] I completely trust this.
+[00:17:42.480] Not not, you know, I guess from my point of view.
+[00:17:45.120] And I'll talk about myself here when I say laziness.
+[00:17:47.240] But there is a
+[00:17:47.720] there is a time
+[00:17:48.480] when I'm using agentic development where I'm just kind of like assuming
+[00:17:51.800] and just being lazy about not not, you know,
+[00:17:53.960] reviewing things in enough depth, but in terms of like, true trust is in.
+[00:17:57.760] Yeah, I'm going to I'm going to hand this off to the agent
+[00:17:59.560] and believe that this is going to be high quality, that I can actually,
+[00:18:03.600] you know, push to production.
+[00:18:05.440] At what moment would you say in the, in the during the process,
+[00:18:08.520] would you say you were truly trusting of what was being delivered?
+[00:18:12.760] I think there were two sort of phases here.
+[00:18:14.800] One was, do I trust the agent to be able to produce code?
+[00:18:19.600] Well, in the magic moment, for that was sort of working on
+[00:18:24.720] what was essentially a very early version of what the Codex app
+[00:18:28.800] is today, talking with a teammate around.
+[00:18:33.440] Man, I wish I had voice input here,
+[00:18:35.520] and then being able to just give a prompt and half an hour later
+[00:18:40.040] see that in the real world in the app was fantastic.
+[00:18:43.840] You kind of got this feeling of confidence that it really is down to
+[00:18:49.160] my capacity for scheduling prompts to go into this magic machine to
+[00:18:52.960] see my ideas come to life.
+[00:18:54.880] So that was sort of like the first phase of getting into this mindset of our role
+[00:19:00.680] as engineers should be to figure out ways to feed the machine, to schedule
+[00:19:05.120] work, in order to kind of have our vision come to fruition.
+[00:19:09.120] The next sort of phase was,
+[00:19:12.600] is this code trustworthy?
+[00:19:14.400] Is it high quality?
+[00:19:15.640] And this sort of came to us as a team, sort of out of necessity
+[00:19:19.960] when we onboarded our third engineer to the team,
+[00:19:25.400] we significantly increased our PR
+[00:19:28.120] throughput, but at the same time, we're unable
+[00:19:31.680] to keep pace with reviews and making sure that slop didn't enter the code base.
+[00:19:36.400] We kind of started to kind of pump the brakes a bit like you mentioned,
+[00:19:40.680] and take one day a week, Fridays to do garbage collection, where
+[00:19:45.680] a lot of long, synchronous stand ups in this way of working.
+[00:19:48.600] Right, in order to socialize that mental model.
+[00:19:50.680] So we would kind of compile a list over the course of the week of things
+[00:19:54.560] that we didn't quite like. Right?
+[00:19:55.800] We want to bias toward throughput, bias toward merging,
+[00:19:58.160] but still we want to make sure we maintain our quality board.
+[00:20:01.160] So every Friday was trying to eliminate that slop,
+[00:20:04.160] but also finding ways to systematically eliminate it going forward.
+[00:20:07.480] Right.
+[00:20:08.000] We never wanted to give the same feedback twice in the same way that you want,
+[00:20:12.320] you know, a new engineer you're onboarding to the team
+[00:20:14.960] to actually internalize what it means to do a good job.
+[00:20:17.880] So that kind of stacked into sort of these programmatic guardrails
+[00:20:23.040] and then a very long outer loop of sort of these automated CI jobs
+[00:20:29.160] that are looking for slop, identifying slop, kind of compiling a list
+[00:20:34.680] of golden principles for what it means for us to write good code,
+[00:20:38.040] finding divergences from it in the code base, proposing PRS.
+[00:20:41.680] And at that point, we were able to see, oh,
+[00:20:45.840] the agents are able to write code the way we expect.
+[00:20:48.640] We just kind of need to put the right loops and systems in place
+[00:20:52.800] for it to kind of close that feedback cycle for itself.
+[00:20:56.920] And presumably that was given to it by context or skills or something like that.
+[00:21:00.880] Before skills. Were asking.
+[00:21:02.840] So we did a time.
+[00:21:04.960] Before, yeah, I know, I know only only what,
+[00:21:07.960] eight months ago at this point. We.
+[00:21:12.720] We kind of did a very cheap hack.
+[00:21:15.600] We kind of had just a GitHub issue where engineers and agents would
+[00:21:21.680] leave comments around sort of underlying principles of good software development.
+[00:21:26.480] Right.
+[00:21:26.840] How to properly make a react snapshot, test what it means
+[00:21:32.080] to write reliable network code,
+[00:21:35.960] how to think about structuring a lint.
+[00:21:39.000] And, you know, you end up with this big issue with 100 150 comments on it.
+[00:21:43.760] And that was sort of the seed for what it meant for the agent to go
+[00:21:47.800] sort of spider through the code base stack, rank a set of violations,
+[00:21:52.520] proposed PRS.
+[00:21:53.440] And then one interesting thing there is we had like an on call
+[00:21:57.160] whose job it was to supervise all the agent produced stuff,
+[00:22:01.120] all the headless stuff, because we we didn't quite trust it yet.
+[00:22:04.360] We needed eyes on it in order to build that confidence.
+[00:22:08.920] Human with thumbs up, thumbs
+[00:22:10.120] down, merge or not, leave review feedback.
+[00:22:13.160] Which means the next time that anti-SLAPP ification
+[00:22:16.680] loop spins up, it looks at all the PR it had produced.
+[00:22:20.520] It ingests that human feedback, compares it with the session
+[00:22:24.560] logs from the last time it ran.
+[00:22:26.560] Says which mistakes did I make?
+[00:22:28.480] Which priorities did I miss?
+[00:22:30.520] Did I produce misaligned code and why?
+[00:22:33.080] Let me figure out how not to do that going forward.
+[00:22:35.920] Produce some markdown.
+[00:22:37.400] Save it as an artifact in the GitHub run.
+[00:22:39.720] So the next time I run,
+[00:22:41.360] I have this extra context
+[00:22:42.600] that I have learned from the actual human feedback in the system.
+[00:22:45.880] And is that the correct way?
+[00:22:47.400] Is that the way you would recommend others set up their agents to,
+[00:22:51.040] to almost like iterate through?
+[00:22:52.520] So it's almost like build the code and then do these almost like audits
+[00:22:56.800] or reviews in post, and then raise PR where you're almost,
+[00:23:00.760] you know, you're outside of the guardrails.
+[00:23:02.400] Or would you today look at adding that into
+[00:23:07.200] the agent at code creation time to make some of it's a mix of both.
+[00:23:11.880] Yeah. We
+[00:23:14.280] we do think sort of these
+[00:23:15.480] asynchronous loops are a big part of what it means to be effective.
+[00:23:19.240] Early versions of Codex Security via Aardvark also worked in the same way,
+[00:23:23.040] right where I'm getting a security review of my code after his ended up in main.
+[00:23:27.520] It is maybe finding a way in which it is vulnerable.
+[00:23:31.040] Producing a patch.
+[00:23:32.080] We put up a PR, we review it and it merges.
+[00:23:34.560] And I think this sort of flow is really, really nice
+[00:23:37.840] because it allows mistakes to actually make it to main,
+[00:23:43.000] which means that it can be learned from anytime we are able to
+[00:23:46.160] come up with a correction, one, we want to fix it,
+[00:23:48.920] but also repeating patterns sort of thing, which we identify
+[00:23:53.320] with agents and loops and distillation and all of that.
+[00:23:56.960] That's the stuff we want to pull forward earlier into the pipeline.
+[00:23:59.800] Yeah. And when you
+[00:24:01.240] when you do push with mistakes or things that you want to correct,
+[00:24:06.520] are you less
+[00:24:07.240] fearful of pushing those mistakes to production these days
+[00:24:11.040] because you know how fast those can be reviewed and fixed by an agent?
+[00:24:16.400] It's definitely a spectrum, right?
+[00:24:18.280] I will say that for this project, we didn't have continuous deployment, right?
+[00:24:22.320] We're building a native app.
+[00:24:23.440] We are manually cutting a release branch and doing smoke testing.
+[00:24:26.960] That smoke testing is initially all by humans, where we look
+[00:24:30.680] at where we're spending the time and try and get agents to do some of it right.
+[00:24:33.800] But it is important, I think, to have some level
+[00:24:38.440] of human supervision over the release process in this world.
+[00:24:41.720] But if I were to kind of like put my group tech lead hat on again, right?
+[00:24:45.520] Yeah.
+[00:24:45.800] Some mistakes are are able to be made like the consequences of them are low.
+[00:24:50.280] And much like I want engineers who are becoming more senior to learn
+[00:24:55.240] from their own mistakes, I also kind of want to see mistakes that the agents make
+[00:24:58.840] so that we, as their supervisors, can figure out how to get them to learn.
+[00:25:02.840] As well.
+[00:25:03.240] Because if it feels like in this kind of scenario, debt
+[00:25:07.040] and fix is cheap because it's about, well, we'll run an audit.
+[00:25:11.200] And as long as you have those guardrails
+[00:25:13.000] and rules in place to say these are these are some of our best practices,
+[00:25:16.840] I can put, you know, something in which isn't ideal.
+[00:25:19.960] And no, it's not going to take six months for a human to come and review this code.
+[00:25:24.760] It can be done in a more regular time frame.
+[00:25:28.880] Yeah.
+[00:25:29.400] Like with this sort of like new world where the production of code is so cheap.
+[00:25:35.480] I actually think that you can at least working with agents flip
+[00:25:40.880] sort of like the DevOps shift left thing onto its head a bit,
+[00:25:44.680] where the cheapest thing I can do is literally produce
+[00:25:48.760] a change to my prompt, whether that is like one of those golden principles
+[00:25:52.760] that I'm eating into that GitHub issue, or,
+[00:25:55.800] you know, a prompt that I socialize with my teammates.
+[00:25:58.640] Right.
+[00:25:58.800] That's the cheapest thing I can do in order to fix the code that is produced.
+[00:26:02.240] And, you know, if we find that, like
+[00:26:05.400] the mistakes are a bit more systematic,
+[00:26:08.920] I can kind of think about pulling that further left.
+[00:26:12.800] I can add some docs, or I can operationalize
+[00:26:16.360] a review agent that is going to judge every PR according to those docs.
+[00:26:20.240] Or I can do more shifting left by making deterministic tests
+[00:26:24.080] that suss out this behavior and on and on earlier in the process.
+[00:26:27.080] But the cheapest amount of effort I can spend to shake out that misbehavior
+[00:26:31.280] is kind of where I want to start, because these things are magic
+[00:26:35.120] reasoners that most of the time they do pretty well with very little effort on my.
+[00:26:39.200] Part is.
+[00:26:40.120] Super interesting, and I'd I'd almost love to jump ahead a couple of questions,
+[00:26:44.520] because I kind of want to ask the question when the the way you talk about that,
+[00:26:48.520] whereby, you know, you make minor changes over here to a prompt and then,
+[00:26:52.600] you know, implementations and things can just change.
+[00:26:55.720] And it kind of makes me feel that when we talk about the thing
+[00:26:59.840] that persists, it's less about the code and it's more about our prompt
+[00:27:03.680] and our context and our functional requirements.
+[00:27:06.920] And it brings me to something called Symphony,
+[00:27:10.920] which is a ghost library because it's spec.
+[00:27:13.920] It's all about specs and context versus versus implementation or code.
+[00:27:18.880] And I guess when we think about when we think about that,
+[00:27:22.720] the code just becomes a throwaway artifact.
+[00:27:25.480] The implementation is just it's there today.
+[00:27:27.720] It might change tomorrow.
+[00:27:29.000] But the thing that persists,
+[00:27:30.320] the thing that we care about and we should put most time in,
+[00:27:32.800] like you say, lifting up those reviews more to the functional requirements
+[00:27:36.640] and things like that is the specification and the prompts.
+[00:27:40.800] Is this a is this a future?
+[00:27:43.280] Is this a is this like when we when we think about the relationship
+[00:27:45.960] between the specs and the code, how much is that changing today?
+[00:27:51.120] Yeah. So
+[00:27:53.960] it's kind of funny.
+[00:27:55.080] Where you think traditionally inspec driven development.
+[00:27:59.360] Right.
+[00:27:59.600] You start with a spec and then you kind of refine it as the code is produced
+[00:28:03.960] sort of thing, to make it more concrete to suss out those hidden decisions
+[00:28:07.280] and ambiguity in the spec, and for things like Symphony,
+[00:28:11.240] for all these lists that we're producing, for things like
+[00:28:16.920] documentation on critical user journeys or product features or click flows
+[00:28:21.600] and screens, I've actually found it is much easier to produce the code
+[00:28:26.160] first to have that code sort of like present a straw man
+[00:28:31.120] for what the world could look like, engage with that as a team to refine it,
+[00:28:35.840] and then distill the spec out of that, because sort of produced artifacts,
+[00:28:41.920] whether they are code, a spreadsheet, a Google doc, right.
+[00:28:47.080] These things are very information dense in terms of the decisions
+[00:28:50.560] that were made to go into producing something that we have accepted as good.
+[00:28:54.600] So for Symphony, the thing that we shipped is very much a spec,
+[00:28:58.440] but the thing that we started with was kind of
+[00:29:00.760] a vibed implementation of Symphony in TypeScript in our mono repo,
+[00:29:04.840] where when we thought it was good
+[00:29:06.840] and it was solving the problems that we wanted it to,
+[00:29:09.920] we worked on producing a spec out of that to share with the world,
+[00:29:14.160] and it was this very, very cool process where we had this three phase pipeline.
+[00:29:17.760] We started with Symphony as it was, and
+[00:29:20.960] we gave it to Codex to say, produce a spec
+[00:29:24.960] markdown file that is able to reproduce this system.
+[00:29:28.680] We end up with a spec, give that to a new agent
+[00:29:32.280] that says without access to the original, that says you have a spec, please
+[00:29:36.240] implement this system.
+[00:29:37.680] You know, it goes for a while with goal in order to produce this thing.
+[00:29:41.800] When it says it's done, we give that system the spec and
+[00:29:45.920] the original implementation to a third agent is going to act as the judge to say,
+[00:29:51.720] we are attempting to replicate the original version of Symphony.
+[00:29:55.120] This was the spec that was given to an agent to produce it.
+[00:29:57.680] And this is what they came up with.
+[00:29:59.640] Where are there misalignments in the derived artifact
+[00:30:02.400] versus the original system,
+[00:30:03.800] and proposed changes to the spec in order to make the next attempt better?
+[00:30:08.280] That's like a very token intensive process.
+[00:30:10.320] But, you.
+[00:30:10.600] Know, working at the token. Factory three.
+[00:30:14.320] But I suspect you get a discount.
+[00:30:17.040] But what you.
+[00:30:17.640] End up with is this really refined spec that is reliably able
+[00:30:22.000] to produce the system as it is written,
+[00:30:25.680] while still providing space and ambiguity for consumers of this ghost library
+[00:30:31.080] to adapt it to their actual business
+[00:30:32.960] context, their actual repository and toolchain and issue tracker
+[00:30:37.280] and all these other sorts of things, which I think is pretty cool
+[00:30:40.440] because it means that we end up
+[00:30:43.440] specifying in very tight, high detail the parts that actually matter, the
+[00:30:48.520] the business logic, critical parts, while still leaving the flexibility
+[00:30:52.360] for folks to evolve and change it as they see fit. Yeah.
+[00:30:55.160] And what I love about that is the process that you just described.
+[00:30:58.480] And I think we need to learn from everything that we've done in software
+[00:31:02.400] engineering for many, many years, going into a development.
+[00:31:05.520] But the process that you just described is a very pure prototype.
+[00:31:09.440] It's us rapidly
+[00:31:12.080] developing our application.
+[00:31:13.520] So we make the learnings we need to be able to say, oh, this work
+[00:31:16.680] that didn't actually I'd prefer it to be like this,
+[00:31:18.560] or let's change the UI, which ultimately, you know, breaks a number of flows.
+[00:31:22.760] So we make those learnings.
+[00:31:24.400] But the difference is because development is cheap, now
+[00:31:27.920] we are able to say, I can just throw this away.
+[00:31:30.880] I'm not tempted to to use that, but I'm going to try and distill
+[00:31:34.600] everything that I have learned and the the functional requirements, etc.
+[00:31:38.520] into that spec.
+[00:31:39.480] And I love that it's iterable kind of iterations through to make to,
+[00:31:44.240] to really,
+[00:31:45.240] you know,
+[00:31:45.800] I've seen implementations of spec gaps and this is,
+[00:31:47.840] this is really good to be able to really fill that in
+[00:31:49.800] to make sure that the spec captures everything that we need.
+[00:31:52.640] Yeah. It's not like this process is new, right?
+[00:31:54.680] Like if I think about other areas in my career where I've seen this, right,
+[00:31:58.760] like partnering with data science, they want to cobble together
+[00:32:02.360] a model in a Jupyter notebook to prove out the idea first.
+[00:32:06.720] And once they get something that they are confident in,
+[00:32:08.960] then it sort of
+[00:32:09.720] gets handed off to engineering in order to production it, to actually deploy it
+[00:32:13.520] into the MapReduce pipeline, to operate at scale sort of thing.
+[00:32:17.520] If we're thinking about doing rapid prototype
+[00:32:22.520] of a design like in Figma, and then handing it off
+[00:32:26.800] in order to be production is also the same sort of context. Right?
+[00:32:29.560] But now, because like you said, production of code is cheap,
+[00:32:32.880] we can actually do that in our production systems.
+[00:32:36.080] One neat way that we made that idea
+[00:32:39.760] real in this app we are building is in Dev Electron app.
+[00:32:44.520] We had a window, a screen that the agent could launch,
+[00:32:49.320] which would basically give it the native rendering canvas that we're shipping,
+[00:32:53.960] as well as our full design system and component library,
+[00:32:57.840] which means it's actually able to prototype new screens directly
+[00:33:01.440] in the surface that we're deploying, produce screenshots of them,
+[00:33:04.760] give them to our designer, and now it's a super, super tight
+[00:33:07.920] loop on does our vision match the reality?
+[00:33:11.560] Are we able to produce this experience
+[00:33:14.600] in the surface that we're going to ship, which is just wild and super, super cool?
+[00:33:18.600] Yeah.
+[00:33:19.320] I'd love to talk about capabilities, and I'll take a slight deviation here.
+[00:33:24.080] And I'd love to talk about Codex and,
+[00:33:27.840] the industry perception of, of of Codex
+[00:33:32.560] on socials, in community discussions and all kinds of things,
+[00:33:36.200] particularly over the last month, I'm hearing people rave about Codex
+[00:33:41.080] and moving from, you know, other well-known
+[00:33:45.200] agents, Claude, and things like that, over to over to Codex.
+[00:33:48.200] And they are they're stating all of a sudden I'm
+[00:33:51.440] more productive, more productive on Codex or I'm actually it's
+[00:33:54.400] actually more accurate in terms of doing these various things internally.
+[00:33:57.840] I guess you're probably maybe seeing this and like, you know, has there been a
+[00:34:02.360] has there been a moment or has there been a feature or something
+[00:34:06.840] whereby, you know, Codex leveled up for it because of a number of things,
+[00:34:12.000] or is it just, you know, the gradual hard work of a of of a group of, of of teams?
+[00:34:18.080] Yeah.
+[00:34:18.440] So the, the, the product velocity on Codex is fantastically quick.
+[00:34:23.400] And we just recently celebrated a milestone of having 5 million
+[00:34:27.200] weekly active users.
+[00:34:28.320] Congratulations.
+[00:34:29.880] Teboe just did weekly resets.
+[00:34:32.240] You know, go fast go go burn those limits down.
+[00:34:35.280] I will say that there is a very tight and virtuous cycle
+[00:34:40.600] between the development of the codex itself and our research team,
+[00:34:44.440] which means there is this fantastic flywheel on every point.
+[00:34:48.280] Revision of the GPT
+[00:34:50.320] five series, where the capability just improves in leaps and bounds.
+[00:34:54.600] I would say big lifts from five 2 to 5 three.
+[00:35:00.000] Background tool calling.
+[00:35:01.360] Parallel tool calling means that Codex was able to do more work all the time
+[00:35:06.440] in order to make more progress more quickly on more complex changes.
+[00:35:10.600] The unification of
+[00:35:14.560] the normal GPT five model and the Codex model in 5.4
+[00:35:19.400] means that you were not only getting a super powered code producing agent,
+[00:35:23.480] but one that is also incredibly, generally intelligent a good writer,
+[00:35:27.400] which means I'm able to start using Codex for all other parts of the software
+[00:35:30.800] development loop other than producing code.
+[00:35:33.240] The slide deck that I'm going to be presenting later today is 100%
+[00:35:36.840] written by Codex using the the app connectors
+[00:35:40.000] in Google Sheets, which is not something I would have imagined to be possible
+[00:35:43.880] last year, and some super powered stuff
+[00:35:47.680] that came out in 55 with computer use the browser embedded in the app.
+[00:35:53.840] These things make it so much easier in order to close the loop
+[00:35:57.560] where a ton of the jank
+[00:35:58.760] that we had to put in place in the 5152 era just doesn't need to exist
+[00:36:03.000] because we are giving more, more chunky, powerful tools.
+[00:36:07.720] Because there is this virtuous loop between the harness and the app
+[00:36:12.200] that we are deploying, and sort of our research environment,
+[00:36:15.440] and what it means to get the model to be effective at using these things.
+[00:36:18.360] It's just a constant march of capability improving.
+[00:36:20.960] And one thing that I love about Codex
+[00:36:24.280] is it'll just do the full job.
+[00:36:27.560] It won't give me much nonsense about it.
+[00:36:29.720] I can treat it like I would another member of the team, right?
+[00:36:33.480] I'm not shoulder surfing
+[00:36:35.000] all seven of my teammates in order to bop them on the head.
+[00:36:38.160] If they do a bad thing, I give them a task.
+[00:36:40.320] I check in maybe occasionally at stand up, and I trust
+[00:36:43.560] that I will get a produced PR or several that does the job.
+[00:36:46.880] And I have the same level of trust
+[00:36:48.760] in Codex and its ability to be autonomous and complete.
+[00:36:52.200] And you mentioned Codex, and then you mentioned models and model versions.
+[00:36:55.480] What what would you say
+[00:36:56.680] moves the needle most as it updates to the agent or updates to the model?
+[00:37:00.920] It's a mix of both, but I have to say the
+[00:37:04.480] the new model releases I think are the most exciting bit to me.
+[00:37:08.000] The, the most sort of powerful levers we have in terms of increasing
+[00:37:12.240] capability are continuing to train the model.
+[00:37:16.080] And this is a thing that goes faster and faster over time.
+[00:37:20.760] We're super excited every time a new model comes out.
+[00:37:24.360] Getting to test them internally is also fun.
+[00:37:26.480] To be able to kind of see
+[00:37:27.640] the leaps and bounds of new progress we are able to make.
+[00:37:33.400] Each revision of the five series from five two onward.
+[00:37:37.760] I think five two, I think is singularity era.
+[00:37:40.080] Here with these coding agents has seen increases in
+[00:37:44.040] PR throughput time and time again.
+[00:37:47.080] You know, whereas at the beginning of sort of the five two era, we were looking at
+[00:37:51.960] maybe three and a half PRS per engineer per week on my team.
+[00:37:56.640] Now with five five, we're looking at 70, which is just fantastic.
+[00:38:03.360] Like that's more than than linear scaling sort of thing.
+[00:38:06.040] It's it's truly amazing.
+[00:38:07.560] And is that people changing or is that capabilities
+[00:38:12.120] a better job a bit or a mix of both?
+[00:38:15.760] Mix of both.
+[00:38:16.280] I would say there, as the model capability improves and leaps and bounds like this,
+[00:38:20.840] there are certainly less effort that needs to go into the enablement step.
+[00:38:25.040] Yeah, the harness engineering gets easier.
+[00:38:27.320] The same techniques we would use, but the need to build
+[00:38:32.120] chunky tools in order to attach the agent to the outside
+[00:38:35.280] world is just things that we need to do less and less.
+[00:38:37.720] Yeah.
+[00:38:38.360] To give you an example, in order to get Codex to drive our electron app
+[00:38:43.920] before computer use was a thing, we needed to boot up a graphical Ubuntu
+[00:38:49.480] in a Docker container with a virtual display driver and X server
+[00:38:53.280] have engineers install XQuartz on their Mac
+[00:38:56.440] in order to proxy over to that headless host and like wire up
+[00:39:01.920] FFmpeg to this gross contraption in order to record
+[00:39:05.000] videos of what the app was doing, how the agent had changed it.
+[00:39:09.120] And this is like entirely obsoleted and like a single toggle in the app
+[00:39:13.320] to turn on computer use.
+[00:39:14.480] Like so, so much easier.
+[00:39:16.360] And I expect this to only get better and better over time.
+[00:39:19.360] Yeah, it kind of reminds me of thinking back to,
+[00:39:22.320] you know, when I, when I've been in in the industry
+[00:39:24.560] 25 years now, but when I, when I think back to wow,
+[00:39:26.960] people
+[00:39:27.280] actually used to write like bytecode or machine code or binary and it's like,
+[00:39:31.480] this is the same thing, right?
+[00:39:32.920] It's like, wow, people used to actually do that and connect.
+[00:39:35.800] I don't need to write TCL in order to test my use UI's anymore.
+[00:39:39.440] That is definitely an improvement.
+[00:39:41.840] So let's jump back into into harness engineering then.
+[00:39:44.840] And let's specifically look at a good use case, the Frontier Project.
+[00:39:50.400] Tell us a little bit or walk me through what the harness actually looks like
+[00:39:54.080] for that, including like how I guess, what gets updated,
+[00:39:58.480] what's in it, but also ownership, who owns that and who changes them.
+[00:40:03.000] Yeah. So a little bit of context.
+[00:40:05.080] OpenAI frontier is sort of our enterprise platform for agents,
+[00:40:08.520] and it covers everything from how to build agents with the API
+[00:40:12.680] agents SDK, the Codex harness, to how you would sort of observe
+[00:40:16.920] and govern agents running around your enterprise. And
+[00:40:21.960] it's very,
+[00:40:22.680] very cool to kind of see all of the harness aligning on Codex
+[00:40:27.080] for all the things that we do, which means there's a single,
+[00:40:30.120] highly leveraged interface between the product
+[00:40:33.440] we are building and research, which means sort of all the post
+[00:40:37.520] training improvements that we do on the model accrue
+[00:40:39.880] leverage to every product that we build.
+[00:40:41.640] And right now there's very, very clear interface in order to inject
+[00:40:46.080] new capability into Codex via plugins.
+[00:40:50.040] These things are skills and scripts.
+[00:40:54.080] Same thing as always. I'm talking about context and tools.
+[00:40:56.760] Yeah, very, very cool that we have ended up sort of in this like
+[00:41:00.960] IO, CTL sort of extensibility where really the biggest levers
+[00:41:06.800] we as agent builders, as product builders can give
+[00:41:10.760] the model give Codex is to give it chunkier and chunkier tools that connect
+[00:41:15.320] to the actual business problems that we're trying to solve
+[00:41:17.440] and to do context shaping and management for it.
+[00:41:21.360] Another exciting part of frontier that me and my team have been working on
+[00:41:25.480] is sort of like the organizational context management pieces to be able to
+[00:41:29.720] figure out what work is actually done
+[00:41:31.640] in your enterprise, or what the data ontology is of your data
+[00:41:35.520] warehouse, and how that is actually used in order to answer metrics questions.
+[00:41:39.400] And these things have been doing some really,
+[00:41:42.160] really interesting experimentation on what it means to potentially give
+[00:41:47.280] each agent in your enterprise
+[00:41:49.000] sort of a sidecar that is continuously managing context for it,
+[00:41:52.880] this idea that all agents are coding agents,
+[00:41:55.840] so we should give them things that are native to
+[00:41:57.640] that little git repositories that they can grep and search over.
+[00:42:01.480] And all of that is to say, the techniques that we're using to write
+[00:42:06.360] the code are things that are going to translate really naturally
+[00:42:10.560] to building agents in the enterprise.
+[00:42:12.200] And all of that comes from using that base codex harness
+[00:42:15.440] in order to build these agents. Yeah, yeah.
+[00:42:18.160] And I guess when we think about, you know, a minute ago,
+[00:42:21.920] we were just talking about bytecode and machine code and things like that.
+[00:42:26.880] The code that gets created or let's, let's go back then the code that we used
+[00:42:31.360] to write years and years ago when we did assembly and so forth,
+[00:42:34.760] that it's really machine readable, less than, less than human readable.
+[00:42:38.600] Then we kind of moved into the next, next generation of programing languages.
+[00:42:42.200] And actually we were writing more for, for us as humans,
+[00:42:46.000] sometimes we actually took the decision to make to write more maintainable,
+[00:42:50.440] human maintainable code versus most performant code because it mattered.
+[00:42:54.480] It was, you know,
+[00:42:55.560] less likely that we would add bugs and things like that when we make changes
+[00:43:00.760] today.
+[00:43:01.880] And I'll ask two questions today and in maybe a couple of years time.
+[00:43:06.360] I hate asking questions for a couple of years time when we can
+[00:43:09.400] barely, barely think about this week.
+[00:43:11.160] But today, in a couple of years time, is it more important
+[00:43:14.360] that code is legible to agents or humans?
+[00:43:19.800] I would say
+[00:43:20.960] if I had to pick only one thing that was legible to me,
+[00:43:25.720] it would be the reference documentation of the system, the interfaces,
+[00:43:29.760] and the rendering of all of that into mermaid entity
+[00:43:33.400] relationship diagrams, system diagrams and sequence diagrams.
+[00:43:37.480] And that's today. That's today. If I could only pick one right?
+[00:43:40.440] Still, of course, like I am peering down into the machine code, right?
+[00:43:45.800] I am looking at the diffs as the agent is producing them, but I am able to do that
+[00:43:49.280] less and less as I gain trust in it, and I am able to do that.
+[00:43:53.360] I'm able to ignore the code as it is produced
+[00:43:56.720] for more and more complex tasks.
+[00:43:59.720] Not all of them, but for increasingly many of them,
+[00:44:03.720] the things where I find that me and the team provide
+[00:44:08.040] the most outsized value are on defining the interfaces,
+[00:44:11.960] defining what the components of the system are, how each component
+[00:44:16.240] should be structured, and how the code relates to each other.
+[00:44:20.000] Things like
+[00:44:22.920] wiring up all the system dependencies together
+[00:44:25.680] and using like Scala cake pattern style like dependency wiring.
+[00:44:30.760] I find to be very useful to pay attention to,
+[00:44:33.320] because it actually means that I am able to like draw the lines on
+[00:44:37.520] that system diagram in my own head and in the reference documentation.
+[00:44:41.720] Now, you know, sort of the concrete implementation of those things.
+[00:44:45.800] Like, to be honest, I might not even know what language they are in.
+[00:44:50.160] Very, very funny story to think about those system diagrams of lines.
+[00:44:54.800] Looking at the local development process,
+[00:44:56.680] We wanted Codex to be able to connect to our Electron app.
+[00:45:01.720] Chrome DevTools protocol.
+[00:45:03.240] The MCP was how we started out.
+[00:45:06.280] Eventually, I kind of took a peek at the code and it was entirely different.
+[00:45:09.760] Still, Codex was connecting to the Electron app over Chrome Dev Tools
+[00:45:14.600] protocol, but it was actually a local TypeScript daemon that was being spun up
+[00:45:18.320] that was providing a little CLI interface instead of the MCP,
+[00:45:21.840] because we found that there were only 2 or 3 tool calls that we actually needed.
+[00:45:26.280] So more context efficient was faster, and this had happened
+[00:45:29.880] underneath me, without me knowing.
+[00:45:32.520] My workflow was not interrupted.
+[00:45:34.080] That same dependency edge and entity relationship existed,
+[00:45:38.360] but I almost didn't have to know how it was implemented.
+[00:45:42.160] Did you find that cool or worrying?
+[00:45:44.080] I found it shocking. I'd find it cool.
+[00:45:46.560] I found it shocking.
+[00:45:47.560] But also.
+[00:45:48.280] I found it great, right? It basically means
+[00:45:52.800] I lived
+[00:45:53.520] that high trust relationship in a very, very real way.
+[00:45:56.560] Someone on my team imagined a way the world could be better, went after it,
+[00:46:01.320] and did it in such a way that disrupted literally no one on the team.
+[00:46:05.760] And because it's the agents that are writing code,
+[00:46:08.600] they have no opinions around the tools or their structure.
+[00:46:11.560] As long as we give them things that work and permit them to do their job.
+[00:46:15.800] Yeah. Super interesting.
+[00:46:17.720] And I think it's, it's definitely a,
+[00:46:22.560] it feels to me like humans are going to be the slowest,
+[00:46:25.600] the slowest here in this in adapting to this kind of level of level of trust.
+[00:46:29.960] Yeah. It's a consistent challenge.
+[00:46:31.880] My attention my ability to focus across all these threads.
+[00:46:35.440] Yeah it's it's still something we are contending with.
+[00:46:38.120] So when do you feel like,
+[00:46:40.280] you know, in your usage with these product projects, when do you
+[00:46:44.080] what are the circumstances that you see today where you actually want to
+[00:46:48.120] go in and look at the code?
+[00:46:51.920] Sort of if we were to kind of put a sort of
+[00:46:54.720] like two axis graph together here of sort of low and high ambiguity
+[00:47:01.440] and low and high complexity in this sort of high, high bucket here.
+[00:47:07.360] I think that's largely two shapes of projects
+[00:47:11.440] or tickets or epics, whatever you want to call them.
+[00:47:15.000] Things where I am literally starting from zero
+[00:47:17.200] to do a net new thing, where maybe the shape of the interfaces,
+[00:47:21.200] where it lives, what the experience is, I don't know yet,
+[00:47:24.960] or sort of the most difficult refractors that I want to do, where I either need
+[00:47:29.960] to break interfaces or redefine them, maybe go backwards and delete code
+[00:47:34.240] in order to achieve this thing.
+[00:47:35.360] But I don't know what the end shape that I want is.
+[00:47:38.080] These are the places where I pay the most attention,
+[00:47:42.040] and this is honestly where I want to be, right?
+[00:47:44.120] Because this is what it means
+[00:47:45.560] to kind of like peer six months into the future to unblock my team.
+[00:47:49.440] It's also, you know, you know, code is cheap to produce here, right?
+[00:47:55.000] Like, I find myself operating in this space differently
+[00:47:57.360] than I did a year ago, where I am willing to vibe out a 50,000
+[00:48:01.440] line of diff PR and throw it away, only to learn
+[00:48:05.680] the areas where the agent is likely to fail,
+[00:48:08.400] where it is going to struggle, putting those interfaces into place that I like.
+[00:48:12.160] And usually I'll actually push up those press, trash them immediately,
+[00:48:16.960] and then crank out 15 PRS out of that to kind of like do the prep work
+[00:48:21.200] or do the staging
+[00:48:22.400] in order to prepare myself for the actual cut over that I want to do.
+[00:48:25.600] Yeah, yeah.
+[00:48:26.640] Let's, let's, let's jump to a quote that you, that you made a while back,
+[00:48:31.400] which is, you call it borderline negligent
+[00:48:35.040] not to use a billion tokens a day.
+[00:48:38.480] It's a strong claim.
+[00:48:41.680] Who are you aiming to to shake the ladder of the.
+[00:48:47.360] This idea that
+[00:48:50.200] the amount of intelligence we are able to extract from the models
+[00:48:53.480] is in a way, linear with token consumption, I think at
+[00:48:57.160] the time was quite controversial, but we see it being increasingly true.
+[00:49:00.960] Right.
+[00:49:01.600] This is ultimately why test time compute exists, right?
+[00:49:05.720] In order to get the models to be smarter and have more and more rich side effects
+[00:49:11.040] into the world, we want to move workflows to high token consumption use cases.
+[00:49:15.880] And I think in order to get to a billion tokens a day,
+[00:49:20.120] you must be thinking in a grander world
+[00:49:24.320] than pair programing with the model, you must find ways to be in parallel.
+[00:49:28.720] You must find ways to put these asynchronous loops into place.
+[00:49:31.960] You must find ways to build agents that are able to side effect
+[00:49:35.680] onto organizations and teams, rather than just yourself.
+[00:49:38.960] And in order to do that,
+[00:49:40.480] we have kind of had to invent a bunch of patterns on what it means to do
+[00:49:44.240] that, to have automations that are seated from the repository context
+[00:49:49.280] that everyone in the team
+[00:49:50.240] can use, rather than sort of single player mode sort of things. And
+[00:49:55.440] it's definitely not the case that everyone today
+[00:49:58.320] can say, I'm going to consume a billion tokens a day and poof, magic.
+[00:50:01.840] It happens.
+[00:50:02.440] There is work that has to be done in order to make that safe, in order
+[00:50:07.040] to make the output aligned, to make sure those tokens are burned
+[00:50:11.280] in ways that are productive, that make it to main and improve
+[00:50:14.720] the end experience that I am shipping to users these sorts of things.
+[00:50:18.840] And I think at this point in the industry
+[00:50:23.120] with this technology, we don't really have a
+[00:50:27.960] durable, scalable, locked in sense of what those patterns are.
+[00:50:32.200] So, you know, to kind of poke aggressively like that,
+[00:50:36.960] I get to a billion tokens a day is really to kind of
+[00:50:39.560] challenge people to figure out what it is that's going to work, sort of
+[00:50:44.440] feels like we have just invented the concept of CI CD, right?
+[00:50:49.880] And like people are kind of scrambling to figure out what that means.
+[00:50:53.480] And only 15 years later did this become a thing that's like fairly standardized.
+[00:50:57.960] That is table stakes.
+[00:50:59.120] And that's,
+[00:51:00.200] I think, what needs to happen right now with agents and producing software.
+[00:51:05.040] We need to figure out those patterns.
+[00:51:06.320] So let's continue this flow then harness engineering.
+[00:51:09.480] If we if we follow that to its logical conclusion,
+[00:51:14.800] engineers and
+[00:51:15.640] harness engineering is part of every project.
+[00:51:18.600] Every team developers on that team are using a billion tokens every day.
+[00:51:24.200] Yeah.
+[00:51:25.520] Open AI very happy with that.
+[00:51:28.440] What is an engineering team look like in that scenario?
+[00:51:32.800] I have found it very valuable to have a diverse team
+[00:51:37.080] in terms of perspective, experience and expertise.
+[00:51:40.640] I know myself
+[00:51:43.600] I probably bias more toward back end and infrastructure sort of work
+[00:51:48.960] you probably see in my sort of profile here, which means that when it was
+[00:51:53.880] just me on the team, I was producing quite terrible reaction code.
+[00:51:57.680] Right?
+[00:51:58.240] We had we had some components that were 6000
+[00:52:01.400] lines long, a ton of really bad renderings.
+[00:52:05.600] These use effect hooks that were like four overlapping closures,
+[00:52:10.720] like very hard to reason about and to bring folks onto the team
+[00:52:13.880] that actually were able to say, Ryan, this is garbage really helped.
+[00:52:18.800] And to be able to kind of like
+[00:52:20.640] have these these full stack teams I find really, really useful.
+[00:52:24.880] The other sort of thing is I think
+[00:52:29.640] we no longer need to
+[00:52:31.080] focus so much as software engineers on developing code production as a skill.
+[00:52:35.760] Really, what I want to see engineers sort of nurture in their own careers is
+[00:52:40.760] this sort of systems thinking mentality, what it means to set up teams for success?
+[00:52:46.080] How far can I peer into the future to solve problems,
+[00:52:50.080] to increase the throughput
+[00:52:51.440] at which we are producing code and shipping to customers?
+[00:52:56.120] Probably for me,
+[00:52:58.000] my time has been split 30, 30, 30 between
+[00:53:01.960] sort of the hardest refactor and 0 to 1 product ideation,
+[00:53:07.200] talking to customers and prioritizing scheduling and staffing work.
+[00:53:12.640] Whereas before I was probably spending
+[00:53:15.720] closer to 50 or 70% of my time producing code.
+[00:53:19.040] So I am able to step back a bit and focus on these other
+[00:53:24.960] highly cross-functional, high priority work streams in order to unblock
+[00:53:28.840] teams of agents from going and doing the code production pieces.
+[00:53:32.080] And the most important piece, they're talking to users
+[00:53:34.600] and understanding the requirements and actually mapping those
+[00:53:37.640] back to the functional requirements of the app, versus thinking too deeply
+[00:53:41.560] about how an app should be built and the implementation
+[00:53:44.360] and not thinking enough about, okay, what does the actual user want?
+[00:53:47.560] Rather than building this, this, this back end
+[00:53:50.840] to be absolutely perfect in its design and so forth?
+[00:53:53.800] Yeah.
+[00:53:54.040] And one of the things that's part of that is deciding what not to build.
+[00:53:57.160] Yes, very, very common trap I see people falling into these days with agents.
+[00:54:02.720] And particularly because, yeah, coding's cheap.
+[00:54:04.760] We can build everything.
+[00:54:05.880] But we need to kind of like stop and ask ourselves, should we build this?
+[00:54:08.960] Because I guess it's still us as humans that are consuming in the majority
+[00:54:12.960] in the most part.
+[00:54:14.760] Well, I suppose that there will be
+[00:54:16.400] these middleware things where I guess other agents and other apps can consume.
+[00:54:20.320] But when we think about humans and users actually using this,
+[00:54:24.120] we need to develop at the pace that they're comfortable consuming as well.
+[00:54:27.960] So it's super interesting, super interesting balance.
+[00:54:31.520] Ryan, this has been absolutely fascinating and really enlightening
+[00:54:35.000] to chat with you.
+[00:54:35.560] So a massive thank you for spending the time to to chat
+[00:54:38.840] with us today and really looking forward to your session later today,
+[00:54:43.600] which is going to be live on the main stage and also recorded for,
+[00:54:48.760] for our listeners to to watch back in their own time as well.
+[00:54:53.000] So Ryan massive thank you. Appreciate it. Amazing.
+[00:54:55.400] Thank you for having me.
+[00:54:56.160] This is such a fun conversation.
+[00:54:57.360] And I will catch you later at the conference and on the live stream.
+[00:55:00.080] Amazing.
+[00:55:00.640] Thanks very much for tuning in and hope to catch you on the next episode by
+[00:55:03.760] For Now. Bye, folks.
+[00:55:06.120] The AI Native Dev is brought to
+[00:55:06.840] you by Tessl, the package manager for skills and context.
+[00:55:10.000] Your hosts are Guy Podjarny and me, Simon Maple.
+[00:55:13.160] Our producer is Tom Dowler.
+[00:55:14.960] The AI Native Dev is not just a podcast, it's a community.
+[00:55:18.320] And we host monthly meetups at the Tessl offices in central London.
+[00:55:22.000] Visit tessl.io/community to learn more and I hope to see you there.

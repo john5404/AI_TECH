@@ -1,0 +1,1191 @@
+[00:00:00.120] the hunch we've had is like maybe actually the context that was written
+[00:00:04.240] like a year ago when it was like prior Sonnet 3.5.
+[00:00:08.200] It's still relevant today so we started to look into it
+[00:00:12.440] then we're like, well, what if we delete the whole context from the repo?
+[00:00:15.720] Like what would happen?
+[00:00:16.800] And what happened for us is actually like the eval started to perform
+[00:00:20.840] like much better which was counter intuitive, but it's just like, yeah,
+[00:00:24.560] that was pretty big and was listing stuff that was not necessarily useful
+[00:00:29.080] so that was really interesting to say.
+[00:00:32.440] The AI Native Dev is a podcast for developers and engineering
+[00:00:35.720] leads at the cutting edge of AI and agentic coding.
+[00:00:39.040] Join your hosts, Guy Podjarny and me, Simon Maple,
+[00:00:42.040] every week as we chat with the most exciting voices in
+[00:00:45.240] AI and tackle the biggest questions facing developers today.
+[00:00:49.640] This is the AI Native Dev.
+[00:00:55.320] We just wrapped up two amazing days at AI Native DevCon in London.
+[00:00:58.920] But the great thing is that
+[00:01:00.000] we get to do it all over again in New York City this November.
+[00:01:03.840] You're absolutely right.
+[00:01:04.960] We're going to be back in the City that never sleeps on November 3rd and
+[00:01:08.840] fourth for more amazing sessions, really engaging hands on workshops and much more.
+[00:01:14.240] Yeah, all that great networking, partying, eating and
+[00:01:17.280] drinking that you've come to expect from AI Native DevCon.
+[00:01:20.280] We think we have one of the best hallway tracks from the business,
+[00:01:23.280] and it's the perfect complement to our incredible speakers and presenters.
+[00:01:27.760] We'll both be in person and virtual,
+[00:01:29.880] with live streamed access to all mainstage keynotes and talks.
+[00:01:33.720] Sign up right now for our Super Early Bird ticket for just $100.
+[00:01:37.440] Only available for a limited time.
+[00:01:39.600] We're really excited to be headed back to the Big Apple, and we hope
+[00:01:43.280] to see you all there.
+[00:01:49.360] Hello everyone.
+[00:01:50.120] Welcome back to the AI Native Dev Podcast.
+[00:01:52.600] Today we have a really interesting story about how to build out agent enablement
+[00:01:57.000] and learn from it.
+[00:01:58.240] Looking at Datadog as an organization that really kind of dove in and invested
+[00:02:02.320] in agent and implement
+[00:02:03.800] and has a bunch of learnings to tell from the journey
+[00:02:06.080] and to guide us through all of that is Simon.
+[00:02:08.280] I hope I'm not sort of
+[00:02:11.480] too badly.
+[00:02:12.080] Simon. Things for coming onto the show.
+[00:02:13.960] My pleasure.
+[00:02:14.760] So, Simon, we're we're going to do this justice and sort of go
+[00:02:17.840] in chronological order on it.
+[00:02:19.240] But just to sort of give people a little bit of a teaser of some of the highlights.
+[00:02:22.120] I know in the as we as we talked through the journey that I really liked,
+[00:02:25.640] we'll talk a little bit about context that actually a fair bit about context,
+[00:02:29.080] you know, where did it work for you when you created it?
+[00:02:31.280] Where did it create kind of context rot and exaggeration?
+[00:02:35.000] And in a way,
+[00:02:36.440] I don't know if it's dramatic or standard case,
+[00:02:38.080] but a learning about cases where you actually an eval showed you that
+[00:02:41.920] if you deleted all the context, it actually actually did better than before.
+[00:02:46.040] So that'll be great.
+[00:02:46.800] We'll talk a little bit about org and how do you structure and who owns what
+[00:02:51.040] the importance of evals.
+[00:02:52.160] And and we'll talk about the bottleneck is what are the
+[00:02:56.120] what are the problems really that are worth solving.
+[00:02:58.200] Because there's infinite work in the world of what are we doing it.
+[00:03:01.880] So I'm keen to share all of these stories.
+[00:03:04.760] For starters, can you just sort of tell us a little bit about
+[00:03:07.080] what is it that that that you do kind of the scope of responsibilities
+[00:03:10.520] and maybe a couple of words about Datadog and, you know, like the
+[00:03:15.400] large group of engineers that
+[00:03:17.520] you're trying to sort of optimize their work for here.
+[00:03:19.920] Yeah.
+[00:03:20.160] For sure. I'm a director at Datadog.
+[00:03:23.680] I manage a part of the org
+[00:03:27.280] where called for the language Foundation's.
+[00:03:30.760] And so we are serving
+[00:03:34.080] about 4000 engineers here at Datadog.
+[00:03:37.040] And the way that I described our scope is like,
+[00:03:39.080] basically kind of the front end of the day.
+[00:03:41.320] It's like everything
+[00:03:42.080] people interact with day to day and like how they do their work.
+[00:03:46.200] A lot of that falls within my group.
+[00:03:48.360] And and a year ago now, we launched like a new
+[00:03:53.360] AI dev group to focus on AI
+[00:03:57.680] tooling basically here at Datadog.
+[00:03:59.240] Yeah, that is sort of a small initiative
+[00:04:01.080] there of, you know, maybe, maybe this thing has legs on it.
+[00:04:04.560] Cool. Okay.
+[00:04:05.440] And I like the definition
+[00:04:06.280] of like the front end of the sort of the developer tools on it.
+[00:04:09.280] I guess when you have 4000 developers, there's a there's a depth to that as well.
+[00:04:13.880] So walk us through a little bit of the storyline
+[00:04:17.120] of as you started to, to invest centrally or in general, like
+[00:04:21.120] how did the kind of Engineering and Datadog kind of approach
+[00:04:25.080] or start opening up the use of agents and a little bit of that timeline
+[00:04:29.360] of how we developed it today?
+[00:04:31.320] Yeah, yeah.
+[00:04:32.080] So for us, it really start at the beginning of, of like 2025.
+[00:04:37.040] When, you know, coding as a term was coined.
+[00:04:42.640] It was much more talk about it, about this being viable and like
+[00:04:46.600] starting to be something that like, really, we could use AI to write code.
+[00:04:50.840] And so it's like for us, the big driver, there has been cursor at the beginning.
+[00:04:56.400] And so at the beginning of 2025,
+[00:04:59.800] we launched like a posse internally with like cursor.
+[00:05:02.960] Initially we were aiming to get like 100
+[00:05:05.960] maybe 2 to 100 dev to use cursor and just like get some signals of like
+[00:05:11.200] how you know, how like it worked for them.
+[00:05:15.560] And it just like took off from there.
+[00:05:17.480] Like, like we had so many more than 200 people.
+[00:05:20.640] We quickly had like a thousand devs using cursor almost day to day
+[00:05:25.120] within a month of like launching for this posse.
+[00:05:28.280] And so like for us, it was a pretty big signal that I.
+[00:05:30.400] Yeah, there's truly something there.
+[00:05:32.200] There was a lot of people that I collected find like value in it.
+[00:05:35.680] And so yeah.
+[00:05:36.640] This is pure pool, right?
+[00:05:38.320] You opened the door, you said you can use cursor
+[00:05:41.280] and everybody came running in.
+[00:05:43.240] Correct.
+[00:05:43.760] Correct.
+[00:05:44.280] Everybody wanted to get in and like try it out basically.
+[00:05:48.320] And so that's where we started.
+[00:05:50.480] And like what like that pull you know towards more AI tool.
+[00:05:55.040] We were like well yeah this is going to be transformational to this industry.
+[00:05:59.040] And like how we do our work as engineer.
+[00:06:01.760] And so and so at that point we decided to okay,
+[00:06:05.840] well we will probably need to create kind of a team to, to like own those tools
+[00:06:11.200] and like own for the experience around the around I use for the development.
+[00:06:17.200] And so at that time, we started to recruit a team that went through
+[00:06:21.720] like kind of the whole summer, summer of 20.
+[00:06:26.040] Before the recruitment of the team.
+[00:06:27.560] The sort of the we over here
+[00:06:28.840] is basically you and the people looking at like developer experience and
+[00:06:32.960] Yeah.
+[00:06:33.440] and frontend are the are the people, I guess before it was designated AI.
+[00:06:37.760] Yeah yeah yeah.
+[00:06:38.600] Correct, correct.
+[00:06:39.840] It was like folks within my, my org rebrand for the city was like
+[00:06:43.640] a staff engineer who, like, took the stewardship
+[00:06:46.760] of that of the cursor POC.
+[00:06:50.320] And I like how you sort of
+[00:06:51.280] told me that at some point this was a demand was so kind of off
+[00:06:53.640] the list that you had a product manager that found themselves manually.
+[00:06:57.280] It was like you weren't ready for the avalanche.
+[00:06:59.600] And so someone was like manually adding people's emails into sort of
+[00:07:03.600] add them to the cursor list of allowed users.
+[00:07:06.400] yeah, yeah.
+[00:07:07.080] That was with like, Claude Code over the summer when, like,
+[00:07:10.800] Claude came out like it was the second wave of adoption and like that tool.
+[00:07:17.440] So at first we, we had issues to set up for SSO.
+[00:07:20.080] So I'm not exactly sure why, but that didn't work.
+[00:07:22.920] And so we needed to add manual email to like to like Claude Code
+[00:07:27.360] basically to get access to people.
+[00:07:28.920] And yeah, a PM took that role of like basically managing access to that tool
+[00:07:34.640] over the summer until we could figure out the SSO bug we were running into.
+[00:07:39.040] Some of that running in the the sort of the era of AI.
+[00:07:41.360] So sorry, I kind of disrupted your flow, though a little bit.
+[00:07:43.520] I sort of I love that story too much.
+[00:07:44.800] So you had cursor, you decided to hire someone
+[00:07:46.880] and then you went on to to start Claude Code, I guess.
+[00:07:51.200] How did Claude Code enter the scene here?
+[00:07:53.200] Yeah.
+[00:07:53.680] So so because the product we're already working with
+[00:07:59.000] the Anthropic models, we had connection already in like in a contract.
+[00:08:02.960] And so just like someday clockwork came out and people could basically use it
+[00:08:06.760] because we had API keys and so
+[00:08:11.800] and so yeah, it just was available overnight.
+[00:08:14.720] And I think, you know, people pay kind of attention
+[00:08:17.400] to like the news cycle what like people are like or like saying.
+[00:08:20.760] And there was a lot of hype around Claude Code at that time.
+[00:08:24.560] And so it basically organically grew
+[00:08:27.760] from that point.
+[00:08:29.000] Would you say like the
+[00:08:29.840] Claude Code adoption history at this point versus present?
+[00:08:33.800] But would you say Claude Code adoption was was as
+[00:08:37.640] as fast as as the cursor one because cursor.
+[00:08:42.400] They really nailed the kind of low friction you're already in.
+[00:08:45.960] It'll give you superpowers, you know?
+[00:08:48.320] So why wouldn't you want cursor?
+[00:08:51.680] While Claude Code was more like more of a big change to it
+[00:08:56.360] that clearly super compelling, but still the appeal was the same.
+[00:09:01.120] Or was cursor adopted faster?
+[00:09:05.400] That is hard to say.
+[00:09:06.160] I'm not sure.
+[00:09:06.640] You know, it's like both at that point, you know, towards the end of
+[00:09:10.720] the summer of 2025 because I think the story changed later. But
+[00:09:16.200] at that point they pretty were like pretty similar.
+[00:09:19.000] And I think they were catering to like different personas.
+[00:09:22.040] Let's take like people especially for us, where
+[00:09:25.680] maybe piece of context, like we have huge mono repos
+[00:09:28.440] and so we know like vs code on those tends to perform pretty badly.
+[00:09:33.440] And so the base of cursor
+[00:09:35.560] and some of our mono repos was causing issue for adoption of
+[00:09:39.440] just like being not performant enough for the large repos we're having.
+[00:09:44.720] And so there was like some of those people
+[00:09:49.160] had a much better kind of experience with, with code running in a terminal.
+[00:09:53.280] Like you don't need to have the IDE running.
+[00:09:56.160] And so for a lot of people, that was more compelling,
+[00:09:58.480] I think just from like a performance reason.
+[00:10:02.360] And so I think like that drove a lot of people there.
+[00:10:04.480] And then all of our power user quickly flipped over to Claude Code,
+[00:10:10.240] because I think what they were seeing is like, they don't need the IDE
+[00:10:14.200] open, you know, they could do most of their work without an IDE open.
+[00:10:18.120] And so for them, that adoption for the power user
+[00:10:22.600] was like pretty clear early on.
+[00:10:24.800] Got it.
+[00:10:25.480] Yeah. And so this is so we're about a year ago.
+[00:10:27.720] We're sort of like approaching summer of 25 at this point.
+[00:10:32.800] Okay. So talk us through. So cool. So we've had that.
+[00:10:34.920] You had a cursor just sort of lumped in.
+[00:10:37.040] You decided to hire while you're hiring.
+[00:10:39.160] You sort of have this sort of Claude Code, you know, land in your lap
+[00:10:42.960] and you're managing sort of added, you know,
+[00:10:46.480] that sort of a so and then you started to build a team.
+[00:10:51.160] Yeah, yeah yeah.
+[00:10:52.240] We started to build a team.
+[00:10:54.680] So so like one of our early champion was in the M here at Datadog.
+[00:10:59.400] We offered them to do kind of a team switch and build this new team.
+[00:11:02.960] We started to recruit people for that team.
+[00:11:04.720] We had a few transfer come in as well.
+[00:11:07.120] Yeah.
+[00:11:08.160] And so yeah, we started to put that team together.
+[00:11:13.000] We wanted to do
+[00:11:14.080] everything, but you got to decide where you start.
+[00:11:17.200] And so for that team initially we started really
+[00:11:19.360] like focused on like metrics and just getting more metrics into like
+[00:11:22.920] what is going on, what is the impact, what is the cost as well.
+[00:11:27.600] And on the other side, we knew already that like I was pretty expensive.
+[00:11:32.800] And so and so we wanted to start to be able to like benchmark different models.
+[00:11:37.720] What is the best solution?
+[00:11:39.400] And so we created a team or like that team started to work on evals
+[00:11:45.360] and like building kind of an agent and coding
+[00:11:48.160] tool eval platform
+[00:11:51.160] to help us make decisions about like
+[00:11:53.880] which model, which tool we should onboard at Datadog.
+[00:11:58.200] This is.
+[00:11:58.600] So this is like an early embrace of evals, which I appreciate, you know,
+[00:12:02.520] sort of big fans here at Cecil.
+[00:12:04.000] And how did you how did you apply that.
+[00:12:07.480] So like what are examples of things that you develop.
+[00:12:10.080] We'll dive in more.
+[00:12:11.200] So I'm still in like journey mode, but these sort of earlier days
+[00:12:15.320] it was sometimes hard like you might draw conclusions from an eval, but it wasn't.
+[00:12:19.600] It's not always easy to think about how would you apply that learning.
+[00:12:23.520] So what are examples of like should we do X
+[00:12:26.600] that you've decided?
+[00:12:28.000] Yeah.
+[00:12:28.960] So the first application of evals for us
+[00:12:32.040] very concretely was for code review.
+[00:12:35.120] And we had a bit of back and forth and like,
+[00:12:39.040] you know, what's the value of AI in code review?
+[00:12:42.840] And I think if you've worked with a tool that is very nitpicky,
+[00:12:46.840] you know, it's not really fun to work with and nitpicker that is not a human.
+[00:12:50.720] And so and so we stopped pretty early on the like
+[00:12:54.520] really for us, the distinction here would be like
+[00:12:57.840] we wanted to put AI in the loop for code review to really, like prevent
+[00:13:01.560] an incident or like kind of major bug and like really like focus on that,
+[00:13:04.520] you know, as like kind of a last guardrail before you go to production.
+[00:13:09.160] And so the first evals we did
+[00:13:12.080] was like replaying PRs we knew had caused incident.
+[00:13:16.040] And then like catching, you know,
+[00:13:18.560] are they going to figure out that this is going to fail actually.
+[00:13:22.800] And so, you know, we do track a lot of data around
+[00:13:26.640] incidents here at Datadog in a data set.
+[00:13:28.960] And so we had all that data already kind of there for the picking.
+[00:13:33.000] And so we were able from there to like devise and basically build
+[00:13:37.000] a platform that would replay PRs and then run the whole agent review.
+[00:13:42.440] And then with an agent judge being like, well, does that, does that
+[00:13:47.520] review command point out what is going to cause an incident later on?
+[00:13:51.920] Yeah.
+[00:13:52.240] Super smart because it's like a clear use case
+[00:13:54.360] because oftentimes the difficulty is defining what correct is.
+[00:13:58.240] But if you have those historical incidents.
+[00:14:00.240] So I want to dig into evals.
+[00:14:01.560] But let's just sort of complete maybe the timeline.
+[00:14:03.440] So you went ahead.
+[00:14:04.840] You sort of hired hard or like moved this internal person
+[00:14:09.240] and you started building a team.
+[00:14:10.320] And I know maybe fast forwarding to today,
+[00:14:13.360] as that team evolved, you now have two teams, right.
+[00:14:16.480] Like now that you're sort of a bit more mature,
+[00:14:18.200] maybe tell us
+[00:14:18.640] a little bit about current setup and then we'll we'll move on to evals.
+[00:14:22.920] What it says?
+[00:14:23.520] Like we had a lot of ambition around, like changing the way we work with AI.
+[00:14:28.840] But towards the beginning of the year, what we saw
+[00:14:31.760] is like that first team that we built,
+[00:14:34.880] they had a ton on their plate with evals,
+[00:14:38.440] with metrics, with like cost management and all of that.
+[00:14:42.360] And so it was really hard to then like, you know, carve out
+[00:14:46.760] a piece of time for us to actually work on, like rethinking how we work.
+[00:14:51.600] And at the same time, at the beginning of the year, I think everybody saw with Opus
+[00:14:56.640] 4.5 that came out just before the holidays, the
+[00:15:00.360] like adoption from their reader, like, took off like really, really fast.
+[00:15:05.000] You know, pretty
+[00:15:06.000] everybody says like the amount of like PR pretty much doubled overnight,
+[00:15:10.160] you know, and it started to really show kind of
+[00:15:14.320] bottlenecks in our flow in the CI
+[00:15:17.920] that are way more serious than they were before.
+[00:15:21.440] And then it was hard to carve out time to actually like focus on that.
+[00:15:25.920] Namely for us right now is like really code reviews,
+[00:15:28.040] like pretty like the big bottleneck that we're trying to tackle.
+[00:15:31.640] And at that point we're like,
+[00:15:33.120] well, we need more people to to work and like really focus
+[00:15:37.280] on the experience itself of like, you know, the slack with AI
+[00:15:42.520] and not just more kind of the governance and like, signals side of the world.
+[00:15:46.680] And so we like launch like a second team.
+[00:15:51.120] I forgot exactly when, but towards the beginning of the year.
+[00:15:54.200] Yeah. No.
+[00:15:54.880] Very cool I love that I like the names you sort of mentioned to them.
+[00:15:58.400] So just signal and flows like very does what it says on
+[00:16:01.480] the tin type names
+[00:16:05.040] and just I guess for it's useful sometimes
+[00:16:08.240] as people calibrate for them to sort of think about rough sizes of those teams.
+[00:16:11.600] Like it's kind of you have circa 4000 engineers in total was sort of the rough
+[00:16:16.400] sizes of these two teams.
+[00:16:18.600] Yeah.
+[00:16:19.000] Yeah.
+[00:16:19.240] So we're aiming to have six people, around six people in a kind of both team
+[00:16:23.520] and was recruiting for that second team.
+[00:16:26.920] Got it.
+[00:16:28.280] Yeah.
+[00:16:28.760] It's not a good ratio, you know, in terms of of multiplications and leverage.
+[00:16:31.840] Yeah, yeah.
+[00:16:32.560] So about 12 people for 4000 engineers.
+[00:16:36.400] Yeah.
+[00:16:37.360] And the
+[00:16:39.400] I guess as the organization flows this maybe
+[00:16:41.880] like one last question on the team thing before we continue as you change
+[00:16:47.000] the the way that you work and the adaptation did
+[00:16:50.280] did a need for new signals come out like because I think the previous team, like
+[00:16:54.360] the signal team is very much around current way of working.
+[00:16:58.480] Let's sort of measure output.
+[00:16:59.640] So we see if productivity improves or costs change, etc.
+[00:17:03.120] but now that you change it, did you find the same metrics work over time or do you
+[00:17:09.240] did you need to kind of invent new metrics or sort of start measuring do things?
+[00:17:14.520] So I don't think we've had to change dramatically
+[00:17:17.600] how we measure, you know, productivity.
+[00:17:21.760] But I'd say like we're using a lot like Dora metrics.
+[00:17:25.160] And these tends to be more
+[00:17:28.520] you know, they're not like leading metrics.
+[00:17:30.120] There are lagging metric.
+[00:17:31.600] And so and so looking more into like the leading metrics
+[00:17:36.200] and like what's in there I think usually we need a bit more creativity.
+[00:17:39.920] And and those are usually kind of less
+[00:17:41.560] like two signals or like your piece of the pie.
+[00:17:45.040] And it's hard to isolate exactly what moved those metrics.
+[00:17:50.880] So, so like what I'd say maybe
+[00:17:53.880] like what has been more visible is more like how we think of cost
+[00:17:58.520] and like the amount of, like token we're using.
+[00:18:00.720] And then so like, you know, just like
+[00:18:04.000] being more professional and like handling costs of AI, like, like, you know,
+[00:18:07.600] with now everybody at the company basically using AI, using more of it,
+[00:18:12.680] there's a bit, you know, it does increase for the budget that goes towards AI.
+[00:18:16.760] And so like
+[00:18:17.160] we just need to be more cognizant of this
+[00:18:18.760] and just make sure that is disused reasonable and so
+[00:18:23.520] and so definitively more on the cost aspect of it that we've done.
+[00:18:27.400] And then the other thing is like with evals, and now that we
+[00:18:30.680] that we're getting a bit more data, then like the question comes up like, well,
+[00:18:34.560] how do you turn that into action or like to know what to do with the evals?
+[00:18:38.600] And so it's like pretty like those two aspects have changed more
+[00:18:42.880] in terms of productivity metrics themselves.
+[00:18:44.880] Were still mainly looking at like durable metrics overall to get to get signals.
+[00:18:49.400] Yeah.
+[00:18:49.840] Yeah. Interesting. Yeah. Makes sense.
+[00:18:51.280] And I guess
+[00:18:51.840] did you ever get into token mixing or is that because you mentioned cost?
+[00:18:56.320] Like you're sort of aware of how much it cost before?
+[00:18:58.520] That sounds a little bit counter like I want this successful but I want it
+[00:19:01.760] responsibly successful.
+[00:19:03.400] No, no, not like token maxing.
+[00:19:05.880] We never did quotas for example.
+[00:19:08.320] And so and so we're trying to like really not go there because,
+[00:19:13.120] you know, if you need a lot of token because of what you're working
+[00:19:15.880] on, you know, we kind of do want people to have the opportunity
+[00:19:20.640] and be intentional about for their for their own use and their own needs.
+[00:19:25.440] And so, you know, it's like maybe a bit like breeding hot
+[00:19:29.240] and cold at the same time, but we're really more looking into like
+[00:19:32.640] systematic way that we can reduce token or like compress output,
+[00:19:38.120] you know, things like that.
+[00:19:41.120] Cool.
+[00:19:41.800] Okay. Thanks for sort of the rundown there.
+[00:19:43.760] Sort of on the team who've done it.
+[00:19:45.160] We started sort of teasing out a little bit
+[00:19:46.960] this sort of investment in in evals, you know, and creating it.
+[00:19:51.120] And I think
+[00:19:51.880] I thought that was really interesting because this is very much
+[00:19:54.400] like a world of vibes, right.
+[00:19:55.640] I'd say even until today, you know,
+[00:19:59.040] like if you're building an AI product, everybody will say,
+[00:20:02.880] but if you are talking about sort of development with the with agents,
+[00:20:07.040] or if you're talking about even sort of like a generic workflows as a whole.
+[00:20:11.680] I guess kind of showing my bias a little bit.
+[00:20:13.480] It's like,
+[00:20:13.760] I feel like there's a lack over there, like the vibes are quite dominant on it.
+[00:20:19.000] And so I like that you that you kind of create those.
+[00:20:23.640] Can you tell us a little bit about what what works like you've invested in evals.
+[00:20:27.520] We don't really need to go through the whole journey of like where you are today.
+[00:20:31.960] What is it that you do today with evals?
+[00:20:33.840] Maybe tell us a little bit about the tech stack, but also what's
+[00:20:37.000] what is the value that you sort of derive out of them.
+[00:20:39.720] And maybe where are they.
+[00:20:40.560] Not in yet.
+[00:20:43.040] Okay.
+[00:20:43.480] So, so like for us it's a fully custom.
+[00:20:46.320] Solution written in go with like sandboxing.
+[00:20:50.240] So I don't know, you know,
+[00:20:52.600] when we started, if there was a lot of open source option,
+[00:20:55.360] we pretty like looked at a few, you know, but nothing was like really mature.
+[00:20:58.480] And so like we just went our own way since like it was not like overly complex
+[00:21:02.240] for a pure use case of like AI agent.
+[00:21:04.760] And then Datadog has a pretty good metric.
+[00:21:07.160] Platforms like it was easy
+[00:21:08.240] to just feed the metrics in there and then consume it from Datadog directly.
+[00:21:12.240] So in terms of like what
+[00:21:15.360] we do today with the evals, just like maybe
+[00:21:19.680] like two things that we're looking at really specifically
+[00:21:23.480] on one side, it's like just like tracking performance
+[00:21:26.440] of like new models, especially for the open weight model
+[00:21:29.720] and trying to get a sense of like, when could that be a viable alternative?
+[00:21:34.840] Or in which fashion could they be?
+[00:21:38.600] And on the other side is like, how does the what, you know,
+[00:21:45.440] things like steering documents
+[00:21:47.480] are they are they working when we change it?
+[00:21:51.880] Does it change the performance of the evals?
+[00:21:54.800] And so like really more on a on the performance side
+[00:21:58.680] where like teams that are not us are going to own streaming documents,
+[00:22:03.480] maybe should own the streaming documents because we can talk of ownership.
+[00:22:06.720] There sometimes is a bit hard within repositories and just
+[00:22:11.680] like tracking a bit the performance like is there any shoe and like
+[00:22:16.200] should we change it in, in which form should we change them?
+[00:22:20.840] And did you maybe there's like two different sort of conversations here.
+[00:22:24.920] Sorry. I started both together there.
+[00:22:26.840] Maybe one is like let's talk
+[00:22:27.920] a little bit about the stack and then we go to the substance.
+[00:22:30.040] So on the stack you build your own because you have your sort of Datadog
+[00:22:33.680] platform, kind of very good at collecting data and aggregating it.
+[00:22:37.560] And I guess at the time nothing else was mature.
+[00:22:39.920] Do you think people should build the system, or would you say,
+[00:22:42.960] like, if you were to do this again today, you'd probably pick a harness
+[00:22:45.960] or sort of one of the existing frameworks for it?
+[00:22:50.280] Or do you think there's sort of aspects of how you do the eval
+[00:22:54.200] that, that you feel like they need to be custom, they need to be yours?
+[00:22:58.040] Yes. I don't feel.
+[00:22:58.880] Like strongly about custom versus hosting platform.
+[00:23:01.960] I think what's important is like to be able to support multiple
+[00:23:05.120] harnesses, multiple models from different source.
+[00:23:08.240] I think it's pretty important, but as long as you have that and I think
+[00:23:12.040] like most of the platform, do offer it, I think going with like with,
+[00:23:15.960] like an off the shelf solution is pretty, pretty good.
+[00:23:19.720] But I'd say also coding being less of an issue today
+[00:23:24.200] for us, it's been fairly easy to put it together.
+[00:23:25.960] It wasn't that hard.
+[00:23:27.800] To build the system.
+[00:23:28.840] So I guess so, so I think I think that that sort of makes sense.
+[00:23:31.840] Like technically, just to be able to run an agent and sort of have a card
+[00:23:35.720] or like some sort of scorecard and run that and aggregate the data,
+[00:23:38.960] you know, those are kind of within core competencies.
+[00:23:41.640] And I guess you kind of always way that a little bit against okay.
+[00:23:44.560] But why reinvent it.
+[00:23:45.880] You know like if you if it's not that custom.
+[00:23:48.040] So it's a decision I guess all developers are sort of fairly familiar with.
+[00:23:51.240] The second question that I have is maybe a bit more in
+[00:23:52.960] the substance is at the beginning, you talked about
+[00:23:54.920] use cases that made a lot of sense, that are central
+[00:23:57.880] and have clarity about what the truth is.
+[00:24:01.360] So I guess my question
+[00:24:03.000] is, as you approach use cases that are sort of more elaborate,
+[00:24:06.920] and you talk about using models and all that,
+[00:24:08.560] like what is correct is not always as clear cut.
+[00:24:12.960] So I guess how do you how do you handle that?
+[00:24:15.640] And maybe like who even write that down, you know, today.
+[00:24:19.400] Right. Like who creates the eval scenarios.
+[00:24:23.400] So in terms of evals
+[00:24:25.560] and like writing those evals,
+[00:24:29.320] there's a few different things that we're doing
+[00:24:31.800] and like new stuff that we're trying out.
+[00:24:33.440] Now. The status quo so far has been we've wrote the first ones with
+[00:24:37.520] like very common use case to just like have a baseline that we can go through.
+[00:24:41.720] And then we went out to pretty much like all of the platform teams and like
+[00:24:46.560] ask them to to add evals, you know, to cover their, their own platform use.
+[00:24:51.680] And so really spread out for the ownership
+[00:24:54.560] of those evals across a company and just like get more support.
+[00:24:58.360] The downside of that though is that,
+[00:25:02.160] yeah, it is limited in a way of like if as a dev you're using
+[00:25:09.480] like like a harness or like an engine tool,
+[00:25:13.160] like you're pretty, not only asking them to do very specific things,
+[00:25:16.640] there's a lot of the work that's more on the creative side, finding ideas.
+[00:25:20.240] What should you do?
+[00:25:21.160] What's the right approach to your problem?
+[00:25:23.280] And this we don't try to cover with the evals
+[00:25:26.600] we have because it's just like so broad.
+[00:25:30.000] It's just like really hard to know what exactly should you try.
+[00:25:33.120] And you know,
+[00:25:34.200] if it's always the same question, then like you only have this like a small slice
+[00:25:38.000] but like kind of the creativity aspect, I think it's somewhere or like something
+[00:25:42.240] that's like really hard to gauge with an agent.
+[00:25:45.800] And so I don't have a great answer to that,
+[00:25:47.760] but I know it's a whole that we're having and we're like,
+[00:25:51.240] fine to live with this gap that we're not sure how to fill yet.
+[00:25:55.320] Maybe someday I can come back and like, maybe we figure it out.
+[00:25:58.840] But for now, we're not too much trying to tackle that.
+[00:26:04.320] So you just sort of echo back over here.
+[00:26:06.640] You're saying at the moment
+[00:26:07.680] where you're sort of seeing the value in a bit of a concrete fashion
+[00:26:11.720] is in finding cases that have clarity about truth, that repeatable processes.
+[00:26:15.760] You're doing the thing again and again,
+[00:26:17.840] and generally the scenarios and all that are written fairly centrally,
+[00:26:21.680] not just by you, but by you mentioned platform teams.
+[00:26:24.520] So like it's not really not going to the end developers.
+[00:26:27.080] They're not really writing evals.
+[00:26:29.000] These are extractions out of real world scenarios of evals
+[00:26:32.840] that change at a slightly lower pace, broadly speaking.
+[00:26:39.240] And you think eventually like if you're if you were kind of a betting man, right.
+[00:26:43.200] And you sort of say in a year's time, do you think
+[00:26:46.320] all developers write evals or do you think it stays this way?
+[00:26:49.240] This is like a crystal.
+[00:26:50.040] Ball question. So no, you do it. But.
+[00:26:52.080] Yeah, no, but I have a good answer for you here.
+[00:26:54.240] I don't think every dev is going to be writing evals.
+[00:26:56.880] So what we're doing right now.
+[00:26:59.280] So you know, TBD if it's going to work.
+[00:27:01.080] But I'm pretty confident
+[00:27:02.000] that it's going to be the right solution for us going forward.
+[00:27:04.440] We are tracking
+[00:27:07.160] for the trajectories of agents and what they're doing.
+[00:27:11.600] And so we're tracking a lot of data today for the use of agent within Datadog.
+[00:27:17.000] And so what we want to do is like go from that to raw data of like,
+[00:27:22.080] well this from came in, the agent did that, etc.
+[00:27:25.720] and like extract from their common scenarios that tend to recur or
+[00:27:30.480] like common type of interaction that a user have with a given platform,
+[00:27:35.880] and then using an agent to turn that into actual evals.
+[00:27:40.000] And so basically taking like real data,
+[00:27:42.560] like how people use the agents and make sure that we're covering,
+[00:27:47.360] you know, a fair amount of overlap with actual use.
+[00:27:51.120] And we pretty confident that we can automate most of that.
+[00:27:56.240] Yeah.
+[00:27:56.480] No, I love that.
+[00:27:57.280] That is actually very aligned with sort of our experience at
+[00:28:00.680] all, which is the more you anchor it in concrete cases, the more real it is.
+[00:28:05.440] And then, you know, like what the developer is not like doing.
+[00:28:08.240] They don't like writing docs, they don't like writing tests.
+[00:28:10.480] And so now you're sort of saying, hey, write dogs and tests.
+[00:28:12.800] You know, that doesn't really work.
+[00:28:14.200] And and so probably the best ease of use
+[00:28:17.320] aspect to it is instead of asking devs to write those tests
+[00:28:22.120] or write those events and errors, you you observe them,
+[00:28:25.360] you sort of extract them out of the loop and you extract these scenarios.
+[00:28:29.000] I guess there's still it's an unavoidable future sort of evolution to that
+[00:28:33.760] that you will still need.
+[00:28:34.640] Like these things are dynamic and so you still captured that scenario,
+[00:28:38.280] that sort of hypothetical aggregate PR at least that's the case
+[00:28:42.440] in our world, right?
+[00:28:43.200] We've observed a bunch of prove created a scenario.
+[00:28:46.360] You're running it.
+[00:28:47.240] You're still capturing that in some files.
+[00:28:48.880] That's it in some repo.
+[00:28:50.240] And over time it will rot, right.
+[00:28:53.000] Like over time it will no longer represent your system.
+[00:28:55.880] And so there has to be some maintenance.
+[00:28:57.320] So at some point someone needs to own that right.
+[00:28:59.960] And that someone is hopefully someone who can kind of
+[00:29:03.000] represent developing in this repo.
+[00:29:06.000] Right. Or something. Like that.
+[00:29:08.840] Yeah, I agree,
+[00:29:10.840] but I think it just, you know, it's hard to catch wrath and it's hard
+[00:29:15.040] to come back to, to like case you created in the past because
+[00:29:19.120] like the amount usually that you end up with is like fairly large.
+[00:29:23.480] And so we're really focused on a on auto mission here.
+[00:29:28.120] So like really having an agent's to, to do for the sweeping
+[00:29:33.080] and the really is bring up the signal but eventually maybe even make the decision
+[00:29:36.840] about like which case are still relevant today.
+[00:29:40.640] Yeah, I think I buy into that.
+[00:29:42.880] I think in general, whenever you introduce a human, you, you create a bottleneck.
+[00:29:46.640] We'll talk about that in a sack.
+[00:29:48.240] But whenever you introduce a human and so, so you have to plan ahead for this.
+[00:29:53.040] And in that sense, the sort of the users, both the authors and the users of
+[00:29:56.160] the evals are very likely to be to be agents.
+[00:30:00.080] So you still need to create them, but it's not necessarily the person that creates.
+[00:30:03.840] It might be the, the someone else.
+[00:30:07.240] And I guess the before we kind of move on a little bit
+[00:30:10.960] from evals on it, how how often do you run the eval.
+[00:30:15.680] So like once you, once you agree that something is correct,
+[00:30:19.720] is this, is this something you, you deem after the fact?
+[00:30:22.760] You run them on every context change?
+[00:30:24.920] Do you run them? Yes.
+[00:30:26.680] How how do the how does the execution
+[00:30:30.280] of the evals integrate into this SDLC?
+[00:30:33.640] Yeah.
+[00:30:34.000] Yeah.
+[00:30:34.200] So today we're doing nightly evals.
+[00:30:36.280] So we're running basically once a day.
+[00:30:38.600] And then for PR that might specifically target evals
+[00:30:43.000] like they're changing streaming documents in like a heavyweight really trying to
+[00:30:49.000] to like change for the results for those people can do like an ad hoc run.
+[00:30:54.560] And you're probably gonna want to do a few since like evals or not
+[00:30:57.800] always super stable to get to give a statistical significant results.
+[00:31:02.200] Got it.
+[00:31:02.640] Very cool. So this is you run nightly.
+[00:31:05.440] You look at relevant changes, some steering dogs that have sort of modified.
+[00:31:09.960] If those occurred you run the eval.
+[00:31:11.560] If there's a an apparent regression, you, you, you point
+[00:31:15.720] that out to the to the person so you don't get in the way and you run them.
+[00:31:20.280] I guess
+[00:31:20.560] it's sort of consistent with the previous theme,
+[00:31:22.240] which is you run them on the things that you, you feel like you truly know,
+[00:31:25.560] as opposed to trying to speculatively anticipate ahead.
+[00:31:29.760] Correct.
+[00:31:30.840] Okay.
+[00:31:31.320] And that probably results in something that like costs wise,
+[00:31:34.520] is not that big a deal.
+[00:31:35.400] How expensive are these events getting?
+[00:31:39.120] It's a good question.
+[00:31:39.840] I'm not sure, but evals are expensive.
+[00:31:43.160] They're cheap enough that that they haven't doubled. You're
+[00:31:45.520] yeah, yeah, I don't know compared to the coding agents use.
+[00:31:49.400] Yeah. Yeah it is. It is nothing compared to.
+[00:31:52.120] But it's definitely something that we're cognizant of.
+[00:31:54.640] And like the decision to run it might be is obviously part of that.
+[00:31:57.960] We're like, well if we were on prepare obviously it's a
+[00:32:01.480] that is going to be too expensive.
+[00:32:04.480] It's interesting. You know we've we've been experimenting.
+[00:32:06.120] This is of course
+[00:32:06.760] sort of in intensive itself but also kind of with customers.
+[00:32:09.480] And the one of the observations is that you can actually use
+[00:32:14.600] cheap models like open, cheap open models to assess regressions.
+[00:32:19.360] So we found that deep seek actually correlates
+[00:32:22.400] pretty well in terms of the skill uplift for a variety of tasks.
+[00:32:26.200] And so what you can do is it doesn't need to be as good at overall the tasks.
+[00:32:30.200] But if you measure it with the skill.
+[00:32:32.160] Now that one is like a lot.
+[00:32:33.400] It's fast and it's cheap.
+[00:32:34.840] And so maybe you can run that sort of deep before flash
+[00:32:38.280] as part of your CI test for some sort of selection.
+[00:32:41.320] And so you find it because it has all the sort of the natural problem.
+[00:32:44.160] If someone made a change yesterday and you're coming back to them tomorrow,
+[00:32:47.240] it's annoying.
+[00:32:47.840] It's rework.
+[00:32:48.800] It's better if it's in line. Have to weigh that.
+[00:32:51.640] So I don't.
+[00:32:52.680] Know precisely where it lands, but I feel like there is an evolution of evals
+[00:32:57.840] expanding as tests, right?
+[00:32:59.080] Just like we have some tests that we run in the CI,
+[00:33:02.320] and some tests that are too expensive or slow to run in the CI.
+[00:33:05.920] I think we'll have the same for emails.
+[00:33:07.680] I think that is exactly correct.
+[00:33:09.480] And it's also the way we're thinking about it. Right.
+[00:33:11.040] Like what you can run after the fact.
+[00:33:13.280] I'm like, you know, what's what's like the cost of a revert,
+[00:33:16.560] like a rollback versus the cost of like that.
+[00:33:19.640] Like you pay now waiting before you can merge something.
+[00:33:22.120] And so it's not always a pure trade off,
+[00:33:25.160] but we need to try to be kind of cognizant of the cost
+[00:33:30.080] of making a mistake versus
+[00:33:31.440] the cost of waiting for things to run or paying for the inference or run into.
+[00:33:35.920] Very cool.
+[00:33:36.480] Okay, cool.
+[00:33:37.080] So I love the passionate vowels and I can kind of geek out about evals.
+[00:33:40.360] I've built a passion for them.
+[00:33:42.600] But let's talk a little bit about context.
+[00:33:44.680] So in the process of that
+[00:33:45.920] you referred here to sort of steering context and all that.
+[00:33:49.160] What is the sort of the state of context typically
+[00:33:52.880] within Datadog or people like?
+[00:33:56.160] Is there a central context that people share?
+[00:33:57.840] It is mostly in repo, like how would you describe like skill adoption right now?
+[00:34:02.040] Give us a bit of a picture of where is context being used.
+[00:34:05.040] Focus on dev within within the organization.
+[00:34:09.840] Yeah.
+[00:34:10.120] So it's like there's like two, two big source.
+[00:34:12.760] One is files that are just committed to to the repository themselves.
+[00:34:18.640] I'd select skills is now mainly what there is.
+[00:34:21.600] There's not a lot of other stuff that is not skills.
+[00:34:23.680] Skills as you know has been pretty well adopted.
+[00:34:26.640] Yeah.
+[00:34:27.280] And then we have the cloud marketplace with a lot of skills there as well
+[00:34:31.400] that is centralized.
+[00:34:33.040] And I can talk of like mistakes and like all of those as well
+[00:34:37.720] Yeah, that's what I'm talking.
+[00:34:38.680] I think you had a movable sort of insight.
+[00:34:40.600] So what did it work?
+[00:34:43.680] Let's start. Let's start positive.
+[00:34:45.000] Where did words that have seen working?
+[00:34:47.600] Yeah yeah.
+[00:34:48.400] So I mean what what's worked really well is like
+[00:34:52.480] everybody contributed early on and especially when we started, you know,
+[00:34:56.480] without the central team was like if you see just like get people onboarded,
+[00:35:00.000] you know, I think it was good to not put too much structure early on
+[00:35:04.240] so we can try and see what work and like, have learnings out of it.
+[00:35:09.040] And so I think for the for the barrier
+[00:35:12.960] and the friction early on was like really low.
+[00:35:15.040] And I think that was
+[00:35:15.840] probably the right move to do because we want people to be contributing
+[00:35:19.880] and we want the best idea to win and those ideas to be easy to share.
+[00:35:24.560] I love that the kind of core principle about transformation at the beginning,
+[00:35:27.680] you're trying to drive adoption on efficiency.
+[00:35:29.400] Just just sort of get people in the boat.
+[00:35:33.200] But then what we saw two time is the more user we've
+[00:35:37.480] had, the harder it became to go and like change them
+[00:35:41.280] because the impact you're having then, you know, instead of like being on like
+[00:35:44.880] 200 people doing kind of a posse with you, like using the same tool,
+[00:35:48.440] you're going to impact like 4000 people working on the repository.
+[00:35:51.640] And so like it's just like much more stressful
+[00:35:54.480] to like break things for like so many people.
+[00:35:56.840] And then also the size became kind of hard to manage.
+[00:36:02.560] Like the cloud marketplace has hundreds of plugins.
+[00:36:06.080] So, you know, if you're once you install the marketplace, like
+[00:36:10.400] do you know which plugins are good,
+[00:36:12.040] which one should you use, which one are going to perform better?
+[00:36:15.600] And so what we've steered people to do is more team based marketplace
+[00:36:21.200] for them to share, for their own flows within the team, things that are specific
+[00:36:25.000] to their team or marketplaces, extension for specific platforms.
+[00:36:29.880] So if you work with platform X or we'll
+[00:36:33.960] we will suggest in the documentation that you install that marketplace
+[00:36:37.560] and those plugins for you, or will refer to it from context document
+[00:36:42.920] where the agent can suggest to install the marketplace
+[00:36:46.160] and stuff like that.
+[00:36:47.520] Very interesting.
+[00:36:48.160] So like groups of context so people know where they're approaching
+[00:36:52.200] that and they control that because kind of slightly hinders
+[00:36:57.320] maybe like reusability, you might sort of have different teams.
+[00:37:00.400] You probably do have different teams that do that, but you slightly control
+[00:37:03.600] the chaos in this fashion.
+[00:37:05.400] Yeah yeah yeah yeah.
+[00:37:06.920] Correct, correct.
+[00:37:08.080] And then what I'd say we found out at the beginning of the year,
+[00:37:11.560] Pi became like pretty popular recently.
+[00:37:15.160] And so, so we saw many people like starting to hint at like the fact
+[00:37:19.480] that like Pi somehow was just performing better than the alternative we had.
+[00:37:24.680] And like the.
+[00:37:26.760] To clarify, for those who don't know that Pi is the very
+[00:37:29.680] highly customizable, custom, hackable harness, but it's open source.
+[00:37:33.760] But then you can customize on top of which Open Claw is built.
+[00:37:37.720] Exactly.
+[00:37:38.480] And so one thing is like by default, it's not going to be the lot of the context.
+[00:37:43.200] And so and so kind of the hunch we've had is like maybe
+[00:37:47.120] actually the context that was written like a year ago
+[00:37:50.240] when it was like prior Sonnet 3.5.
+[00:37:53.240] It's still relevant today in the world of Opus
+[00:37:56.960] 4.8 or GPT-5.5.
+[00:37:59.960] Right. Like maybe not.
+[00:38:02.400] And so we started to look into it and then we're like, well,
+[00:38:06.960] what if we delete the whole context from the repo?
+[00:38:09.160] Like what would happen?
+[00:38:11.120] And what happened for us is actually like the eval started to perform
+[00:38:15.520] like much better once we deleted the whole context,
+[00:38:19.200] which was counter intuitive, but it's just like, yeah, that was pretty
+[00:38:23.000] big and was listing stuff that was not like necessarily useful or,
+[00:38:27.240] you know, that should not go into like a steering document.
+[00:38:31.120] And so that was really interesting to say.
+[00:38:34.120] I love that sort of insight.
+[00:38:35.840] It's it's kind of a real world manifestation of how context rots
+[00:38:39.600] and sort of so familiar that software rots, that it goes from kind of
+[00:38:42.600] being useful to being useless, to being harmful on it.
+[00:38:46.000] And for context, like we don't have that muscle memory yet on it.
+[00:38:48.800] So now you're seeing it with the skills and guess what was the result of.
+[00:38:52.400] So the insight is great.
+[00:38:53.280] It sounds like you still ran
+[00:38:54.280] those evals centrally because it was like you or your teams kind of thinking,
+[00:38:58.320] you'll do that. You ran the eval you found out.
+[00:39:00.600] It's actually outperforming having context,
+[00:39:05.800] I guess. What could you do about it?
+[00:39:07.120] Could you sort of go off and say, cool, let's delete the context.
+[00:39:09.800] How did you handle.
+[00:39:12.520] yeah, yeah.
+[00:39:13.000] So I think if we didn't have data to back it, it would be pretty controversial.
+[00:39:18.640] And just like to to be clear, this was owned by the front
+[00:39:21.880] end team that run for the front end mono repo.
+[00:39:25.040] They're both evals.
+[00:39:26.200] They did the for the for the testing there.
+[00:39:29.560] And like they wrote new guides of like what should you do instead of context.
+[00:39:34.120] And so like that was fully something that was owned but by the sort of team
+[00:39:37.960] within my original but but but like not like by the AI
+[00:39:41.120] team and so
+[00:39:44.320] and so yeah.
+[00:39:45.080] With the data
+[00:39:46.680] backing this decision, a lot of people were surprised by this decision.
+[00:39:50.600] But the data was like really clear that it was performing much better.
+[00:39:54.560] And so and so people agreed with it like very easily once they saw
+[00:39:59.320] the for the data. Yeah.
+[00:40:01.480] So I think like two to sort of interesting tidbits over here is
+[00:40:04.360] like one is you removed the context, but it's because you have started
+[00:40:08.120] forming a harness.
+[00:40:09.200] So right.
+[00:40:09.800] You're saying this was not just because the models got better,
+[00:40:13.200] but also because you started working with more custom
+[00:40:16.320] harnesses.
+[00:40:17.600] Oh this is something we're
+[00:40:19.400] doing now but it's not what led to that decision.
+[00:40:23.320] Yeah.
+[00:40:23.960] So this
+[00:40:24.480] I guess is still primarily either the model improvements or just
+[00:40:27.400] those context files were created at one point in time
+[00:40:30.040] and they no longer represent reality for the agent.
+[00:40:33.040] So anywhere between the new models don't need them.
+[00:40:35.440] And they're just wrong at this point.
+[00:40:38.120] Correct.
+[00:40:38.760] Correct.
+[00:40:39.120] I don't think they were wrong per se, but I think it's early on.
+[00:40:44.480] There was a lot of like basics like you would try to retrain the agent on.
+[00:40:49.080] Yeah.
+[00:40:49.400] So in the case of the front end repo, there was a
+[00:40:52.480] like a whole paragraph in like how to use yarn.
+[00:40:55.440] And I'm pretty sure now it's part of the training set of,
+[00:40:58.080] of like the models out there.
+[00:40:59.120] And so, you know, we don't need to retrain it.
+[00:41:02.360] Yeah, yeah, that makes sense.
+[00:41:03.840] And context is a scarce resource.
+[00:41:05.360] And so over time, like if you accumulate enough of that, you, you,
+[00:41:10.920] you take away from, you get a I love this all one talking with someone talked about
+[00:41:15.760] how the the model gets into dumb mode, you know because of the.
+[00:41:20.040] Yeah yeah.
+[00:41:20.560] Yeah. Exactly.
+[00:41:21.360] And so in terms of the governance around context,
+[00:41:24.480] if you want to do a bit in there is what we saw is like actually like
+[00:41:29.040] I think we have an inclined to just go in and add something to like an agent.
+[00:41:33.120] But very often it just has easy as
+[00:41:35.640] like is the error message from that tool clear.
+[00:41:39.000] And do you provide next step of like what should you do instead.
+[00:41:42.760] And so we've been also moving
+[00:41:45.920] or like pushing people that like, you know, when they run into like
+[00:41:48.800] kind of an issue where the agent doesn't do what you want it to do.
+[00:41:52.560] Well, where, where,
+[00:41:55.280] where like can we provide that context when it's necessary instead of like
+[00:41:59.680] trying to train the agent ahead of time into how to do everything,
+[00:42:03.480] especially within a modern repo where like, there's so much going on,
+[00:42:07.240] you just cannot provide all of the context upfront.
+[00:42:10.200] And that seems to be detrimental.
+[00:42:14.280] Very good.
+[00:42:14.560] So I think a whole bunch of lessons from here.
+[00:42:16.480] One is the importance of evals.
+[00:42:18.360] So you can make data driven decisions to is maybe a reminder around
+[00:42:22.080] how context does rot over time.
+[00:42:23.520] So you have to have some sort of plan around
+[00:42:25.960] how would you sort of reassess it, which comes back to evals.
+[00:42:28.400] But even if you're just vibing it like still do something
+[00:42:30.680] like be proactive around updating it and then,
+[00:42:34.560] you know, maybe just a little bit more as you write new context,
+[00:42:38.320] solve problems, don't anticipate them as you as you go.
+[00:42:42.080] Which I guess comes back to the observability and the loops. Right?
+[00:42:44.440] Because today, probably the best practices don't actually solve problems,
+[00:42:48.040] like just sort of solve a problem in the spot
+[00:42:49.520] and create the loop to, to identify, manage that context.
+[00:42:53.640] And you like when we spoke, you talked about how you think
+[00:42:57.240] one of the theories of how the context got accumulated in the repo
+[00:43:02.240] was because of this sort of loss aversion, like when someone wrote it, it was hard.
+[00:43:06.920] And maybe this comes back to evals
+[00:43:08.360] is, you know, it just sort of feels fearful to delete it,
+[00:43:11.360] like maybe it is useful somewhere on it is that do you want to about that?
+[00:43:16.280] Yeah.
+[00:43:16.480] Yeah, absolutely.
+[00:43:17.560] I think like as people propose to remove stuff from,
+[00:43:22.240] from like that root AGENTS.md file like
+[00:43:27.080] like even in like PR review comments.
+[00:43:29.120] People are like, well,
+[00:43:29.800] are you sure that like you should be doing this because like,
+[00:43:32.800] maybe it provides value to somebody somewhere.
+[00:43:35.120] And so I think, yes, it's
+[00:43:38.080] when you remove something and you don't replace it with something new.
+[00:43:41.880] It is just hard to do,
+[00:43:45.000] especially when you're having an impact on like hundreds
+[00:43:47.720] or thousands of engineer at once is like it's hard to have certainty.
+[00:43:51.760] And so if you don't have data to back those decision, it is really hard to
+[00:43:57.520] to like take the step to go ahead and do it
+[00:43:59.760] or like feel the permission or feel that you're
+[00:44:03.800] that you have a good reason to do it.
+[00:44:05.640] Yeah, yeah, yeah.
+[00:44:06.600] I'm 100% in agreement and it's I love to see it in manifest.
+[00:44:11.280] So I guess like in those marketplaces that you have in the small ones
+[00:44:14.520] coming back a little bit to what do you create evals for?
+[00:44:17.440] I mean, this sort of logic will imply that whether now or soon, like,
+[00:44:21.160] are you starting to feel that
+[00:44:22.600] within each of these teams marketplaces, they need to have evals
+[00:44:25.600] for how how well these skills like for the things that are shared,
+[00:44:30.240] like it goes to reason to say like they also need the valves
+[00:44:33.480] because otherwise they'll have the same problem.
+[00:44:37.360] Yeah, yeah for sure they will.
+[00:44:39.560] I think like maybe one of the challenges is also just like the distribution
+[00:44:44.240] of those skills.
+[00:44:46.200] Does everybody have them install when they need them.
+[00:44:49.200] And so there's a bit of a challenge there of like making sure,
+[00:44:52.800] do people have the right tool for the task that like they want to do.
+[00:44:56.600] And I'm not sure the way we're working today
+[00:44:59.320] with like local agent only and like everybody set up
+[00:45:03.080] for their own thing, there might be limits to that eventually.
+[00:45:07.680] And so I'm not exactly sure what is going to be the right solution going forward.
+[00:45:13.040] But I think meta harnesses, for example, are pretty interesting to that of like,
+[00:45:16.960] you know what if we
+[00:45:18.160] we have kind of a classifier and we know well, this is touching platform A.
+[00:45:22.520] So let's run this with an agent that has those skills pre-installed.
+[00:45:26.960] And like if this was centralized for example,
+[00:45:30.080] like I think that might be able to provide a much better kind of experience.
+[00:45:33.040] Like we have a better baseline that don't rely on like
+[00:45:36.320] tribal knowledge or like somebody having read documentation.
+[00:45:40.000] Yeah, I agree, I feel I think generally people
+[00:45:42.800] underestimate the importance of environment definitions in evaluations.
+[00:45:47.440] And so I think that's at least how we translates in our world.
+[00:45:50.120] We created this project evals versus sort of scale evals.
+[00:45:53.720] They're actually all just the same events just of names.
+[00:45:56.120] And the idea was the scale values I think you test in isolation.
+[00:46:00.480] And so it's a good way to sort of test if it regresses or not.
+[00:46:03.120] So that that needs to tackle.
+[00:46:04.840] That first problem, which you correctly pointed out
+[00:46:06.560] is a bit hard, which is defined what correct is because it runs together.
+[00:46:11.440] And then and then you get into the problem of like,
+[00:46:13.760] okay, that's nice and well,
+[00:46:14.720] but I actually have 30 skills installed when I'm running this, not one.
+[00:46:18.280] And so does it work in that environment.
+[00:46:20.200] And that basically gets infinite. Right.
+[00:46:21.880] Which which skills do you have at what time and how do you.
+[00:46:24.760] And so I think environment management like the thing that we've
+[00:46:27.000] sort of seen extend in flexibility, but then it's also in complexity.
+[00:46:30.440] You have to think about how to rein that in.
+[00:46:32.040] It's just that all these definitions of
+[00:46:33.760] how do you define the environment within something runs.
+[00:46:37.520] And I guess they both boil down to trying to eliminate works on my machine
+[00:46:41.440] scenario. Right?
+[00:46:42.120] Like the one is define what correct is and define
+[00:46:45.360] the machine of like a like defined works and define machine.
+[00:46:49.680] And you can step out of of that.
+[00:46:52.760] So it's interesting and it sounds like that's still sort of a work in progress.
+[00:46:56.600] Like at the moment in practice, these little marketplaces
+[00:47:00.200] I don't know if little, but like t marketplaces don't tend to have events.
+[00:47:05.880] Yeah.
+[00:47:07.040] Yeah.
+[00:47:07.840] So these are a fascinating conversation that we started running out of time here.
+[00:47:11.120] So maybe sort of chat a little bit about about kind of open models on it.
+[00:47:16.840] Maybe I'll sort of open models and bottlenecks.
+[00:47:20.720] So you started by sort of talking about how the
+[00:47:24.640] the evals were useful to assess models.
+[00:47:26.520] And, you know, you've alluded nerds
+[00:47:30.040] of previous conversations, how today the bottleneck is very much
+[00:47:33.080] in the review phase of it and where we work over there.
+[00:47:37.040] So I guess maybe I'll kind of ask you
+[00:47:38.560] a little bit of a joint question of it, which is, you know, where are you
+[00:47:42.680] and what are your views around the review bottleneck, what to solve it?
+[00:47:47.080] And have you tried open, open models on those?
+[00:47:51.120] Yeah.
+[00:47:51.400] So based on our evals,
+[00:47:54.560] I think open weight model to be like fully viable,
+[00:47:58.160] assuming the bar does not move as progress happen in the space would be
+[00:48:02.320] that they would need to perform about 50% better than they are today.
+[00:48:06.640] But caveats.
+[00:48:10.040] Is a statement even for like GLM 5.2 and like the latest
+[00:48:13.480] or is it like a notch below.
+[00:48:14.680] No, a notch below.
+[00:48:16.760] We didn't yet run the evals on those.
+[00:48:19.120] But we're very excited about this because
+[00:48:22.600] yeah yeah yeah.
+[00:48:25.760] And the caveat being like also for the
+[00:48:28.440] for the creativity of those models with like tasks that are unknown or
+[00:48:33.200] larger task instead of the execution part of it.
+[00:48:38.280] And so this we don't have signals
+[00:48:40.960] from our evals, but we're looking at public evals on
+[00:48:44.280] to get some signal there and then getting user feedback.
+[00:48:49.320] So at the moment when you run
+[00:48:50.600] like say code reviews or these like highly repeatable processes, today
+[00:48:54.520] you're still with the frontier models writing those.
+[00:48:57.000] Yeah.
+[00:48:57.440] For code review today we are we're having the background agents that
+[00:49:03.640] for example for code review the first one rerelease is like if your CI fail
+[00:49:08.120] and it's like a linting error or formatting error, stuff like that.
+[00:49:12.880] And like that's pretty easy to offset to like an agent to just go fix it for you
+[00:49:16.320] so you don't need to like, come back and like have to deal with it yourself.
+[00:49:19.280] And so we're trying to remove friction from, from different places.
+[00:49:23.200] And, and like a lot of those tasks can be done because well by like
+[00:49:27.920] like an open weight model
+[00:49:28.840] that is like much cheaper because it doesn't need creativity.
+[00:49:32.000] It's like a very clear path,
+[00:49:33.720] like you need to run a command or you need to do some kind of something specific.
+[00:49:37.920] And so our thinking now is like, we probably can encode a lot of what,
+[00:49:43.520] what like you would do out of Claude Code to background agents that are just going
+[00:49:48.240] to take action on your behalf to like, nudge things along.
+[00:49:51.920] And then here is like finding the right balance between like, what can we trust
+[00:49:56.680] and like not changing core decisions of a PR,
+[00:50:00.760] you know, like really more into like, like nitpicks and like small fixes
+[00:50:05.320] without changing the meaning of a of a code change is being proposed.
+[00:50:10.800] This is consistent.
+[00:50:11.600] Sounds like the your view is there's a whole bunch of places
+[00:50:14.520] in which it's inarguable that the agent helped.
+[00:50:18.600] Like, let's apply the agents in all of those places.
+[00:50:21.360] Don't get into the argument of whether it's right or not, like
+[00:50:24.520] get it into all those places in which it can do it.
+[00:50:26.640] And clearly there's always like a little bit of a halo, like, you know,
+[00:50:29.560] you might veer a little bit into judgment, but mostly lean into the areas
+[00:50:33.720] in which you can inarguably say, this is correct.
+[00:50:37.520] So can the agent do it?
+[00:50:38.960] Can it not? Because that's not right.
+[00:50:42.440] Yeah, yeah.
+[00:50:43.280] And I think like super practical and kind of in high impact and
+[00:50:47.080] and it sounds like in review world and I guess kind of in the repo world
+[00:50:50.960] as a whole, you're just sort of looking for these
+[00:50:54.760] surrounding annoyances to sort of resolve those.
+[00:50:58.640] And there's so much kind of meat on that bone that you're plenty busy
+[00:51:02.720] sort of doing that you don't need into features quite yet.
+[00:51:05.960] Yeah, yeah.
+[00:51:07.000] Correct.
+[00:51:08.360] Hey everyone!
+[00:51:09.160] Hope you're enjoying the episode so far.
+[00:51:11.440] Our team is working really hard behind the scenes to bring you the best guests,
+[00:51:15.320] so we can have the most informative conversations about agentic development,
+[00:51:19.640] whether that's talking about the latest
+[00:51:21.280] tools, the most efficient workflows, or defining best practices.
+[00:51:25.080] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:51:29.000] If you're enjoying the podcast and want us to continue to bring you
+[00:51:32.040] the very best content,
+[00:51:33.320] please do us a favor and hit that subscribe button.
+[00:51:35.800] It really does make a difference and lets us continue to improve
+[00:51:39.160] the quality of our guests and build an even better product for you.
+[00:51:43.600] All right, back to the episode.
+[00:51:45.920] I'd love to talk a little bit about
+[00:51:48.600] about people and around sort of hiring.
+[00:51:52.400] So I know you've you've had a lot of learnings about how you hire and,
+[00:51:56.360] and what is it that you advocate or like expect people
+[00:52:00.800] now when you think about promotions or kind of their career ladder.
+[00:52:04.240] So can you share a little bit about the learnings there
+[00:52:06.280] and like where you are today and maybe some key learnings?
+[00:52:09.160] Yeah.
+[00:52:09.680] Yeah. Yeah.
+[00:52:10.200] So so personally, I always hated LeetCode type of interviews where I think
+[00:52:16.480] like they were low signal, a way to like filter out some like candidates.
+[00:52:20.600] But I think like very often could just lead to like the wrong conclusion.
+[00:52:25.480] And so I've never thought that it were a nice way to hire people.
+[00:52:30.120] I've never liked doing them personally, and I've personally always felt like
+[00:52:34.480] it was kind of low signal, basically.
+[00:52:36.360] So, so I think AI opened the door to, to make a case to actually like review
+[00:52:43.120] how we do interviewing, especially coding interviews.
+[00:52:47.120] And so and so what we've done
+[00:52:50.760] is we've built a few squads to own different questions.
+[00:52:54.760] And with AI in the interview,
+[00:52:59.200] it allowed us to do much more than we could before.
+[00:53:02.240] And so it allowed us to basically
+[00:53:05.240] work on a much larger codebase in asking, like actual tasks
+[00:53:08.600] like somebody might be doing in their day to day and like assessing more signal
+[00:53:13.480] than like, yes, they could write the code in like 40 minutes
+[00:53:17.240] and I'm like, pass all all of the tests, but more like,
+[00:53:21.120] how's their how's their judgment, how's their tradeoff?
+[00:53:25.080] Did they understand the code?
+[00:53:26.920] And so like with the AI, basically the new flow for
+[00:53:29.680] most of the interview is going to be like, here's a code base.
+[00:53:32.720] It's fairly large, you need AI to understand
+[00:53:36.800] what it's doing, what is going on, what is this code base about.
+[00:53:41.360] And then afterward, like let's talk of an engineering problem.
+[00:53:45.440] So like maybe you want to extend this code base.
+[00:53:49.040] Maybe there's like a diff
+[00:53:51.080] like basically kind of a code review that like somebody wants to merge.
+[00:53:54.080] Should they.
+[00:53:55.400] What should we bring back in terms of like feedback detector review.
+[00:53:59.200] And so more like a real world scenarios.
+[00:54:02.760] And I think this can only happen with larger code base.
+[00:54:07.040] And and without AI, it would just not be possible
+[00:54:10.840] to go through and understand the whole context.
+[00:54:13.120] You know, it's like it would be more like left to luck almost.
+[00:54:15.640] And so and so I think it like really allowed us to step away
+[00:54:20.400] from LeetCode into more actual real world scenarios in the interviews.
+[00:54:25.280] Yeah, I love that it first of all, it's closer to the reality.
+[00:54:28.480] And there's actually like
+[00:54:29.160] a bit of a hidden question about your sort of Agent Foo,
+[00:54:32.520] like how how are you at kind of navigating the agent.
+[00:54:36.640] And so you're, you're sort of testing two things at once.
+[00:54:39.840] You're, you're sort of your depth in the,
+[00:54:41.800] in the agent usage and your ability to understand those.
+[00:54:45.520] And I guess it does imply, though, that this is like an in person type element.
+[00:54:50.320] There's no this isn't a kind of take home
+[00:54:54.000] code review or like coding exercise.
+[00:54:57.440] It has to be inside and is that you just sort of accept I guess that's a
+[00:55:02.040] a slight inefficiency in the sense that talk to more people that you just
+[00:55:05.800] take this with.
+[00:55:07.920] Yeah.
+[00:55:09.600] And how
+[00:55:11.840] I guess on the other side of it, like when you think about people
+[00:55:14.960] moving up the ladder and you think about people already in the job and doing it,
+[00:55:18.560] what has changed in terms of what do you assess them for,
+[00:55:21.920] for promotion?
+[00:55:24.280] So we reviewed our career guideline this year too.
+[00:55:27.480] And so we got together with a group to like brainstorm about like what
+[00:55:31.680] change in terms of expectation of like what is more kind of important today.
+[00:55:36.840] And so a few things to call out at the high level of like
+[00:55:39.440] things are like we changed
+[00:55:42.680] one is for is for more junior roles.
+[00:55:46.480] I think we saw for everybody that like we had a higher kind of expectation
+[00:55:49.880] about like the complexity of the work that they were going to own.
+[00:55:52.960] And I kind of push forward.
+[00:55:54.520] And so and so we updated kind of those role
+[00:55:59.080] to actually reflect like the new kind of baseline expectation of just like,
+[00:56:04.480] yeah, you can take a whole project, you want some help from somebody,
+[00:56:08.160] you probably kind of understand asking the right questions, learning about,
+[00:56:13.480] you know, the for the core competency of like being an engineer.
+[00:56:18.160] But compared to before,
+[00:56:19.960] which was usually somebody would be in a support role on a larger project.
+[00:56:24.280] We're finding that like most of the time now, there are they are owning
+[00:56:28.560] like kind of a whole work stream by themselves because they can now
+[00:56:32.040] and then, they just need to make sure that they're asking the right question.
+[00:56:35.200] And so like here we changed a bit that definition for more junior roles
+[00:56:39.440] in terms of more senior roles, I think what we saw is like before.
+[00:56:44.840] Well.
+[00:56:46.240] Two things.
+[00:56:47.040] One is in terms of like POC and experimenting,
+[00:56:51.280] and the second is like on on like judgment.
+[00:56:54.600] Should we do this?
+[00:56:55.720] When should we start doing something?
+[00:56:57.800] Is this solution the right one to the problem?
+[00:57:00.960] The customer is like having.
+[00:57:02.120] And so there's much more of like a judgment call being done.
+[00:57:05.160] And then in terms of.
+[00:57:06.080] Product and architecture tastes?
+[00:57:09.080] Yeah, yeah, correct, correct.
+[00:57:10.080] And on the POC side of things is I think before we would spend a lot of time
+[00:57:14.000] on like documents and RCS to talk about, like, is this the right solution
+[00:57:18.440] for that problems and all this and I think like there's there's like
+[00:57:22.200] definitely value to those questions.
+[00:57:24.960] But I think now we can know more certainty around
+[00:57:29.720] like is this going to work or not if we do a POC first.
+[00:57:32.880] And so you can validate assertion in practice by doing POC.
+[00:57:37.080] And because it's so easy
+[00:57:38.640] to like POC, something with AI, it's like you can do a few POC
+[00:57:42.680] and like compare those options before you decide into like which one
+[00:57:46.320] you want to actually invest in long term and like really make production ready.
+[00:57:50.320] And so it's like we have much more of like.
+[00:57:53.440] A. Of kind of a try things first
+[00:57:56.680] and then bring the learnings from that to make the proper decision.
+[00:58:00.000] And so that's a bit different from before.
+[00:58:02.160] Like you would need to think of everything because it was costly to create a posse.
+[00:58:06.280] But today. Yeah.
+[00:58:07.640] Try something,
+[00:58:08.440] run it and see what happened and then bring those learning back to
+[00:58:11.320] then inform the right decision you want to do.
+[00:58:14.200] I love that
+[00:58:14.680] both as a behavior and as an expectation from from people.
+[00:58:18.600] And I, I often say that like now that the cost of building is lower,
+[00:58:23.480] the relative cost of alignment is higher because it takes just as much time
+[00:58:27.560] to get people in a room and have a conversation.
+[00:58:29.680] And so investing in building more to reduce the cost of alignment,
+[00:58:34.320] because by the time you align, there's like something concrete and kind of more
+[00:58:37.600] proven is clearly like the right to trade for it.
+[00:58:40.800] So I love those. Yeah.
+[00:58:42.240] And I think it helps a lot in discussion
+[00:58:43.720] to just have something more concrete to talk. About.
+[00:58:46.240] Or like you might have concerned. This is not going to work.
+[00:58:48.800] But actually if you have it in a pocket and it does work, you know,
+[00:58:52.680] it might prove the point that I.
+[00:58:53.800] Okay, no, this is possible actually.
+[00:58:55.600] So I give you a bit more certainty in your direction.
+[00:58:58.120] So I think like it, it changed the whole game in terms of like discussion
+[00:59:02.160] of like what's the right design for a solution.
+[00:59:06.240] This was excellent.
+[00:59:07.240] And it was like just jam packed with useful advice.
+[00:59:09.600] I was going to ask you, what's your sort of single biggest lesson or takeaway?
+[00:59:12.600] But frankly, you sort of shared a whole whole pile of sort of usefulness
+[00:59:16.680] here and learnings for it.
+[00:59:18.280] So really, really appreciate you sharing it.
+[00:59:19.920] I'm sure the listeners are.
+[00:59:21.160] Instead, maybe I'll ask you like one different question, which is
+[00:59:24.320] what are you excited on for for what's next?
+[00:59:28.160] What what are you looking for forward to the most.
+[00:59:31.360] Yeah.
+[00:59:31.760] Yeah.
+[00:59:32.120] I'm, I'm really excited to basically like being able
+[00:59:37.280] to make better business decision and like that's kind of where we ended up on.
+[00:59:42.360] But like that's really my belief around AI.
+[00:59:44.720] Like productivity is nice and all this, you know.
+[00:59:46.960] But it's not like really kind of a game changer like but yeah, being able to know
+[00:59:51.720] and make better decision I think is really
+[00:59:56.360] the key thing we are.
+[00:59:57.520] We are a gaming with AI and this is like really what I hope we will see
+[01:00:00.760] happening in the business world is like, hopefully we ship better product
+[01:00:04.680] because we were able to try
+[01:00:06.240] multiple things and see what works
+[01:00:07.800] and what doesn't, instead of like maybe spending
+[01:00:09.440] kind of a whole quarter on a project that is like off ready, then you ship it
+[01:00:12.760] in a way because of you like invested all of that time.
+[01:00:16.080] You need to show something for it.
+[01:00:17.320] And I think that like calculus here of like
+[01:00:20.360] what can go out and like when you can be like, this doesn't work.
+[01:00:24.160] Let's start from scratch and do something different.
+[01:00:26.360] With the learnings we've had.
+[01:00:27.360] I think it's much more possible today than it's been in the past,
+[01:00:30.160] and I'm really excited about that.
+[01:00:32.200] That is super exciting.
+[01:00:33.080] I love the we did a roundtable at con recently and someone said that
+[01:00:38.640] it's not about increasing productivity, it's about increasing ambition.
+[01:00:41.720] And kind of I loved that sort of phrasing.
+[01:00:43.880] And it sounds like that's very much what you're talking about here. So
+[01:00:46.200] I love it.
+[01:00:47.720] cool.
+[01:00:48.320] So this has been excellent.
+[01:00:50.040] Thanks a lot for coming onto the show and sharing all these learnings.
+[01:00:54.960] And for our listeners, thanks for tuning in
+[01:00:57.640] and I hope you join us for the next one.
+[01:01:01.000] dev is brought to you by the package manager for skills and context.
+[01:01:04.920] Your hosts are Guy Podjarny and me, Simon Maple.
+[01:01:08.080] Our producer is Tom Dowler.
+[01:01:09.880] The AI Native Dev is not just a podcast, it's a community.
+[01:01:13.240] And we host monthly meetups at the Tessl offices in central London.
+[01:01:16.920] Visit Tessl.io forward slash community to learn more and I hope to see you there.

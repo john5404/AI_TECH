@@ -1,0 +1,1846 @@
+[00:00:00.080] As a solo developer or small startup,
+[00:00:01.920] you do spend time thinking about what
+[00:00:03.439] you're building before you start
+[00:00:04.720] building. VIP coding changed that
+[00:00:06.160] completely. Even as a solo developer,
+[00:00:08.320] I'm able to build something in an hour,
+[00:00:10.080] but I'm often left thinking, hey, what
+[00:00:11.920] did I build? What were some of the
+[00:00:13.040] decisions I made? Cuz you move so fast,
+[00:00:14.799] get a response. You're like, well, I
+[00:00:16.160] don't quite like that. I'd like it to do
+[00:00:17.600] this instead. And the back and forth
+[00:00:19.199] with the agent sometimes is basically a
+[00:00:21.279] stream of consciousness. So, that's the
+[00:00:23.039] core problem space we were looking to
+[00:00:25.600] solve with Hero. We're not looking to
+[00:00:27.599] just build yet another agentic editor.
+[00:00:29.840] Inspectdriven development is the
+[00:00:31.920] approach we think will be the way
+[00:00:33.680] everyone develops with AI going forward.
+[00:00:36.079] >> What are the some of the key learnings
+[00:00:37.280] that you have took from this journey of
+[00:00:39.280] learning about specifications?
+[00:00:40.800] Specifications are combinations,
+[00:00:42.480] artifacts in hero product, but high
+[00:00:44.320] level they're about behavior and a
+[00:00:46.079] learning is they need to be composable
+[00:00:48.320] documents with really functional
+[00:00:50.079] business use cases as well as code
+[00:00:52.960] pseudo code people can put in there,
+[00:00:54.719] technical diagrams, behaviors around
+[00:00:57.120] error handling, behaviors around
+[00:00:58.559] properties.
+[00:00:59.199] >> How do you see people in future wanting
+[00:01:01.520] to use specifications?
+[00:01:03.280] >> Uh, okay. So that's a very deep
+[00:01:05.280] question.
+[00:01:07.850] [Music]
+[00:01:14.000] Hello and welcome to another episode of
+[00:01:16.560] the AI Native Dev. My name is Simon
+[00:01:18.880] Maple and I'm your host for today. And
+[00:01:20.720] today is going to be a fun episode.
+[00:01:22.080] We're going to be talking very much
+[00:01:23.680] about specd driven development but also
+[00:01:26.479] uh looking at and seeing a new pretty
+[00:01:29.840] cool tool actually on the market which
+[00:01:31.600] has been very recent uh called Kira. And
+[00:01:34.400] Kira is well I'll let the folks here uh
+[00:01:36.880] introduce it but it's a specd driven way
+[00:01:39.200] of being able to build software uh in
+[00:01:42.000] your IDE um which is very very
+[00:01:45.759] interesting and and we're going to go
+[00:01:46.880] into a few pieces talking about the
+[00:01:48.479] philosophy of specdriven development
+[00:01:50.720] show a demo of of uh Kira working and
+[00:01:54.320] then talk a little bit about the journey
+[00:01:55.920] that the folks had at AWS in order to
+[00:01:59.040] get to where we are today. So uh let me
+[00:02:01.759] introduce Nikil Swaminathan and Richard
+[00:02:04.640] Thrrell. Hey folks, how are you doing?
+[00:02:07.360] >> Hey Simon, doing great.
+[00:02:09.039] >> Doing good. Thanks for having us on.
+[00:02:10.640] >> So So let's jump into into into what you
+[00:02:12.879] what your roles are at Kira. Nikl, why
+[00:02:14.959] don't we start with yourself?
+[00:02:16.080] >> Sure. Uh I'm the product lead for Kuro.
+[00:02:18.800] So I've been now on the Kuro team for
+[00:02:20.959] the past 6 months or so, though it feels
+[00:02:23.280] like I've been here for years at this
+[00:02:25.520] point. And uh my job is to uh one help
+[00:02:29.440] build out what features we need to we
+[00:02:31.440] need to build and and and and two uh
+[00:02:33.760] work with the team on making sure we're
+[00:02:35.519] doing the right thing.
+[00:02:36.319] >> Awesome. And and Kira is around 19 sorry
+[00:02:39.120] a year and a half. Is it is that is that
+[00:02:40.959] fair to say? Year and a half in in in
+[00:02:43.200] build time.
+[00:02:44.080] >> Yeah, close to that. Um I I think let's
+[00:02:46.400] see it's July about 13 months actually.
+[00:02:48.480] Yeah. So I'm I'm Richard. I'm an
+[00:02:51.120] engineer on the Kuro team. Um uh I've
+[00:02:54.080] I've been as as Nickel kind of alluded
+[00:02:55.920] to uh I was I think either the first or
+[00:02:58.400] the second uh engineer that's um on the
+[00:03:00.720] team when we started it. Um and so I've
+[00:03:03.599] been involved in all phases of Kirro
+[00:03:06.080] development. Um but specifically, no p
+[00:03:08.560] pun intended, I actually focus the
+[00:03:10.400] majority of my time on specs. Um
+[00:03:13.440] including uh the original research
+[00:03:15.440] projects with a lot of the Amazon
+[00:03:17.040] science teams.
+[00:03:18.080] >> Amazing. So looking forward to getting
+[00:03:19.599] deeper into that. Let's we've we've said
+[00:03:21.360] Kira a few times. My my introduction
+[00:03:23.120] probably uh probably didn't do it
+[00:03:24.560] justice. Um why why don't we jump into
+[00:03:26.720] into what is Kira? Um Nikil, why don't
+[00:03:29.680] you why don't you walk us through give
+[00:03:30.879] us the definition of what the what Ko
+[00:03:33.200] problem Kuro is trying to solve?
+[00:03:34.480] >> The elevator pitch. Yeah. So uh Kira is
+[00:03:37.360] an agentic IDE that helps you do your
+[00:03:40.319] best work. That's our tagline. So let me
+[00:03:42.400] unpack that a little bit because that's
+[00:03:44.080] a little vague. So unless you've been
+[00:03:46.239] living under a rock the last year, year
+[00:03:48.400] and a half, um, agentic IDs have become
+[00:03:50.799] really popular, what are they? Agentic
+[00:03:53.360] IDs allow users to use natural language.
+[00:03:55.760] So developers use natural language to
+[00:03:57.360] interact with an agent to generate code
+[00:03:59.680] for an application. And what that
+[00:04:01.680] enabled is, you know, what used to take
+[00:04:03.599] us like days or week days or sometimes
+[00:04:06.879] even weeks to build a feature or
+[00:04:08.480] prototype uh has allowed us to build
+[00:04:11.040] this almost in hours now.
+[00:04:13.519] And what uh agentic ids really
+[00:04:15.920] popularized was the uh the term that we
+[00:04:19.120] all are very familiar with now called
+[00:04:20.639] vibe coding that really allows you to
+[00:04:23.600] use natural language and chat with an
+[00:04:25.360] agent to help you generate code for your
+[00:04:27.199] application. I think of vibe coding as
+[00:04:30.000] almost like chat GPT for coders, right?
+[00:04:32.479] You go back and forth with an agent to
+[00:04:34.800] build features out. And while vibe
+[00:04:37.759] coding has been great to help people get
+[00:04:40.400] up and running really quick, uh the
+[00:04:44.639] process does completely shortcircuit uh
+[00:04:47.360] traditional software development life
+[00:04:49.440] cycle best practices and how teams of
+[00:04:52.880] software engineers often work on a
+[00:04:55.840] day-to-day basis, right? Working on a
+[00:04:58.000] team here at Amazon and you know, prior
+[00:04:59.520] to Amazon, I I ran a startup, so I' I've
+[00:05:02.240] actually experienced both worlds. uh
+[00:05:04.479] when building a feature, you you often
+[00:05:06.240] spend days or if not weeks sometimes
+[00:05:08.960] detailing out requirements and designs
+[00:05:10.720] before you actually start coding. And
+[00:05:13.120] even as a solo developer or small
+[00:05:14.880] startup, you uh are definitely moving
+[00:05:17.840] faster cuz you you there's less
+[00:05:20.160] coordination, but you you do have you do
+[00:05:23.199] spend time thinking about what you're
+[00:05:24.639] building before you start start
+[00:05:27.120] building.
+[00:05:29.039] VIP coding kind of changed that
+[00:05:30.400] completely. uh right even as a solo
+[00:05:32.720] developer uh you know I'm able to build
+[00:05:34.960] something in an hour but after one
+[00:05:37.039] session of vibe coding I often find I'm
+[00:05:39.680] often left kind of thinking hey what did
+[00:05:41.520] I build what were some of the decisions
+[00:05:42.880] I made cuz I moved cuz you move so fast
+[00:05:45.120] right like you get you get a response
+[00:05:46.479] you're like well I don't quite like that
+[00:05:48.000] I'd like it I'd like it to do this
+[00:05:49.360] instead and and the the back and forth
+[00:05:52.160] with the agent sometimes is is basically
+[00:05:54.240] a stream of consciousness
+[00:05:56.479] and it takes you a minute to for you to
+[00:05:59.520] kind of reflect and think about hey what
+[00:06:01.199] did I actually get done? Uh so that
+[00:06:02.960] that's kind of the core problem space uh
+[00:06:05.840] we were looking to solve with hero.
+[00:06:08.400] We're not looking to just build yet
+[00:06:10.319] another agentic editor. Uh we really
+[00:06:13.039] think that the way you work with AI is
+[00:06:18.000] going to change and specri development
+[00:06:21.360] is the approach we think will will be
+[00:06:24.720] the way everyone develops with AI going
+[00:06:27.759] forward.
+[00:06:28.560] >> Yeah, really interesting. And I love the
+[00:06:29.919] way I love the kind of the the the way
+[00:06:31.680] you talk about how very often you you
+[00:06:34.319] very you sometimes make decisions but
+[00:06:35.759] that decision is then in your mind
+[00:06:37.360] versus you know you prompt it very very
+[00:06:39.680] quickly but you're actually not
+[00:06:40.639] capturing that and and while a lot of it
+[00:06:44.639] is represented as code when you're vibe
+[00:06:47.280] coding it's hard to then disseminate
+[00:06:50.080] afterwards well what is the decision and
+[00:06:52.160] what is just an implementation and if
+[00:06:54.000] you was to almost like think you know in
+[00:06:55.919] future if someone else was to come in
+[00:06:57.759] and look at your code you you could
+[00:07:00.639] somewhat guess what is decision, what is
+[00:07:03.199] meant to be, and what is an assumption,
+[00:07:04.720] and what is an LLM choice, but it's not
+[00:07:07.759] clear. It's it's it's a mixed kind of
+[00:07:09.759] reality in in code. So, that's what I
+[00:07:12.240] love about specs, the way it kind of
+[00:07:13.520] pulls that out and and and allows
+[00:07:15.759] individuals who who read that spec to to
+[00:07:18.720] to effectively understand what the
+[00:07:20.960] individual or or team that was
+[00:07:23.360] developing that is is is really adding
+[00:07:25.840] in.
+[00:07:26.400] >> Yeah. I know I was just saying one of
+[00:07:27.840] the analogies we I I use uh when talking
+[00:07:31.199] with people on on the team is that uh
+[00:07:34.080] it's it's vibe coding is almost like a
+[00:07:36.400] sometimes a slack thread where there's
+[00:07:37.919] like a stream of consciousness you know
+[00:07:39.599] there's often you know when you work
+[00:07:40.800] with teams there's really long slack
+[00:07:42.319] threads right where which have like 50
+[00:07:44.319] 60 messages cuz they're you know
+[00:07:46.560] complicated topics that you're
+[00:07:47.759] discussing but then a lot of the
+[00:07:49.440] decision log is captured in that in that
+[00:07:51.520] thread versus a document you know where
+[00:07:54.479] you're like okay here's a document let's
+[00:07:56.000] review that document, make sure we're
+[00:07:57.360] aligned on that document before we
+[00:07:58.879] actually go implement it.
+[00:08:00.240] >> Yeah, really interesting. And the and
+[00:08:01.840] also like a a Slack message is a point
+[00:08:03.759] in time message and it is relevant at
+[00:08:05.919] that point based on the context that has
+[00:08:08.160] already passed and not on the context
+[00:08:09.520] that has has gone ahead of that. So it
+[00:08:12.080] is relevant and true at that point
+[00:08:13.440] whereas a spec is the spec. It's like
+[00:08:15.759] when you see the spec that is the that
+[00:08:17.280] is the final outcome. Um, very similar
+[00:08:19.039] to I guess when I'm prompting in in in a
+[00:08:22.400] Vive coding environment, my my prompt is
+[00:08:26.080] is relative to the the code as it was,
+[00:08:28.400] the code as it is after the prompt, and
+[00:08:30.960] it really connects those two those two
+[00:08:32.800] points in time. At any point afterwards,
+[00:08:35.680] the prompt that I use may not make any
+[00:08:37.760] sense because it only it it's only
+[00:08:40.479] referencing the point in time uh just
+[00:08:42.959] before I I sent that. So, yeah, very
+[00:08:45.200] aligned on that. Um, we've we've
+[00:08:47.120] mentioned specs a few times. I'd love to
+[00:08:48.640] go a little bit deeper. Um, Richard, I
+[00:08:50.880] bring you in here. What do we mean by a
+[00:08:53.360] specification?
+[00:08:54.399] >> Uh, okay. So, that's a very deep
+[00:08:56.399] question. Um, depending on who you're
+[00:08:58.560] who you're talking to. Um, and maybe
+[00:09:01.440] maybe I'll start as something that
+[00:09:02.800] Nikquil was just talking about here. We
+[00:09:04.560] weren't necessarily looking to to build
+[00:09:07.600] yet just another AI or IDE tool or
+[00:09:10.240] something like this, right? We're really
+[00:09:12.080] kind of trying to to to help people
+[00:09:14.399] shape software development in their
+[00:09:15.920] practices for the future. Um, and
+[00:09:17.680] there's a lot of things in software
+[00:09:18.880] engineering that have existed since, you
+[00:09:21.600] know, 40s, '50s, 60s that we're just now
+[00:09:24.800] seeing to to come into play today,
+[00:09:26.720] right? Like specifications as a as a
+[00:09:29.120] term. A lot of people usually have in
+[00:09:31.120] their head, you know, some sort of
+[00:09:32.320] formal method that they're that they're
+[00:09:34.320] talking about, especially when you get
+[00:09:35.519] deeper in systems and and usually
+[00:09:37.360] they're talking about certain things
+[00:09:38.959] like safety properties or livveness
+[00:09:41.279] properties of your system, right? Is it
+[00:09:42.720] making progress moving towards a goal or
+[00:09:44.959] are you violating these certain
+[00:09:46.320] properties? And and as you just
+[00:09:47.440] mentioned, Simon, that's super difficult
+[00:09:50.000] to tell in code just by looking at it.
+[00:09:52.640] Uh especially as you trace through a
+[00:09:54.720] large program or microservices, right?
+[00:09:56.480] If I want to if I want to make sure that
+[00:09:58.720] I have something like a read after write
+[00:10:00.399] property of my overall system, you can't
+[00:10:03.200] just glance at an if statement and
+[00:10:05.120] determine that in a really complex
+[00:10:06.720] program. You actually need to lift that
+[00:10:08.560] up to a higher level of uh kind of
+[00:10:12.080] definition for people to see what this
+[00:10:14.320] means of your system. And then as you're
+[00:10:16.000] executing the program, you need to make
+[00:10:18.480] sure that this certain invariant or
+[00:10:20.480] something is respected throughout the
+[00:10:21.760] system. So traditionally the way that
+[00:10:24.880] this has been done in software
+[00:10:26.560] engineering is uh is kind of a backwards
+[00:10:29.040] process actually. You build these
+[00:10:31.440] implementations um and you know as
+[00:10:33.920] software engineering has become more
+[00:10:35.519] common domain in the past 20 years or
+[00:10:37.760] so. Lots of people are really good at
+[00:10:40.000] those low-level implementations of such
+[00:10:42.160] but then when it comes to actually
+[00:10:43.519] believe it or not like people that work
+[00:10:44.959] on their systems actually can't reason
+[00:10:46.480] about them very well. So you bring then
+[00:10:49.200] these next level computer science PhD
+[00:10:51.360] experts that have knowledge of this
+[00:10:54.160] esoteric uh you know first order logic
+[00:10:57.519] modeling language whether that's TLA or
+[00:11:01.120] something like Daphnia that AWS uses or
+[00:11:03.920] P or something else um you you have
+[00:11:06.560] those those very esoteric experts that
+[00:11:09.120] are then walk backwards from the system
+[00:11:11.519] and they build these models to to do
+[00:11:13.760] verification or or some sort of
+[00:11:15.519] validation on the system as well.
+[00:11:17.760] Um so what we are trying to do here you
+[00:11:20.959] know to your question of what are
+[00:11:22.240] specifications we kind of want to make
+[00:11:25.600] this approachable for any developer to
+[00:11:28.160] really have this power right and I think
+[00:11:30.079] that's a a super important top level
+[00:11:32.000] point because many times when it comes
+[00:11:33.200] to AI tools there's an an overabundance
+[00:11:35.839] of talking about well now we can make
+[00:11:37.360] programming available to anybody that
+[00:11:38.880] didn't know how to code that's true we
+[00:11:42.399] can also make reasoning about systems
+[00:11:45.440] and new tools available ailable to even
+[00:11:47.839] those developers that didn't know how to
+[00:11:49.440] code before and were kind of the super
+[00:11:51.519] developers before. Now they have
+[00:11:53.440] compounding power that they can bring to
+[00:11:55.440] their practices that they really didn't
+[00:11:56.959] have before.
+[00:11:58.160] >> Yeah, really interesting actually how
+[00:11:59.839] that how it brings it. It's really going
+[00:12:02.480] to open it up in terms of it's more of a
+[00:12:04.399] creator now, right? You don't actually
+[00:12:06.079] the the point of a developer isn't now
+[00:12:08.720] who can actually write the best code.
+[00:12:10.240] It's who can create the most, you know,
+[00:12:13.200] through uh through business logic
+[00:12:15.440] essentially being able to communicate
+[00:12:17.200] better uh will actually become almost
+[00:12:19.519] the the the better developer versus
+[00:12:21.360] versus their understanding of the the
+[00:12:23.120] underlying implementation. And if you
+[00:12:25.040] take it into more of a philos
+[00:12:26.399] philosophical kind of like motivation, I
+[00:12:28.880] know when we talked previously, we would
+[00:12:30.880] we were talking about specifications
+[00:12:32.639] into into a much more of a philos
+[00:12:34.959] philosophical layer. talk us a little
+[00:12:37.200] bit about the the the the philosophical
+[00:12:39.279] motivation behind
+[00:12:40.959] >> Yeah, I guess that's the term dour.
+[00:12:42.560] Yeah. So, let's let's talk about that a
+[00:12:43.760] little bit and tie it to your previous
+[00:12:44.880] question, right? So, what are specs kind
+[00:12:46.320] of, right? You could say specs are this
+[00:12:48.320] technical artifact and there's lots of
+[00:12:50.399] different ways that that people build
+[00:12:52.160] specifications historically. Um what it
+[00:12:54.800] re my answer would be a specification is
+[00:12:57.519] about behavior talking about the
+[00:12:59.440] behavior of the system rather than
+[00:13:00.720] implementation. Right? Um now
+[00:13:03.839] historically and and philosophically
+[00:13:07.360] that showed up in lots of different
+[00:13:09.120] ways. um you know uh there's been
+[00:13:13.519] different types of uh the most common
+[00:13:16.000] specification known in the industry is
+[00:13:17.760] something like design by contract and
+[00:13:19.839] this is usually where you have this if
+[00:13:21.519] you look at the research this
+[00:13:22.880] style logic of saying like I have this
+[00:13:24.880] precondition of my function and these
+[00:13:27.279] are the the mathematical quantifiers it
+[00:13:29.360] needs to meet like can only take an
+[00:13:31.120] integer within this domain and then the
+[00:13:33.680] post condition of that it must meet this
+[00:13:35.920] and then you might define like a
+[00:13:37.440] termination condition or a loop
+[00:13:39.760] invariant um that has to hold
+[00:13:41.680] inductively if you're familiar with the
+[00:13:43.279] terms and so forth. That's that's the
+[00:13:45.120] real like sort of like um program
+[00:13:48.480] enforcing the contracts of like your
+[00:13:50.240] functions and so forth. Um a lot of the
+[00:13:52.399] the newer stuff as well like if you've
+[00:13:54.480] ever heard of lean from Amazon around
+[00:13:56.240] like specifications, these are more
+[00:13:57.920] theorem based which is I I would I would
+[00:13:59.839] say gives you a bit more fidelity like
+[00:14:01.519] even a lower level primitive of
+[00:14:03.199] something like that. um to where you you
+[00:14:05.920] sort of have this this uh it's it's
+[00:14:08.480] based on on um dependent type theory
+[00:14:11.199] where you have a correspondence between
+[00:14:12.959] types in your programs themselves how
+[00:14:14.639] they tie into logic right now this is
+[00:14:17.199] important of why I'm going into this
+[00:14:18.480] around the research and theory of this
+[00:14:19.920] and how this brings to hero because
+[00:14:21.839] those are artifacts that people would
+[00:14:23.519] build with really in those formal
+[00:14:25.120] languages and I mentioned specs are
+[00:14:27.839] about behavior in what you're doing and
+[00:14:30.240] so Nik will demo here in a minute really
+[00:14:34.079] like from Kira's perspective, we try to
+[00:14:36.079] walk through that at even a higher level
+[00:14:38.800] so that as we evolve this system, we can
+[00:14:41.680] meet these different constraints, right?
+[00:14:43.279] So when you build with Kira, you're
+[00:14:45.600] seeing a top level requirements. Well,
+[00:14:48.079] if you look at this, this is actually
+[00:14:49.600] something known as a EARS syntax. Um,
+[00:14:52.320] this is easy approach to requirement
+[00:14:54.000] syntax. And this wasn't just like a a
+[00:14:56.800] clever thing that we figured out with
+[00:14:59.040] auto formalization to tie a prompt into
+[00:15:02.160] how you define requirements. It's
+[00:15:04.079] actually an extension of temporal logic
+[00:15:06.320] which is an extension of first order
+[00:15:07.920] logic. So this gives us a lot of power
+[00:15:11.360] behind the scenes on being able to
+[00:15:13.279] control what the model does, how we
+[00:15:15.600] verify certain parts of the process, how
+[00:15:17.519] we build the design and then that h how
+[00:15:19.920] that leads to the implementation itself.
+[00:15:23.279] And the interesting innovation here is
+[00:15:25.920] when we tie that to the UX, then you're
+[00:15:29.040] actually allow able to bring ground
+[00:15:31.360] truths to your system, right? So
+[00:15:33.760] philosophically what motivated a lot of
+[00:15:35.760] this uh was two kind of highlevel points
+[00:15:39.440] and you t you actually believe it or not
+[00:15:41.040] Simon kind of touched upon them before.
+[00:15:42.959] Um there's a a computer science
+[00:15:44.639] professor um I think he's actually in
+[00:15:46.639] the UK uh believe it or not Lawrence Tre
+[00:15:48.959] um where he talks about two issues with
+[00:15:51.839] building software and and as I go
+[00:15:54.880] through these also you'll we'll be able
+[00:15:56.959] to talk about how we ran into that
+[00:15:58.320] inside of Amazon when we were building
+[00:15:59.920] this. Um so one is what we usually talk
+[00:16:01.920] about the surf circular specification
+[00:16:03.759] problem. So this this means like to you
+[00:16:07.199] almost need to really build something
+[00:16:08.880] completely in order to specify it,
+[00:16:11.279] right? That's that's how you know what
+[00:16:12.720] you want it to be but then you're trying
+[00:16:14.720] to specify something so that you can say
+[00:16:16.880] what the implementation is right so it
+[00:16:18.399] goes back and forth. The other is this
+[00:16:21.279] observer effect when you do this right
+[00:16:23.199] like the act of actually seeing the
+[00:16:25.360] software changes not only how we but
+[00:16:29.040] also others think the software should
+[00:16:31.199] act. Um and that even might be us
+[00:16:33.920] changing how we look at it over time. So
+[00:16:36.720] these sort of things are really why I I
+[00:16:39.120] like in Curo this sort of vibe mode and
+[00:16:42.079] spec mode as well, right? Like you can
+[00:16:43.519] build it and vibe it and now you can
+[00:16:44.959] specify it. Now you can go back and
+[00:16:46.959] forth. So you get this sort of interplay
+[00:16:48.639] on how humans act.
+[00:16:49.839] >> Yeah. Really, really, really curious and
+[00:16:52.639] I think it does, you know, when we think
+[00:16:55.199] about in software development today, how
+[00:16:57.440] much even a prototype or something like
+[00:16:59.279] that helps our understanding of how
+[00:17:01.440] something should be built. uh and you
+[00:17:03.839] know the way we do iterative programming
+[00:17:05.679] today through agile methodologies and
+[00:17:07.600] things like that we're constantly
+[00:17:08.720] learning as we go and it makes complete
+[00:17:10.880] sense like you know I'm sure if 10 15
+[00:17:12.880] years ago or gosh maybe closer to 25
+[00:17:15.439] years ago pre-aggile um if we was to
+[00:17:18.720] think about uh you know writing specs
+[00:17:21.199] more in a waterfall style it would make
+[00:17:24.240] a ton more sense then in comparison to
+[00:17:26.400] how we build software today uh the vibe
+[00:17:29.360] and the the um the vibe and the spec
+[00:17:32.559] kind of mode are super a super cool as
+[00:17:35.039] well in Kira. I think maybe maybe we
+[00:17:36.799] should maybe we should jump in and
+[00:17:38.480] should we should we jump into demo and
+[00:17:40.320] actually see this because I think uh
+[00:17:42.080] it'll it'll very much help uh for our
+[00:17:44.799] viewers to to see this. Uh for those who
+[00:17:47.039] are viewing on podcast only on audio
+[00:17:49.280] only do check us out on either YouTube
+[00:17:51.679] and I believe uh on Spotify as well you
+[00:17:53.919] can see the video uh through the the
+[00:17:56.720] stream on Spotify uh but it's on YouTube
+[00:17:59.520] in full. It's probably the easiest way
+[00:18:01.200] to easiest way to view it. So, Nikil, I
+[00:18:03.520] think you're going to show us the uh the
+[00:18:04.880] demo, right?
+[00:18:06.320] >> So, let's actually go ahead and look at
+[00:18:07.679] Kuro and see how this works. So, KO uh
+[00:18:11.840] what we did is we took a it's a fork of
+[00:18:14.400] COSS.
+[00:18:15.919] Uh but really what we did that so we
+[00:18:17.840] could really build an experience that we
+[00:18:19.679] could fully control uh from a from a
+[00:18:22.400] user experience perspective. So as you
+[00:18:24.080] see here is I have this uh I have this
+[00:18:26.080] tab here for KO um which is show shows
+[00:18:32.080] you that the the the core features that
+[00:18:33.919] we offer. So off the bat you see there's
+[00:18:36.400] a specs folder as a structured way to
+[00:18:38.640] build features.
+[00:18:40.799] Uh there's hooks which I'll actually get
+[00:18:42.480] into a little bit later but hooks are
+[00:18:44.240] almost like an infosa. Uh you can set up
+[00:18:46.400] hooks to basically watch your uh watch
+[00:18:49.840] your codebase and make changes um if if
+[00:18:52.799] certain files are touched.
+[00:18:55.200] Steering. So steering bas allow what
+[00:18:57.440] steering does it allows you to set rules
+[00:18:59.280] and guide your agent every time you
+[00:19:02.400] every time you interact with the agent
+[00:19:04.559] whether you're interacting with them via
+[00:19:06.160] vibe or spec you can set steering rules.
+[00:19:09.200] So often what I do is when I'm starting
+[00:19:11.120] with a new with a existing project, the
+[00:19:14.480] first thing I do with Kira is I generate
+[00:19:16.080] the steering docks and the steering docs
+[00:19:17.760] give you essentially they get
+[00:19:20.240] autogenerated and they give you like a
+[00:19:22.240] product overview of what what they
+[00:19:24.160] analyze your codebase and give you a
+[00:19:25.520] product overview of what what it is.
+[00:19:28.559] Uh it looks at all the different um
+[00:19:31.360] files and and and and builds an
+[00:19:33.600] understanding of the project. So as you
+[00:19:35.120] can see there's like here's what the
+[00:19:36.240] root directory is. Here's how it's
+[00:19:37.600] organized. This is an nextjs app. Here's
+[00:19:39.280] where the data layer is. Here's the
+[00:19:40.799] state management, the type definitions,
+[00:19:43.360] and there's a text stack file. Also the
+[00:19:45.039] text app here for this application I'm
+[00:19:47.120] using um it's just a react application
+[00:19:50.000] uh with vit and it's got command it's
+[00:19:53.039] got some information on what pack what
+[00:19:55.280] what build tooling is installed
+[00:19:57.760] >> and and is this is this something that
+[00:19:58.960] you would kind of like expect to perhaps
+[00:20:01.039] even uh put into some kind of source
+[00:20:03.600] control that you know the rest of the
+[00:20:05.600] team can use and and if you have an
+[00:20:07.760] organization you can all kind of like
+[00:20:09.760] you know work within a rule set to uh to
+[00:20:12.640] to adhere to.
+[00:20:13.520] >> Absolutely. So uh right now with
+[00:20:16.240] steering we have steering files defined
+[00:20:18.799] at a repository level. So all these
+[00:20:20.720] files are actually in your repository.
+[00:20:22.240] So if I switch to the explorer view
+[00:20:24.160] you'll see there's this curo folder here
+[00:20:26.960] and essentially everything is in so the
+[00:20:29.520] steering files are actually just
+[00:20:30.640] markdown files right uh so you can check
+[00:20:33.200] them in and you can add your own custom
+[00:20:34.799] markdown file. So what you know a good
+[00:20:36.720] example would be let's say you have
+[00:20:39.039] certain rules on how you want your UI to
+[00:20:42.640] if you're generating UI for components
+[00:20:44.480] your UI needs to follow these
+[00:20:46.000] requirements right it needs to let's say
+[00:20:48.720] you need to use tailwind classes you
+[00:20:50.480] need to uh the styling needs to be
+[00:20:52.880] certain ways enforced by like the
+[00:20:54.640] marketing team so it allows you to for
+[00:20:56.799] your team for you to define a structure
+[00:20:59.760] of how you operate. A big feature
+[00:21:02.159] request we've been getting from early
+[00:21:03.600] customers is hey we have actually
+[00:21:05.200] multiple teams uh that need to align on
+[00:21:09.360] um you know certain rules uh how do you
+[00:21:12.080] how do we how do we define that and
+[00:21:13.760] that's something that's that's you know
+[00:21:15.600] also coming soon and and something that
+[00:21:17.440] we're actively thinking about
+[00:21:19.120] >> one one thing to note as Nikil goes into
+[00:21:21.280] the specs too all these things he's
+[00:21:22.720] showing are fully composable in the
+[00:21:24.720] system and what I mean by that is hooks
+[00:21:27.760] can trigger at spec workflow stages as
+[00:21:30.720] you like it for matching file globs and
+[00:21:33.200] so forth. Similarly, steering can
+[00:21:36.240] actually uh mention dox in spec
+[00:21:40.159] workflow. So like a common thing that a
+[00:21:42.799] lot of customers do is they're like well
+[00:21:44.480] I actually want to augment my
+[00:21:45.919] implementation so that it follows TDD
+[00:21:48.240] for example. You can create a steering
+[00:21:51.440] file that will do this with whatever
+[00:21:53.760] your TDD rules are. Then you go about
+[00:21:55.760] your spec workflow and it will respect
+[00:21:57.760] that.
+[00:21:58.240] >> Yeah. I mean I can quickly even show
+[00:21:59.760] that here. Right. So all I do is I say
+[00:22:01.760] augment
+[00:22:03.600] my workflow to ensure that we're
+[00:22:06.559] following
+[00:22:08.559] TDD best practices.
+[00:22:12.080] And then I just hit refine and and Kira
+[00:22:15.039] takes that. And now what it's going to
+[00:22:16.880] do is it's going to say, hey, I'm going
+[00:22:18.240] to take this I'm creating this new
+[00:22:20.960] steering file and'll actually like
+[00:22:23.600] update my lazy prompt to make it a more
+[00:22:27.280] to make it a more effective prompt. Um,
+[00:22:30.080] so as you can see here, so there's an
+[00:22:31.679] inclusion also. So I can there are
+[00:22:33.600] different states for this inclusion. I
+[00:22:35.120] can set it to manual or always include,
+[00:22:38.159] right? That um so took my single prompt
+[00:22:41.679] and now I have like essentially a new
+[00:22:44.960] file that to guide the agent.
+[00:22:46.720] >> Awesome. That's that's super powerful. I
+[00:22:48.799] love that almost like turning it from a
+[00:22:50.400] brief into a spec. That's uh that's
+[00:22:52.799] >> Yeah, we see spec and steering very much
+[00:22:55.120] uh uh kind of they play together really
+[00:22:58.240] well.
+[00:22:59.360] Uh and uh and yeah, so actually let's
+[00:23:02.400] let's actually just walk walk through
+[00:23:03.919] specs now. So for the application that I
+[00:23:06.000] have right now, I've got reviews. I also
+[00:23:10.000] I added a cart cart once before. Um I've
+[00:23:14.400] got these I've got this heart icon here,
+[00:23:16.480] but I don't actually have any way to add
+[00:23:18.240] f to um well I've got this this heart
+[00:23:22.000] icon here, but that doesn't actually do
+[00:23:23.520] anything. It doesn't actually work. uh
+[00:23:26.240] so I can add something to my favorites.
+[00:23:28.720] Um what I'm what I will do now is maybe
+[00:23:31.760] build a new spec about hey I'm building
+[00:23:33.520] this this mechanism to add to favorites
+[00:23:36.080] and we'll walk through that experience.
+[00:23:40.080] So what I'm going to do first I'm going
+[00:23:41.440] to go ahead and say hey I want to create
+[00:23:42.880] a spec. I'm going to enter an idea here
+[00:23:45.039] and I'll say um I want to uh add the
+[00:23:50.559] ability
+[00:23:52.400] to favorite
+[00:23:55.039] um
+[00:23:56.720] items in my
+[00:24:00.480] uh in my app.
+[00:24:04.720] So what that's going to do now is it's
+[00:24:06.240] going to go ahead and create a new
+[00:24:07.679] favorite system
+[00:24:09.760] spec. And with that you can see the
+[00:24:12.799] agent is is creating a requirements
+[00:24:16.320] MD file. And again all of this is it's
+[00:24:20.400] just marked down. You know one one of
+[00:24:21.919] our tenants for at least our first
+[00:24:23.360] launch was to build something that had
+[00:24:24.960] opinions but make it pretty flexible so
+[00:24:27.440] users can tailor this to you know
+[00:24:29.760] different formats. Again with steering
+[00:24:31.520] if I have if I have some different
+[00:24:33.360] formats the way I want to generate this
+[00:24:34.720] I can do this do that but we have
+[00:24:36.799] sensible defaults.
+[00:24:38.880] And so this is the this is the
+[00:24:40.400] requirements phase. Is that right?
+[00:24:42.000] >> Yep. We're in the requirements phase. So
+[00:24:43.760] like it took the it took that initial
+[00:24:45.520] prompt I had which was you know kind of
+[00:24:48.960] really badly defined for a PM I might
+[00:24:50.880] say
+[00:24:52.640] uh but had the ability to favorite items
+[00:24:54.720] and then it went ahead and generated a
+[00:24:57.600] requirements file for me. So let's
+[00:24:59.360] actually go through the requirements a
+[00:25:00.960] little bit. So we have an introduction.
+[00:25:04.480] Each requirement has a user story with
+[00:25:06.960] acceptance criteria.
+[00:25:08.720] Now this is then the acceptance criteria
+[00:25:10.480] is what we have in years format. Now
+[00:25:12.320] this is something that I actually uh
+[00:25:14.080] from my years as a PM have found really
+[00:25:17.279] find really useful. So if you're not
+[00:25:19.760] folks are not familiar how Amazon works,
+[00:25:21.440] Amazon has this process of uh PRFAQ
+[00:25:24.080] writing where we essentially building a
+[00:25:25.600] new product. We write a PR FAQ and then
+[00:25:27.679] that PRFQ goes gets implemented and you
+[00:25:30.320] build that out. But often there's a lot
+[00:25:32.480] of information context that the PRFQ is
+[00:25:35.200] not able to capture like the details and
+[00:25:36.799] the edge cases about how how these
+[00:25:38.480] systems are meant to operate and the
+[00:25:41.120] best way I found to do that working with
+[00:25:43.440] uh engineering teams is that you break
+[00:25:45.200] things into user stories and acceptance
+[00:25:46.720] criteria. So the user stories is almost
+[00:25:49.039] like the highle definition. So as a
+[00:25:50.880] customer browsing products
+[00:25:53.360] I want to mark items as favorites so
+[00:25:55.679] that I can find them easily without
+[00:25:57.520] having to search again. Right? That's
+[00:25:58.880] that's the traditional definition of a
+[00:26:00.320] user story that everyone can understand.
+[00:26:03.760] Now when you if as a PM you give that
+[00:26:05.600] user story to an engineering team
+[00:26:07.360] there's like a lot of questions around
+[00:26:08.720] it right there's like uh how how is it
+[00:26:12.000] meant to work in in in a scenar like
+[00:26:13.919] let's just think about this this
+[00:26:15.520] favorites use case right so with with
+[00:26:17.679] favorites when I when I add something as
+[00:26:20.320] a favorite right um if a if a can a user
+[00:26:24.640] click and and and andclick it to unfavor
+[00:26:27.679] right is there uh is there a count that
+[00:26:30.080] needs to be displayed of how many
+[00:26:31.679] favorites I have right like if you
+[00:26:33.600] actually start building out the the
+[00:26:35.039] feature, there's a lot of details and
+[00:26:36.640] and nuances that go into almost every
+[00:26:38.559] feature you build uh as as a developer.
+[00:26:42.240] So, uh so over here is we've got the
+[00:26:44.880] first one around marking items and the
+[00:26:46.640] acceptance criteria in yours format is
+[00:26:49.840] when a user views a product card and the
+[00:26:51.440] system shall display a heart icon and
+[00:26:53.440] then there's there's something around
+[00:26:54.960] click and and not click
+[00:26:58.480] and then I want to be able to view all
+[00:26:59.919] my favorite items in one place. That's
+[00:27:02.159] the second one.
+[00:27:07.039] You know this is a good example of an
+[00:27:08.559] edge case that when the favor list is
+[00:27:10.400] empty then the system shall display an
+[00:27:11.840] appropriate empty state. Uh you know
+[00:27:14.080] what you can do here is I can actually
+[00:27:16.799] um say like you know
+[00:27:21.440] uh and I can edit this either here or I
+[00:27:23.919] can edit this in chat. I can be like u
+[00:27:26.799] you know make so for for requirement
+[00:27:29.200] four where there's an empty empty state
+[00:27:31.600] I can be like okay uh make sure that
+[00:27:34.640] this experience
+[00:27:38.240] has some uh iconography. All right.
+[00:27:45.120] So I can do this here or I can do this
+[00:27:46.799] in in in in chat.
+[00:27:49.679] So this is really the way so you know as
+[00:27:52.159] a as a team you can iterate on
+[00:27:56.000] requirements before you move ahead right
+[00:27:58.960] so um the third one is I want my
+[00:28:00.720] favorites to persist across browser
+[00:28:02.240] sessions that's another like user story
+[00:28:04.960] that you know my my simple user story
+[00:28:06.880] didn't think about uh favorite count
+[00:28:09.600] indicator
+[00:28:11.600] >> and when you edit it just then you you
+[00:28:14.320] do do you do you prefer the the LLM to
+[00:28:17.440] edit the spec or how how much
+[00:28:21.360] >> um so what I what I sometimes do is that
+[00:28:24.720] I'll I'll just I I prefer I personally
+[00:28:26.640] prefer the LM to edit it but really like
+[00:28:28.799] I can I can you know if I have a new one
+[00:28:30.320] I can just add it here right um and we
+[00:28:34.480] have autocomplete as a feature so it
+[00:28:36.320] will it'll start as I type as you can
+[00:28:38.240] see there's something already just
+[00:28:40.720] appeared so I can start typing and it'll
+[00:28:43.200] it'll kind of continue me personal my
+[00:28:46.000] personal preferences I I I I do what I
+[00:28:48.880] just did. But I'll also sometimes use
+[00:28:50.480] chat and say hey for uh you know I don't
+[00:28:53.679] like for example let's say
+[00:28:56.559] I don't really care about a count
+[00:28:59.520] indicator. Uh so I I'll just be like I
+[00:29:02.080] don't really care about the count
+[00:29:04.000] indicator requirement. Right? So this is
+[00:29:07.360] I'm almost vive coding the requirements
+[00:29:08.960] right now. Think about it. Right? So I I
+[00:29:13.120] just find that the easiest. Um, and you
+[00:29:16.000] know there's there's still a lot of lot
+[00:29:17.520] of room for improvement here. Like you
+[00:29:19.520] know one of the things that we're
+[00:29:20.559] thinking of is how do we make these
+[00:29:22.080] easier to gro like how do you make the
+[00:29:23.600] acceptance criteria more easier to gro
+[00:29:25.120] so you know that so users can review
+[00:29:27.039] them and like understand you know to
+[00:29:29.360] Richard's earlier point if two
+[00:29:30.960] requirements have like conflicting kind
+[00:29:34.240] of information. uh how do we uh h how
+[00:29:37.440] does the user be how is the user made
+[00:29:39.600] aware of it so they don't miss it
+[00:29:41.600] >> or in a or in a larger team uh like
+[00:29:45.520] multiple people could view what you know
+[00:29:47.279] the three of us what NIL is going
+[00:29:48.880] through here even if he had you know 10
+[00:29:51.200] 15 20 requirements let's say that it's
+[00:29:54.159] part of a larger system and you want to
+[00:29:56.320] compare these together to see if there's
+[00:29:57.919] logical contradictions uh that that's
+[00:30:00.960] some of the area that uh that we're
+[00:30:02.880] looking towards in the future as well
+[00:30:04.320] because you really want these in team
+[00:30:05.919] workflows as you're as you're building
+[00:30:07.360] them to keep keep the projects moving
+[00:30:10.000] smoothly.
+[00:30:11.279] >> Yeah. So yeah, as you can see, I think
+[00:30:13.520] it it went ahead and removed the that
+[00:30:15.919] that requirement for count.
+[00:30:18.559] Um, so I'm just going to say, okay,
+[00:30:20.880] things this looks good. I'm going to go
+[00:30:22.320] ahead and move to the design phase. So
+[00:30:24.960] the requirements is very much more is
+[00:30:26.720] very much about the kind of like the
+[00:30:28.159] what. So this is defining what we're
+[00:30:29.840] trying to build. Is the design much much
+[00:30:31.600] more about the kind of like leaning into
+[00:30:33.679] the how now about how it's going to
+[00:30:37.200] start building this into an application
+[00:30:38.880] or is it more about the architecture?
+[00:30:40.480] How does this work?
+[00:30:41.440] >> Absolutely. It's it's it's about how the
+[00:30:43.440] the requirements for the W and the
+[00:30:44.960] design is the how. So I'm going to go
+[00:30:47.520] ahead and say okay let's move ahead and
+[00:30:49.279] let's let's go create the design. Now
+[00:30:51.520] what what Kuro is going to do is it's
+[00:30:53.679] actually looking at the existing code
+[00:30:55.440] base in order to determine what the
+[00:30:56.880] design needs to be. So as you can see
+[00:30:58.159] it's reading a bunch of files and then
+[00:31:01.760] it say okay I'm going to create now this
+[00:31:03.440] design markdown file right that will get
+[00:31:06.399] generated again based on the the
+[00:31:10.240] requirements. Great. So the system went
+[00:31:12.399] ahead and created a design. Now you know
+[00:31:14.640] the the process we've been piloting uh
+[00:31:17.279] on Kirro now is that we're like we're
+[00:31:19.279] we're heavily dog fooding uh Kirro
+[00:31:22.240] internally is that we're trying to take
+[00:31:24.559] the requirements and design. So let's
+[00:31:26.880] say we're building a new feature like we
+[00:31:28.399] have an upcoming like point feature to
+[00:31:30.000] do. Let's let's gen let's generate the
+[00:31:32.720] specs for it. Let's generate the
+[00:31:33.919] requirements. Let's generate the design
+[00:31:35.520] all within the codebase
+[00:31:38.080] and then take those as artifacts and sit
+[00:31:40.159] with the sit with the team and and
+[00:31:41.919] decide whether um those look good or
+[00:31:44.799] not. Like you know a lot of the time we
+[00:31:47.360] actually spend as a team especially when
+[00:31:49.600] you work in teams they could be small
+[00:31:51.440] teams or large teams is is kind of
+[00:31:54.080] ironing out the details of the the
+[00:31:56.720] details of the design and and and and
+[00:31:58.720] the requirements. So in this case what
+[00:32:00.880] we typically do um it hasn't done it
+[00:32:03.679] here but like if you're typically
+[00:32:06.399] building a feature we generate like a
+[00:32:09.120] system diagram. So I, you know, I can
+[00:32:11.760] ask it to do it. It'll do it. But in
+[00:32:13.600] general, it's saying, "Hey, here's what
+[00:32:14.960] the architecture is." So we've got, um,
+[00:32:17.519] you know, here's here's state management
+[00:32:19.360] patterns. Here's the core components and
+[00:32:21.120] interfaces. So it's going to add like
+[00:32:22.480] this favorites context type. Um, add to
+[00:32:25.279] favorites, remove favorites. Uh, here's
+[00:32:28.240] the components. There are already these
+[00:32:30.000] components. We're going to enhance them.
+[00:32:31.919] Here are new components that are needed.
+[00:32:34.880] And um, and you know, here's like our
+[00:32:37.440] data model. Right now we're using a
+[00:32:39.039] local data model. So it's it's uh it's
+[00:32:41.760] like adding new interfaces to the data
+[00:32:43.519] model.
+[00:32:45.279] Uh error handling and testing
+[00:32:47.279] strategies.
+[00:32:48.880] So it's thinking through we got to we
+[00:32:51.519] got to handle errors. Let's let's think
+[00:32:53.039] about testing. Uh and and here's what
+[00:32:55.519] our here's what our implementation
+[00:32:56.960] approach is going to look like. Right?
+[00:32:59.519] So I can I can go ahead and edit these
+[00:33:02.799] things. um you know before like over
+[00:33:07.760] here I've already kind of I'm done a
+[00:33:09.519] path where I'm adding a feature to an
+[00:33:10.799] existing application. Often times what I
+[00:33:12.240] do is I say hey I actually don't want
+[00:33:14.640] this new if I if I don't want a new
+[00:33:16.080] interface or if I'm like hey you
+[00:33:19.440] you're actually you're actually
+[00:33:20.720] generating something that is um that I
+[00:33:24.799] like let's say for example I I I want to
+[00:33:28.159] focus on uh unit testing and not
+[00:33:31.120] integration testing for now. I can go
+[00:33:32.720] ahead and and make make those edits. Uh
+[00:33:35.440] but so this whole process is meant to be
+[00:33:38.720] the initial start of the process. So
+[00:33:40.399] where you say, okay, this is where I'm
+[00:33:42.000] going to start and this is where I'm
+[00:33:43.200] going to I'm going to review with my
+[00:33:44.399] team. If there are trade-offs that I
+[00:33:46.080] need to make, I'll I'll I'll kind of add
+[00:33:47.840] those trade-offs here and and make a
+[00:33:50.320] decision with my team on how I want to
+[00:33:52.000] proceed.
+[00:33:53.440] >> And and what happens when there are
+[00:33:54.559] conflicts between your let's say your
+[00:33:56.240] design and your requirements? So there
+[00:33:59.440] if there are conflicts with your design
+[00:34:00.799] and requirements here right now um
+[00:34:03.519] they're they're basically manually
+[00:34:05.519] resolved. Typically your requirements do
+[00:34:08.159] not your requirements and designs are
+[00:34:10.639] like your design is reflected in your
+[00:34:12.960] requirements. So I can walk through like
+[00:34:14.720] the process of how you iterate through
+[00:34:17.200] through both right so you know when when
+[00:34:20.480] I go back to a feature I can say hey I
+[00:34:22.560] actually want to now add this new
+[00:34:24.800] requirement to this feature. uh let's
+[00:34:27.280] say the thing that I removed count,
+[00:34:28.480] right? I could go back and add count and
+[00:34:29.919] then we'll go through the process of
+[00:34:31.520] updating the design as well to take into
+[00:34:33.679] account the new requirement.
+[00:34:35.359] >> But let let's actually talk about this
+[00:34:36.800] one for a second. This is a good point.
+[00:34:38.240] Um so the the process that we do is uh
+[00:34:42.639] we we use the the generated requirements
+[00:34:46.639] along with other context engines and
+[00:34:48.800] then some uh some things on the back end
+[00:34:52.079] inside of the the KO API that AWS hosts
+[00:34:55.760] to to sort of curry these things as they
+[00:34:57.680] go forward. Right? So using that
+[00:34:59.680] information from the requirements build
+[00:35:01.920] the design using that the next phase NIL
+[00:35:05.119] will show the task list and so forth.
+[00:35:07.200] Now we a customer could modify their
+[00:35:11.839] design with something that violated one
+[00:35:14.160] of the requirements and it would still
+[00:35:16.560] go ahead as they go to the next step and
+[00:35:18.560] build the uh implementation plan.
+[00:35:22.720] But we kind of assert as we were
+[00:35:25.599] building this over the last year and
+[00:35:26.960] working with people that's okay, right?
+[00:35:29.760] Because the alternative could be let's
+[00:35:31.760] say that somebody did something and we
+[00:35:33.359] went back and verified against the
+[00:35:35.119] requirements and and it it violated
+[00:35:38.240] something, right? That's actually a
+[00:35:40.880] pretty bad developer experience, right?
+[00:35:42.480] And this is what happens in the real
+[00:35:43.760] world. Like sometimes you actually have
+[00:35:46.320] more domain knowledge than what you can
+[00:35:48.800] encode in a document, right? And and
+[00:35:50.960] what you see a lot of times with tools
+[00:35:52.480] is when they try to put these rigid
+[00:35:53.920] structures in place, you can't do this
+[00:35:55.359] or go down this path. it actually ends
+[00:35:57.440] up compounding and having a lot of
+[00:35:58.960] friction for customers. Uh we got a new
+[00:36:01.839] visitor in the back there. Um so uh
+[00:36:06.000] uh so we took the choice that we want to
+[00:36:08.079] give the customers flexibility here in
+[00:36:10.240] what they can do rather than restrict
+[00:36:11.839] them from an action.
+[00:36:13.119] >> Um so then let's get to the final stage
+[00:36:16.000] of this process. So uh we've you know as
+[00:36:18.240] you can see there's a requirements file
+[00:36:19.760] we just created. as a design file. And
+[00:36:22.000] now what we're going to do is we're
+[00:36:23.119] going to go ahead and and get to a list
+[00:36:24.880] of tasks.
+[00:36:27.200] So what the task is the task list is
+[00:36:29.680] really the implementation plan. So how
+[00:36:31.280] do you take the requirements and design
+[00:36:33.599] and break it into like discrete
+[00:36:36.480] uh items that you as a user can execute
+[00:36:39.680] against? So you know this workflow if I
+[00:36:43.280] was if I was vi coding this workflow
+[00:36:45.599] right I would have started with the
+[00:36:47.119] prompt that I had up top. it would have
+[00:36:49.599] it it would have generated something and
+[00:36:52.880] then I would have kept kept kind of
+[00:36:54.320] iterating through but now now what I've
+[00:36:56.160] got is I've essentially got a task.md
+[00:36:58.079] file and as you can see here it's broken
+[00:37:02.000] my my it's taken my design and actually
+[00:37:05.119] broken it into individual implementation
+[00:37:06.800] tasks. So the first one is create
+[00:37:09.040] favorites context and hook
+[00:37:10.160] infrastructure.
+[00:37:11.920] Add the favorites view to the main
+[00:37:13.359] application routing.
+[00:37:15.359] Create a list component for displaying
+[00:37:17.520] favorite favored products. Then it's
+[00:37:20.320] enhancing it's enhancing individual
+[00:37:22.720] components
+[00:37:24.320] and uh it's doing things like
+[00:37:26.000] accessibility tests. So it's really
+[00:37:28.720] thinking through this very thoroughly
+[00:37:30.640] like I would you know if I was v coding
+[00:37:32.480] this I would I would probably not think
+[00:37:34.240] of accessibility. Um right. um error
+[00:37:37.839] handling, edge case management,
+[00:37:39.599] >> and and how much of these how much of
+[00:37:41.200] these tasks are for the LLM versus the
+[00:37:43.280] user? I mean, if I was to, you know, is
+[00:37:45.119] this something that that you would
+[00:37:47.280] really want me to come in and maybe add
+[00:37:49.359] to, or is this something whereby it adds
+[00:37:51.920] structure that then allows the LLM to
+[00:37:53.839] processes in a in a in an orderly manner
+[00:37:56.400] that it can actually it can actually do
+[00:37:58.480] it properly? What what's the what's the
+[00:38:00.720] user interaction with this file? Yeah.
+[00:38:02.000] So the user interaction with this file
+[00:38:03.440] is that it's I I think it's I think it's
+[00:38:05.920] the latter based off of what you said
+[00:38:08.079] but uh is that it's it's providing some
+[00:38:11.280] structure for how you engage with the LM
+[00:38:13.599] cuz the structure really helps. I mean
+[00:38:15.599] that's been our experience that's been
+[00:38:16.720] the experience of a lot a lot of our
+[00:38:18.640] early testers as well is that the
+[00:38:20.000] structure really helps it do helps it
+[00:38:22.640] implement tasks well and and complete
+[00:38:24.640] and in in a complete manner.
+[00:38:27.440] Right? So, I'm going to say this task
+[00:38:30.160] list. Again, I can because we, you know,
+[00:38:32.320] as Richard said, we indexed for
+[00:38:34.240] flexibility. I can go ahead and edit
+[00:38:36.800] this task list and remove a bunch of
+[00:38:38.079] things if I wanted to um to kind of if I
+[00:38:42.480] wanted to say, hey, I actually don't
+[00:38:43.599] want to do this or I I don't want to do
+[00:38:45.760] I don't want to enhance the product
+[00:38:47.119] detail component, for example, right?
+[00:38:49.040] But I'm going to go go ahead and
+[00:38:50.320] finalize this task list. And now um you
+[00:38:54.480] know this is kind of some of the unique
+[00:38:56.240] unique UI elements we built into this
+[00:38:58.240] experience. As you can see there's a
+[00:39:01.839] there's each of these have a start task
+[00:39:04.400] button. Very intentionally we you know
+[00:39:07.359] one of the first early feedbacks we got
+[00:39:09.200] from people was like hey can you have a
+[00:39:11.119] play all button? We've we've been
+[00:39:13.680] staying away from it because what we've
+[00:39:16.480] observed with user testing is that as
+[00:39:18.240] you kind of incrementally build things
+[00:39:20.000] with with editors, you have better
+[00:39:22.240] understanding as to what's happening,
+[00:39:25.440] right? Um, so I'm going to go ahead and
+[00:39:27.920] hit start task here. And what that does
+[00:39:31.280] is, as you can see, it changes the UI
+[00:39:32.880] here to say, okay, your task is in
+[00:39:34.560] progress. And and
+[00:39:39.920] it's going to go ahead and implement the
+[00:39:41.520] task. And as a user, what I can do is I
+[00:39:43.520] can I can be on top I can be on top of
+[00:39:45.920] what's being done. Right? So if I if I
+[00:39:49.440] uh follow the changes being done,
+[00:39:53.040] what what it'll show me is is adding all
+[00:39:55.359] these different it'll it'll add
+[00:39:57.440] basically I think we're building out the
+[00:39:58.800] the the underlying infrastructure if you
+[00:40:01.440] will for this favorites context
+[00:40:04.160] uh to be done and I can see all the
+[00:40:06.720] changes very easily see all the changes
+[00:40:08.560] that are being made. So, you know, we're
+[00:40:11.200] adding some sort of mock storage.
+[00:40:12.960] There's a test component. So, it's
+[00:40:14.160] starting with like a test file.
+[00:40:16.640] >> I' I'd love to almost like see an LLM
+[00:40:19.440] interact with this whereby it's not
+[00:40:21.599] necessarily a human click and the start
+[00:40:23.280] task, but it's more driven by an LLM
+[00:40:26.079] effectively as a judge as well as a
+[00:40:28.240] orchestrator. That that could be super
+[00:40:30.400] interesting to to to see how how
+[00:40:33.599] accurately it would almost imitate or
+[00:40:35.520] simulate a human looking at the looking
+[00:40:37.920] at the output.
+[00:40:39.359] Yeah. Yeah. Abs. Absolutely. I think
+[00:40:42.000] that's a feature that that's a that's an
+[00:40:44.800] interesting feature request that we've
+[00:40:46.320] we've uh we've seen um where I think
+[00:40:49.599] what you're saying is that hey, I've got
+[00:40:50.960] a bunch of tasks here. Can the LM can I
+[00:40:53.520] can I offload this to an LLM to to
+[00:40:55.760] handle, right? That's that's what you're
+[00:40:58.640] that's what you're maybe maybe a
+[00:41:00.880] slightly more async workflow. Is that
+[00:41:02.800] kind of
+[00:41:04.319] >> Mhm. Yeah. Pretty much. Pretty much. So
+[00:41:07.839] what it's doing now is that it's
+[00:41:09.119] actually installing um it's using
+[00:41:13.119] justest. It's actually setting up a
+[00:41:14.319] testing framework as well. Uh I think
+[00:41:16.640] it's because I added the TDD rule.
+[00:41:18.800] That's why it's it's it's doing this up
+[00:41:20.800] front. Uh because it was part of my
+[00:41:22.720] steering. But while this is happening,
+[00:41:25.599] let me just actually walk through maybe
+[00:41:27.280] the
+[00:41:28.800] maybe like how this hap what what the
+[00:41:31.119] state looks like at the end. Right? So
+[00:41:32.640] once once a task is completed as a user
+[00:41:36.640] I am able to view
+[00:41:39.440] um
+[00:41:41.680] I'm I'm able to view the the actual
+[00:41:43.599] changes. So I'm able to say okay here's
+[00:41:45.119] what so this was my earlier example
+[00:41:47.599] where I was able to view what changes
+[00:41:49.119] happened and so I kind of have full
+[00:41:52.319] context over each of the tasks as to as
+[00:41:54.560] to what the LLM did for or what the
+[00:41:59.359] agent did rather for the individual
+[00:42:01.119] task. So I'm as a you know there there
+[00:42:03.920] there's while it's doing things for me I
+[00:42:06.160] have kind of full oversight over what's
+[00:42:08.240] being done.
+[00:42:09.119] >> You also notice the requirements on
+[00:42:10.880] here. This is this is an important piece
+[00:42:13.920] of just the full software development
+[00:42:15.680] life cycle. This is the the concept of
+[00:42:17.839] requirements tracing. Right? So this is
+[00:42:20.160] how we document and track the
+[00:42:21.920] relationships throughout the entire
+[00:42:23.839] state machine that's executing these
+[00:42:25.440] things including as we curry the one
+[00:42:28.240] task to another and process this
+[00:42:30.079] implementation plan. So if I were to now
+[00:42:32.640] go back to let's say the requirements
+[00:42:35.200] and I were to make a change to one of
+[00:42:37.359] those requirements would it would it
+[00:42:38.960] look into the design and task list
+[00:42:41.680] identify the relation I guess between
+[00:42:44.079] those three and then say okay I only
+[00:42:46.240] need to actually make updates to the
+[00:42:47.599] ones that have the references to the um
+[00:42:49.920] to those requirements that were changed.
+[00:42:51.680] >> Yeah let's go ahead and do that. Let's
+[00:42:53.200] say um you know I want to add like
+[00:42:57.839] requirement you know I for
+[00:43:02.560] counting the fe favorites right
+[00:43:06.800] now the the the thing is I don't need to
+[00:43:09.280] I don't really need to define the this
+[00:43:11.760] in like the proper format I just hit
+[00:43:13.760] refine.
+[00:43:17.520] So now what what this refine button will
+[00:43:20.000] do is that'll look at this file and and
+[00:43:22.319] see um I think we have oh I I have I
+[00:43:27.440] have a hook cued. So actually before I
+[00:43:29.680] do this maybe it's a good segue to I was
+[00:43:32.079] like why why is this execution cued? Uh
+[00:43:35.040] do you see this agent hook thing
+[00:43:36.560] spinning here?
+[00:43:37.440] >> Ah I see. Yeah.
+[00:43:38.800] >> So what I have is I have a documentation
+[00:43:40.960] updater. Uh so hooks are a feature that
+[00:43:44.079] that allow that that basically watch
+[00:43:45.680] your repository for different events.
+[00:43:47.359] Right now we have file create, file
+[00:43:48.960] save, file delete and manual trigger
+[00:43:51.200] events. Uh so what manual trigger does
+[00:43:53.760] is that it basically says okay just
+[00:43:55.440] manually trigger this. uh and it's
+[00:43:58.400] almost like a like an enforcer right
+[00:44:00.800] like that says okay uh at the end of an
+[00:44:04.560] when a file is touched do x right so in
+[00:44:08.400] this case I have if if you've created
+[00:44:10.400] new typescript files in the source
+[00:44:12.240] folder uh update update the the docu the
+[00:44:16.079] documentation and I think that's
+[00:44:18.400] effectively what this hook this hook is
+[00:44:21.200] doing
+[00:44:22.880] Um,
+[00:44:29.680] yeah. So that that's that's that's what
+[00:44:31.839] this hook is is meant to do. It's it's
+[00:44:34.560] the documentation updator. So it'll go I
+[00:44:36.400] I have a readme file in this repository
+[00:44:40.880] and it's going to go ahead and and
+[00:44:43.280] update that. So I I'm able to create a
+[00:44:46.319] whole variety of hooks. And the way we
+[00:44:47.520] see customers using hooks is really is
+[00:44:49.440] really interesting. So here I have
+[00:44:50.960] another hook where I've got this
+[00:44:52.720] component SRP validator. So when
+[00:44:54.960] whenever new React components are added,
+[00:44:57.280] make sure they're like well defined and
+[00:44:58.960] like they don't handle multiple
+[00:45:00.160] concerns. So as a team I can enforce
+[00:45:02.079] these practices across across my team.
+[00:45:04.640] So even when we come up with the design,
+[00:45:06.800] right, that that uh we are we are
+[00:45:09.760] actually making the right decisions. Let
+[00:45:12.880] me just switch back to the design view
+[00:45:14.800] for my spec. And um Richard, I think you
+[00:45:18.800] want wanted to add something here.
+[00:45:21.280] >> Yeah. So, another piece that's
+[00:45:22.720] interesting here that I just like to
+[00:45:24.000] call out is is is probably my favorite
+[00:45:25.920] feature here, especially for experienced
+[00:45:27.920] software engineers is you might be
+[00:45:29.200] looking at this and uh looking at this
+[00:45:31.680] code snippet or a section of the error
+[00:45:34.400] handling defined in this doc or
+[00:45:37.119] something else and being like I know
+[00:45:39.440] from my institutional knowledge this is
+[00:45:41.920] this is how I should change this
+[00:45:44.160] interface or I or additionally I want
+[00:45:46.240] some other data structure in here or
+[00:45:47.839] something else. Um so what we actually
+[00:45:50.400] built is a uh context LSP that is
+[00:45:54.079] integrated in the IID as well as this uh
+[00:45:56.800] interface as well. So um for example if
+[00:45:59.520] NIL were to just in anywhere in the
+[00:46:01.680] markdown here just uh put um a pound
+[00:46:04.319] sign
+[00:46:06.400] and you'll see this is actually giving
+[00:46:08.000] you a context reference and if he hits
+[00:46:09.920] enter it's pointing to a file. So, a
+[00:46:13.520] common thing uh you could imagine like
+[00:46:15.680] this design doc could get really big
+[00:46:17.359] over time or you've got common designs
+[00:46:19.599] that you want to include sort of like a
+[00:46:22.480] library import of sorts into multiple
+[00:46:24.960] designs that you've got over time. So,
+[00:46:27.040] you could actually inject that into here
+[00:46:30.240] and then as KO goes through these
+[00:46:32.240] phases, it will respect it as it's
+[00:46:34.400] building out your implementation plan.
+[00:46:36.240] Like a great example of this that that I
+[00:46:38.240] use a lot in mine is uh property based
+[00:46:40.319] testing. And property based testing is a
+[00:46:43.680] very sophisticated technique that u
+[00:46:46.480] allows you to kind of have a spectrum of
+[00:46:49.599] correctness in your system, right? It's
+[00:46:51.119] not full proofbased, but it's much more
+[00:46:54.000] than just unit tests or even
+[00:46:55.440] implementation um or integration tests I
+[00:46:57.599] should say, right? And what's pretty
+[00:47:00.560] cool is will create just little markdown
+[00:47:03.599] files for the specific language that I
+[00:47:06.000] have. like if I'm writing in Python,
+[00:47:08.160] hypothesis is a great uh property based
+[00:47:10.640] testing library and I'll say like this
+[00:47:12.079] is the structure that I want and then I
+[00:47:14.640] can say what the properties are right
+[00:47:16.319] like these are the properties that I
+[00:47:17.680] want to hold which humans are really
+[00:47:19.440] good at and then the model will actually
+[00:47:22.720] do the quantification of that into code
+[00:47:25.200] and then when you actually go through
+[00:47:26.720] running your test then you get CPUs that
+[00:47:28.400] execute that with all the fuzzing and so
+[00:47:30.000] forth. So this is a super powerful
+[00:47:32.319] feature that encouraged a lot of people
+[00:47:33.760] as they're building advanced systems to
+[00:47:35.359] to to take full advantage of themselves
+[00:47:37.760] >> and and where people where people want
+[00:47:40.400] to you know they get through to the
+[00:47:42.000] implementation and then all of a sudden
+[00:47:43.359] they think oh actually I'd love to
+[00:47:44.480] change this this thing um let's say it's
+[00:47:48.400] and it is a implementation detail let's
+[00:47:50.400] say of course when we do something like
+[00:47:53.680] that code becomes the source of truth
+[00:47:55.200] versus the versus the spec and then how
+[00:47:57.119] do we how do we regenerate and so forth
+[00:47:59.760] um how does that cause problems and how
+[00:48:02.240] what what's the best way of kind of
+[00:48:03.760] avoiding developers touching code?
+[00:48:07.119] >> I would say we don't really uh see that
+[00:48:10.319] as a problem if they want to touch code.
+[00:48:12.560] Um now it is possible yeah the uh the
+[00:48:16.240] specification can drift a little bit uh
+[00:48:18.880] from where the code is. Um,
+[00:48:22.319] I would say uh that space is going to
+[00:48:24.400] evolve in the future and we've got some
+[00:48:26.160] ideas about how to handle that in a
+[00:48:28.559] little bit more robust way right now,
+[00:48:30.000] but I wouldn't discourage engineers from
+[00:48:33.040] editing code. In fact, if you think
+[00:48:34.880] about it, we're in a way encouraging
+[00:48:36.559] them by offering both the spec and the
+[00:48:38.400] vibe mode. So, if you are an expert and
+[00:48:41.359] you know targeted changes you want to
+[00:48:42.880] make to your system, by all means, go
+[00:48:44.800] ahead and vibe those small pieces.
+[00:48:46.800] >> Right. Right. So, so a spec a spec then
+[00:48:49.280] is um if we think about life cycles, how
+[00:48:52.400] long is the life cycle of a spec? Is it
+[00:48:54.640] the life cycle of the change um versus
+[00:48:57.680] you know more than the life cycle of a
+[00:48:59.920] of an app if if uh people want to change
+[00:49:03.040] code?
+[00:49:03.920] >> Yeah, this is this is a tough question
+[00:49:05.599] too. It's I I would my common answer is
+[00:49:09.200] I think about it like comments in code,
+[00:49:11.680] right? If you put comments in code at
+[00:49:14.160] that point in time, it's temporal and
+[00:49:16.319] they will hold as people and teams edit
+[00:49:19.359] them over time. Um, they can drift. That
+[00:49:22.000] is true. Um, so you have to think about
+[00:49:24.160] it as a similar artifact in your system
+[00:49:27.119] um and and build controls around it.
+[00:49:29.280] >> Um, one thing we haven't talked about
+[00:49:30.960] here on this screen is uh on the bottom
+[00:49:33.280] left, Nick, uh, MCP servers. um h what's
+[00:49:37.280] the what's the best way of uh kind of
+[00:49:38.880] like making the most out of MCP servers
+[00:49:40.800] or other other services around uh from
+[00:49:43.280] within Kira?
+[00:49:44.319] >> Yeah. So uh MCP servers work with all
+[00:49:46.559] the features. So whether you're vibing
+[00:49:47.920] or you're specking MCP servers will will
+[00:49:50.640] work. So in this case I have the fetch
+[00:49:52.640] MCP server which will allow me which
+[00:49:54.400] actually allows me to do a web search.
+[00:49:56.720] So if I when I'm building a feature
+[00:49:58.559] especially even in the design phase I
+[00:50:00.000] can be like hey can you can you search
+[00:50:02.079] the web for what the best practices are
+[00:50:04.160] regarding um regarding like you know
+[00:50:07.040] maybe like maybe it's a framework or
+[00:50:08.640] like maybe it's a a technology you can
+[00:50:11.040] you can do that so we have full MCP uh
+[00:50:13.920] local MCP support so you can add you can
+[00:50:16.000] add any MCP so server so uh to via via
+[00:50:20.800] like a JSON file that we have here and
+[00:50:23.119] you can do that with the chat or you can
+[00:50:24.880] just update it yourself and and then
+[00:50:27.839] those MCB servers get invoked by the
+[00:50:29.839] agent and the agent can decide whether
+[00:50:31.680] in spec mode or vibe mode whether um the
+[00:50:34.240] agent needs to be invoked.
+[00:50:35.680] >> So so so for example um if if we do
+[00:50:38.480] provide a uh I don't know a docs
+[00:50:40.720] creation uh MCP server of course the LLM
+[00:50:44.000] can do doc creation by itself as well.
+[00:50:46.720] Do you find any challenges between when
+[00:50:49.200] uh like the user wants you to use an MCP
+[00:50:51.599] server uh but actually it's trying to
+[00:50:53.920] it's trying to uh do it itself because
+[00:50:56.160] the LLM has capability to an extent to
+[00:50:58.880] perform that action. Uh do you ever have
+[00:51:00.960] do you ever see contention between
+[00:51:02.880] whether it does that?
+[00:51:03.599] >> I mean I think basically what you're
+[00:51:05.040] saying is if there's an MCP server
+[00:51:06.480] that's overlapping with one of your
+[00:51:08.079] hooks functionality.
+[00:51:10.079] >> Yeah. Or even just a basic LLM
+[00:51:12.160] capability.
+[00:51:13.280] >> Uh absolutely. I I think that you you
+[00:51:16.240] can you can see that happen. And then I
+[00:51:18.000] think part of again the way the system
+[00:51:20.559] is built is is that it's it's flexible
+[00:51:22.240] enough for you to interrupt when working
+[00:51:25.680] with agents basically you're working
+[00:51:27.040] with systems that are not like
+[00:51:28.960] non-deterministic in nature right so you
+[00:51:31.760] need to make as from a UX affordance you
+[00:51:34.079] need to make sure that you've got the
+[00:51:35.200] right level of flexibility so users can
+[00:51:36.880] interrupt the agent like for example I
+[00:51:38.720] could have interrupt the agent while
+[00:51:39.839] it's while it was going and tell it hey
+[00:51:41.760] actually you need to do this instead.
+[00:51:43.760] Um, so that that that's all all all
+[00:51:47.040] possible with Kira.
+[00:51:49.040] >> Yeah. And I presume even add it into the
+[00:51:50.960] task itself to say d I want you to use
+[00:51:54.079] this service or this tool to to to
+[00:51:55.839] create me the documentation for this or
+[00:51:57.440] within the uh within the hooks. Yeah.
+[00:51:59.839] Okay. So let's let's talk about let's go
+[00:52:02.079] back into talking about uh specs just a
+[00:52:04.400] little bit more. Um and and and and
+[00:52:06.480] Richard I guess um I guess the specs
+[00:52:10.720] that you kind of showed which which
+[00:52:12.480] realistically is is a number of
+[00:52:14.079] different things. It's the is the
+[00:52:15.760] requirements, the design, the tasks, all
+[00:52:17.680] of that I guess together is is in
+[00:52:20.400] combination the specification in the KO
+[00:52:22.480] world. um in terms of um you know where
+[00:52:27.440] we are today versus where you started. I
+[00:52:30.079] suspect you learned a a ton of things
+[00:52:32.160] going through kind of like maybe the
+[00:52:33.520] private betas using it internally at
+[00:52:35.280] AWS. Uh what are the some of the key
+[00:52:37.280] learnings that you've that you took from
+[00:52:39.119] from this journey of of learning about
+[00:52:41.280] specifications? So a few things um you
+[00:52:44.319] know we mentioned and you kind you you
+[00:52:46.160] nailed it like specifications are kind
+[00:52:48.000] of the combination of those artifacts in
+[00:52:49.680] the curo product right but high level
+[00:52:52.079] like we talked about they're about
+[00:52:53.359] behavior and and really our view on this
+[00:52:56.960] is uh in a learning is they need to be
+[00:52:59.680] kind of composable documents with like
+[00:53:02.960] really functional business use cases as
+[00:53:05.839] well as code pseudo code people can put
+[00:53:08.559] in there technical diagrams behaviors
+[00:53:11.040] around error handling behaviors around
+[00:53:12.880] properties, right? And so some learnings
+[00:53:15.280] there like um I I I mentioned when we
+[00:53:18.000] kicked off this podcast like there was
+[00:53:20.000] building the hero product and then the
+[00:53:21.599] research phase also that was kind of
+[00:53:23.760] parallel and they joined up. Um let's
+[00:53:27.040] kind of talk about this and how this
+[00:53:28.559] went especially what we haven't
+[00:53:30.960] mentioned. Um, so I'll start some of
+[00:53:32.720] this and then hand it over to Nikil to
+[00:53:34.160] talk about this is like
+[00:53:36.640] there was a few iterations of Spack
+[00:53:39.359] internally that were big failures first.
+[00:53:41.839] So we proved what wouldn't work actually
+[00:53:43.599] too, right? So um you know I mentioned
+[00:53:46.640] uh we we've got a lot of um Amazon has
+[00:53:50.880] this automated reasoning group that's
+[00:53:52.319] well kind of known and we have uh you
+[00:53:54.319] know web pages on it and and they the
+[00:53:57.280] formal methods community dealt with a
+[00:53:59.760] lot of the same things that we in fact
+[00:54:01.359] they were inputs into how we built this
+[00:54:03.280] product itself. Um and they you know
+[00:54:05.839] early days of Amazon with these systems
+[00:54:08.160] um really where specifications were were
+[00:54:10.559] were highly used were some of the
+[00:54:12.960] systems backing AM and S3 and so forth
+[00:54:17.520] and um separate from the technology. My
+[00:54:20.720] biggest learning of talking through
+[00:54:22.160] those teams and and what they were
+[00:54:23.599] building was there was so much back and
+[00:54:25.520] forth between people and engineers,
+[00:54:27.359] right? Like you had people that were
+[00:54:28.800] experts on the implementation and then
+[00:54:30.960] experts on modeling the behaviors and so
+[00:54:33.119] forth. And I remember I saw this one
+[00:54:35.119] presentation internally and it was
+[00:54:36.960] actually like showing the paths between
+[00:54:39.520] the offices in like a triangle and how
+[00:54:42.640] the carpet was getting worn because what
+[00:54:44.800] you would do is you say all right we
+[00:54:46.000] define this behavior over here to work
+[00:54:47.680] like this and then go talk to the expert
+[00:54:49.839] on implementing IM or something it's not
+[00:54:53.280] exactly like that and you go back and
+[00:54:54.880] forth in here and that's really what
+[00:54:57.359] we're doing here right is allowing you
+[00:54:59.280] to iterate and go back on that system
+[00:55:02.240] and so um you know without sounding too
+[00:55:04.880] boring like a lot of this is you know
+[00:55:06.480] codified institutional knowledge and you
+[00:55:08.960] know SDLC practices but let's let's talk
+[00:55:11.520] about some of the things as we were
+[00:55:12.800] building this like we could have easily
+[00:55:14.720] said like uh you know what we're going
+[00:55:16.559] to reinvent that space even though
+[00:55:18.240] people have been building software and
+[00:55:19.760] and sort of like like force certain
+[00:55:22.000] patterns down people's throats and um so
+[00:55:24.400] one of them maybe and I'll hand this
+[00:55:25.680] over to Nikil that we tried at first um
+[00:55:28.559] and I touched upon how you could augment
+[00:55:30.400] your system to do this is like make
+[00:55:32.240] every spec go through a TDD flow. That
+[00:55:34.880] was one thing we tried at first here.
+[00:55:36.640] Um, so Nik Hill, you want to talk about
+[00:55:38.079] that a little bit?
+[00:55:38.880] >> Uh, yeah. I mean, I can talk I maybe
+[00:55:40.720] talk about that and then what we what we
+[00:55:42.559] did next. So I think the approach was
+[00:55:44.559] like, hey, let's start with TDD and TDD
+[00:55:47.280] is great. Um, like where you start with
+[00:55:49.599] tests and then based off the tests you
+[00:55:51.359] generate the code, right? And you know,
+[00:55:54.400] I think from our early tests, we found
+[00:55:56.559] that that generally worked pretty well.
+[00:55:59.599] uh but then when actually putting that
+[00:56:02.160] in front of users and customers it's not
+[00:56:05.119] it was not typically how they were like
+[00:56:06.880] people were working TDD is great if
+[00:56:09.119] people follow it but a lot of a lot of
+[00:56:11.599] us a lot of customers like we're just
+[00:56:13.520] are just not were not not doing that
+[00:56:16.400] that was not the logic chain they
+[00:56:18.400] followed so what that what that did is
+[00:56:21.200] it enforced a lot of rigidity in how
+[00:56:23.440] people use specs and the feedback we got
+[00:56:26.720] from users was that um this is not
+[00:56:29.599] really working for me,
+[00:56:32.400] right? And and then I think the second
+[00:56:34.160] thing the next thing we tried uh the
+[00:56:36.319] next major thing we tried is we said
+[00:56:37.920] okay uh the the experience for
+[00:56:41.200] generating a spec was you know you open
+[00:56:43.119] a file or or or a folder and you right
+[00:56:45.440] click on it and you say new spec and
+[00:56:47.599] then we generate like a effectively a
+[00:56:50.319] specification for what what's contained
+[00:56:53.440] in that folder. But that again was um
+[00:56:58.640] users found that it was it was
+[00:57:01.119] interesting. it was like generating like
+[00:57:02.720] you know an like information about
+[00:57:05.040] what's there but that's kind of like
+[00:57:06.480] what we have we have with steering right
+[00:57:09.200] so it was like okay how do I actually
+[00:57:10.720] action on this and build something new
+[00:57:13.599] right and I I think finally where we
+[00:57:16.880] landed was we we kind of those all the
+[00:57:19.760] learnings that Richard's been working on
+[00:57:21.280] as he's been working um you know on on
+[00:57:24.640] on the specification based approach with
+[00:57:27.119] yours ears requirements and and designs
+[00:57:30.079] and we also saw the field and how uh you
+[00:57:32.960] know power users had changed how they
+[00:57:35.680] were working with agents right like
+[00:57:37.520] there like there was a lot more planning
+[00:57:39.359] up front there was a lot more uh there
+[00:57:42.319] was more meticulous thinking up front
+[00:57:43.920] before before doing tasks and we learned
+[00:57:47.680] from them and we I think you know
+[00:57:49.599] basically tried to learn take take our
+[00:57:52.000] learnings that we go we we go that we we
+[00:57:55.119] built inhouse
+[00:57:57.040] and apply them with a user experience
+[00:57:58.799] that's very much front and centered
+[00:58:00.400] around uh the the development process
+[00:58:03.839] which is a requirements design and
+[00:58:05.200] implementation process right and that's
+[00:58:08.000] where we landed with the current
+[00:58:09.280] experience and then you know the moment
+[00:58:12.240] we shipped this we got a lot of positive
+[00:58:15.040] signal and of course there were tons
+[00:58:17.359] tons of issues uh in the experience when
+[00:58:19.839] we first built it and and what you're
+[00:58:22.240] seeing now is probably like four
+[00:58:24.000] iterations in um but the core of this
+[00:58:28.160] really is around like your require
+[00:58:30.000] requirements, your design, your
+[00:58:31.200] implementation plan. And I think a lot
+[00:58:34.799] of the questions you asked around how
+[00:58:36.079] how do I edit this, how do I keep this
+[00:58:37.920] in sync, how do I review it are all kind
+[00:58:39.760] of things that we are very much actively
+[00:58:41.839] thinking about, not just from a
+[00:58:43.760] underlying technology or capabilities
+[00:58:47.119] perspective or science perspective, but
+[00:58:48.880] also from a user experience perspective.
+[00:58:50.400] H how to make this how to make this uh
+[00:58:53.040] palatable to users?
+[00:58:54.880] >> Yeah. And and from that when we say
+[00:58:56.640] users, I guess there are going to be
+[00:58:58.640] multiple different personas going
+[00:59:00.160] forward in terms of who who has the most
+[00:59:04.079] opinion on each of these files. And I
+[00:59:06.400] guess when we think about I don't know
+[00:59:08.160] whether it's tasks versus requirements.
+[00:59:10.880] I guess we might see two different types
+[00:59:13.280] of people. Maybe more a PM style on the
+[00:59:15.440] requirements and maybe more an engineer
+[00:59:17.119] or someone some some uh kind of like
+[00:59:19.760] development practitioner who cares more
+[00:59:21.920] about how things are built. Do you see
+[00:59:24.079] do you see different owners maybe going
+[00:59:26.000] forward with these different types of um
+[00:59:28.640] uh files as part of the spec?
+[00:59:30.880] >> Absolutely. Which is which is why I was
+[00:59:32.960] saying what we're doing is we're kind of
+[00:59:34.400] dog fooding this internally cuz we have
+[00:59:37.119] PMs owning like the requirements you
+[00:59:39.200] know engineering owning design. How do
+[00:59:41.760] how do we put them in places where
+[00:59:43.119] they're easy to share? Like a a top a
+[00:59:45.040] big feature request for we've been
+[00:59:46.799] hearing is that hey you know we have we
+[00:59:49.040] have some requirements in Jira or we
+[00:59:50.880] have some requirements in Asana. How do
+[00:59:52.880] we bring how do we how do we bring those
+[00:59:54.640] in and surface them, right? Um from a
+[00:59:58.480] and I think from a problem perspective
+[01:00:01.440] that's very interesting, right? Um how
+[01:00:03.760] do you how do you kind of make the
+[01:00:05.680] coordination of that that better? How do
+[01:00:07.520] you how do you like short circuit how do
+[01:00:09.920] you like save a bunch of upfront time
+[01:00:11.920] that goes into this requirements and
+[01:00:13.359] design planning uh in a way that makes
+[01:00:16.880] in a way that makes sense for how teams
+[01:00:19.040] operate, right? like we don't expect
+[01:00:21.359] every team to like PMs on every team to
+[01:00:23.920] be inside a code editor for example to
+[01:00:26.240] do things. So we have to kind of look at
+[01:00:28.079] how people are doing things in in in in
+[01:00:31.839] the wild and and enable them in the
+[01:00:34.240] tools that they're they're also using.
+[01:00:36.319] >> Absolutely. Um let's look a little bit
+[01:00:38.720] further forward as well before we before
+[01:00:40.480] we wrap in terms of where does this
+[01:00:43.520] where does this space lead? What's the
+[01:00:45.200] what's the next step do you feel for uh
+[01:00:47.839] from a from a spec oriented way? How do
+[01:00:51.599] you see people in future wanting to use
+[01:00:54.720] specifications or development with
+[01:00:56.960] specifications?
+[01:00:58.319] >> Uh Richard, do you want to take that
+[01:01:00.000] first?
+[01:01:00.799] >> Yeah, I'll start and uh then hand back
+[01:01:02.720] to you Nikil on this. Like so NL's been
+[01:01:04.960] talking about uh you know uh a lot of
+[01:01:07.200] the the coordination that which is
+[01:01:09.359] really the hard part, right? that you do
+[01:01:10.720] a lot of uh with a lot of teams and
+[01:01:13.359] products and so forth and um you know
+[01:01:15.760] there there's there's there's topics
+[01:01:17.680] around that that he could talk a lot.
+[01:01:19.280] The the one that's the most interesting
+[01:01:21.119] to me I mean there's there's obviously
+[01:01:22.880] some other things that we're going to do
+[01:01:24.160] with uh giving you more controls about
+[01:01:27.200] being able to see the ambiguity in the
+[01:01:29.280] process and you know contradictions like
+[01:01:31.200] we talked about before and um you know
+[01:01:34.160] also give you more entry points to this
+[01:01:36.559] workflow and so forth. Um th those are
+[01:01:38.799] all technical feature specifics and um
+[01:01:43.440] you know components of this
+[01:01:45.280] specification component that we'll do.
+[01:01:47.680] Um what I think is the most interesting
+[01:01:49.920] of where the the effect of a of a tool
+[01:01:54.319] like this of what it does is um in some
+[01:01:56.960] ways it shifts your focus from the
+[01:01:59.920] postbuilding phase into the code review
+[01:02:02.400] phase, right? Um because you know agents
+[01:02:05.920] and models build a lot of different uh
+[01:02:09.520] um
+[01:02:11.119] code bases and lines of code and so
+[01:02:13.280] forth. Um they're getting quite good and
+[01:02:15.280] refined at these things. Um no matter
+[01:02:17.520] what the AI detractors say, uh they they
+[01:02:19.760] they are quite um coming along further
+[01:02:23.119] um to to really meet some some high
+[01:02:25.119] standards, especially a lot of the
+[01:02:26.400] benchmarks that we've seen. Um, and
+[01:02:30.000] you've now got these code bases and
+[01:02:32.400] requirements and you have teams and
+[01:02:33.839] people that need to reason about
+[01:02:34.960] components of them, right? And that
+[01:02:37.280] could be reasoning about the or
+[01:02:39.680] reviewing even um efficiently in teams
+[01:02:42.720] the the refactoring parts of a program,
+[01:02:45.680] right? or it could be about reviewing
+[01:02:48.640] and reasoning about uh the new feature
+[01:02:50.640] parts of the component or even like the
+[01:02:52.640] secure security components right of of
+[01:02:55.440] code of implications of code changes
+[01:02:57.119] that are made. So I think that this is
+[01:02:59.119] going to be a real highlighted area not
+[01:03:01.200] just you know in hero but as the
+[01:03:02.880] industry as a whole over the next couple
+[01:03:04.640] years that really is untouched right now
+[01:03:06.720] in the in sort of the AI and editor
+[01:03:08.799] space. Uh yeah, I mean I I think for for
+[01:03:11.520] me right like I I think about it from
+[01:03:13.119] like the problems that um we have as
+[01:03:15.680] teams, right? Like look across the SDLC
+[01:03:18.000] process, right? So like I already kind
+[01:03:20.960] of talked a little bit about the upfront
+[01:03:22.559] process on like the back and forth with
+[01:03:24.240] like finalizing requirements and
+[01:03:25.680] designs. How do you have multiple when
+[01:03:27.920] you have multiple teams working together
+[01:03:29.680] like it gets even harder and more
+[01:03:31.359] complicated, right? How do how do we
+[01:03:33.680] kind of improve that process, right? And
+[01:03:35.760] then you know going going forward uh
+[01:03:38.640] past past the review once something is
+[01:03:40.720] out in the wild and there are issues how
+[01:03:42.799] do we bring those issues back to the
+[01:03:45.280] back to the actual uh development team
+[01:03:48.640] right uh so that we're really looking at
+[01:03:51.359] this from a whole life cycle perspective
+[01:03:54.319] and uh you know you know there are core
+[01:03:57.359] things that are not going to change not
+[01:03:58.799] going to be impacted
+[01:04:00.799] by by AI in terms of the problems you
+[01:04:04.079] have right
+[01:04:05.359] You ship software, there'll be problems
+[01:04:06.960] with it. How do how do you get those
+[01:04:08.960] problem? How do you fix those problems?
+[01:04:10.400] You when you build software, there's
+[01:04:12.400] ambiguous requirements or design. How do
+[01:04:14.160] you solve how do you make that easier?
+[01:04:16.480] So, that's how we're looking at uh this
+[01:04:19.839] space and and problem solving in this
+[01:04:21.599] space.
+[01:04:22.559] >> Awesome. And where are we with the build
+[01:04:24.559] right now? It looks like we've just
+[01:04:25.920] completed uh I think this was uh was
+[01:04:28.720] this section four?
+[01:04:31.280] >> Yeah, we've completed a bunch of tasks.
+[01:04:33.119] Uh I've been I've been going going at it
+[01:04:35.920] while we uh do things. So as you like
+[01:04:38.799] one of the things that you see that's
+[01:04:40.160] happening is that it's actually being
+[01:04:42.799] very methodical with generating tests.
+[01:04:45.440] Um so you know it generating generating
+[01:04:49.119] updates. So like it like I just executed
+[01:04:52.000] a card for uh this pro enhanced product
+[01:04:55.280] card component with favorite
+[01:04:56.480] functionality. So it's actually like
+[01:04:58.960] making sure the tests are set up right.
+[01:05:00.880] And so let's actually see what it's done
+[01:05:03.599] now. So I've I've got uh it's added like
+[01:05:07.280] a so it's added a favorite here already.
+[01:05:10.079] So I can favorite things. Let's see if
+[01:05:11.440] they I don't know if this is Yep. Yep.
+[01:05:13.599] They're actually showing up as favorites
+[01:05:15.039] as well.
+[01:05:16.319] >> And remember this this one Nikil had
+[01:05:18.720] that steering file to use TDD first. So
+[01:05:20.960] it actually augmented his flow to do
+[01:05:23.359] some of these up front rather than
+[01:05:24.640] later.
+[01:05:25.119] >> Exactly. And you know I picked a
+[01:05:27.680] relatively easy feature. A lot of times
+[01:05:29.839] um people use these AI demos to say,
+[01:05:32.480] "Hey, build me a game or build me
+[01:05:34.000] something that are very much green
+[01:05:35.359] field, right?" But like the reason why I
+[01:05:37.520] picked an easy feature like like adding
+[01:05:39.280] favorites is not because is to show that
+[01:05:41.599] there's actually a lot that goes into
+[01:05:43.680] building favorites. It's not just like
+[01:05:45.920] you know a simple thing that you can add
+[01:05:47.440] to your your application. uh you have to
+[01:05:49.839] think that you you know having tests
+[01:05:51.680] making sure things are accessible uh
+[01:05:54.000] making sure like the the number of
+[01:05:55.440] scenarios that were covered here are
+[01:05:57.359] things that I would have not thought
+[01:05:58.559] about doing.
+[01:05:59.760] >> Yeah. And and the nice and the nice
+[01:06:01.760] thing is it's the tests that are added
+[01:06:04.160] and I'm sure the tests would have
+[01:06:05.359] equally been added if we didn't do the
+[01:06:06.799] TDD piece but probably you know after uh
+[01:06:10.240] towards the end of the tasks. It's it's
+[01:06:12.799] not you know the thing that we miss with
+[01:06:14.559] vibe coding is the ability to actually
+[01:06:16.319] validate and truly say yes this is all
+[01:06:18.160] working. I haven't regressed other
+[01:06:19.440] things. And the nice the nice flow about
+[01:06:21.680] this is tests are being built by
+[01:06:23.520] default. It's it's it's coming as part
+[01:06:25.359] of the package. Uh and it allows us to
+[01:06:27.760] validate every step of what we're what
+[01:06:30.079] we're doing through the through the
+[01:06:31.440] tasks.
+[01:06:32.240] >> Yeah, absolutely. And like the product
+[01:06:34.000] of that that the hook was that the uh I
+[01:06:37.200] had I had it update like the readme
+[01:06:39.039] file. So a lot of developers like the
+[01:06:41.520] readme file to stay updated. So, so as
+[01:06:43.599] you can see, it added like the favorites
+[01:06:45.119] to the the the favorites to the um to
+[01:06:49.039] the actual experience. And you know,
+[01:06:51.680] it'll keep this read me up to date. The
+[01:06:53.520] hooks experience is also is is one of my
+[01:06:56.319] favorite things cuz you can really like
+[01:06:58.319] do the same thing. You can, you know,
+[01:07:00.960] language localization is also a good
+[01:07:02.559] one. Like you add a new feature and you
+[01:07:04.319] want to make sure that your strings are
+[01:07:05.920] in different, you know, in different
+[01:07:08.000] languages, you can just have a hook for
+[01:07:09.839] that. So, we're really seeing customers
+[01:07:11.680] get creative with the the types of hooks
+[01:07:13.440] they're creating.
+[01:07:14.160] >> Yeah. And you just avoid that debt that
+[01:07:16.079] will typically follow you around when
+[01:07:17.440] you don't do these things uh as as well.
+[01:07:20.160] >> Yeah, absolutely.
+[01:07:21.359] >> Amazing. Um this has been a this has
+[01:07:23.680] been a great demo. It's been really
+[01:07:25.039] really great fun chatting with you both
+[01:07:26.559] and um and congratulations as well on
+[01:07:28.799] all the success that Kira's had. uh from
+[01:07:31.280] what I from what I saw on uh on on
+[01:07:33.520] Twitter. I think it's in it's in a it's
+[01:07:35.680] in a waiting list right now just because
+[01:07:37.119] it's had such an inc impressive number
+[01:07:39.039] of uh downloads from from people wanting
+[01:07:41.200] to wanting to try it out. Uh what what
+[01:07:43.119] what would you what advice would you
+[01:07:44.240] give to people who want to who want to
+[01:07:45.440] play with it today?
+[01:07:46.720] >> Yeah. Uh we are so grateful for to
+[01:07:49.359] everyone trying to get on you know are
+[01:07:51.359] we you know we've got thousands of users
+[01:07:53.440] and we were trying to optimize the
+[01:07:54.799] experience for the users who have
+[01:07:56.240] access. That's why we added the weight
+[01:07:58.319] list and uh we're working very
+[01:08:01.680] diligently to to get people off the wait
+[01:08:03.760] list and you should be hearing something
+[01:08:05.520] from us very soon.
+[01:08:08.559] >> Awesome. And if you're interested,
+[01:08:09.920] kirao.dev, I believe, right?
+[01:08:11.839] >> Yep. kira.dev.
+[01:08:13.680] >> Kira.dev. And you can join the wait list
+[01:08:15.280] there. Wonderful. Uh Nikil and Richard,
+[01:08:17.359] it been an absolute pleasure. Very very
+[01:08:19.120] insightful. Thank you very very much for
+[01:08:20.880] sharing uh for sharing your knowledge as
+[01:08:23.120] well as as well as Kira and uh and the
+[01:08:25.440] demo. Um, for those watching online, uh,
+[01:08:28.319] sorry, for those listening only, uh, on
+[01:08:30.480] to the podcast, do check out the YouTube
+[01:08:32.319] video cuz it's there's a ton of value,
+[01:08:35.040] uh, in the demo that was, uh, that was
+[01:08:36.640] shown today. Really appreciate you both
+[01:08:38.400] joining. Thanks very much.
+[01:08:39.600] >> Thanks, Simon.
+[01:08:40.560] >> Thank you.
+[01:08:41.359] >> And thanks very much for listening and
+[01:08:42.960] tune in to the next episode.
+[01:08:48.680] [Music]

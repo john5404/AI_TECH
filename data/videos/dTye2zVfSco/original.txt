@@ -1,0 +1,553 @@
+[00:00:00.760] I'm bored to do the same stuff.
+[00:00:02.320] And we are living in the AI era, so why not to try to use
+[00:00:06.800] all these tools that we have available?
+[00:00:09.840] And this is literally what happens.
+[00:00:12.080] So this is like one of your merge requests from our like production GitLab
+[00:00:17.320] that from the beginning till the end one developer and a bot.
+[00:00:22.880] And it was like merge without human interaction
+[00:00:26.440] what we're going to talk today is about like
+[00:00:29.640] six things that you can do
+[00:00:32.920] maybe like in a week and do something similar in your company.
+[00:00:43.120] Oh, no. Oh!
+[00:00:45.560] Welcome today.
+[00:00:46.560] So my name is Serhii.
+[00:00:47.480] I'm currently an engineer manager at Marks & Spencer.
+[00:00:50.640] But for the next 30 minutes I will be talking a bit about different
+[00:00:54.200] topic in my previous company that we were doing AI powered code review.
+[00:01:00.560] So it was a legal tech SaaS.
+[00:01:02.840] And we're going to talk about three different things, like how we decided
+[00:01:06.320] with the tools, how we build circuit, and how we work with the bronze.
+[00:01:10.920] And of course, like a lot about context, how we work with the context, what models
+[00:01:15.280] we choose, how we choose the models and actually talk about the price.
+[00:01:21.160] So where it actually all started and it started with just a message.
+[00:01:26.160] I think that week I was doing the same code
+[00:01:30.840] review message like for the fourth time in a row in the week.
+[00:01:34.840] So I was like, I'm bored to do the same stuff.
+[00:01:37.320] And we are living in the AI era, so why not to try to use
+[00:01:41.800] all these tools that we have available?
+[00:01:44.840] And I think at that point of time, Code Rabbit
+[00:01:48.000] was quite popular on X or X Twitter.
+[00:01:51.360] And I was like, do you want to give it a try?
+[00:01:55.240] One of the important things that was considered is
+[00:01:59.320] we need to have self-managed instance, because we have a lot
+[00:02:03.640] of different compliances and some different stuff. So
+[00:02:09.240] in the months we actually shipped something
+[00:02:11.640] and I'm going to talk a bit more.
+[00:02:15.160] So I usually try to stick everything with the data that we have.
+[00:02:19.320] And I was thinking like, is it only me who have the same issue
+[00:02:23.320] again and again and again?
+[00:02:24.680] So I just get the data for the last
+[00:02:27.840] like a quarter, and there was a lot around like 2000 merge requests.
+[00:02:31.880] And I was trying to find do we have like
+[00:02:34.920] a lot of repeated stuff what our like engineers.
+[00:02:38.200] Right. Again and again.
+[00:02:39.520] And actually it was so I just put like this five, five
+[00:02:46.320] top categories.
+[00:02:47.520] So it was about null safety test gaps or crossing concerns and all the things.
+[00:02:53.640] So I was like, all right, so where are we gonna go from there?
+[00:02:58.280] And how we actually can say
+[00:03:01.760] how much money and time we waste.
+[00:03:04.920] So we have 200 developers.
+[00:03:08.480] We have hundreds of merge requests per week, and we have all these patterns.
+[00:03:12.480] I don't know the final number, but it's painful.
+[00:03:14.960] So this is the reason why we just thinking
+[00:03:18.200] we need to try something that will save money and time.
+[00:03:23.000] And at that point of time, and it was about a year ago
+[00:03:27.080] maybe when it all started.
+[00:03:29.200] Claude Code was just starting.
+[00:03:31.920] It's really good right now.
+[00:03:33.840] And mostly we had Cursor or just Copilot in VS code
+[00:03:39.560] and it was like really good for autocomplete but not really good
+[00:03:42.880] for all this like complicated things. So
+[00:03:47.280] where
+[00:03:48.680] what we're going to talk today is about like
+[00:03:51.880] six things that you can do
+[00:03:55.160] maybe like in a week and do something similar in your company.
+[00:03:59.200] So I will talk about how we evaluated tools,
+[00:04:03.120] how we build the architecture, how we worked with prompts,
+[00:04:07.000] how we work with the context, how we choose the models, and about the cost.
+[00:04:12.640] So it's just part of the table that I spent some time doing the evaluation.
+[00:04:17.120] And at that point of time, it was like
+[00:04:20.600] four tools that get most of the attention.
+[00:04:23.760] So CodeRabbit, the most popular. GitLab is here only because we were using GitLab Enterprise.
+[00:04:29.360] So it's something that they try to build and try to get working.
+[00:04:33.000] So Greptile is something that was recommended by our VP of engineering.
+[00:04:39.000] And something we tried is like to find the best open source
+[00:04:43.880] model, open source applications that actually doing the same stuff.
+[00:04:49.880] And at that point of time I was told money is not a problem we are paying.
+[00:04:53.840] So the decision was done to choose Greptile because it's actually
+[00:04:59.760] like just having a checkbox of all our important things.
+[00:05:04.560] So it's check and security.
+[00:05:07.680] It checks and quality because it's like just the tools
+[00:05:11.680] that we are paying a lot of money for and a lot of operation stuff.
+[00:05:15.600] We should not worry about updates, model scaling.
+[00:05:19.280] So we just consuming the stuff.
+[00:05:21.560] But in the end of the day we were like, all right, we need to change some.
+[00:05:26.680] We need to try something new and something interesting.
+[00:05:29.120] I was here one month ago on the City of Craft event,
+[00:05:32.360] and the guy who is the CEO of Tessl was speaking, and I was asking him,
+[00:05:37.720] what are the best companies that get the most of AI?
+[00:05:42.360] And like he told quite interesting things that I remember is
+[00:05:46.720] like is not a startup companies, whereas they have just few engineers
+[00:05:51.640] and not an enterprise company because there is too much bureaucracy.
+[00:05:55.360] It's something like in the middle.
+[00:05:57.200] And this actually worked because I was told,
+[00:06:01.520] you have time, just try it like we give you like two sprints.
+[00:06:05.280] So try this open source tool and
+[00:06:09.840] we'll see how it will go.
+[00:06:11.000] So few things.
+[00:06:12.120] Why we decided to go with open source is because we will own the code.
+[00:06:16.800] I mean like of course we will fork it so we will own the prompts,
+[00:06:21.360] we will choose the models and we can we can pretty much implement
+[00:06:26.160] whatever we want.
+[00:06:27.160] An important part if the company will scale,
+[00:06:30.920] it doesn't matter how many seats we will need. So.
+[00:06:37.640] This slide is
+[00:06:38.400] more is more like to show you how easy it is
+[00:06:41.720] to actually run it in production as the first version.
+[00:06:46.040] So around six weeks
+[00:06:49.320] and it's literally set up that we had in our GitLab.
+[00:06:53.320] Sorry.
+[00:06:54.000] In GitLab CI, we had a job just to run an image
+[00:07:00.360] with some comments that will add two different comments
+[00:07:03.920] like first command is review that will provide pull request
+[00:07:07.040] review as a senior engineer and improve is a comment where
+[00:07:12.040] there will be recommendation in the code itself.
+[00:07:16.960] And for six weeks we have it like this.
+[00:07:20.040] And it was not really scalable because we don't
+[00:07:24.680] have a lot of control over it, and we need to change configuration every time.
+[00:07:29.040] Push, push.
+[00:07:31.160] Another change gets the review.
+[00:07:33.280] So we're thinking like all right.
+[00:07:35.680] So we see it works and we have some positive signals what we can do next.
+[00:07:41.520] What we did is like we set up a dedicated service.
+[00:07:46.560] And instead of just running it on demand as a job in GitLab,
+[00:07:51.640] we added a Kubernetes pod that was like running
+[00:07:56.080] 24 over seven and was working as a listener. So
+[00:08:02.200] in this
+[00:08:02.880] scenario, we actually give everything under our infrastructure,
+[00:08:07.000] all the helm charts, all the other DevOps shenanigans that's happening.
+[00:08:10.840] Everything was in our control as well.
+[00:08:14.200] So how does it work?
+[00:08:18.000] So at first when developer create
+[00:08:21.800] a merge request in the GitLab, we are listening for the event.
+[00:08:27.040] So we say they're open up date or comment or like
+[00:08:31.040] when the event like when the request is going from draft to ready.
+[00:08:34.880] So we're having a listener
+[00:08:37.920] that is like always listen for these events from the GitLab.
+[00:08:41.680] Then we're going for the event router for the slash
+[00:08:45.160] commands or like after triggers.
+[00:08:49.040] Next step is pretty much like
+[00:08:51.920] the heart of this review is the context retrieval.
+[00:08:55.680] And we're going to talk about each step a little bit more afterwards.
+[00:08:59.360] Then we go into the model chain.
+[00:09:01.400] So we are choosing which model need to make the review.
+[00:09:04.840] And we started with a smart first because we really want to have good reviews.
+[00:09:08.840] And then afterwards like the bot just sends a comment in the merge request.
+[00:09:14.240] And also it's an important part
+[00:09:16.120] of all of this architecture is having a feedback loop from day one.
+[00:09:19.560] So we ask our developers just to mark their
+[00:09:25.240] the comments from the bot with like green, yellow, or red., yellow or red.
+[00:09:29.840] And then we use the GitLab emoji API.
+[00:09:34.680] We can pull all of this data and like have a build
+[00:09:37.720] everything in Grafana to have it visible.
+[00:09:41.960] So we have two entry points.
+[00:09:45.360] So first one is mostly for power users who really want to have like
+[00:09:50.080] most of the control, most of the features, every time they create a merge requests,
+[00:09:54.080] they can manually write down slash command.
+[00:09:56.440] So we had like review improve describe.
+[00:09:59.240] That is literally going to create
+[00:10:01.400] pull request description for you when you have it by yourself.
+[00:10:05.480] And also ask when you just want to ask a question
+[00:10:08.720] to to the code base or like to the pull request.
+[00:10:11.720] And you can actually do on someone else pull request if you're not sure
+[00:10:15.440] about some specific thing and after triggers.
+[00:10:18.720] So when merge request is opened
+[00:10:21.720] and is going directly to non draft state, we will run a review
+[00:10:27.240] and the second condition is like
+[00:10:29.800] if the merge request was in draft and then was moved to ready state,
+[00:10:34.040] we just like triggers the review again for everyone else.
+[00:10:39.400] So in this case we have like two categories of people who should be happy.
+[00:10:45.360] So usual users that don't really care much,
+[00:10:49.320] but really nice to see pull request review and someone who rely on it a lot.
+[00:10:57.200] Right.
+[00:10:57.640] So how we work with prompts and I think this is something
+[00:11:03.200] that was like started like really, really well but
+[00:11:07.120] quickly started to become really, really hard because you cannot like
+[00:11:11.080] when we have only like five rules or ten rules specific to our companies.
+[00:11:15.320] It was fine.
+[00:11:16.520] Like we just sent the just one single prompt and it's working as expected.
+[00:11:21.920] Good results.
+[00:11:22.960] But when we start to scale all these rules, all this documentation,
+[00:11:26.880] all the things, so it easily started to appear that we have real problem.
+[00:11:33.240] We have like context, but we have so many things in one prompt
+[00:11:36.920] and the results getting worse and worse and worse.
+[00:11:39.640] So then we went to the second version of like what we implemented. So
+[00:11:45.680] what if we will
+[00:11:47.120] start to run rules only to specific like pass,
+[00:11:52.560] maybe like something related to the DB will go only data data rules.
+[00:11:57.400] What if something like with TypeScript
+[00:12:00.960] will go to the TypeScript rules?
+[00:12:03.960] Right? Makes sense.
+[00:12:05.200] But what will happen if there is like some files
+[00:12:07.400] that is like services DB and it's TypeScript.
+[00:12:11.080] So every single file explodes, and then the
+[00:12:16.440] the most important part that was chosen
+[00:12:19.560] is like how we can use the best of AI
+[00:12:24.920] to choose the context for AI.
+[00:12:27.640] So what we did.
+[00:12:34.160] So we have few different inputs.
+[00:12:36.920] Right.
+[00:12:37.280] So first of all it's like pull request metadata title description diff.
+[00:12:41.840] We have a huge library.
+[00:12:43.440] There is like different rules documents markdown files.
+[00:12:47.040] And we actually pull in the JIRA context ticket description all this stuff.
+[00:12:52.960] So first and first we cannot just take all this
+[00:12:56.480] like library and pull into prompt as we talked before.
+[00:13:00.640] So what we are doing.
+[00:13:01.920] So first we are doing heuristic pre filter.
+[00:13:05.520] So out of all the documentation we build a ranking
+[00:13:10.880] according to the keywords in the pull request.
+[00:13:13.840] And even without AI trying to build the top
+[00:13:19.760] 30 to 50 documents that actually related to the pull request.
+[00:13:24.320] So we filter out even like on like pretty quickly.
+[00:13:28.360] And then we actually can stop here. Right?
+[00:13:32.080] We, we know the documents that we're going to use and we,
+[00:13:35.920] we already have everything ready.
+[00:13:37.560] But what we've like all these documents have 5000 tokens.
+[00:13:41.440] 10,000 tokens. So which is already like crazy.
+[00:13:44.200] So what we did.
+[00:13:45.360] Next we're using cheaper model.
+[00:13:49.200] So Gemini flash with temperature zero just to hold.
+[00:13:52.560] We have the same results. And asking
+[00:13:56.480] AI according to the changes in the diff.
+[00:14:00.440] According to the context, what actually
+[00:14:03.520] the documents feed the most for this pull request.
+[00:14:07.080] And then in every document we had an agreement to always have headers
+[00:14:12.440] and always have like everything split into sections.
+[00:14:17.280] So then we actually have all these like documents, all the sections,
+[00:14:21.200] and we are doing second call just to focus on specific sections
+[00:14:25.880] that we want to have for for this pull request, we also have some kind of
+[00:14:31.560] like fallback chain just to make sure everything is like working as expected.
+[00:14:36.320] And in the end, what we have after all of this happens, we have 20 to 40 sections.
+[00:14:43.160] Everyone, every each of them is like up to 300
+[00:14:47.560] or maybe less.
+[00:14:48.840] And just sending it to the
+[00:14:52.280] LLM.
+[00:14:55.480] So this is like a real example how it works.
+[00:14:58.840] So if we will take a look here, we have most likely you don't see it.
+[00:15:04.120] So I will just say it.
+[00:15:05.400] So we have like keywords like services
+[00:15:08.480] getting paid payments invoices stripe.
+[00:15:12.240] And in the end we have a line where we already see what documents were used.
+[00:15:17.000] And we see that like we use the documents regarding getting paid,
+[00:15:20.920] we use service stuff, we use stripe.
+[00:15:23.640] So we only use documents that do matter.
+[00:15:28.440] And how it looks like in the end, because in the end,
+[00:15:32.320] like it's a huge, huge problem that they send to LM
+[00:15:36.040] with all the rules, with all the files changes, with all the gifts, and
+[00:15:41.400] we want it to
+[00:15:42.840] be as concise as possible and to include all the critical information as possible.
+[00:15:47.520] So as a part of the prompt, we will just have
+[00:15:51.560] project documentation, context, what files were used,
+[00:15:55.160] what sections were used, and what what
+[00:15:58.520] the what was inside the sections.
+[00:16:01.880] So we're also thinking about how we can make sure
+[00:16:05.800] we are not doing too many requests when we don't need it.
+[00:16:09.800] So we actually implemented like five minute cache per
+[00:16:13.080] so per merge request where we can just return the same context.
+[00:16:17.840] If let's say we use two different comments like we use review and improve
+[00:16:23.000] it, it's like given two different results, but the context is the same, right.
+[00:16:26.360] So why we need to build it twice
+[00:16:29.840] right.
+[00:16:30.320] So also what we added is like how we can include JIRA
+[00:16:36.280] into the context for the merge request and into the PR review.
+[00:16:41.600] And actually what we noticed this was like
+[00:16:44.640] 87% of child tickets were empty.
+[00:16:47.760] Description.
+[00:16:48.520] So if you will just include the empty description doesn't matter.
+[00:16:51.880] So we also added the epics and we actually added function
+[00:16:58.000] to check if ticket.
+[00:17:01.840] Sorry if merge request is actually compliant with the ticket,
+[00:17:05.080] because are we actually writing the code that we should write?
+[00:17:08.840] Is it right?
+[00:17:09.800] Is it something that we were expecting?
+[00:17:13.120] So at first because
+[00:17:16.640] we were experimenting with another choice, it's going to work or not.
+[00:17:19.440] We use OpenRouter as a main model provider.
+[00:17:23.320] And there was like a lot of reasons why to do so.
+[00:17:26.680] It's like one API surface.
+[00:17:29.360] Many models, we can choose whatever we want.
+[00:17:31.840] It was fast to implement.
+[00:17:33.880] The prices are the same as from the vendor, so why not?
+[00:17:38.360] But few things that started to appear as the problems is like
+[00:17:44.680] not all the models were fitting for our security.
+[00:17:48.480] Security like policies.
+[00:17:51.960] And we need to switch to something that vendor provided.
+[00:17:56.720] And at that point of time in the company, we already had vertex AI,
+[00:18:00.560] and it was pretty obvious why we chose Gemini as a main model provider. And
+[00:18:06.840] we we have much more control over it.
+[00:18:09.000] And we have like clear monitoring logs, budget security stuff.
+[00:18:14.520] So it was an easy choice for us.
+[00:18:18.040] So it's important to understand that AI
+[00:18:24.560] review is more like a suggestions, and it's more like an advisory thing to do
+[00:18:29.400] because like, I still can hallucinate, I can give bad results.
+[00:18:34.880] And I think something that Simon mentioned before is like, what will happen
+[00:18:38.640] if the there is like prompt injection or something like really bad happened.
+[00:18:44.920] So we still having this as a separate line as in the merge gate.
+[00:18:49.760] Right.
+[00:18:50.040] So we still make sure that CI/CD is working as expected.
+[00:18:53.720] All the linters, all the tests, all the stuff is running there as well
+[00:18:57.600] as Snyk.
+[00:18:58.480] So and AI is going there more like as an advisor.
+[00:19:03.920] So this is like few real examples.
+[00:19:07.560] What we what we had in the end.
+[00:19:10.440] So the bot itself just like write down in line comments.
+[00:19:15.360] So developer can just apply suggestions or you can literally chat
+[00:19:20.320] with proposed changes.
+[00:19:22.400] You can agree. You can disagree.
+[00:19:23.680] I don't know, you can just ask to do some random things.
+[00:19:27.400] And also what we built in the in the later stages is
+[00:19:31.840] if support request is pretty much simple and there is no much of improvements
+[00:19:37.720] that needs to be done, we implemented new commands that called self review done.
+[00:19:42.120] So we as developers take responsibility for the work we did.
+[00:19:47.040] And we said, yeah, we applied all the changes that was proposed.
+[00:19:51.320] And then PR agent is actually approving your pull requests,
+[00:19:56.400] and it's actually up to you to decide
+[00:19:59.760] if you would like to add project to your code owners.
+[00:20:03.200] So if if you edit it there and it approves your pull request,
+[00:20:07.880] you can actually merge your code without like human interaction.
+[00:20:11.120] And this is literally what happens.
+[00:20:13.360] So this is like one of your merge requests from our like production GitLab
+[00:20:18.600] that from the beginning till the end one developer and a bot.
+[00:20:24.160] And it was like merge without human interaction because it's
+[00:20:28.480] literally just I think it was pretty simple just removing some JSON file.
+[00:20:32.960] So why developers need to spend a lot of time
+[00:20:37.120] reviewing something that is pretty simple. So
+[00:20:42.240] yeah, what else?
+[00:20:45.040] I think like few things that we build on top, and I shared them before,
+[00:20:49.640] was how we can have to approve all the work on zero findings,
+[00:20:54.320] how we can chat with the code base and important part when we ask questions.
+[00:20:59.080] The context trigger again related to the question
+[00:21:03.160] itself, and not only to the changes in the pull request.
+[00:21:06.360] And also we build some kind of like stability thing
+[00:21:10.680] inside of the inside of the bot, just to make sure
+[00:21:14.480] we're not missing all the commands that are going from merge requests.
+[00:21:18.240] Because sometimes, let's say in the same time there was like 510
+[00:21:22.400] merge requests created and we don't want to miss any request.
+[00:21:27.240] So why I mentioned that feedback loop is really important
+[00:21:31.560] and it's important to build it from day one.
+[00:21:34.360] So first of all we are trying to understand
+[00:21:36.440] if it's even like useful if it's even like given some value.
+[00:21:42.040] And in one day as a part of my routine, I was like looking at the graphs
+[00:21:47.280] and saw that actually our satisfaction rate is going down.
+[00:21:52.560] And at first thing of course, I was went to the code base trying to understand
+[00:21:56.560] what was shipped wrong.
+[00:21:57.880] Is there like a production incident or what's going on?
+[00:22:02.520] And finally enough, it was already like after we were working in vertex,
+[00:22:07.040] AI and Gemini, they updated the model.
+[00:22:11.760] We were using the latest version and the model
+[00:22:14.680] they shipped was actually given worse results.
+[00:22:18.960] And then when we understand
+[00:22:22.360] that this is the issue, we quickly rolled back to the previous model.
+[00:22:25.760] And like satisfaction rate goes up,
+[00:22:30.000] right.
+[00:22:30.440] So as a result, after all this like adventure, I would say
+[00:22:34.960] what we had in the end in like a few months
+[00:22:39.000] is every week we have around like 300
+[00:22:41.920] reviews, comments, even at MVP scale.
+[00:22:45.000] We have people from different teams coming to us and saying, can we get it?
+[00:22:49.760] Like how much it will cost your time to
+[00:22:53.040] to do the same for us and cool stuff.
+[00:22:56.040] It's like maybe our maybe two.
+[00:22:59.880] And of course,
+[00:23:01.960] it was just a pleasant thing to do to receive a city grant for advancing.
+[00:23:05.400] I write so
+[00:23:09.000] the playbook in five lines that you can, I think, do.
+[00:23:13.160] So today is Tuesday, maybe like next week on Monday.
+[00:23:16.920] Evaluate different tools.
+[00:23:18.120] I think like right now AI is changing so quickly and like
+[00:23:23.480] there is so many tools appearing every day that is really hard to keep up.
+[00:23:27.600] But still, as a developers, we are responsible
+[00:23:30.920] for proper investigation in the tools that we would like to use.
+[00:23:35.480] So please spend as much time as possible
+[00:23:38.600] in order to choose the right tool in the beginning.
+[00:23:43.520] Second point I think is like on your own prompts,
+[00:23:47.040] because if you don't know how it works under the hood, you
+[00:23:51.200] you don't know what to expect.
+[00:23:54.280] Builds a feedback loop from day one.
+[00:23:56.440] It's pretty much what I mentioned before.
+[00:23:59.680] We need to understand if it was useful, if our developer is happy,
+[00:24:03.320] and if Google again silently update is a model
+[00:24:07.240] in for CI/CD, not in the prompt.
+[00:24:09.880] Still, don't forget that CI/CD is important part of our journey.
+[00:24:13.920] And this is where most of the hours like
+[00:24:19.480] trust should go. And.
+[00:24:23.520] Important part that we choose is like road
+[00:24:27.280] by complexity, fullback by failure is two struggle model.
+[00:24:31.040] First, just start with like a pro model or like Opus model.
+[00:24:34.960] And then if it's for some reason, just don't give in the good result.
+[00:24:38.560] Just like fall back to the something like that, this next one in the line.
+[00:24:42.160] So if we're talking about Gemini it was like pro and then flash
+[00:24:47.280] right?
+[00:24:48.520] Thank you.
+[00:24:49.480] Thank you everyone.
+[00:24:50.400] I think we have like a few minutes for live Q&A.
+[00:24:54.200] But also feel free to catch me after the talk.
+[00:24:58.640] Yeah.
+[00:25:00.040] Thank you.
+[00:25:07.000] Any questions?
+[00:25:11.480] Yeah.
+[00:25:11.800] Sorry.
+[00:25:17.600] Thanks for the talk.
+[00:25:18.760] I was curious if you could tell us a little bit more about why you chose the,
+[00:25:24.160] the, the kind of nine step pipeline that you did for retrieval, augmented
+[00:25:28.600] generation instead of a vector database instead of something that.
+[00:25:34.360] Yeah, I think this was like one of the things
+[00:25:38.320] that was like just screaming at us like make, make vector databases.
+[00:25:43.080] But we decided to go with an easy way because vector databases
+[00:25:48.360] will include additional infrastructure, additional complexity.
+[00:25:52.160] And at that point of time, we just don't want it to to
+[00:25:56.160] to have all this conditional complexity.
+[00:25:58.120] And we kind of see that it was pretty much working.
+[00:26:02.080] And, yeah, we I'm no longer working as a company where we done this stuff.
+[00:26:07.680] So maybe like stuff is changing right now, but at the moment when I was like
+[00:26:11.280] doing all these things, I was like, no, it's just too complicated.
+[00:26:16.800] Thank you.
+[00:26:17.240] Thanks.
+[00:26:18.400] Yeah, I have two questions.
+[00:26:20.320] One would be the PR size, right?
+[00:26:25.040] Yeah. To set some limits or. Yeah.
+[00:26:27.960] So it's pretty obvious if you will have like pull requests
+[00:26:31.240] with like 100 files and 200,000 of changes, it will not work.
+[00:26:35.600] Well, this is the reason why actual development
+[00:26:39.480] roles in the company was playing well because we had an internal agreement
+[00:26:43.160] and kind of like hard rules that all the merge requests should be small, right?
+[00:26:47.080] So something that you can ship in one day.
+[00:26:49.880] So most of the times
+[00:26:53.120] it was like a few files up to a few hundred lines.
+[00:26:56.840] So it was like pretty fine.
+[00:26:58.840] But of course sometimes when you need to just refactor huge thing
+[00:27:02.920] with like just renaming, it was not working really well.
+[00:27:06.840] Yeah.
+[00:27:07.120] So there was a limit of 150,000 tokens per
+[00:27:13.040] person review.
+[00:27:13.840] So if it was going more, the boat will just send the message, hey, it's too much.
+[00:27:19.000] I don't want to to handle it.
+[00:27:20.720] So it's either split
+[00:27:22.400] or just make sure that as a developer review your pull request okay.
+[00:27:26.320] Makes sense.
+[00:27:27.240] And the second question did you look into like trunk based development
+[00:27:31.160] sorry trunk based development where you don't do burrs basically.
+[00:27:35.000] It's like option around that or.
+[00:27:38.920] Yeah, I, we
+[00:27:42.120] don't invest it too much time into this.
+[00:27:44.000] It was like just usual flow how you like just no create pull requests.
+[00:27:49.600] Just run through all of this stuff.
+[00:27:51.200] And I know that right now that company is trying to implement
+[00:27:55.040] more like spec-driven development in a way that like,
+[00:27:58.080] all right, we just run the specs and we delegate all this
+[00:28:01.280] like review to the boats and then see like where the developers actually needed.
+[00:28:07.240] But yeah okay. No worries. Thank you.
+[00:28:12.800] Anyone else?
+[00:28:13.840] Yeah.
+[00:28:14.760] Silly question.
+[00:28:16.080] I'm quite loud.
+[00:28:16.760] Is that okay?
+[00:28:17.560] Yeah, it's actually okay.
+[00:28:19.080] I lose this.
+[00:28:19.800] It's fine.
+[00:28:20.720] It is silly because it's a really good talk.
+[00:28:23.600] 87% of subtasks
+[00:28:26.760] had no description what was in them.
+[00:28:30.480] So I don't know why, but a lot of people was creating stories
+[00:28:35.160] and creating like sub tickets in every like.
+[00:28:39.080] Yeah, like this is something because I mentioned
+[00:28:42.040] like we are trying to get like change done in one day.
+[00:28:45.760] So this is the reason why, let's say
+[00:28:47.200] story can be like describing all of the stuff that needs to be done.
+[00:28:50.400] And then sub tickets can be just like implement this.
+[00:28:53.320] Yeah, just title because it it will kind of make sense.
+[00:28:56.720] But then we just like yeah, if you just pull this information
+[00:29:00.360] from empty description like will not give you any, any value.
+[00:29:04.480] So let's try to go level up and then maybe like if,
+[00:29:07.400] if the story is empty, which usually I seem not not the case,
+[00:29:10.920] then we just like making sure that we pull at least something to to validate.
+[00:29:15.200] If the merge request align what with what needs to be done.
+[00:29:20.240] Yeah. I think
+[00:29:22.880] I think it's it's quite interesting
+[00:29:25.240] going through all of this and like having to explain it to a robot
+[00:29:28.840] or let, let's say, you know, and you realize
+[00:29:32.000] just how bad our processes are dealing with humans
+[00:29:36.040] and how much we infer and just make stuff up and go wrong.
+[00:29:40.000] And when we're having to go with all of this, just go, oh, this is not very good.
+[00:29:43.800] Do you find the same? Yeah. Yeah.
+[00:29:46.400] I, I think this is something that was need to be changed
+[00:29:49.400] when we started to adopt it.
+[00:29:50.720] More and more is like the good practices, the like,
+[00:29:54.520] all these processes in place is like showing the people
+[00:29:57.720] how good looks like and what we do expect to get better results.
+[00:30:02.040] Unfortunately, I was not part of the company when there was a conversation
+[00:30:07.000] about like evaluating this, how good the skills are, how good the rules are.
+[00:30:12.200] But I think it's like pretty interesting topic to think about.
+[00:30:15.840] And yeah, I really like, the talk from Simon about it,
+[00:30:20.440] and it's actually just forced you to think
+[00:30:24.520] how good your rules are, how good your skills are,
+[00:30:27.560] how you can make sure that all this information
+[00:30:30.880] is actually useful, and not just creating a more
+[00:30:35.320] noise and bloat and just like, trying to contradict with each other.
+[00:30:41.480] Yeah.
+[00:30:44.800] Yeah.
+[00:30:45.120] I'm not gonna throw.
+[00:30:47.800] So when you're doing the reviews, what were you asking the agent to review
+[00:30:52.880] and kind of saying review my code, tell me if it's good or not.
+[00:30:56.760] I'm assuming there was probably a set of, like,
+[00:30:58.760] specific things you wanted to get from that. Yeah.
+[00:31:01.400] So if you will take a look at the PR
+[00:31:04.080] agent afterwards, this is like open source software.
+[00:31:07.080] So you will see exactly what the final prompt is.
+[00:31:10.040] So it's like predefined prompt
+[00:31:12.720] like you are like AI reviewer, you're doing this this and this and that.
+[00:31:16.680] So what we did differently is like we injected our personal instructions
+[00:31:22.320] and our personal rules to align with what is expected from the company
+[00:31:27.760] because like, the company is like just doing some legal stuff.
+[00:31:30.760] So we need to make sure like all these like
+[00:31:33.320] requirements are matching, there is no security concerns.
+[00:31:37.040] And like different I, I can go back to, maybe, the slide.
+[00:31:46.960] Yeah.
+[00:31:47.360] So this is what most of the things
+[00:31:50.600] that was covered by, by all this like political stereo.
+[00:31:53.840] I would like to mention that
+[00:31:57.040] you, you should not, like, rely on it too much.
+[00:32:00.320] If we're talking about, like, really complicated work in the pull requests.
+[00:32:03.720] Right.
+[00:32:04.320] We still need to have all these,
+[00:32:05.880] like senior developers with the knowledge of like how what, what good looks like,
+[00:32:10.200] how it should work, what is the best solution.
+[00:32:12.200] So I look at this
+[00:32:15.640] as more like a helper to avoid spending time on this, right?
+[00:32:20.400] I don't want to write down, hey, it's missing tests.
+[00:32:23.120] It should be obvious and like it's pretty simple for the even.
+[00:32:27.840] Like the simple like just usual them to say, oh yes,
+[00:32:31.080] there is a function, but there is no test, so just write it down.
+[00:32:36.000] Do you think it's do you think it's possible for an agent to
+[00:32:39.440] recognize that it's
+[00:32:40.960] there is something that it doesn't know
+[00:32:42.440] how to do, in the sense that if it's something more complicated,
+[00:32:45.720] do you think you'd be possible to get an agent to say,
+[00:32:47.920] I think there's something more complicated here, but I don't know what.
+[00:32:52.600] So. Yeah.
+[00:32:56.120] I mean, like, we can inject more additional like, again,
+[00:32:59.800] rules or like specific things saying like, if you're not sure, just let us know.
+[00:33:04.600] But also part of the functionality of this agent
+[00:33:07.840] is defining how complicated the request
+[00:33:11.640] and scope of like, how much effort you will need to spend on the review.
+[00:33:15.040] And in the end, after the review, it's just like add the label.
+[00:33:18.320] So like the,
+[00:33:21.880] the pull request is like one out of five in complexity.
+[00:33:26.720] So should be pretty much simple.
+[00:33:28.480] But if you see it's a even a like as a 4 or 5 out of five, then it means
+[00:33:33.920] there is like some additional complexity you need to be careful about.
+[00:33:38.320] Makes sense. Thanks.
+[00:33:40.960] All right.
+[00:33:42.120] Cool. Thank you very much.

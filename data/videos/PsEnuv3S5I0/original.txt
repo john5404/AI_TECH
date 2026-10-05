@@ -1,0 +1,550 @@
+[00:00:00.000] this is Luke Marsden from HelixML.
+[00:00:03.720] He's going to be talking to us about giving every agent its own desktop
+[00:00:07.880] lessons from dogfooding. Helix ML.
+[00:00:10.920] Thank you very much.
+[00:00:11.520] Thank you. Cool.
+[00:00:14.760] Everyone.
+[00:00:16.120] It's nice to be here. Yeah.
+[00:00:18.880] I'm going to talk about basically how we use agents ourselves
+[00:00:22.360] and things that we built to do it better.
+[00:00:25.640] So just to introduce myself.
+[00:00:28.520] I'm Luke.
+[00:00:29.560] I self-identify as a kind human.
+[00:00:31.800] I'm also the CEO at Helix where we do private agents.
+[00:00:35.960] And before that I didn't MLOps business.
+[00:00:38.840] I was cluster lifecycle lead for the Kubernetes project,
+[00:00:43.800] and I also did a DevOps company doing storage for Docker
+[00:00:48.480] and Kubernetes back in the early Docker and Kubernetes days.
+[00:00:52.360] So so my thesis is that all information
+[00:00:57.880] work is eventually going to become about managing agents.
+[00:01:01.880] And it's just software engineering where that's really started.
+[00:01:05.680] And it's kind of makes sense
+[00:01:07.120] why it started in software engineering because that's also where AI came from.
+[00:01:11.880] But eventually
+[00:01:15.680] everyone who is moving information around in any way,
+[00:01:20.560] basically all white collar workers are going to end up having to interact
+[00:01:24.240] with with agents one way or another.
+[00:01:26.360] It's a bit difficult to see on this slide, but this is from Steve.
+[00:01:29.480] Yeah, who is the creator of Gastown.
+[00:01:31.920] And he talks about how
+[00:01:35.000] there are these different stages of AI adoption that people go through.
+[00:01:39.040] And you go from just kind of using
+[00:01:42.800] chat completion like a GitHub copilot through to running
+[00:01:47.640] like a single CLI agent, like a Claude code.
+[00:01:52.680] And then you kind of get
+[00:01:54.520] bored of babysitting a single agent running on your computer,
+[00:01:58.800] at which point
+[00:01:59.360] you're like, oh,
+[00:01:59.960] I should be able to go faster if I run more than one of these in parallel.
+[00:02:03.360] And that's where the problems start, because the naive approach to
+[00:02:06.720] that is just run many agents on the same working directory,
+[00:02:09.840] and then you end up in the horrible situations.
+[00:02:12.880] Like when I was rushing to prepare a presentation for a customer in Paris,
+[00:02:17.000] and I was up early on a Monday morning and I was trying to get my
+[00:02:22.120] I was trying to run five agents in parallel to get everything done,
+[00:02:25.120] and one of them decided to get stashed the work
+[00:02:27.040] that all the other ones were doing.
+[00:02:28.320] And then the following day, a different agent decided
+[00:02:31.520] to RF dot on my git checkout.
+[00:02:34.960] And this actually happened.
+[00:02:36.600] So I've been working since 2023
+[00:02:40.640] on making it possible to run agents
+[00:02:44.120] and LMS and Rag and all that stuff around it
+[00:02:48.600] that that runs entirely on your own infrastructure.
+[00:02:53.800] And we've been working with, with people who who care about that.
+[00:02:57.760] And so kind of late last year, I got really obsessed with this idea
+[00:03:02.040] of making the snake eats its own tail
+[00:03:03.840] by actually using our own stuff that we were building to build itself.
+[00:03:08.520] And, and so we, we also were lucky to have customers who,
+[00:03:14.200] who wanted to push us towards the sort of coding
+[00:03:16.840] agent side of, of the equation.
+[00:03:19.840] And so we've spent a lot of time
+[00:03:22.200] thinking about kind of this design space for systems
+[00:03:25.920] that run agents and in particular systems that, that run agents on the server.
+[00:03:30.480] So all I want to say here is
+[00:03:33.680] and we'll go through each of these in turn in the slides.
+[00:03:36.720] Kind of warning contains opinions.
+[00:03:39.160] And the reason I'm sharing these opinions is that I hope
+[00:03:42.400] they will be helpful to anyone else who's building systems like this.
+[00:03:45.880] So kind of both lay out kind of the shape of the landscape,
+[00:03:50.480] and then also carve out some specific opinions,
+[00:03:55.960] but also why I came to have them, because you might have different opinions
+[00:04:01.920] or you might not have thought about some of these things. So
+[00:04:07.000] the first big
+[00:04:09.680] decision in my opinion, is do you want to carry on
+[00:04:12.880] letting every developer run whatever agent they like, or maybe the
+[00:04:17.920] the same agent that everyone uses in the company,
+[00:04:21.400] but on their own specific development environment?
+[00:04:23.960] That's kind of like a snowflake.
+[00:04:25.720] Or do you want to create a pool of
+[00:04:31.600] agents that run on your organization's infrastructure
+[00:04:35.960] that many humans can interact with?
+[00:04:38.960] And my strong argument is that.
+[00:04:44.920] Going for the centralized approach and I say centralized,
+[00:04:47.760] it doesn't mean you have to
+[00:04:49.080] hand over all your data to OpenAI or run on their infrastructure or anything.
+[00:04:52.800] You can run it on your own infrastructure.
+[00:04:54.720] Still on Kubernetes or something, but there are
+[00:04:58.160] some significant benefits from having a centralized approach.
+[00:05:02.400] For example, you can have a globally distributed team
+[00:05:08.560] all around the world, and you can say
+[00:05:11.800] that when the sun sets in Tokyo and rises in London,
+[00:05:16.800] whoever a different human can carry on doing the work
+[00:05:21.280] that a certain agent was working on, especially if that agent truly
+[00:05:25.600] has its own computer for that specific task.
+[00:05:29.240] And so there's a really nice
+[00:05:31.600] article written by by someone.
+[00:05:34.760] We've been working with a company called DevIcon,
+[00:05:38.760] and what they said was, to be honest, agents, coding is not new.
+[00:05:43.360] Going from doing it the easier way, which is the way on the left
+[00:05:45.920] which is unsafe and per engineer to something global per company
+[00:05:48.960] and safe is is what they found interesting in this approach.
+[00:05:52.800] So that's kind of my argument.
+[00:05:54.120] My opinion number one is
+[00:05:57.000] you should
+[00:05:57.800] give each agent their own computer, not each human.
+[00:06:01.080] It's almost like you wouldn't hire
+[00:06:02.440] a team of software developers and ask them all to share one computer.
+[00:06:05.720] You should give each agent their own computer.
+[00:06:09.680] The next opinion that I've come to is do.
+[00:06:13.520] Do we still need an ID?
+[00:06:15.360] Claude code started making us, like, not look at the code so much,
+[00:06:20.240] and I genuinely feel like it made me stupider.
+[00:06:24.440] My opinion is that you should still have an ID.
+[00:06:29.520] These agents will increasingly do
+[00:06:32.080] more autonomous, long running tasks.
+[00:06:35.120] But when it comes to actually stepping in and pair
+[00:06:39.840] programing with an agent, you do still need to be able
+[00:06:44.520] to look at the code, and having a visual display
+[00:06:48.200] that follows what the agent is doing is actually really useful
+[00:06:51.240] when you want to understand what it's doing.
+[00:06:53.360] Another thing that really matters is that things have to be fast.
+[00:06:56.280] I got incredibly frustrated with with cursor were back when I was a cursor user,
+[00:07:01.400] and just how slow it was at Hadley keyboard input.
+[00:07:04.520] And then Claude code came out with anthropic, came up with Claude code.
+[00:07:08.520] And they just do you know Claude code is implemented in react.
+[00:07:12.920] And so they've ended up having to implement
+[00:07:16.240] basically a web browser in the terminal.
+[00:07:17.880] And it's just like, can't we just have a working text box?
+[00:07:21.600] So anyway, the next thing I want to talk about is
+[00:07:27.240] how you organize your agents.
+[00:07:29.520] And there's kind of two different schools of thought here.
+[00:07:34.200] The first one is do you scale your agents out by number of tasks,
+[00:07:39.320] or do you try and build like an organization out of your agents,
+[00:07:43.960] and you hire a CEO agent
+[00:07:45.440] and they hire a VP of engineering agent, and the VP of engineering
+[00:07:48.440] agent hires some engineers and you give them all names or something.
+[00:07:52.800] And we are.
+[00:07:54.960] We started with the left hand approach because it's easier, but
+[00:07:58.800] we're researching the right hand approach.
+[00:08:00.680] But so far what we've researched, what we've found in the research
+[00:08:04.520] is if you go to fine grained on giving each agent their own
+[00:08:08.600] specific role and you give them these special channels they can communicate on,
+[00:08:11.800] like Agent Slack or something, they end up
+[00:08:15.120] kind of devolving into enterprise politics.
+[00:08:21.360] Because they were trained on
+[00:08:22.600] all of this human data of how humans argue with each other about stupid stuff.
+[00:08:27.200] So you end up burning a lot of tokens like that.
+[00:08:29.760] But what I, what I actually think is ultimately going to be appropriate
+[00:08:33.120] here is to combine the models where the
+[00:08:38.040] you have these coarse grained, different categorizations of roles
+[00:08:42.640] like marketing agents and sales agents and engineering agents,
+[00:08:47.440] because they all need different tools and connectivity to different systems.
+[00:08:51.040] But within those you scale the tasks, scale the agents by task.
+[00:08:56.760] So you have a sort of pool of of bees maybe, and so on.
+[00:09:01.640] So yeah, I also wanted to share some kind of demos
+[00:09:04.960] as I go to to illustrate the design decisions I'm talking about.
+[00:09:10.840] So I'll start with this one.
+[00:09:13.120] So what we put together here,
+[00:09:16.960] this is basically this idea of scaling by by task.
+[00:09:21.600] And the notion there is that
+[00:09:24.720] Kanban is quite a natural fit for scaling by task, because you want to
+[00:09:28.720] constrain the parallelism. So you can kick off.
+[00:09:31.600] This is a sample project that has a to do list app.
+[00:09:35.240] And what you can see hopefully, is that
+[00:09:39.080] by clicking play on the backlog, we've spun up three separate computers.
+[00:09:42.880] For those three agents that are working on those three different tasks.
+[00:09:46.400] One of them is adding a dark mode toggle.
+[00:09:48.520] Another one of them is fixing a bug.
+[00:09:50.200] Another one is adding like customized categories.
+[00:09:55.080] And so what you can see here is that we've gone
+[00:10:00.480] we ended up down this sort of rabbit
+[00:10:01.840] hole of like, okay, if you've got
+[00:10:05.920] if you want like a good background agent experience
+[00:10:11.520] that feels like a foreground agent experience,
+[00:10:14.680] you end up implementing GPU accelerated desktops
+[00:10:18.880] because non GPU accelerated desktops are not very nice to use.
+[00:10:22.280] But if we're doing AI infrastructure, we've got some GPUs lying around.
+[00:10:25.680] And it just so happens that the same GPUs are used for inference.
+[00:10:28.360] A lot of them also support
+[00:10:29.680] like what GPUs were originally for which is graphics,
+[00:10:32.080] and they also support hardware video encoding.
+[00:10:34.800] So we borrowed a lot of the technology from the gaming industry.
+[00:10:37.840] I don't know if anyone's ever played like
+[00:10:41.000] computer games in the cloud.
+[00:10:43.520] It's actually possible to get pretty low latency and good performance.
+[00:10:46.480] So so we're using the same the same tech as that.
+[00:10:50.000] But basically what's happening here from a process perspective
+[00:10:53.120] is the agent has.
+[00:10:56.840] Started up inside the IDE.
+[00:11:01.160] We use Zed because it's fast.
+[00:11:04.640] And we also forked it so that you can remote control it.
+[00:11:08.360] So we can inject prompts into the Zed agent.
+[00:11:11.280] And the other thing that's nice about Z is that it supports ACP,
+[00:11:14.720] which means it integrates with all of the major agent harnesses.
+[00:11:19.240] So it works with Codex and Claude code.
+[00:11:21.280] We're not trying to reinvent that bill
+[00:11:24.200] then.
+[00:11:25.960] Yeah.
+[00:11:26.320] So the next thing is like, well, what's that agent actually going to do
+[00:11:30.920] when it starts up?
+[00:11:32.120] And this is a Tessl conference.
+[00:11:33.840] So it would be bad not to talk about spec-driven development,
+[00:11:36.280] but I'm actually a huge fan of spec driven development.
+[00:11:38.400] So the approach that we've taken is.
+[00:11:42.280] Spec is central to to what's going on.
+[00:11:47.600] The the human prompt
+[00:11:51.120] that comes in is something really short, like add dark mode
+[00:11:55.320] support to my to do list app or something kind of really trivial.
+[00:11:58.920] And that prompt goes into the into this agent.
+[00:12:03.160] It's actually the same agent.
+[00:12:04.640] It's just the agent has an explicit planning phase and later
+[00:12:08.600] in implementation phase.
+[00:12:10.040] So we prompt the agent to say please write a plan.
+[00:12:14.160] Because it turns out that
+[00:12:15.240] if you get the agent to write a plan before it does the work, you get much,
+[00:12:19.880] much better results because you can then correct it and you can kind of
+[00:12:22.880] do that design work before the agent has gone off
+[00:12:25.480] in the wrong direction, when it's harder to steer it,
+[00:12:27.560] if it's in the middle of doing an implementation
+[00:12:29.520] and it's got it's misunderstood, something fundamental.
+[00:12:32.720] So you put the prompt in into the planning phase,
+[00:12:36.240] and then you have a human in the loop commenting, which you'll see in a second.
+[00:12:40.080] And then but, but the spec is the combination
+[00:12:43.600] of the human prompt and the planning agent reading the code.
+[00:12:47.280] So I don't know if you can see this red arrow here.
+[00:12:49.800] We've got a code
+[00:12:50.920] check out for the project, which is whatever repos you've attached.
+[00:12:54.280] And the job of the planning phase is based on the user's requirement.
+[00:12:59.440] Write a good spec based on also looking at the code,
+[00:13:02.480] so that you understand what you're going to do
+[00:13:04.880] in quite a lot more detail than the user specified.
+[00:13:08.240] And then once you approve the spec.
+[00:13:13.080] So there's a human human in the loop.
+[00:13:15.160] On commenting on the spec,
+[00:13:16.480] there's also a human in the loop on approving spec
+[00:13:18.720] to say, yes, I'm happy with that spec.
+[00:13:20.840] Then you go into the implementation phase and because each agent
+[00:13:25.720] has its own desktop environment, you can now do some interesting things
+[00:13:28.920] like the agent can self if it's a web application.
+[00:13:32.040] And lots and lots of things are web applications.
+[00:13:34.520] So you can then have the agent put up a PR on GitHub,
+[00:13:38.640] but then also kind of human in the loop review both the PR
+[00:13:42.880] but also the running application in that agents own computer.
+[00:13:47.840] And because each agent has its own isolated computer, they're actually
+[00:13:51.720] Docker and Docker environments or Docker on Kubernetes environments.
+[00:13:54.920] They can they're not treading on each other's toes when
+[00:14:00.400] they're bringing up a Chrome instance and using Chrome MCP to navigate around.
+[00:14:06.600] So yeah, I'll show you this.
+[00:14:10.720] Spec review phase.
+[00:14:15.400] So here we had these three tasks or four tasks.
+[00:14:20.960] And like a 30s a minute later
+[00:14:24.840] the systems created each agent has created its own spec.
+[00:14:28.400] And so if we go and look at the bug where deleting
+[00:14:31.760] a to do item from the to do list doesn't.
+[00:14:34.840] Doesn't delete it from from storage,
+[00:14:39.320] what you can see is it's come up with this spec.
+[00:14:42.200] So it was given that simple prompt.
+[00:14:45.000] There's a bug with deletion and it's come
+[00:14:48.000] and written out a much more detailed document.
+[00:14:51.480] And then you can comment on the document, because I believe that the terminal like
+[00:14:55.920] called code is actually a terrible place for reviewing and commenting on documents.
+[00:14:59.720] It's much nicer to use a Google Doc style UI, which is why we added one.
+[00:15:05.240] So you can see there's this kind of wrapper around
+[00:15:09.080] the agent where
+[00:15:11.360] you can comment on a line on the document, and it will push changes to the spec.
+[00:15:15.280] And the specs are all just markdown files in in a git repo.
+[00:15:18.880] And we put all those markdown files on a special branch that's separate
+[00:15:22.680] from the rest of the repo, so all the agents can see
+[00:15:25.240] all the other specs that all the other agents are working on.
+[00:15:27.520] So they're pretty isolated from each other,
+[00:15:29.080] but they can all see the history of all the work that's, that's happened
+[00:15:32.640] or, or is or, or is happening.
+[00:15:36.000] So then.
+[00:15:39.040] We fast forward this a little bit.
+[00:15:43.040] And what I did was I added a request to on deletion.
+[00:15:48.320] Let's also do like a fiery CSS animation.
+[00:15:51.560] So it looks like the to do list item is burning.
+[00:15:55.680] And then I can review the rest of the plan.
+[00:15:59.920] There's a basic to do list and then that's the human approval gate.
+[00:16:06.200] You click Approve Design.
+[00:16:07.760] And again we put the prompt in there.
+[00:16:11.800] And then I sped up the actual implementation part.
+[00:16:14.600] So I've only got 15 minutes left.
+[00:16:17.440] But then you can see this is the really cool part.
+[00:16:20.360] The agent starts shaping the application.
+[00:16:22.920] I'm not typing here.
+[00:16:24.800] The agent is typing by groceries and walk the dog and then watch.
+[00:16:28.280] It's going to delete by groceries I think.
+[00:16:31.680] And then we get to see the
+[00:16:34.640] animation and I'm like, that wasn't a very good fire animation.
+[00:16:38.800] So I'm going to prompt it and I'm going to say that was a bit rubbish.
+[00:16:44.480] I want to I want you to make it look like it was actually burning
+[00:16:48.120] in hell, as I think the phrase I used earlier.
+[00:16:51.240] So as soon as we
+[00:16:54.600] yeah, the CSS animation was not cool enough.
+[00:16:58.480] And then you can press enter twice
+[00:17:00.400] and it will interrupt the agent that's running in the background.
+[00:17:03.400] So it does some thinking
+[00:17:06.320] it comes up with with some better CSS animation.
+[00:17:09.560] And then you can kind of collaboratively QA
+[00:17:12.360] what the agent has done directly in the browser.
+[00:17:16.960] And it's pretty cool.
+[00:17:20.320] So it's actually kind of nice to give each agent their own computer
+[00:17:24.920] and to have a high quality,
+[00:17:26.680] like way of interacting with it that you'd actually want to use.
+[00:17:30.280] And just to give you a sense of what the board looks like after this,
+[00:17:33.920] you get to see that you've still got these items
+[00:17:37.840] to review the spec on, but then you've got this in progress task over here.
+[00:17:41.960] So there's a few other things that we learned from
+[00:17:45.720] kind of the change that the changes that come about
+[00:17:50.840] when instead of developers wanting to spend
+[00:17:55.320] all of their time looking at their ID to only leading to interact
+[00:18:00.120] with each agent like for a few minutes every hour, of course they can parallelize
+[00:18:05.440] and like try and try and do more, but
+[00:18:08.280] they can also go to the gym and
+[00:18:12.720] do some
+[00:18:13.120] exercise while their agents are doing work.
+[00:18:16.120] And so we also wanted to optimize for mobile experience.
+[00:18:21.800] So we made sure that
+[00:18:25.960] everything worked on
+[00:18:28.120] on mobile and on tablet.
+[00:18:31.440] I had I put a LinkedIn message out that was like our niche pitch is that
+[00:18:36.120] this is the best way to run
+[00:18:39.880] to to run Zed on your iPad while you're at the gym.
+[00:18:44.440] And I had one person commenting that was like, I feel seen.
+[00:18:48.880] So I guess that's our target audience.
+[00:18:50.400] But anyway, so the other interesting thing about this
+[00:18:55.680] is that notice this diagram, I had many users
+[00:19:01.400] looking at the same screen or many users looking at the same agent.
+[00:19:05.520] And so we added this kind of Figma like ability to have multiple mouse cursors.
+[00:19:09.520] And so you can actually start collaboratively
+[00:19:14.240] like multiple humans can basically pair on the same agents desktop.
+[00:19:18.760] And they can join in and they can they can both interact with it.
+[00:19:21.560] And one of those humans might be at the gym on their iPhone.
+[00:19:25.040] Anyway,
+[00:19:26.880] I'll go quickly.
+[00:19:29.240] The next thing that we found was really important
+[00:19:32.640] and actually stopped us using it.
+[00:19:34.600] Remember I was saying we wanted to have the snake eat its own tail.
+[00:19:37.120] We wanted to dog through this to make it build itself.
+[00:19:42.800] The next pain point we hit was it takes 20.
+[00:19:45.120] Sorry, it took 40 minutes to build our stack from scratch in Docker,
+[00:19:49.200] and there's really no point being able to spawn
+[00:19:53.840] agent sandboxes rapidly if those agents are going to take
+[00:19:58.960] 40 minutes before they can do any useful work,
+[00:20:01.840] because they actually want to be able
+[00:20:03.400] to test and QA the application that they're changing themselves.
+[00:20:07.560] So we did some quite interesting things
+[00:20:11.960] with with ZFS as a filesystem
+[00:20:16.640] to make clones of the most development environments are in Docker.
+[00:20:23.320] That's our kind of working assumption. And
+[00:20:27.960] Doctor and Docker can
+[00:20:28.800] actually go 16 levels deep, which is crazy.
+[00:20:32.560] But we don't go 16, but we go like I think three.
+[00:20:36.560] But that means that you can give each agent its own Docker environment,
+[00:20:41.520] but we also prime the data directory in that Docker environment
+[00:20:46.440] with the latest version of the startup script running
+[00:20:49.520] against the latest main commit.
+[00:20:51.200] So every time an agent starts up, it's got a really fresh,
+[00:20:55.560] fully cached Docker environment to start up from.
+[00:20:59.360] And so this is how we use
+[00:21:04.160] this, how we use helix to build helix.
+[00:21:07.000] So here we've got an example of
+[00:21:12.000] a task I added which was can you review this external contribution.
+[00:21:16.440] We had
+[00:21:19.760] another
+[00:21:20.960] like lots of other tasks that are in progress
+[00:21:25.760] like we're doing notion integration for one user.
+[00:21:29.440] The desktops shut themselves down after an hour of being idle.
+[00:21:33.760] So I can start this one back up and then interact with it.
+[00:21:37.200] And I think I speed up the video here.
+[00:21:41.360] But basically everything we do now is done inside the tool.
+[00:21:47.040] And so we've achieved that goal of kind of the snake eating its own tail.
+[00:21:51.480] And most of my day now when I'm doing technical work
+[00:21:56.480] is that I'm reviewing these specs, and I find the two lines in the spec
+[00:22:01.120] where the agent got it wrong, or is making a poor design decision, or
+[00:22:05.320] is unaware of some other area of the code, and you just comment on those two lines,
+[00:22:10.360] and then it then becomes fairly mechanical
+[00:22:13.640] for the agent to get the code change all the way through to
+[00:22:19.200] to being close to being ready to merge.
+[00:22:22.880] So and then the pull requests that come out of it are quite nice,
+[00:22:27.400] because we put quite a lot of effort into telling the agent
+[00:22:30.520] to take screenshots of changes that it's made.
+[00:22:34.120] So I quite often review pull requests
+[00:22:36.800] now by just looking at whether I like the change.
+[00:22:39.440] And that's quite powerful.
+[00:22:41.720] And you can also link, we also link automatically to the spec
+[00:22:45.400] that was used to to construct it.
+[00:22:49.720] Now I want to talk briefly about token costs, privacy and Donald Trump.
+[00:22:55.640] The total costs are exploding.
+[00:22:59.520] We spent a lot of money now on tokens,
+[00:23:02.280] which as a bootstrap startup is kind of painful.
+[00:23:06.080] But we also have one of these machines,
+[00:23:09.800] these open weights models like GLM 5.1 and so on, and can now
+[00:23:14.920] do pretty much 80% of the work that you need to do.
+[00:23:19.840] And so
+[00:23:22.080] if you
+[00:23:22.560] take as a meaningfully sized organization kind of your next three month
+[00:23:26.760] token budget and instead invest in some hardware with like eight
+[00:23:31.000] RTX six K pros in it, and then you use something
+[00:23:35.320] or you build something that allows you
+[00:23:36.680] to easily switch between different agents and different models.
+[00:23:40.840] Then you can avoid getting locked into, like the OpenAI anthropic ecosystem,
+[00:23:45.320] but you can still kind of burst out to like Claude
+[00:23:49.560] opus 4.8 if you've got something really hard.
+[00:23:53.480] But for all of the tedious stuff, you should be using local models
+[00:23:57.160] where you just have to pay for the electricity, in my opinion.
+[00:24:00.600] Now, the very last thing I'll say
+[00:24:03.520] is that I'm intrigued by this idea of building a self improving business.
+[00:24:07.680] At the bottom layer, you've got a self improving code base,
+[00:24:11.520] which is what you can kind of already do here
+[00:24:14.720] by putting software issues into a Kanban board.
+[00:24:19.200] If you then plug that into agents that deal with product
+[00:24:23.200] and support roles, then you can start automatically
+[00:24:28.160] improving the product based on user feedback.
+[00:24:31.320] And then if you also add agents that can do
+[00:24:33.440] sales and marketing and finance and legal things, as well as kind of
+[00:24:36.520] the founder level stuff of like what's the hypothesis, what's
+[00:24:40.440] what's what's the direction of the market and so on.
+[00:24:43.480] Then all of this is with humans in the loop.
+[00:24:45.920] But you can start like going a lot faster
+[00:24:48.960] with fewer people than you could before, which was really interesting.
+[00:24:52.040] And so the very last thing I'll show you is we also use this to log into LinkedIn.
+[00:24:57.600] And it's fun because you're collaborating with the agent.
+[00:25:01.520] And so the agent can be like, oh, can you do two factor author, please?
+[00:25:05.640] Now LinkedIn thinks I'm a human and I kind of am.
+[00:25:10.400] I'm a human.
+[00:25:11.280] That's like using an agent,
+[00:25:14.800] kind of like a mechanical suit, to do
+[00:25:18.240] a lot more LinkedIn outreach than I would normally have the patience for.
+[00:25:21.840] And so I got it to build me a list of 200 people
+[00:25:24.280] I wanted to reach out to
+[00:25:25.400] when I was visiting the Bay area recently, and I actually got
+[00:25:28.440] a bunch of good meetings.
+[00:25:29.720] I wouldn't have had the patience to do that by hand,
+[00:25:33.560] so it's a pretty useful coming up to time.
+[00:25:37.880] So just to recap, we've looked at the design space of systems that run agents.
+[00:25:41.600] I hope that this has provided some useful ideas.
+[00:25:44.080] Talked about local versus centralized.
+[00:25:47.360] Obviously my opinion is that we should go centralized.
+[00:25:50.440] My opinion is that we still need an IDE task.
+[00:25:53.120] Scaling seems to be the most appropriate place to start,
+[00:25:56.280] but I think the org shapes are interesting.
+[00:25:59.960] Spec-driven development is a must make things mobile multiplayer.
+[00:26:05.800] Get your dev environment set up sorted.
+[00:26:08.360] Think about how you can reduce token costs, because if it's not hurting
+[00:26:12.400] now, it's going to be hurting soon.
+[00:26:14.080] And also think about how you can apply this beyond software engineering.
+[00:26:17.880] So thank you very much. That's me.
+[00:26:24.520] If you'd like help doing some of this then please reach out to me.
+[00:26:27.920] That's my LinkedIn.
+[00:26:29.360] Or if you'd just like to compare notes, I'd love to chat.
+[00:26:32.200] So thank you so much. Incredible luck.
+[00:26:34.160] Thank you very much.
+[00:26:35.880] Do we have any questions from anybody?
+[00:26:39.320] Oh, we've got two so far.
+[00:26:42.880] Lovely assistant.
+[00:26:43.600] Could get the mic and run it down for you.
+[00:26:47.040] We've got one this side and one this side.
+[00:26:51.440] Do you just raise your hand again?
+[00:26:52.720] Okay.
+[00:26:53.920] Thank you.
+[00:26:58.760] Cool.
+[00:26:59.320] Hello? Yes.
+[00:27:01.480] All right. Yeah.
+[00:27:02.640] That was a really, really cool talk.
+[00:27:03.960] And yeah, I think one of the things that
+[00:27:07.200] I was interested in is the kind of security aspect.
+[00:27:11.160] So obviously agents can do lots of things
+[00:27:15.040] and you just let it log into your LinkedIn and play around in there. Yes.
+[00:27:19.040] What have you got any guardrails and security things in there and to what?
+[00:27:23.840] To what extent have you got it there?
+[00:27:25.480] Because I find one of the hard things is letting agents run wild
+[00:27:29.920] versus making them secure, but then having to have lots of input manually.
+[00:27:34.040] So yeah.
+[00:27:34.920] Well, I think my first argument there is
+[00:27:36.600] that we're already doing better than like open floor on your on your Mac mini.
+[00:27:40.600] When I saw the open claw one password extension I was like.
+[00:27:44.000] So by just
+[00:27:47.800] logging into one website, it's only got one login.
+[00:27:51.040] It can't go and log into everything else. So that's step one.
+[00:27:53.800] And then you can also configure on a per project basis what MCP servers you expose.
+[00:27:58.680] But I think there is definitely a need for
+[00:28:02.120] and I think Ivan's working on something interesting in this space.
+[00:28:04.880] Like I definitely need for tooling that helps
+[00:28:09.920] you lock down what you're what you're giving permission to and what you're not.
+[00:28:14.280] It's not something
+[00:28:17.280] we necessarily want to try and bite off as well.
+[00:28:20.280] I think we'd rather partner with people
+[00:28:21.920] who are doing good things in that space, but it's definitely a need.
+[00:28:26.080] And the more people who ask me for like a governance for their agent control
+[00:28:31.000] plane, I'm like, oh, we need to put a governance panel in our thing.
+[00:28:35.320] So yes, definitely.
+[00:28:37.840] Thank you.
+[00:28:43.360] I'm just really.
+[00:28:44.040] Curious about how like what sort of structure you're running the GUI VMs.
+[00:28:50.520] Like how how's that working?
+[00:28:52.440] Because I'm quite fascinated. Yeah.
+[00:28:54.640] So it's pretty interesting.
+[00:28:57.480] The.
+[00:29:00.400] The way it works is that we run mutter,
+[00:29:03.960] which is the gnome compositor
+[00:29:08.440] inside a Docker container and, well, a Docker container.
+[00:29:13.920] And then we use a stream of plugins to we actually.
+[00:29:19.440] So there's this project called Wolf that does this for the gaming community
+[00:29:23.040] that is written in C++.
+[00:29:24.400] And for a long time they tried to use that.
+[00:29:27.160] And then we found it.
+[00:29:29.440] Honestly, I got really bored
+[00:29:32.840] of trying to write C++ and it was pretty flaky.
+[00:29:36.880] It ran the whole thing in, in like
+[00:29:41.920] one process for all of the different containers.
+[00:29:45.480] So when it crashed, it brought everything down.
+[00:29:47.320] So we ended up just taking the core pieces of that,
+[00:29:49.520] which is this rust plugin for handling Nvidia Cuda stuff in particular.
+[00:29:54.680] And this is all on our GitHub if you want to go and have a look.
+[00:29:57.320] But yeah, also feel free to ping me on.
+[00:30:00.280] I can tell you more about it. Great.
+[00:30:02.400] I think we've got one more question just here.
+[00:30:06.320] Thanks.
+[00:30:06.960] That was great.
+[00:30:08.000] You talked about still wanting an. IDE
+[00:30:13.880] early on.
+[00:30:15.480] What do you find you want to do with that?
+[00:30:17.720] I'm assuming that it doesn't need to look like
+[00:30:20.720] VS code from 2020.
+[00:30:23.720] So. So can you say a bit about what what it does look like?
+[00:30:27.800] Yeah.
+[00:30:28.200] I mean we just embedded Zed, which is a really nice idea
+[00:30:32.680] written in rust that I like because it's fast.
+[00:30:35.640] And also when you're running
+[00:30:37.360] hundreds of these things on a machine,
+[00:30:38.600] you care about the memory, use the memory footprint more.
+[00:30:41.120] I really like just being able
+[00:30:44.320] to watch the agent zip around between different files.
+[00:30:47.960] And also I find that watching
+[00:30:53.280] like a follow of the agent doing the work,
+[00:30:58.200] just sort of you ambient
+[00:31:00.320] absorb more knowledge about the code base
+[00:31:03.920] as it's doing that versus the black box that is Claude code these days.
+[00:31:07.960] And and then when something gets difficult
+[00:31:12.200] and the agent actually needs help, then you've already got a decent IDE
+[00:31:17.160] that you can search for things and, and look around.
+[00:31:21.440] So my take is you need an IDE on the inside,
+[00:31:26.280] but you also need the meta IDE, which is like the control plane for all
+[00:31:30.320] of the different agents you've got running and the higher level view of them.
+[00:31:34.680] I think we're at time.
+[00:31:35.720] You are at time. Thank you very much.
+[00:31:38.200] Please give it up for love.
+[00:31:39.600] Give us. Great. So

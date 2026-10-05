@@ -1,0 +1,973 @@
+[00:00:00.080] the bigger the context window the more
+[00:00:03.399] chance there is for an llm to get
+[00:00:05.720] confused yeah and I found that we have
+[00:00:11.000] been binocul against that by breaking
+[00:00:13.559] our prompts up instead of populating the
+[00:00:16.400] context this way you've said I'm going
+[00:00:18.439] to provide you this material it knows
+[00:00:20.080] it's expecting that material and by the
+[00:00:22.519] time it reads it it knows what to do so
+[00:00:25.000] when it comes to Specs like again
+[00:00:27.679] canonical specs to us that means that
+[00:00:31.439] pieces of a spec like directly relate to
+[00:00:35.760] a deterministic behavior that we can
+[00:00:38.399] count on talk about the steps that leads
+[00:00:40.160] up into task framing it's born out of me
+[00:00:43.280] bangging my head against the wall a
+[00:00:45.800] specific problem and I was trying to get
+[00:00:49.480] llms to make me certain utility
+[00:00:53.000] libraries like just certain functions
+[00:00:55.520] without using any external dependencies
+[00:01:00.039] you're listening to the AI native Dev
+[00:01:02.039] brought to you by
+[00:01:03.950] [Applause]
+[00:01:04.910] [Music]
+[00:01:12.360] Tesla on today's episode of the AI
+[00:01:15.119] native Dev we're going to be talking all
+[00:01:17.439] things prompting and uh why it's one of
+[00:01:20.759] the most important things that we need
+[00:01:21.960] to think about when dealing with AIS and
+[00:01:24.920] llms in our applications uh joining me
+[00:01:27.360] today Macy Baker Community engineer at
+[00:01:29.320] tessle welcome Macy thank you so much
+[00:01:31.119] Simon happy to be here why don't we kick
+[00:01:32.759] off with what that means what do you do
+[00:01:34.720] at tessla what's your role yeah I think
+[00:01:36.680] we're still figuring that out Community
+[00:01:39.159] engineer is a bit of a unique job title
+[00:01:41.840] especially since we don't have a product
+[00:01:44.719] that's out there yet and we have the
+[00:01:46.119] very beginnings of a community
+[00:01:47.920] effectively I'm working on the AI
+[00:01:49.280] engineering team I'm really in the weeds
+[00:01:52.119] with these llms and trying to get them
+[00:01:54.439] to behave and hopefully once we launch
+[00:01:58.360] I'll be talking to other people about
+[00:02:00.360] how they are able to make our product
+[00:02:02.479] work absolutely and you're always in the
+[00:02:04.439] the community the Discord community of
+[00:02:06.520] I've seen lots of chats and sharing of
+[00:02:08.239] knowledge about that in the Discord
+[00:02:09.759] community so for for those listening do
+[00:02:11.800] jump into the Discord community and have
+[00:02:14.000] Jo and argue with me I would love
+[00:02:16.319] yeah so prompting everyone always says
+[00:02:19.160] prompting is super important and I think
+[00:02:20.720] I hear two things as the cheapest ways
+[00:02:22.599] of improving your interactions with an
+[00:02:24.680] nlm prompting is one context is the
+[00:02:27.239] other why should people go for prompting
+[00:02:28.920] first prompting effectively is the
+[00:02:30.840] interface to an llm and I think people
+[00:02:33.680] really discount how important it is I
+[00:02:35.800] know there's a lot of talk about
+[00:02:37.640] prompting and how to get the most out of
+[00:02:39.440] your prompts but really this is the only
+[00:02:41.280] way that we have to truly interact with
+[00:02:43.200] the LM and there are conversations about
+[00:02:45.920] fine-tuning versus prompting in my mind
+[00:02:49.560] like this is the cheapest as you said
+[00:02:51.840] it's the cheapest way to get the most
+[00:02:54.360] out of your llm also prompts are
+[00:02:57.840] disposable like they're living artifacts
+[00:03:00.720] they can evolve with you with your
+[00:03:03.120] expectations with your product with
+[00:03:05.280] whatever it is that you're trying to do
+[00:03:07.120] whereas an approach like fine-tuning
+[00:03:09.080] might I don't know pin you to to a
+[00:03:11.360] certain version of your own that's
+[00:03:12.959] really interesting actually because we
+[00:03:13.959] were talking with Simon last co-founder
+[00:03:15.640] a notion um and he was talking about how
+[00:03:18.680] his team actually moving away from the
+[00:03:21.040] fine tuning aspect or rather probably I
+[00:03:23.159] would say investing far less in the fine
+[00:03:24.879] tuning just because as models change and
+[00:03:26.480] LS get better the value drops in that
+[00:03:28.959] fine tuning I guess that's one thing
+[00:03:30.280] that prompting probably stays quite
+[00:03:32.239] consistent on is it consistent across
+[00:03:33.680] models versions of models will you tend
+[00:03:36.560] to get similar results with some of the
+[00:03:38.040] tricks that we'll talk about today
+[00:03:39.720] that's a really good question I think it
+[00:03:41.680] does vary first of all like across
+[00:03:44.080] models I think we can bet on llms
+[00:03:47.400] getting better yeah I think we can bet
+[00:03:49.159] on them improving at the rate the
+[00:03:50.840] timeline who knows but they are getting
+[00:03:53.159] better all the time and I've noticed
+[00:03:54.720] this kind of subjectively and
+[00:03:56.799] objectively in our evals with even 40
+[00:03:59.959] has improved recently in terms of cross
+[00:04:02.519] model prompting tips I think this is so
+[00:04:05.480] interesting because this is take chat
+[00:04:07.439] GPT and Claude for example this is proof
+[00:04:10.239] positive that prompting is so important
+[00:04:12.480] I really don't know if they're terribly
+[00:04:15.600] different capability wise these models
+[00:04:19.560] but a lot of people like this may change
+[00:04:21.759] in a matter of weeks at this point but a
+[00:04:23.680] lot of people prefer Claude for a lot of
+[00:04:26.320] tasks they find it like easier to talk
+[00:04:28.759] to they find it understands them better
+[00:04:31.160] and if you look at Claud system prompt
+[00:04:33.280] tells it to have a little bit more of a
+[00:04:36.479] personality I think this comes out
+[00:04:38.759] Claude is more opinionated than GPT
+[00:04:41.360] Claude is going to have stronger
+[00:04:44.280] feelings about what it is that you're
+[00:04:46.039] trying to do it's going to make better
+[00:04:47.400] assumptions in general and I think if
+[00:04:49.560] you read through it system prompt you
+[00:04:50.960] can understand why that is because it's
+[00:04:53.680] really being guided towards that sort of
+[00:04:57.320] affect chat GPT is much
+[00:05:00.479] less happy to make assumptions about
+[00:05:02.360] what you want much less opinionated in
+[00:05:04.400] general yeah I think that's really
+[00:05:05.800] interesting now of course the apis uh
+[00:05:08.360] from anthropic and open AI don't
+[00:05:10.800] necessarily conform to the same system
+[00:05:12.520] prompts but I think it's just it's proof
+[00:05:14.560] positive how impactful a prompt can be
+[00:05:16.360] and that's interesting actually because
+[00:05:17.720] on top of that obviously the system
+[00:05:18.919] prompt on top of that then we have our
+[00:05:20.240] user prompts and noticing those subtle
+[00:05:23.680] differences in how they will react so in
+[00:05:26.080] your experience Claude being more
+[00:05:28.440] opinionated uh and almost more
+[00:05:30.280] personable right from the sound of it
+[00:05:32.280] yeah my mate yeah that are you sending a
+[00:05:36.080] Christmas card to to it might actually
+[00:05:38.400] change the way you might prompt
+[00:05:40.759] differently on open AI to be more
+[00:05:43.080] opinionated if that's what you want or
+[00:05:44.800] even on CLA to be less opinionated if
+[00:05:46.520] you want that similar experience so
+[00:05:48.039] potentially it does that the subtleties
+[00:05:49.600] of the difference in system prompt then
+[00:05:51.440] could potentially slightly y to your
+[00:05:53.160] overall prompt if that was important to
+[00:05:55.759] you then I guess for sure which is
+[00:05:57.800] something I do find myself doing another
+[00:06:01.039] kind of observation about the two is
+[00:06:03.600] that Claude is much better at picking up
+[00:06:06.120] your intention over a large context
+[00:06:09.039] window whereas GPT might get more easily
+[00:06:12.680] confused yeah cloud is more able to
+[00:06:14.800] follow interesting and and one of the
+[00:06:16.800] things I love about Claude projects is
+[00:06:18.160] the ability just to upload and refer to
+[00:06:20.039] things and when we think about I think
+[00:06:22.240] remember be just saying prompts are
+[00:06:24.160] disposable yeah and if we take the
+[00:06:26.440] opposite of that I guess maybe a
+[00:06:27.680] specification or something that you
+[00:06:28.960] could upload to a clae project and then
+[00:06:30.720] refer to it would you write the two in a
+[00:06:33.199] separate style what's maybe the the
+[00:06:35.560] prompts are going to be more chat and
+[00:06:37.039] interactive based a spec is going to
+[00:06:40.039] probably be more I don't know we use the
+[00:06:42.120] word canonical here a little bit more
+[00:06:44.680] full more descriptive end to endend
+[00:06:48.240] what's the style that you have seen in
+[00:06:50.120] both short prompting and spec what's the
+[00:06:52.759] core differences in language and style
+[00:06:55.120] there are a few differences for sure
+[00:06:57.879] like conceptually there's o a few things
+[00:07:00.280] that are similar which I might touch on
+[00:07:03.520] First and this is where the first like
+[00:07:06.479] tip comes in I think and something that
+[00:07:08.400] we've seen really help us maybe common
+[00:07:10.479] knowledge at this point but it's worth
+[00:07:12.639] pointing out formatting is important a
+[00:07:15.879] theme through this by the way is that
+[00:07:17.639] I'm coming to feel that the way that you
+[00:07:19.879] communicate with humans is often
+[00:07:22.680] directly like translatable to the way
+[00:07:24.800] that you should communicate with LM so
+[00:07:27.479] formatting your prompt and like when I
+[00:07:30.280] say formatting structuring like we
+[00:07:32.800] literally use these are not XML
+[00:07:34.680] documents but we will tag things I'm
+[00:07:37.479] doing this
+[00:07:39.000] tag we will tag certain sections and I
+[00:07:42.599] think this is exactly how you would
+[00:07:44.240] communicate with a person in the sense
+[00:07:47.599] that you're not going to give them a
+[00:07:49.280] giant wall of text and expect them to
+[00:07:52.560] digest it at once you might have a
+[00:07:54.520] shorter wall of text that links to a
+[00:07:56.400] different wall of text and then that
+[00:07:58.360] links to something else which links to a
+[00:08:00.319] more foundational document then they can
+[00:08:02.319] more process these pieces of information
+[00:08:05.120] in a way that works for them instead of
+[00:08:06.759] just getting ground in it yeah so that's
+[00:08:08.960] something that's similar between prompts
+[00:08:10.680] and specs I would say for us as you say
+[00:08:14.440] specs are canonical this is a word that
+[00:08:16.199] we're throwing around a lot lately
+[00:08:18.520] meaning that a section in a spec
+[00:08:22.039] directly maps to an output I think
+[00:08:25.440] that's kind of how we're coming to think
+[00:08:27.560] of it so a section in my spec that says
+[00:08:31.319] this function adds two numbers together
+[00:08:33.760] that directly maps to the process that
+[00:08:36.800] creates this function that adds two
+[00:08:39.000] numbers together yeah that makes it
+[00:08:40.680] easier to edit it makes it more pointed
+[00:08:43.560] it makes it easier for an llm to
+[00:08:45.440] understand and for a person to parse and
+[00:08:47.880] that's also true also true with a prompt
+[00:08:50.360] really I think the major difference here
+[00:08:53.680] is that or one of the major differences
+[00:08:55.760] is that you'll see slightly more flowery
+[00:08:58.720] language in in
+[00:09:00.760] prompts specs are technical they're
+[00:09:04.600] meant to be quickly and easily
+[00:09:07.519] understood yeah well and interestingly
+[00:09:09.600] when you talk about the flowery language
+[00:09:10.800] there I was like thinking my mind goes
+[00:09:12.279] to the autonomy side yeah whereby a
+[00:09:14.760] short prompt is something which is
+[00:09:16.440] attended and interactive so the output
+[00:09:19.720] that you will get you will read you will
+[00:09:21.279] look at you'll say yes this is correct
+[00:09:23.640] or this is incorrect where so you can
+[00:09:25.839] almost afford that more flowery language
+[00:09:27.920] and you know verbosity or or almost the
+[00:09:30.519] ambiguity a little bit because you're
+[00:09:32.399] seeing exactly what what it does back
+[00:09:34.360] with the spec you want it to be more
+[00:09:36.160] concrete so that there's less ambiguity
+[00:09:38.640] even if perhaps you use a prompt to help
+[00:09:41.320] you create that spec you want it to be
+[00:09:43.480] more clear so that generations of that
+[00:09:46.480] specification as an implementation or
+[00:09:48.560] something like that is going to be
+[00:09:50.480] somewhat consistent I guess they can be
+[00:09:52.160] used together as well yeah and I think
+[00:09:54.240] the decomposition there is is super
+[00:09:56.279] interesting in terms of breaking that
+[00:09:57.640] spec down into pieces yeah um I'm
+[00:10:00.120] focusing on those pieces one at a time
+[00:10:01.920] yeah absolutely during this session then
+[00:10:04.000] we're going to jump into a number of
+[00:10:05.680] tips you mentioned one briefly there and
+[00:10:07.440] these are tips that you've found the
+[00:10:08.839] hard way through playing with these
+[00:10:10.200] systems trying to get the most that you
+[00:10:11.920] can out of an llm the first one's an
+[00:10:13.720] interesting one it's one actually that
+[00:10:14.680] you wrote in a blog post I'm G to say
+[00:10:16.240] last year you talked about task framing
+[00:10:18.800] yeah and this is interesting I remember
+[00:10:20.440] like learning a lot reading this blog
+[00:10:21.560] tell us a little bit about I guess like
+[00:10:24.320] the before you go into task framing
+[00:10:25.839] actually talk about the steps that leads
+[00:10:27.519] up into task framing from having those
+[00:10:30.200] constraints at the back end of a prompts
+[00:10:32.040] Etc yeah it's born out of me begging my
+[00:10:34.880] head against the wall a specific problem
+[00:10:38.480] which for me again like we're very much
+[00:10:41.079] in the experimentation phase for a while
+[00:10:43.360] and I was trying to get llms to make me
+[00:10:47.279] certain utility libraries like just
+[00:10:49.959] certain functions without using any
+[00:10:52.480] external
+[00:10:53.560] dependencies now llms are trained on the
+[00:10:57.200] internet right and the number of people
+[00:10:59.680] who actually write code that way without
+[00:11:01.320] using any external dependencies that's a
+[00:11:03.800] very low number so I was finding that my
+[00:11:06.880] usual prompts God I was and we use the
+[00:11:09.800] term the blog post begging please do not
+[00:11:13.120] put any external dependencies in this I
+[00:11:15.760] swear if you do I'm going to quit just
+[00:11:20.120] losing my mind because I was not able to
+[00:11:22.560] get the LM to comply so I had a rethink
+[00:11:25.200] of it all of my prompts were placing
+[00:11:27.600] this external dependency constraint at
+[00:11:30.519] the end uh of the prompt which is
+[00:11:33.399] interesting if you think about the way
+[00:11:34.839] the llms process their prompts they're
+[00:11:37.920] reading the instructions sequentially
+[00:11:40.519] they're rolling the dice on possible
+[00:11:42.760] answers before they get to the end which
+[00:11:45.519] I don't think a lot of people fully get
+[00:11:47.959] right I think a lot of people think you
+[00:11:49.279] take the entire front you pass it to the
+[00:11:51.720] llm the llm reads it fully understands
+[00:11:53.760] it fully and then starts actually
+[00:11:56.160] executing and like you say rolling the
+[00:11:57.560] dice on possible answers but you're
+[00:11:58.920] saying as it's reading through it's
+[00:12:00.839] already trying to form an answer based
+[00:12:03.040] on what it's read before it's got to the
+[00:12:04.639] end exactly it's waiting possible
+[00:12:07.000] answers from word one which is why I
+[00:12:10.279] think task framing is important and what
+[00:12:12.079] it essentially is it's different from
+[00:12:14.160] ordering constraints differently it's
+[00:12:16.839] about making your constraints not really
+[00:12:19.959] constraints at all just making them part
+[00:12:22.079] of the task I use the CSV parser example
+[00:12:25.399] in the blog post which is a real one
+[00:12:27.399] that I struggled with for a while if I'm
+[00:12:30.199] describing a the type of program that I
+[00:12:32.720] want a CSV parser and then I say at the
+[00:12:34.839] very end please no external dependencies
+[00:12:37.760] 90% of that prompt is describing a task
+[00:12:41.040] where the best possible answer like the
+[00:12:44.680] correct answer uses an external
+[00:12:48.000] dependency it can be accomplished
+[00:12:49.959] without my constraint yeah so by the
+[00:12:52.120] time it gets to the constraint and it's
+[00:12:54.199] trying to fight this battle between the
+[00:12:56.560] path it was going down and the path it
+[00:12:58.680] now realizes it needs to go down but the
+[00:13:01.440] right answer might already have been
+[00:13:03.399] selected like it might already be the
+[00:13:05.720] case that's 100% the answer I'm going to
+[00:13:07.800] pick so the task framing approach to
+[00:13:10.839] this is literally reframing from the
+[00:13:14.079] very start write a
+[00:13:16.320] self-contained library for CSV parsing
+[00:13:19.279] that's a little bit of a simplistic
+[00:13:20.839] example of how this was solved but yeah
+[00:13:22.839] and that's not about reordering the
+[00:13:24.399] constraints you're not you're not
+[00:13:25.639] essentially saying at the start don't
+[00:13:27.360] use external libraries You're Building
+[00:13:29.199] buing the I guess not constraint here
+[00:13:32.880] anymore but guidance really yeah
+[00:13:35.000] self-contained and perhaps it's
+[00:13:37.199] interesting because when we're talking
+[00:13:38.519] about this it could actually also be
+[00:13:40.320] that those you know the words that we
+[00:13:42.240] use because it's more human to like an
+[00:13:44.160] interaction to say self-contained and
+[00:13:46.079] things like that it may actually be that
+[00:13:48.160] by talking almost more humanlike in our
+[00:13:51.000] requests it will naturally find more
+[00:13:54.279] humanlike examples of of of that request
+[00:13:57.720] as well so it might actually even I'm
+[00:13:59.600] guessing there who
+[00:14:01.519] knows it's interesting but I think it's
+[00:14:04.440] it leads the LM on kind of the right
+[00:14:06.880] path to start again like the external
+[00:14:09.759] dependency thing not actually a
+[00:14:11.959] constraint if you frame it this way it's
+[00:14:13.959] just the task it's just the task the
+[00:14:16.240] task is to write this in a
+[00:14:17.880] self-contained way yeah it's not oh by
+[00:14:20.720] the way no external dependencies so
+[00:14:23.360] that's one example and I found that
+[00:14:25.360] really helpful in baking into all of our
+[00:14:27.880] prompts what am I trying to accomplish
+[00:14:29.759] and how can I make that clear as early
+[00:14:32.120] as possible yeah very interesting so TS
+[00:14:34.079] framing tip number one number one tip
+[00:14:36.839] number two actually now this is an
+[00:14:38.519] interesting one when we're talking about
+[00:14:40.199] we talked about fine tuning and fine
+[00:14:41.800] tuning is really about that kind of like
+[00:14:43.800] post training almost to a model whereby
+[00:14:46.079] you say here are some example inputs
+[00:14:48.320] that you might get here are some example
+[00:14:49.720] outputs that I would like to to use if
+[00:14:51.759] you get these styles of input and it's
+[00:14:53.240] more that fine-tuning for for very
+[00:14:55.079] specific cases some people do that some
+[00:14:57.279] people choose not to these days and and
+[00:14:59.480] like I said with you know Simon last
+[00:15:01.040] episode it was very interesting someone
+[00:15:02.519] a team that was a power user really a
+[00:15:04.279] fine tuning leaning away from that yeah
+[00:15:06.360] now your second tip is about how you
+[00:15:08.440] give examples to an llm which is so
+[00:15:10.480] first of all when we frame that talking
+[00:15:12.040] of framing when we frame that how do we
+[00:15:14.079] position that next to something like
+[00:15:15.360] fine shooting again like the prompt can
+[00:15:18.720] grow with you the prompt is a living
+[00:15:21.240] document that represents what exactly
+[00:15:23.560] you want to get out of the LM fine
+[00:15:25.560] tuning is really going to and there's
+[00:15:27.759] debate about like how well it works in a
+[00:15:30.639] lot of cases like how whether it does or
+[00:15:33.319] doesn't get you closer to what you need
+[00:15:35.720] but even so like that kind of assumes
+[00:15:37.639] that the thing you need from the LM is
+[00:15:40.560] static that it's not changing and that
+[00:15:42.759] you don't want to evolve it and then if
+[00:15:44.720] you do evolve it and you have fine-tuned
+[00:15:47.199] on these other sets of examples where
+[00:15:49.639] does that leave you basically it leaves
+[00:15:51.680] you with a lot of potentially time and
+[00:15:53.880] compute wasted but this is why I think
+[00:15:56.759] prompting is so magical and it's
+[00:16:00.240] I know it's going to sound so silly when
+[00:16:02.199] I say it but give examples give examples
+[00:16:05.199] of what you mean something I do in
+[00:16:07.240] promps a lot is literally describe the
+[00:16:09.880] thing I'm looking for and then say good
+[00:16:13.399] again like in my XML tags good and then
+[00:16:16.480] give it an example of something good bad
+[00:16:18.399] and give it an example of something
+[00:16:20.160] similar that's bad oftentimes when
+[00:16:22.279] people prompt they have an idea of what
+[00:16:25.560] it is they want to get out of the LM
+[00:16:28.120] like they have a clear picture of what
+[00:16:29.639] they want but they're not passing that
+[00:16:32.040] information to it it's not an oracle
+[00:16:34.399] like it it doesn't know is that kind of
+[00:16:35.959] a good thing to have almost as a side
+[00:16:37.600] thing that you point the llm to almost
+[00:16:39.240] as a oh in this part of the spec over
+[00:16:40.959] here is some good and bad examples of
+[00:16:42.639] this because I guess we almost come back
+[00:16:44.040] to that first one about adding
+[00:16:45.880] constraints about what good should look
+[00:16:47.759] like when do we put that into a prompt
+[00:16:49.759] and things like that yeah I think so but
+[00:16:52.759] it doesn't even have to be so structured
+[00:16:56.920] in that way an example might be a
+[00:17:00.639] verbosity if you want like llms tend
+[00:17:03.480] towards more complex more verbose
+[00:17:06.280] solutions to things if you want it to be
+[00:17:08.839] less verbose you need to give it an
+[00:17:11.600] example of what you mean literally give
+[00:17:13.959] it an example of a flowery sentence give
+[00:17:16.640] it an example of the direct kind of
+[00:17:18.559] sentence that you're looking for but
+[00:17:20.439] yeah like in terms of specs these
+[00:17:24.400] examples are always going to be helpful
+[00:17:28.319] it depends they're technically relevant
+[00:17:30.360] obviously if you're describing if we
+[00:17:33.400] zoom in on code gen for a second if
+[00:17:36.240] you're describing a function which you
+[00:17:39.799] think there is room for ambiguity or you
+[00:17:42.000] think there's like maybe a parameter
+[00:17:44.200] that might confuse the LM or something
+[00:17:47.480] yes these examples are always going to
+[00:17:49.960] be helpful literally do and don't the
+[00:17:52.480] same way that you would specify
+[00:17:54.360] something for a person if you think
+[00:17:56.799] there's room for ambiguity again like
+[00:17:58.960] people can't read your minds and llms
+[00:18:01.080] can't either yeah no it's very true it's
+[00:18:03.159] very true and I think that's it's when
+[00:18:06.400] we had a episode of in around the
+[00:18:08.400] intercom space which of course was an
+[00:18:09.960] area you used to work in previously but
+[00:18:11.520] we chatted witho chat with Dez trainer
+[00:18:14.720] and part of it was a really interesting
+[00:18:17.200] discussion on the short prompting versus
+[00:18:19.880] the long prompting in other words you
+[00:18:21.280] know you can write a short prompt and
+[00:18:22.559] you'll get something back because we can
+[00:18:24.520] get something back and because the llm
+[00:18:25.960] can fill in the gaps we can actually
+[00:18:27.799] write very little in our prompts and
+[00:18:29.760] actually get something fairly full back
+[00:18:32.120] yeah whereas actually sometimes what we
+[00:18:33.480] want to do is we want to write more in
+[00:18:35.799] that prompt to get to much more
+[00:18:37.039] specifics about what we want and and I
+[00:18:40.480] think I think I can't remember the
+[00:18:42.120] phrase now but it was something about
+[00:18:43.280] the ability to short prompt is robbing
+[00:18:44.840] us of that ability to add that detail
+[00:18:47.320] and and put our details in and I think
+[00:18:50.080] one of your third kind of like tip is
+[00:18:52.000] around levels of detail and I think
+[00:18:53.880] that's really hard to be able to
+[00:18:55.880] understand am I giving too much
+[00:18:57.600] information am I not giving enough
+[00:18:59.120] information because you still get
+[00:19:01.159] something but you can almost get
+[00:19:02.559] frustrated with the results what's that
+[00:19:04.280] right balance to be able to get the LM
+[00:19:06.600] to focus on the right things totally I
+[00:19:08.720] think this is so interesting like llms
+[00:19:11.960] are so magical in so many ways but then
+[00:19:15.480] again you take a step back and these are
+[00:19:18.080] their prediction machines yeah and that
+[00:19:21.400] can be really helpful and that can also
+[00:19:23.120] come and bite you sometimes something
+[00:19:25.400] that we saw that was really interesting
+[00:19:27.360] I'll describe a kind of of experiment
+[00:19:29.400] that we did so we ran a series of these
+[00:19:33.280] programs that we described through a
+[00:19:35.240] workflow 10 times 10 times each and we
+[00:19:37.960] had a series of them that failed like
+[00:19:41.880] catastrophically nine out of 10 times
+[00:19:44.799] the difference with the one time where
+[00:19:47.240] it succeeded often was that the specs
+[00:19:50.000] had best detail in them I think that
+[00:19:54.159] part of this is you're describing a
+[00:19:57.480] problem that the LM has seen a lot of if
+[00:20:00.080] you gave it one sentence and you say
+[00:20:02.600] again let's take CSV parser for example
+[00:20:04.720] if you gave it one sentence write me a
+[00:20:06.039] library to make a CSV parser it has the
+[00:20:08.919] World opened to it in terms of the
+[00:20:11.760] solutions it can pick and if it's free
+[00:20:14.039] to pick a solution it thinks is good
+[00:20:17.320] then it can follow that solution all the
+[00:20:19.000] way through in specs where we put much
+[00:20:21.679] much much more detail for these like
+[00:20:24.480] common problems common engineering
+[00:20:26.880] problems I think sometimes the lm's
+[00:20:29.080] getting confused like like we're giving
+[00:20:31.600] it most of the information but not quite
+[00:20:34.679] and if you think about the choices like
+[00:20:37.520] the possible choices getting narrowed
+[00:20:39.200] down like a funnel it's like we're
+[00:20:41.120] leading it to here and then it's wait a
+[00:20:43.760] second but where do I go from here this
+[00:20:46.480] only leaves me with so many paths that I
+[00:20:48.919] can proceed down does that make sense
+[00:20:51.200] it's a a tricky thing that I've been
+[00:20:53.360] thinking about recently and I think the
+[00:20:55.159] takeaway is think about the problem that
+[00:20:58.600] that you're describing and whether it's
+[00:21:01.120] likely that the llm has lots of ideas
+[00:21:05.640] about how to solve it if it does if you
+[00:21:08.760] think that it's likely that it does it
+[00:21:10.840] might be the best thing just to let it
+[00:21:13.480] go for it and solve it in its own way
+[00:21:16.320] but this is very Nation but I thought it
+[00:21:18.640] was interesting yeah it's interesting
+[00:21:20.200] and I think it's one of those things
+[00:21:21.480] where I guess one question is how much
+[00:21:23.679] do you care about some of the decisions
+[00:21:25.880] it makes about what are the important
+[00:21:27.960] choices
+[00:21:29.039] yeah that you absolutely have interest
+[00:21:31.640] in it going a certain path where are the
+[00:21:34.279] other cases where okay maybe you
+[00:21:35.960] wouldn't have done it quite that way but
+[00:21:37.559] does it matter is it okay for it to do
+[00:21:39.720] that and it's I guess focusing on the
+[00:21:41.159] detail in the right places yeah exactly
+[00:21:44.279] exactly so again CV parser for an
+[00:21:46.880] example maybe you don't care exactly how
+[00:21:50.240] it's implemented but you care that it's
+[00:21:51.799] fast yeah and this comes back to maybe
+[00:21:54.720] framing the task I want a super
+[00:21:57.640] performant CSV parser that can handle I
+[00:22:01.880] don't know 50,000 rows or whatever that
+[00:22:04.400] helps and if you don't then follow that
+[00:22:06.919] with implementation detail like rigorous
+[00:22:09.840] implementation detail that the LM has to
+[00:22:11.919] follow I think it's much more likely to
+[00:22:14.600] or perhaps perhaps the CSV file is a
+[00:22:17.480] million lines long as you're creating it
+[00:22:19.919] you actually don't want it all to be in
+[00:22:21.279] memory because it would just be too big
+[00:22:22.880] so it's like the requirements of
+[00:22:24.679] understanding how it's going to be used
+[00:22:25.919] which is a bit that the llm doesn't
+[00:22:27.440] understand giv it those bits of detail
+[00:22:29.679] in all
+[00:22:31.440] the a really good point interesting so
+[00:22:34.279] let's jump on to the next tip which is
+[00:22:37.960] about structuring inputs and I think
+[00:22:39.760] we're talking about huge context and
+[00:22:41.400] this is interesting now where we're
+[00:22:42.640] trying to break this down yeah
+[00:22:44.960] structuring inputs being maybe is it
+[00:22:46.679] coming from the spec point of view that
+[00:22:48.080] you're looking at large specs and you're
+[00:22:49.799] trying to understand how to break it
+[00:22:51.000] down or was there another angle to how
+[00:22:52.640] you were learning at this tip it comes
+[00:22:54.159] back to huge context Windows a lot of
+[00:22:58.039] people
+[00:22:59.320] get a lot out of maxing out their
+[00:23:01.720] context windows and I think that's
+[00:23:04.000] really cool and I want to learn more
+[00:23:05.720] about like how exactly to do that and to
+[00:23:08.159] find those useful but in my experience
+[00:23:10.880] the bigger the context window the more
+[00:23:14.159] chance there is for an llm to get
+[00:23:16.480] confused yeah and I found that we have
+[00:23:21.760] been binocul against that by breaking
+[00:23:24.320] our prompts up this is what I was
+[00:23:26.200] talking about before about formatting
+[00:23:28.039] instead instead of in line saying you're
+[00:23:32.039] going to be provided with user
+[00:23:33.520] requirements the user requirements are
+[00:23:35.159] this and theer requirements are this and
+[00:23:38.440] then I would like you to create I would
+[00:23:40.679] like you to write a whatever here are my
+[00:23:43.200] requirements of instead of populating
+[00:23:45.279] the context this way and again I just
+[00:23:47.840] going to come back to task framing I
+[00:23:49.640] sound like I'm on I thought you were
+[00:23:50.880] going to say CSV PA then yeah I'm on a
+[00:23:54.159] press tour for task Framing and CSV
+[00:23:57.080] parsing so in instead of doing this
+[00:23:59.559] saying something like I'm going to
+[00:24:01.360] provide you with these materials yeah
+[00:24:03.960] bullet pointing them out I want you to
+[00:24:06.080] do this with them and then doing our
+[00:24:08.480] fake XML tagging of like user
+[00:24:11.840] requirements sluser requirements system
+[00:24:14.840] requirements SL system requirements
+[00:24:16.520] right this is helpful for the LM again
+[00:24:19.600] it's reading these things in a sequence
+[00:24:21.760] it knows you've said I'm going to
+[00:24:23.919] provide you this material it knows it's
+[00:24:25.760] expecting that material and by the time
+[00:24:27.919] it reads it it knows what to do you're
+[00:24:30.240] not breaking down the requests you're
+[00:24:31.880] not saying effectively look I'm going to
+[00:24:33.520] make five six seven requests as almost
+[00:24:35.840] like a conversation with an this is all
+[00:24:38.399] in one prompt but you're effectively
+[00:24:40.480] like separating as parts of that one
+[00:24:42.799] single prompt you like saying this is
+[00:24:44.799] what I'm G to give you this is what I
+[00:24:45.960] want you to do this is the output star
+[00:24:47.720] that I want you to do in and so forth
+[00:24:49.919] but you're breaking it down yeah into
+[00:24:52.360] clear segments whether you use XML or
+[00:24:54.840] whatever it is it's it's like very
+[00:24:57.159] demarcated if that's a work still
+[00:24:59.039] outside of transactions so sectioned off
+[00:25:01.440] really in yeah exactly exactly and again
+[00:25:04.360] comes back to the human element of this
+[00:25:06.520] like how would you most efficiently
+[00:25:10.120] let's say in this Cen example let's say
+[00:25:13.120] that this document was your only way to
+[00:25:16.679] communicate with a developer you can't
+[00:25:19.240] talk to them after that yeah in theory
+[00:25:21.200] if you get this one chance and they need
+[00:25:23.440] to understand everything there is to
+[00:25:25.840] understand about the task from this
+[00:25:27.960] document breaking it up in a way that's
+[00:25:30.520] digestible I think gives a human the
+[00:25:33.240] best chance of understanding what you
+[00:25:34.600] mean and same with the other one yeah
+[00:25:36.799] and it's also interesting when we were
+[00:25:38.279] talking about the fact that context
+[00:25:40.039] could be huge I'm going to show my age
+[00:25:42.120] here but back in the day of early
+[00:25:44.320] programming where like memory was a real
+[00:25:46.880] constraint right and so you had to be
+[00:25:48.799] very careful about what you put in
+[00:25:50.640] memory when so that you didn't blow the
+[00:25:52.440] memory stack that you had here as well
+[00:25:54.480] the the rate at which llms are able to
+[00:25:57.240] take much greater amount of of context
+[00:26:00.360] it was only six months a year ago where
+[00:26:02.159] we were like seeing Oh I can't give it
+[00:26:04.480] that additional context because I I've
+[00:26:06.440] only got a certain number of tokens or
+[00:26:08.520] characters whatever as as context that I
+[00:26:10.159] need to provide yeah the ability now for
+[00:26:12.919] us to just throw huge amounts of context
+[00:26:14.760] at an llm isn't actually a great thing
+[00:26:16.720] sometimes because it gives us almost too
+[00:26:18.240] much of an excuse just to throw as much
+[00:26:19.799] context and expect the llm to deal with
+[00:26:21.919] it so just because you can give context
+[00:26:24.200] doesn't always mean you should totally
+[00:26:26.960] 100% more context is also more work for
+[00:26:30.120] you you need to make sure that it all
+[00:26:32.559] makes sense again like I think llms are
+[00:26:35.720] pretty good at making reasonable
+[00:26:37.720] assumptions a lot of the time but they
+[00:26:40.039] can't read your mind and at some point
+[00:26:42.679] like these things are going to to get a
+[00:26:45.159] little a little confused and when we do
+[00:26:47.279] talk about context and like specs if we
+[00:26:49.080] look at the longer form specification
+[00:26:51.039] style is it better to if we are
+[00:26:53.240] referring to pieces of spec or pieces of
+[00:26:56.039] whatever it is as context is it better
+[00:26:58.000] to break those down into smaller pieces
+[00:26:59.840] so that you're only referring to a
+[00:27:00.960] specific thing or do you feel like the
+[00:27:02.960] llm is capable to almost pick a piece
+[00:27:05.039] out of a spec and say oh yeah this is
+[00:27:06.640] the piece I care about is it better to
+[00:27:08.679] really get more fine grained with the
+[00:27:11.600] amount that we provide it that's a great
+[00:27:14.440] question always always I would love to
+[00:27:17.000] know the answer to that what I can say
+[00:27:19.159] about that is we know that there's a lot
+[00:27:21.880] of variant when you work with LMS
+[00:27:23.919] there's a lot of variants and I think
+[00:27:25.720] the bigger your context window the more
+[00:27:28.679] you're going to run into variance
+[00:27:30.520] meaning if you run the same prompt uh
+[00:27:32.840] many times you're going to get slightly
+[00:27:34.840] different results yeah and if you're
+[00:27:36.520] trying to cut down on variants then
+[00:27:41.000] smaller contexts are probably good and
+[00:27:44.360] and maybe we're not even talking about
+[00:27:45.880] context here but smaller Scopes yeah I
+[00:27:48.399] feel like it's fair to say that a big
+[00:27:50.360] context means a big scope for the task
+[00:27:53.080] that you're trying to accomplish yeah
+[00:27:54.679] maybe that's not true maybe it's just
+[00:27:55.880] about the scope of the task so when it
+[00:27:57.679] comes to specs like again canonical
+[00:28:01.200] specs to us that means that pieces of a
+[00:28:05.279] spec like directly relate to a
+[00:28:09.360] deterministic behavior that we can count
+[00:28:11.600] on so a function adds two numbers
+[00:28:14.760] together that results in a function
+[00:28:16.559] being written that can add two numbers
+[00:28:17.960] together yeah a larger like math library
+[00:28:21.480] with a huge context describing 30 40 50
+[00:28:25.200] utility functions that you want to get
+[00:28:27.039] of course you're going to get more
+[00:28:28.120] Varian and probably not every function
+[00:28:30.840] that you ask for is going to be in the
+[00:28:32.559] the final code gen result so smaller
+[00:28:36.240] scope equals more slightly more
+[00:28:40.240] deterministic behavior from from the El
+[00:28:42.640] because I guess you're pointing more to
+[00:28:43.760] that kind of like specificity in terms
+[00:28:46.360] of yeah this is the thing I this is the
+[00:28:48.600] small piece that I want and I'm
+[00:28:50.000] providing as context or the the small
+[00:28:51.600] thing that I'm asking for there are far
+[00:28:53.279] fewer ways of getting that or doing that
+[00:28:55.120] in an alternate way so you get that
+[00:28:57.000] determinism built in exactly okay we're
+[00:28:59.360] down to our our very last a very last
+[00:29:02.240] tip and this is an interesting one this
+[00:29:03.720] is one actually that when we were
+[00:29:05.000] prepping for this you said something
+[00:29:06.120] quite interesting and I'm like oh wow
+[00:29:08.159] that should be its own tip and this is
+[00:29:10.039] around invoking thought processes and
+[00:29:12.279] the say function that gets used so tell
+[00:29:14.919] us a little bit about the background on
+[00:29:16.440] this yeah so again this is something fun
+[00:29:19.000] that kind of emerged from our
+[00:29:20.480] experimentation phase I think a lot of
+[00:29:22.720] people have hopped on to this as well
+[00:29:24.720] and I think it's really interesting so
+[00:29:26.880] when we talk about
+[00:29:28.640] context there's context as in like a
+[00:29:31.640] giant prompt that describes the context
+[00:29:34.559] of the task that you're trying to
+[00:29:35.640] accomplish but there's also context
+[00:29:37.960] within a conversation so llms have a
+[00:29:41.200] very distinct way of communicating it's
+[00:29:44.480] I say something to you and you say
+[00:29:46.480] something to me and I capture that
+[00:29:48.559] response and I do something with it and
+[00:29:50.799] maybe I say more things or maybe you say
+[00:29:52.760] more things but it's very like back and
+[00:29:55.240] forth and this whole conversation
+[00:29:56.919] becomes a context the conversation can
+[00:29:59.360] also be the context for the task you're
+[00:30:01.880] trying to accomplish so we came up with
+[00:30:05.120] this way of invoking and this is pre-
+[00:30:07.919] reasoning and I still think works pretty
+[00:30:10.559] well as a very primitive reasoning we
+[00:30:13.480] came up with a utility function which
+[00:30:15.200] just says say it's just say this to the
+[00:30:18.440] LM and we throw the response entirely
+[00:30:21.159] away we don't care we don't care what
+[00:30:23.760] the LM has to say we want to say
+[00:30:26.559] something that helps prime it for the
+[00:30:29.039] next thing that we're GNA say where we
+[00:30:31.760] might capture the response so an example
+[00:30:33.440] of this is like I am thinking about the
+[00:30:35.559] best way to implement CSV
+[00:30:38.279] pars yeah who knew my favorite Library
+[00:30:41.919] yeah um what is your I'm G have to pause
+[00:30:43.840] you there first of all before we carry
+[00:30:45.360] on what is your favorite CSV parcel
+[00:30:47.200] today it's the one called CSV parcel oh
+[00:30:49.279] is it okay we can continue now my bur
+[00:30:52.039] question I'm thinking about the best way
+[00:30:53.919] to implement this program maybe you
+[00:30:56.360] don't even call out that it's a CSV
+[00:30:58.399] right I'm thinking how to write
+[00:31:00.799] efficient perform code that is written
+[00:31:05.639] like whatever I'm looking for this
+[00:31:07.760] particular thing say or I'm looking for
+[00:31:10.159] this particular thing are you ready to
+[00:31:12.399] I'm G to describe the program that I
+[00:31:14.480] want are you ready to think about this
+[00:31:16.960] with me yeah and usually what the LM
+[00:31:18.960] says is like that sounds like a fun
+[00:31:21.399] exercise yes I'm ready we don't care
+[00:31:23.200] about that what we care about is that
+[00:31:25.159] it's now primed in the scope of this
+[00:31:27.360] conversation
+[00:31:28.840] for what I send next which is maybe a
+[00:31:30.679] description of the CSV parser library
+[00:31:34.000] and it's thinking about okay I need to
+[00:31:35.880] make this performant I need to make this
+[00:31:37.600] efficient I need to write this well so
+[00:31:40.159] we found that to be really surprisingly
+[00:31:42.639] effective when we were experimenting
+[00:31:44.639] yeah H and I think it's like it's
+[00:31:46.440] something that I've played with a bit on
+[00:31:48.480] my own as well and fun it reminds me a
+[00:31:50.360] little bit of the system prompt where
+[00:31:51.559] you like you prime it to say hey you're
+[00:31:53.559] a senior JavaScript developer who
+[00:31:56.720] thrives on detail and blah blah blah but
+[00:31:59.799] it's much much more than that isn't it
+[00:32:01.200] you're not describing necessarily how
+[00:32:02.960] the llm should react you're describing
+[00:32:06.080] it's almost like on boarding for the
+[00:32:07.559] task it's yeah you're giving it way more
+[00:32:09.880] background detail about the specific
+[00:32:12.080] task that you're going to ask versus the
+[00:32:14.240] way it should respond which is quite
+[00:32:16.919] I've not heard of that before actually
+[00:32:18.200] it's quite an interesting interesting
+[00:32:19.559] rout it is interesting and I think if
+[00:32:21.600] you go back to the idea of LMS as
+[00:32:23.840] prediction machines that really helps
+[00:32:26.639] obviously
+[00:32:28.200] there's waiting of possible solutions to
+[00:32:31.480] your problem as the prompt is being
+[00:32:33.919] processed but at this point a prompt has
+[00:32:36.279] already been processed right where we're
+[00:32:38.279] populating a context and ensuring that
+[00:32:41.480] the probability of certain responses
+[00:32:44.039] later is more in line with with what we
+[00:32:46.840] asked for initially yeah I think like in
+[00:32:50.440] my experience it's very unscientific but
+[00:32:52.559] in my experience this works better than
+[00:32:55.799] long prompting so having a conversation
+[00:32:59.200] feels a little bit mean to say because
+[00:33:00.760] we're just throwing away what the llm
+[00:33:03.480] wants to say yeah but having a
+[00:33:05.200] conversation about the output that
+[00:33:07.279] you're looking for and then describing
+[00:33:09.320] the task I've found this to be a lot
+[00:33:11.480] more effective than just here's 10,000
+[00:33:14.200] words on the thing I want you to do
+[00:33:15.720] we're obviously in 2025 right now that's
+[00:33:18.960] right today is 2025 yep that's cool what
+[00:33:21.679] do you think let's take let's push out a
+[00:33:23.639] year we're just starting in January 2026
+[00:33:26.559] is prompting still going to be an
+[00:33:28.039] important thing or is do you feel like
+[00:33:30.120] models are G to almost remove going to
+[00:33:33.360] improve so much that we're going to rely
+[00:33:35.519] less or or rather prompts are going to
+[00:33:37.799] provide us with less of a value ad on
+[00:33:40.120] top of the the the models reactions as
+[00:33:42.240] they come out today yes I think so I
+[00:33:44.600] think so to some extent again like it
+[00:33:47.440] depends on these companies who own these
+[00:33:50.480] models it depends where they want to
+[00:33:53.120] take them there's a version of 01 for
+[00:33:56.399] example which I'm sure is not called 0an
+[00:33:58.720] in 2026 there's a version of it that's
+[00:34:01.480] much more capable yeah but still not
+[00:34:05.000] opinionated that's a choice that's a
+[00:34:06.960] choice to make about the LM which I
+[00:34:09.359] think is a valid choice but it means
+[00:34:12.000] that you will need to interact with it
+[00:34:13.599] differently and there's a version of
+[00:34:15.159] Sonet that is just as capable but even
+[00:34:19.399] more opinionated or even more biased
+[00:34:21.800] towards certain types of answers which
+[00:34:23.839] makes it really super effective at other
+[00:34:26.560] things so I do think that prompting and
+[00:34:30.240] like these specific tips I expect to
+[00:34:34.280] become less relevant and less important
+[00:34:36.560] like I I really do but I still think you
+[00:34:39.480] need to be mindful of like how you're
+[00:34:42.159] communicating with this machine in the
+[00:34:44.679] way that really works for it you said
+[00:34:47.280] something the other day that I loved
+[00:34:49.240] which is this idea of mechanical
+[00:34:51.599] sympathy which I think is more of an F1
+[00:34:54.560] thing like working with the car it was
+[00:34:56.639] Martin Thompson that originally came out
+[00:34:58.960] with mechanical sympathy and it's yeah
+[00:35:00.640] the the example he gave if I give the
+[00:35:02.760] mechanical example and you can give the
+[00:35:04.320] the LM example the mechanical example
+[00:35:06.240] was really he gave about an F1 driver
+[00:35:08.440] Formula One driver for example he's
+[00:35:10.320] effectively just using a UI he's using
+[00:35:11.920] the car he's driving he uses the gearbox
+[00:35:14.359] but the knowledge of how that gearbox is
+[00:35:16.760] built and how he then knows to get the
+[00:35:19.560] most out that gearbox because knowing
+[00:35:21.960] when to change at high revs if he's
+[00:35:23.520] going slower do I change it a different
+[00:35:25.119] way do I skip gears having that
+[00:35:27.359] understanding of the mechanics
+[00:35:28.839] underneath allows him to get the most
+[00:35:31.119] out of it when he's actually driving
+[00:35:33.359] that's the mechanical engineering side
+[00:35:35.400] from but but the are quite similar right
+[00:35:37.640] ex totally I think any system is similar
+[00:35:40.280] in the sense that you'll get the most
+[00:35:41.880] out of it if you interact with it in the
+[00:35:45.000] way that you know it works best yeah and
+[00:35:47.560] for now like prompts really are the key
+[00:35:52.280] to the lm's heart yeah that that is the
+[00:35:55.680] way that you interact with an llm and
+[00:35:57.640] it's important to have this level of
+[00:35:59.480] mechanical Sympathy for the LM and and
+[00:36:02.680] so I think prompting will always be
+[00:36:04.119] important in that way but like some of
+[00:36:06.640] these tips are definitely a little bit
+[00:36:08.520] of cope for the fact that they don't
+[00:36:10.839] work perfectly yet then again like the
+[00:36:13.200] gearbox has probably changed very
+[00:36:15.520] iteratively and very slowly over time
+[00:36:18.079] whereas an llm under the covers is right
+[00:36:19.880] now rapidly evolving and changing so
+[00:36:22.520] it's almost like our knowledge our
+[00:36:23.720] mechanical knowledge needs to change
+[00:36:25.520] faster and then we change our prompts
+[00:36:27.119] based on so it'll probably continually
+[00:36:29.359] need tweaking understanding how the
+[00:36:31.400] models are changing under the covers
+[00:36:33.119] yeah exactly which is interesting
+[00:36:35.200] amazing Macy there's been a wealth of
+[00:36:37.240] knowledge here from your experience over
+[00:36:38.920] the last six months or so at tesle
+[00:36:41.040] certainly and Beyond before that yeah
+[00:36:43.560] massive thank you for joining us and
+[00:36:45.960] sharing your amazing knowledge for for
+[00:36:48.200] all those samples very bunch of work in
+[00:36:50.440] progress hopefully we'll be back here
+[00:36:52.119] next year with some reflection this is
+[00:36:54.160] this yearor this year 2025 right yeah
+[00:36:56.319] yeah amazing
+[00:36:58.119] uh thanks all for tuning in and let us
+[00:37:00.079] know if there are other tips and and
+[00:37:02.599] best practices that you have uh podcast
+[00:37:05.160] at tesla.co uh tell us uh about what you
+[00:37:08.839] found most useful if if some of these
+[00:37:10.920] are working will work for you um if you
+[00:37:13.400] want to catch up with Macy uh Discord is
+[00:37:15.480] probably one of the places where you can
+[00:37:17.240] have a good old chat so yeah join the AI
+[00:37:19.480] native Dev Discord and uh we'll see you
+[00:37:22.319] again soon on a future episode thanks
+[00:37:23.960] for tuning in
+[00:37:25.640] [Music]
+[00:37:28.080] [Applause]
+[00:37:39.280] thanks for tuning in join us next time
+[00:37:41.240] on the AI native Dev brought to you by
+[00:37:43.599] Tesla
+[00:37:45.870] [Music]

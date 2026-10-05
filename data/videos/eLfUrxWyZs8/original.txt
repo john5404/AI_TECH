@@ -1,0 +1,924 @@
+[00:00:12.240] Hey S. Hello Nimrod and Nimrod. How are
+[00:00:15.519] you?
+[00:00:17.039] We're good. We're good. Thank you. Doing
+[00:00:18.720] well. Awesome. Awesome. I'll do a very
+[00:00:20.240] very brief intro and then we can kind of
+[00:00:21.680] jump straight in. So we have Nimrod
+[00:00:23.359] Core. Nimrod. Nimrod Core. Would you
+[00:00:25.119] mind putting your hand up? Nimrod.
+[00:00:27.760] Nimrod on the left is Nimrod Core.
+[00:00:29.279] Nimrod's a software engineer. I was I
+[00:00:31.279] was loved hearing that you're the number
+[00:00:33.200] one contributor to Czechov, the very
+[00:00:35.200] popular IA security tool, which is
+[00:00:37.760] awesome. Um, awesome to hear. And and uh
+[00:00:41.920] we also have Nimrodhouser. Nimrod, how
+[00:00:44.160] are you? Great. Nimro on the right
+[00:00:46.440] there. Nimrod describes himself as a
+[00:00:49.120] serial first employee in the startup
+[00:00:51.200] space. I really love that. And Nimrod,
+[00:00:53.280] you bridge that gap between software
+[00:00:54.640] development and data engineering as
+[00:00:56.160] well, right? Yeah. Awesome. Awesome.
+[00:00:59.280] Well, a big big welcome to you both. And
+[00:01:02.079] what I'm going to do is I'm going to put
+[00:01:03.280] your uh slides up on screen now and a
+[00:01:07.200] big thank you to Baz for also being a
+[00:01:09.360] kind partner of this uh of this
+[00:01:11.280] conference and I'll hand over to uh to
+[00:01:14.000] you both. So enjoy the session. Thank
+[00:01:16.400] you. Thank you for having us, Simon. Uh
+[00:01:18.479] welcome everybody. Uh today we're going
+[00:01:20.080] to talk a little bit about building a
+[00:01:21.759] retrievable Kobe memory model. There's
+[00:01:23.759] lots of big words in there. So let's uh
+[00:01:26.240] uh start taking this apart uh one by
+[00:01:28.080] one. Uh so a little bit about us. As
+[00:01:30.479] Simon said, I'm uh the co-founder CTO of
+[00:01:33.280] Baz. I've been building backend stuff on
+[00:01:35.600] AWS for uh more than 10 years. I also do
+[00:01:38.320] some open source projects. Check over
+[00:01:41.040] ifastic. They're awesome. Use them if
+[00:01:43.439] you need to. They're uh highly
+[00:01:45.280] recommended. Uh and I'm not biased at
+[00:01:47.439] all. Alongside me is another numero. I'm
+[00:01:50.159] going to call him Hower. Uh he's our
+[00:01:52.960] first employee. He's a serial uh
+[00:01:55.119] founding employee as Simon said and also
+[00:01:58.240] he really runs the entire field between
+[00:02:00.880] backend engineering, data engineering,
+[00:02:02.960] data science, um dashboards, uh and
+[00:02:06.240] anything else you might need. Uh he's
+[00:02:07.920] the guy for it. Uh let's jump in. So
+[00:02:10.720] what are we going to talk about? First
+[00:02:12.319] of all, we're going to talk a little bit
+[00:02:13.599] about what we do at Baz. Uh because it
+[00:02:15.680] helps us present the main challenge that
+[00:02:17.120] we need to break up here, which is the
+[00:02:19.360] uh codebased memory. Uh the second thing
+[00:02:21.920] we'll talk about is how context is king
+[00:02:24.080] and how it meets the software
+[00:02:25.520] development and then we'll actually get
+[00:02:27.360] to the juicy stuff and talk about how we
+[00:02:29.760] tried failed and then succeeded we think
+[00:02:33.040] uh building retrievable memory. Um so
+[00:02:36.000] let's uh let's get started. What is
+[00:02:38.480] Buzz? Buzz is an AI powered code review
+[00:02:40.959] platform. What that means is we've built
+[00:02:44.239] a number of agents that do lots of
+[00:02:47.040] things that help review code, right? So,
+[00:02:49.040] it's a state-of-the-art code code
+[00:02:50.879] reviewing agent. Um, it does PR
+[00:02:53.680] summaries, uh, which summarizes the
+[00:02:55.840] changes. It does review comments to
+[00:02:58.319] identify, uh, what the change has done
+[00:03:01.440] and maybe it's up to some bad stuff,
+[00:03:04.159] including custom principles. So, trying
+[00:03:05.840] to identify what works best on your
+[00:03:08.040] codebase. It does code graphs which
+[00:03:10.560] analyze the diff in a visual manner to
+[00:03:12.800] help you understand what change and what
+[00:03:14.400] affects what or what is the chain of
+[00:03:16.560] events that is going to happen. And of
+[00:03:18.879] course, we have our own uh small AI
+[00:03:20.879] assistant which will helpfully assist in
+[00:03:23.200] anything you need to do around pull
+[00:03:24.879] request and code review. Now, this all
+[00:03:27.280] sounds amazing, right? We have a
+[00:03:28.480] state-of-the-art code reviewing agent.
+[00:03:29.920] It does all these things. What's the
+[00:03:32.159] problem?
+[00:03:33.680] Well, I'm glad you asked, Nimrod. So, we
+[00:03:36.159] built our our platform, our reviewer,
+[00:03:38.720] and everything seemed to be working
+[00:03:40.640] amazing. It did everything it was
+[00:03:42.239] supposed to do, and results were were
+[00:03:45.280] good. But as we kind of got a feeling
+[00:03:48.159] for our own product and we were kind of
+[00:03:49.760] dog fooding our own stuff, something
+[00:03:52.080] felt a little bit missing and we just we
+[00:03:55.519] try we took it took us some time to
+[00:03:57.200] understand what it was until we thought
+[00:03:59.360] we finally had it. The main feedback we
+[00:04:03.040] got and our own feeling was that our
+[00:04:05.599] reviewer was a bit too robotic. It felt
+[00:04:08.640] like it kind of lacked an understanding.
+[00:04:10.879] it understood what was happening but it
+[00:04:12.959] kind of didn't understand why where how
+[00:04:16.479] is this the best way to do this thing
+[00:04:19.440] and I think this uh I have an example
+[00:04:21.519] here that kind kind of exemplifies this
+[00:04:23.520] so this is a PR description that we've
+[00:04:26.160] generated a while back before we made
+[00:04:27.919] some upgrades and we can kind of take a
+[00:04:30.720] quick look it says you know you change
+[00:04:32.320] this class you change a method the input
+[00:04:35.199] change the structure is a little a
+[00:04:36.800] little bit different everything it says
+[00:04:38.560] is correct that really happened but it's
+[00:04:41.440] kind of like a dry reiteration
+[00:04:44.199] regurgitation of just what happened.
+[00:04:46.400] There's no I I guess the the magic word
+[00:04:48.720] is context. So that was the thing that
+[00:04:52.160] was missing and we thought that's what
+[00:04:54.560] what's required for that you know that
+[00:04:56.400] next step that X factor and in these
+[00:04:59.440] cases people often say that context is
+[00:05:01.600] king. Apparently it is a saying and this
+[00:05:04.800] I have here something that exemplifies
+[00:05:06.639] this. It's this nice little picture. you
+[00:05:09.520] you see the same symbol twice, but one
+[00:05:11.840] time you understand that it's a B and
+[00:05:15.120] the other time it's a number. It's 13.
+[00:05:17.360] And the only reason you know this is
+[00:05:18.800] because of the surrounding stuff,
+[00:05:20.320] because of the context. Now, this is
+[00:05:23.120] important, but you might ask yourself,
+[00:05:25.360] okay, I get it, but how does context
+[00:05:28.000] actually come into play when you're
+[00:05:30.000] doing pull requests? What's the
+[00:05:31.280] connection? Great question, Hower. Um so
+[00:05:34.240] when we look at the developer mindset
+[00:05:36.479] when he uh approaches code review uh we
+[00:05:39.199] split the mindset into three parts. The
+[00:05:41.440] first and most basic part is you need to
+[00:05:43.360] understand code right if you want to
+[00:05:44.720] review code obviously uh but you also
+[00:05:47.520] when you try to step up your review game
+[00:05:49.759] you need to understand where this change
+[00:05:51.520] fits within the system right so I have
+[00:05:53.360] maybe multiple components multiple apps
+[00:05:55.520] multiple services I changed something
+[00:05:58.080] what's
+[00:06:00.440] going to change for a code review is to
+[00:06:03.919] understand what will be the user impact
+[00:06:05.600] right I changed this function it means
+[00:06:07.680] this service or services will need to be
+[00:06:10.400] updated And that means that new
+[00:06:12.479] functionality will be exposed, old
+[00:06:14.319] functionality will be removed. What what
+[00:06:16.720] exactly happens? So when we're trying to
+[00:06:19.680] do this with AI, what we decided to do
+[00:06:22.000] is uh approach each uh of these levels
+[00:06:24.800] differently for this uh most simple
+[00:06:27.919] level. The
+[00:06:31.400] diff give the diff with slightly better
+[00:06:34.080] formatting. But then when we look at the
+[00:06:36.960] holistic perspective, you need to add
+[00:06:38.880] more context which is beyond the scope
+[00:06:40.800] of the diff that actually changed and
+[00:06:43.600] when we talk about the uh uh business
+[00:06:46.080] impact we also link to the uh ticketing
+[00:06:49.039] service. So it's a Jira linear whatever
+[00:06:51.039] you're using uh and for this talk or
+[00:06:53.680] what we saw as the main impact here it
+[00:06:56.479] was the flow context. So what is flow
+[00:06:58.800] context or codebased memory? What we
+[00:07:02.319] wanted to do is we wanted to create a
+[00:07:04.639] summary that defines what this piece of
+[00:07:06.880] code does uh in general terms pretty uh
+[00:07:11.199] uh holistic what it does in total
+[00:07:14.160] because when we use that to review code
+[00:07:17.120] to summarize code to do all the things
+[00:07:19.039] that I listed before we'll just do it
+[00:07:21.759] better because we know what we're
+[00:07:23.120] working on. So let's say XYZ is a
+[00:07:26.400] parameter that you created in the PR,
+[00:07:28.800] but it's also the name of your company.
+[00:07:30.720] So it's not a typo. It's not a mistake.
+[00:07:32.960] It makes sense to name that parameter by
+[00:07:35.360] that name. Uh I have an example here of
+[00:07:38.160] a flow context. It's a pretty long and
+[00:07:40.639] uh boring paragraph, but what you can
+[00:07:43.199] see if you read a few words there is
+[00:07:45.360] that it's very specific to what a
+[00:07:47.440] specific um module or a specific part of
+[00:07:51.759] the code that we have does. uh it's
+[00:07:54.240] actually a real part of our codebase. It
+[00:07:56.879] analyzes languages uh and we'll talk
+[00:07:59.199] more about it later.
+[00:08:02.160] Okay. So, we understand what we want to
+[00:08:05.440] achieve. We want to at the end of the
+[00:08:07.120] day, we're trying to generate this
+[00:08:08.879] paragraph that gives me a description of
+[00:08:11.759] what this area of code does. It's worth
+[00:08:14.879] mentioning that we do have a lot of
+[00:08:16.639] other prompts in the system because we
+[00:08:18.240] do a lot of things and and we might have
+[00:08:20.319] one prompt that we send out for to an
+[00:08:22.080] LLM to summarize the PR and another
+[00:08:24.479] prompt um in order to actually do the
+[00:08:27.680] code review. So what we want to do now
+[00:08:29.759] is want to generate that paragraph that
+[00:08:31.840] just showed so that we can inject that
+[00:08:33.680] into all the other prompts to make our
+[00:08:36.320] uh our system better. as a first step as
+[00:08:39.200] we start our journey now towards
+[00:08:40.719] generating this. I can't stress how
+[00:08:42.719] important this is to do a le the leanest
+[00:08:46.000] P you can and it's it means it's going
+[00:08:47.920] to be manual. We just took our prompts
+[00:08:50.160] and we ran them and we saw the output.
+[00:08:53.040] For example, a a PR summary. Then we
+[00:08:55.839] manually wrote the flow context and we
+[00:08:58.959] added that to our prompt. We ran it
+[00:09:00.880] again and we wanted to see if there's a
+[00:09:03.040] difference. It is kind of exemplified in
+[00:09:05.200] this meme. Great show. Amazing. And
+[00:09:09.040] you'd be surprised by by the number of
+[00:09:10.880] times that we we thought we added
+[00:09:12.720] context, but the result the PR summary
+[00:09:14.720] at the end was exactly the same. We're
+[00:09:17.120] the same image. And so and so this
+[00:09:19.680] really this process really not only did
+[00:09:22.240] it prove the value, but it also gave us
+[00:09:23.680] a good understanding of what it is we're
+[00:09:25.600] trying to achieve. Like this paragraph
+[00:09:27.120] should be long, short, technical, high
+[00:09:29.040] level, handwavy, full of examples. So
+[00:09:31.760] that's super super super important. Once
+[00:09:34.480] we understood there's value in it, we
+[00:09:36.880] were free to actually start automating
+[00:09:39.560] it. So, okay. So, now we understand our
+[00:09:42.640] task. Our task is to sprinkle context to
+[00:09:45.680] make the LLM better. But what does that
+[00:09:48.640] mean? It means that we take whatever is
+[00:09:51.839] at our disposal, code snippets, diffs,
+[00:09:55.360] other stuff that we'll talk about, and
+[00:09:57.680] we have all this data and we need to
+[00:09:59.680] find the best way to crunch it in a way
+[00:10:01.760] that the LLM
+[00:10:03.399] understands. And at this point, you
+[00:10:05.440] might ask yourself, well, but why is
+[00:10:08.240] this? Yeah, why is this hard? I mean,
+[00:10:10.800] why can't I just take the naive
+[00:10:12.880] approach, the straightforward one where
+[00:10:14.640] I take the entire repository and just
+[00:10:17.040] feed the entire raw co raw code into the
+[00:10:19.680] LLM and say, you know, summarize this.
+[00:10:22.000] Why not? Why not? Well, uh there are a
+[00:10:25.440] few problems with it. First of all, it's
+[00:10:27.360] expensive and it is slow. These models
+[00:10:29.920] are very notorious for being very very
+[00:10:31.760] very slow and feeding so much so many
+[00:10:34.320] tokens in is going to be problematic and
+[00:10:36.720] that translates to being just completely
+[00:10:41.480] unscalable. Moving on. So a lot of
+[00:10:45.279] research has been done around what we
+[00:10:47.440] call the lost in the middle problem or
+[00:10:49.519] context fatigue. And research shows that
+[00:10:53.440] uh the long the longer the prompt gets,
+[00:10:56.000] LLMs can start to forget, get confused,
+[00:10:59.440] ignore part of the instructions, and so
+[00:11:01.440] forth. Uh you can look at the graph that
+[00:11:03.600] really shows this clearly. Uh I don't
+[00:11:06.240] think there are there are many more
+[00:11:08.000] efficient ways to make your prompt way
+[00:11:10.160] too long than just feeding it excessive
+[00:11:12.560] amounts of code. So might not be the
+[00:11:15.120] best solution there. Uh also context
+[00:11:18.720] windows. Yes, there are models who
+[00:11:20.720] support ginormous context windows
+[00:11:22.839] nowadays, but they're few and far
+[00:11:25.440] between. Uh, having context windows so
+[00:11:28.800] large really limits your freedom in
+[00:11:30.720] choosing models and leaves you kind of
+[00:11:32.720] only with the slowest ones, most
+[00:11:34.399] expensive ones and so forth. So again,
+[00:11:36.800] big disadvantage. And lastly, code
+[00:11:39.920] changes and it changes a lot. And if you
+[00:11:42.880] and that's where you kind of meet your
+[00:11:44.480] business requirements because if you say
+[00:11:46.320] you know product comes and says you need
+[00:11:47.920] to run this at least once a day if not
+[00:11:50.399] you know if not at higher frequency um
+[00:11:54.480] then that's going to be a problem if the
+[00:11:55.839] process really is really heavy expensive
+[00:11:57.920] and so on and so forth. Okay at this
+[00:12:01.120] point it is worth mentioning there are
+[00:12:02.720] some honorable mentions. There are very
+[00:12:04.399] famous uh projects that do exactly this
+[00:12:07.360] thing. They take entire repositories and
+[00:12:09.040] they just you know they summarize them.
+[00:12:11.440] On the right we can see get in ingest.
+[00:12:13.120] On the left we can see deep deep wiki
+[00:12:15.680] and we encourage you to go and check
+[00:12:17.360] them out but if you do you might see
+[00:12:19.680] that often times the data is a bit
+[00:12:21.279] stale. It's usually not up to date and
+[00:12:23.839] probably because of the reasons we just
+[00:12:25.600] listed. And so we understood at that
+[00:12:28.720] point you know we'll just have to do it
+[00:12:30.639] ourselves. Yep. Amazing. But before we
+[00:12:33.920] do, let's do a quick uh lingo break.
+[00:12:37.360] We're going to throw some terms around.
+[00:12:38.959] I just want to stop uh focus on two. Uh
+[00:12:42.000] we will throw the word module a lot. And
+[00:12:44.240] by that we just mean everything that
+[00:12:46.079] comes all the code that's managed by a
+[00:12:47.920] single uh kind of package manager.
+[00:12:49.839] Everything under the same uh package
+[00:12:52.000] JSON, pip files, rust crates, Maven pom
+[00:12:55.880] files, these are modules or subm
+[00:12:58.240] modules. And the other thing application
+[00:13:00.320] flow. Application flow is also a term we
+[00:13:02.320] throw around. It's an illdefined hazy
+[00:13:05.279] term for everything that just kind of
+[00:13:07.120] makes sense as a sequence of logical
+[00:13:10.160] steps in the system. Think anything
+[00:13:13.120] behind an endpoint, behind a queue, a
+[00:13:15.839] batch process, everything that just
+[00:13:17.519] makes sense as an application flow. I
+[00:13:21.120] know it's
+[00:13:22.519] circular. All right. So, we can come
+[00:13:25.200] back uh to our journey. Our journey is
+[00:13:27.760] how do we take an entire module and we
+[00:13:30.959] squeeze that into an LLM. So first of
+[00:13:33.279] all uh at our at Buzz we usually use
+[00:13:36.720] modules. Why modules? Well we find it's
+[00:13:39.519] kind of a sweet spot. It's not as big as
+[00:13:41.760] repositories. Repositories sometimes
+[00:13:43.839] have too many things going on, too many
+[00:13:45.800] responsibilities. Modules are often kind
+[00:13:48.000] of better uh structured. uh if they if
+[00:13:52.320] they are if they're structured uh if if
+[00:13:55.200] we're not talking about like a poly repo
+[00:13:57.519] project where a module might equal a
+[00:14:00.000] repository but often times it helps all
+[00:14:02.720] the monor repo guys will thank us and uh
+[00:14:06.399] we wanted to going in we really wanted
+[00:14:08.880] to leverage batch processing and
+[00:14:10.920] premputation if we could so our first
+[00:14:13.519] attempts uh were trying to use that and
+[00:14:16.160] spoiler alert uh we kind of went another
+[00:14:19.440] direction that we'll talk about that. So
+[00:14:21.600] we started out trying to uh summarize
+[00:14:23.680] entire modules and towards the end we
+[00:14:26.880] took a different path. I'll talk about
+[00:14:28.800] that uh going forward. I'll just say if
+[00:14:32.160] you're choosing not to uh summarize
+[00:14:34.560] entire modules and you're going with
+[00:14:36.240] individual files, it's important to
+[00:14:37.839] remember that sometimes documents that
+[00:14:40.720] are not in a PR are important if you
+[00:14:43.440] want to understand an application flow.
+[00:14:45.519] And I have a a very small example here.
+[00:14:47.440] Let's say I have document A that imports
+[00:14:49.199] document B that imports document C.
+[00:14:51.279] Document A and C might be part of the
+[00:14:53.279] PR. If you're trying to understand the
+[00:14:55.440] application flow, how everything's
+[00:14:57.040] connected, you you're going to want to
+[00:14:59.040] include document B as well. We'll see
+[00:15:01.199] that going
+[00:15:02.600] in. All right. So, what did we try? How
+[00:15:06.160] did we try to, you know, squeeze all
+[00:15:07.680] that data into the LLM? The first
+[00:15:09.839] approach we tried was leveraging
+[00:15:12.079] something called TF. For those who for
+[00:15:15.120] those people who are not NLP nerds,
+[00:15:17.519] natural language processing, uh TF is a
+[00:15:21.040] really cool technique. It stands for
+[00:15:23.120] term frequency and inverse document
+[00:15:25.639] frequency. In these NLP uh methodologies
+[00:15:29.120] usually have a bunch of documents, a
+[00:15:30.880] bunch of text items and they this pool
+[00:15:33.519] of text documents they create something
+[00:15:35.040] called they you know they compose
+[00:15:36.560] something called a corpus and in our
+[00:15:38.720] example every module was a corpus. So we
+[00:15:41.120] had a lot of modules uh that we kind of
+[00:15:43.519] uh processed to analyzed together and in
+[00:15:46.800] each module we analyzed each and every
+[00:15:49.360] word and we looked for two things the TF
+[00:15:51.600] and the IDF. So the TF means we look at
+[00:15:53.680] each word and we're trying to see is it
+[00:15:55.759] a common word. When I said that we're
+[00:15:58.160] looking at words in a module we're
+[00:16:00.000] usually in our use case we're looking at
+[00:16:02.320] class names method names. So I can look
+[00:16:04.959] at the method name like get value or get
+[00:16:07.360] item and the TF might be really high. it
+[00:16:09.920] might appear a lot and I can say, "Wow,
+[00:16:11.680] that's a really common word. It's
+[00:16:13.040] probably really really really
+[00:16:14.560] interesting. It's really important, but
+[00:16:16.480] then I look at other modules out in the
+[00:16:18.560] wild. I compare it and I say, "Oh, it's
+[00:16:20.560] really popular everywhere." So, it's
+[00:16:22.240] it's just a common it's just a common
+[00:16:24.160] term. And so, the uniqueness of it kind
+[00:16:26.399] of drops. The TF gives me gives me a TF
+[00:16:30.800] score. It's essentially a uniqueness
+[00:16:32.560] score. So, if it's a very common word in
+[00:16:34.320] the wild, it's less unique. But let's
+[00:16:37.519] take a look at something from our
+[00:16:38.959] domain. Let's say I see a method name
+[00:16:40.880] called analyze diff. And that might be a
+[00:16:43.519] really common phrase, but it's not as
+[00:16:45.440] common in other modules. It'll only
+[00:16:47.040] appear in modules doing, you know, a
+[00:16:48.800] stuff and uh static code analysis. And
+[00:16:51.680] so that will get a higher TF score. What
+[00:16:55.120] we uh what we used this technique for
+[00:16:58.320] was to zero in on the important
+[00:17:00.560] documents, the unique documents, and the
+[00:17:02.480] unique methods and classes. And by zero
+[00:17:05.600] zeroing in on the proprietary stuff, we
+[00:17:08.079] thought we'd have a good chance at
+[00:17:09.839] understanding what the module does and
+[00:17:11.919] summarizing the important stuff.
+[00:17:13.679] Exactly. So we generated something that
+[00:17:16.000] looks like this. You know, all the
+[00:17:17.439] important files, all the important
+[00:17:18.720] methods, uh, kind of ranked by by
+[00:17:21.919] uniqueness. And that's what we actually
+[00:17:23.760] fed the LLM. We said, "Hey, here's a
+[00:17:25.760] module. This is kind of what it does.
+[00:17:27.919] Um, here here's a list of methods. Can
+[00:17:31.360] you tell me what it does?" And it worked
+[00:17:34.000] really
+[00:17:34.919] well.
+[00:17:36.919] But reality uh came knocking and we
+[00:17:41.520] realized that not everything is the sexy
+[00:17:44.160] proprietary stuff. We also have our
+[00:17:47.080] run-of-the-mill web servers, Q handlers,
+[00:17:49.760] event handlers, all that all that kind
+[00:17:51.760] of common stuff. And when it's less
+[00:17:54.640] unique, that's where TF started having
+[00:17:57.280] murky results. So as you started
+[00:17:59.280] evaluating that stuff, we we realized
+[00:18:03.520] that we have to go another way and
+[00:18:05.440] evaluation by the way is a is an
+[00:18:07.360] important point. We will get to that.
+[00:18:09.280] It's a huge part of it. Did you see this
+[00:18:11.760] right from the first example or did you
+[00:18:13.440] need to look through multiple modules to
+[00:18:15.840] actually get a feel on this? That's
+[00:18:17.280] another amazing question. Thanks.
+[00:18:19.760] And so when we started out, people
+[00:18:21.679] sometimes like they have their like an
+[00:18:23.760] example that they like the repo that
+[00:18:25.360] they usually work on and like they
+[00:18:27.280] analyze that again and again and again
+[00:18:29.440] and and running and doing iterations on
+[00:18:31.840] the same on the same example has its
+[00:18:34.320] benefits because you kind of get a
+[00:18:35.760] feeling for it and you get like your own
+[00:18:37.200] gut feeling and a benchmark. But that's
+[00:18:40.160] also a that's also a trap because
+[00:18:42.840] sometimes you will get good results on
+[00:18:45.360] one example and when we move to other
+[00:18:47.120] repositories, we started analyzing our
+[00:18:48.640] front end and our BFF of the back end
+[00:18:50.400] for front end repo and that's when
+[00:18:52.640] things just fell apart. These were the
+[00:18:55.200] the repositories that had the more
+[00:18:56.880] generic stuff and suddenly it didn't
+[00:18:58.960] work. So that's super super important
+[00:19:00.799] and thanks for bringing that up. So next
+[00:19:04.559] um great. So this is a great setup to
+[00:19:07.039] talk about about something else that
+[00:19:08.480] we've built alongside uh the module
+[00:19:11.280] memory and that's the connection graph.
+[00:19:13.440] when we look at analyzing uh modules
+[00:19:16.799] specifically a module has a a lot of
+[00:19:19.039] files that interact with each other
+[00:19:20.400] directly right it's not an external
+[00:19:22.080] input that goes through a different uh
+[00:19:23.880] package uh so what we do is we scan all
+[00:19:26.960] the files using tricitter it's an
+[00:19:28.480] amazing open source that analyzes I
+[00:19:30.320] think 138 different languages to find
+[00:19:33.280] the different uh I would say building
+[00:19:35.200] blocks per language because some
+[00:19:36.880] languages have classes and some have
+[00:19:38.480] strs some have functions and some have
+[00:19:41.039] receiver functions go Um so we try to uh
+[00:19:45.280] grab all the important uh pieces or
+[00:19:48.160] blocks we call them code elements and
+[00:19:50.640] then we need to classify them. So we
+[00:19:52.240] have imports, we have functions,
+[00:19:53.600] classes, enums, invocations, all of that
+[00:19:56.080] stuff. And then the last step we try to
+[00:19:58.880] make to do is resolve the relationships
+[00:20:01.760] between them. Why? Because when you
+[00:20:03.520] change a function, I want to know who
+[00:20:05.520] uses that function. Right? If I'm
+[00:20:07.440] modifying a a call to a function, I want
+[00:20:09.840] to see what it what its body looks like.
+[00:20:12.720] So, we try to resolve the uh uh all of
+[00:20:15.280] the relationships when we understand
+[00:20:17.280] what we're reviewing. But this also
+[00:20:20.080] matches with this uh module memory. What
+[00:20:23.200] we thought we would do is instead of
+[00:20:25.200] using TF, let's just grab all of the
+[00:20:27.600] names of all of the methods and classes
+[00:20:29.520] in a module, right? We just put them in
+[00:20:32.559] a list and send them to the LLM. What's
+[00:20:34.799] the problem? So obviously that is still
+[00:20:37.679] too much data. It's very similar to
+[00:20:39.520] sending the entire code. I mean it's
+[00:20:41.600] still less but it's still a lot and it
+[00:20:44.200] explodes. Um you see here a picture of a
+[00:20:48.400] connection graph. That's how a
+[00:20:49.679] connection graph looks on one of our
+[00:20:51.960] modules. Uh again one of our modules uh
+[00:20:56.240] graphs tend to be really hard to read
+[00:20:58.159] very fast. And so we understood we have
+[00:21:00.720] to make this smaller. uh what we decided
+[00:21:04.000] to try out was Luvine. Luvine is an
+[00:21:06.159] algorithm to identify strongly connected
+[00:21:08.240] components within a graph. So let's say
+[00:21:11.120] you have a a main pie and it uh imports
+[00:21:14.559] a few files and these files each one of
+[00:21:16.640] them is completely separate from the
+[00:21:18.480] other and it has a whole module and uh
+[00:21:21.679] service and DB and controller and
+[00:21:24.360] whatever. So each one of those would be
+[00:21:26.799] a strongly uh strongly connected
+[00:21:29.200] component. And what we wanted to do is
+[00:21:30.960] find a representative the most important
+[00:21:33.360] or unique uh file within each sec and
+[00:21:38.159] take only the elements from that. So
+[00:21:40.000] take only the class names the functions
+[00:21:41.840] from that representative file and well
+[00:21:45.200] it solved the problem of the size right
+[00:21:46.960] it can still be pre premputed it it
+[00:21:50.799] fixes the TF uh in the wild issue. we
+[00:21:54.640] get actually everything we need. But
+[00:21:56.720] then we ran into the issue with the
+[00:21:59.039] thing with summary is by definition it
+[00:22:01.919] drops the less important stuff. Right?
+[00:22:04.320] If I ask to summarize a document, there
+[00:22:06.799] might be things that just won't make it
+[00:22:08.320] into the summary. And the problem we
+[00:22:10.640] faced is we look at some PRs and we saw
+[00:22:13.600] that those PRs change a specific point
+[00:22:16.080] in this module and it might be the
+[00:22:18.320] central point and it might be a
+[00:22:19.840] secondary point. it might be a new
+[00:22:21.440] feature that is not within the summary
+[00:22:23.039] and then nothing is relevant at all. Uh
+[00:22:25.919] so what we understood is the problem is
+[00:22:28.159] different. We don't need to summarize
+[00:22:29.520] the entire module because it just
+[00:22:31.200] doesn't work.
+[00:22:33.840] Yeah. So what did we do? So we
+[00:22:36.799] understood that the entire module is
+[00:22:38.640] going to be a problem in some modules
+[00:22:40.960] that are more kind of cluttered and just
+[00:22:42.880] have a lot of things going on. And it's
+[00:22:45.760] interesting because Luvine worked
+[00:22:48.000] amazingly well from a technical
+[00:22:49.679] standpoint or a data science standpoint.
+[00:22:52.080] It did exactly what it was it was meant
+[00:22:53.919] to do. It's just that the the problem we
+[00:22:56.320] were asking just wasn't the correct one.
+[00:22:59.200] We understood that we have to be laser
+[00:23:01.200] focused. We we want at the end of the
+[00:23:03.280] day we need to ask ourselves again what
+[00:23:05.679] is our goal and we want to create a
+[00:23:07.520] summary not for the sake of creating a
+[00:23:10.000] module summary but we want to give
+[00:23:11.520] context to a specific PR that we're
+[00:23:13.840] going to analyze and so what we decided
+[00:23:16.559] is that we're going to ask the LLM to
+[00:23:18.480] summarize the module as if the only
+[00:23:21.039] thing that the module is doing is what
+[00:23:23.039] the PR is concerned with for example our
+[00:23:26.880] BFF uh module like I said it's super
+[00:23:29.679] cluttered it does you know It has the
+[00:23:31.679] our our AI chatbot and it does event
+[00:23:34.320] handling and queue handling and and
+[00:23:35.919] endpoints web service uh and a lot of
+[00:23:38.880] other notification center and a lot of
+[00:23:40.720] other things. And we said okay let's say
+[00:23:42.799] I have a PR that deals within the you
+[00:23:45.760] know the notification center feature. So
+[00:23:48.720] I'm going to ask the LLM to summarize
+[00:23:50.240] the module is if the only thing the
+[00:23:52.159] module is doing is notification center.
+[00:23:54.640] That way I can make sure that the
+[00:23:56.640] important stuff make it into the summary
+[00:23:59.760] in so we understood that we're not going
+[00:24:03.200] to uh analyze the modules like entire
+[00:24:06.240] modules modules in their in their
+[00:24:07.600] entirety and each each uh attempt is
+[00:24:10.799] going to be slightly different which
+[00:24:12.320] means we can't really do premp
+[00:24:14.240] computation at least not in the way that
+[00:24:15.760] we did it before. So, we're going to be
+[00:24:17.679] like custom, right? And uh and so what
+[00:24:20.960] we did is that we look in every PR, we
+[00:24:23.919] look at the documents in the PR and we
+[00:24:27.200] said before when we did the spoiler
+[00:24:28.880] alert that sometimes you have documents
+[00:24:30.559] in the PR, but if you're trying to
+[00:24:31.840] understand that the the application
+[00:24:33.440] flow, sometimes you will have documents
+[00:24:35.600] that are not in the PR, right, that are
+[00:24:37.600] very heavily connected and so and so
+[00:24:40.240] they're important. So, we did a little
+[00:24:41.760] bit of graph theory magic and we looked
+[00:24:43.919] for the best way to find these things.
+[00:24:45.600] And here in the graph you can see an
+[00:24:47.279] example where we have a PR and the nodes
+[00:24:49.760] are documents. The red nodes symbolize
+[00:24:52.480] the documents that are in the PR. The
+[00:24:54.640] blue nodes are documents that are not in
+[00:24:56.559] the PR but they are connected. They're
+[00:24:59.520] very very related. And so we included
+[00:25:01.360] those as well. And that's pretty much
+[00:25:02.960] how we approach this. So we leverage the
+[00:25:05.279] connection graph and before to what
+[00:25:07.919] extend the context. Exactly. And then
+[00:25:10.720] those are the files from which we take
+[00:25:12.640] uh you know their content and we send
+[00:25:14.720] that to the LLM. I see.
+[00:25:18.279] So the the the wins here are that we're
+[00:25:22.000] laser focused as before and when we
+[00:25:24.080] looked at the results it made the impact
+[00:25:25.919] that we were looking for. It's the the
+[00:25:28.159] you know the summaries the the the
+[00:25:29.679] reviews everything was spoton. So we
+[00:25:32.159] knew that that was it. The problem is
+[00:25:34.799] that it's not precomputed um in its
+[00:25:37.760] entirety like we wanted. There is though
+[00:25:40.240] still a retrievable element to it
+[00:25:42.799] because creating graphs for the entire
+[00:25:45.840] module is heavy. That is something we do
+[00:25:49.120] um kind of in a precomputed manner. We
+[00:25:51.600] create the horrible uh import graph that
+[00:25:54.640] we saw in the unreadable one in your
+[00:25:56.720] slide the unreadable one. And what we do
+[00:25:59.279] on the fly is we just understand which
+[00:26:01.840] parts of it we need to take uh and
+[00:26:04.679] analyze uh and send to the LLM kind of
+[00:26:07.679] that we do on the fly. So it's kind of a
+[00:26:09.679] really cool hybrid approach. And then
+[00:26:11.600] for the files that we selected, what do
+[00:26:13.679] you send to the what is the actual
+[00:26:15.440] payload per file? So actually it's very
+[00:26:17.760] similar to what we did in the TF. We
+[00:26:19.840] take all we actually take all the method
+[00:26:21.520] names and all the class names and we
+[00:26:23.279] send that and you know we played with it
+[00:26:25.279] in order to see what works. that that
+[00:26:27.279] works and that is certainly enough uh
+[00:26:29.679] for the LLM to tell you what the module
+[00:26:32.320] is doing which is good news because we
+[00:26:34.880] actually discovered that we don't need
+[00:26:36.159] to send the the raw code in its
+[00:26:38.000] entirety. We can send much fewer tokens
+[00:26:40.640] and we still get what we need. Cool. So
+[00:26:43.200] it works, right? That's it. We're done.
+[00:26:45.360] Uh not quite because I still want to
+[00:26:47.600] take like a minute to just kind of
+[00:26:48.960] briefly mention evaluation. Yeah, this
+[00:26:51.880] is you know this is important. This is a
+[00:26:54.400] crucial part, an integral part of every
+[00:26:56.080] data science, ML, AI, what project,
+[00:26:58.720] what, whatever name you want to give it.
+[00:27:00.480] Uh, super important. And this problem in
+[00:27:02.880] particular was interesting because you
+[00:27:04.960] could say that it's kind of a soft
+[00:27:06.159] problem. I mean, in our use case, if you
+[00:27:08.720] want to do something like a PR summary,
+[00:27:10.880] you're going to have the summary either
+[00:27:12.240] way, but it can be a good summary or it
+[00:27:14.400] can be a not so good summary. And it's
+[00:27:16.720] very it's really about style, wording,
+[00:27:19.679] you know, that kind of thing. We started
+[00:27:21.279] out saying that it felt too robotic. How
+[00:27:23.600] do you measure that? Yeah. You know, and
+[00:27:26.159] so you start by eyeballing it and
+[00:27:28.400] getting a feeling for it. And that that
+[00:27:30.080] is not being lazy. That is just a quick
+[00:27:32.000] a way to iterate quickly. But once you
+[00:27:35.279] start getting into the path and you
+[00:27:36.559] start automating stuff, it's crucial
+[00:27:38.720] that you build a framework uh for
+[00:27:41.520] benchmarking.
+[00:27:43.120] And uh and you know, one of the most
+[00:27:45.200] common ways is using LLM as a judge. I
+[00:27:47.360] want to uh mention two cool approaches
+[00:27:49.840] that you can uh use to build something
+[00:27:52.240] like that even in our soft use case.
+[00:27:55.520] One, you just ask the LLM if the end
+[00:27:58.480] result seems good. So you give it the
+[00:28:01.600] summary in our example and you give it
+[00:28:03.600] the flow context and you ask it, hey, do
+[00:28:06.880] you think uh this was generating using
+[00:28:10.399] was the the the final summary uh
+[00:28:12.720] referencing this context? And you just
+[00:28:14.960] count you give it a lot of examples. You
+[00:28:16.640] ask it a lot of times and just count the
+[00:28:18.880] number of times it says yes, right? And
+[00:28:20.640] that's your benchmark. And then you run
+[00:28:22.240] it every time. You make changes to make
+[00:28:24.080] sure there are no regressions and things
+[00:28:25.840] of that nature. I think a slightly
+[00:28:28.240] cooler approach is that you create two
+[00:28:30.720] summaries kind of like the meme we
+[00:28:32.320] showed before from the with Pam from the
+[00:28:34.480] office without with context and without
+[00:28:36.399] context and you ask which do you think
+[00:28:38.159] is better and uh and you count the
+[00:28:40.480] number of times that the that the
+[00:28:42.159] description with that was made with
+[00:28:44.000] context was better. Now it becomes part
+[00:28:46.960] of your DNA of your culture because you
+[00:28:48.960] have this benchmark and the benchmark
+[00:28:50.480] obviously has a pool of examples that
+[00:28:53.120] you kind of curate and you you kind of
+[00:28:54.880] collect along the way and you know as we
+[00:28:57.279] work in our day-to-day thing uh people
+[00:28:59.360] say oh that's a nice example let's add
+[00:29:00.880] it to the curated list. So it's really
+[00:29:03.520] really nice and everybody's kind of in
+[00:29:05.520] on it. Um two things one I think the
+[00:29:08.399] evaluation is what helped us move stuff
+[00:29:10.480] into production at a much higher
+[00:29:12.640] confidence. Uh, but I do have one
+[00:29:14.559] question for you. LLM is a judge. Does
+[00:29:16.399] it matter which LLM? Oh, that's that's
+[00:29:18.880] cool. Pro tip. Um, just make sure you're
+[00:29:22.640] using a different model. Don't ask, you
+[00:29:24.880] know, clots on it to judge clots on it.
+[00:29:27.520] It's actually pretty pretty cool because
+[00:29:29.200] you're asking like, you know, entropic
+[00:29:30.880] to judge OpenAI, the other way around.
+[00:29:33.279] Usually that gives you better results
+[00:29:34.960] because the models can be biased towards
+[00:29:37.120] their own generated output. My god,
+[00:29:40.080] they're like people. Yes. part last
+[00:29:42.799] slide. Uh quick takeaways from our
+[00:29:45.600] journey. I think we mentioned everything
+[00:29:46.960] as we went along, but let's just run
+[00:29:48.640] through them. First of all, don't rush
+[00:29:50.960] to build. Hands to keyboard is super
+[00:29:52.960] tempting. But as we showed before, take
+[00:29:55.840] your the necessary time to understand
+[00:29:57.679] what you want to build, how it needs to
+[00:29:59.600] look, does it make an impact? Do that
+[00:30:01.760] stuff before running, you know, uh full
+[00:30:04.640] steam ahead. Be open to change. We
+[00:30:06.960] wanted we wanted to analyze entire
+[00:30:08.720] modules. we wanted to do premputation.
+[00:30:10.960] Uh you know both things kind of didn't
+[00:30:13.200] work out and it's fine. You just need to
+[00:30:15.120] adapt as you learn more information.
+[00:30:18.320] Don't fall in love with a single
+[00:30:19.520] example. As we saw the number of times I
+[00:30:22.399] was ready to sign in on something saying
+[00:30:24.799] this works and then we tried another
+[00:30:26.480] repo and things completely fall apart is
+[00:30:29.360] just too damn high. And evaluation
+[00:30:32.159] evaluate evaluate evaluate super super
+[00:30:34.399] important. That is your way of knowing
+[00:30:36.159] that you're still on track, that you
+[00:30:37.919] still have high quality, that you're not
+[00:30:39.640] deteriorating. I think these are the
+[00:30:41.679] main points. Thank you. Thank you. Thank
+[00:30:44.799] you.
+[00:30:47.279] Awesome. And thank you very much. That
+[00:30:49.200] was a really really interesting session.
+[00:30:50.559] We had a number of questions in the
+[00:30:52.640] background that I kind of put in a list
+[00:30:54.720] as well. So uh let me uh let me quickly
+[00:30:57.760] remove that from screen so we can see
+[00:30:59.360] all better. We have a number of
+[00:31:01.120] questions. Let's see which one we should
+[00:31:02.480] pick first.
+[00:31:03.720] Um uh actually an interesting one maybe
+[00:31:06.399] kind of like from a from from the from
+[00:31:08.480] the fact that I guess you know I in
+[00:31:11.760] terms of in terms of comparisons with
+[00:31:14.080] other tools. Uh what would you say I
+[00:31:16.480] guess things like sorcery and the like
+[00:31:19.120] uh and I think there was another one
+[00:31:20.399] that was mentioned uh I think graphite
+[00:31:22.559] is a is another one.
+[00:31:24.679] Um how would you say it compares? What
+[00:31:27.039] are the what are the advantages with
+[00:31:28.320] bats? So I would say uh first of all I
+[00:31:31.440] love the other competitors in this field
+[00:31:33.679] and uh I as like two years ago I never
+[00:31:37.679] thought AI would review my code and now
+[00:31:39.679] I'm having a hard time living without
+[00:31:41.120] it. Um I would say that where Baz
+[00:31:44.480] differentiates from all the rest is all
+[00:31:46.240] of the a work that I kind of hinted at
+[00:31:48.720] when we talked about solution number
+[00:31:50.080] two. So all of the a stuff and all of
+[00:31:52.960] the engine that we built out to actually
+[00:31:54.480] understand the language, find the things
+[00:31:56.320] that are important, find the links and
+[00:31:58.000] relationships between them. Uh and then
+[00:32:00.640] pass that into the LLM. It's kind of a
+[00:32:03.039] you need to move into the space of
+[00:32:04.880] objects and then back into the space of
+[00:32:07.039] text to actually have the LM understand
+[00:32:09.120] what you're saying because uh when we
+[00:32:11.200] sent out graphs, it just hallucinated.
+[00:32:13.679] Um, so you really have to turn it into
+[00:32:15.679] text. And that's kind of the amazing
+[00:32:17.760] thing where when you start to talk to it
+[00:32:19.600] like you talk to other developers in
+[00:32:22.000] objects and functions and classes and
+[00:32:24.240] not in lines and text, it understands
+[00:32:27.200] better and that's what our entire system
+[00:32:29.360] is built on. Awesome. Awesome. Uh, we
+[00:32:32.000] have a another couple. Um first of all
+[00:32:34.559] I'll ask um we just recently you were
+[00:32:38.000] talking about the kind of um you know
+[00:32:40.799] maybe a little bit
+[00:32:42.279] about the the judging and things like
+[00:32:45.360] that. Um here's a question in around can
+[00:32:49.039] current LLM reason meaningfully over
+[00:32:51.120] large modules. Um so I guess even before
+[00:32:53.760] we get to that stage uh how does it how
+[00:32:56.720] does the size of the module matter
+[00:32:58.399] because I guess with huge amounts of
+[00:33:00.399] context we've seen that degradation
+[00:33:02.000] across all models before we even get
+[00:33:04.000] anywhere close to the maximum context
+[00:33:05.679] windows of of of uh models. H how does
+[00:33:09.120] it deal with larger larger amounts of
+[00:33:11.600] code bases to to look through?
+[00:33:14.960] Uh great question.
+[00:33:17.240] So models models v vary and it varies by
+[00:33:20.880] module it varies by by vendor. We talked
+[00:33:23.200] about the loss in the middle problem and
+[00:33:25.519] and even that problem behaves
+[00:33:27.279] differently between different vendors.
+[00:33:28.799] For example, you know uh we see that
+[00:33:31.840] entropic models give more more attention
+[00:33:34.159] to things at the end of the prompt. Open
+[00:33:36.399] AI models give more attention to things
+[00:33:38.640] at the beginning of the prompt. So
+[00:33:40.399] everything everything uh kind of works
+[00:33:43.200] slightly differently. And we mentioned
+[00:33:44.960] that the modules are sometimes biased
+[00:33:47.120] towards their own output because it's
+[00:33:48.720] what they know. It's what they've been
+[00:33:50.159] trained on and therefore, you know, it
+[00:33:51.919] seems more familiar.
+[00:33:54.039] Um, and so and so
+[00:33:59.159] um and so it's so it's more it's there's
+[00:34:02.880] a lot of trial and error that goes into
+[00:34:04.480] it um to see what works and what
+[00:34:07.679] doesn't. I will say that there aren't a
+[00:34:09.679] lot of use cases where we put in a ton
+[00:34:13.119] of code because at the end of the day
+[00:34:14.560] we're usually not uh you know we're
+[00:34:16.399] that's the also the whole point of the
+[00:34:17.839] talk. We're trying not to uh input the
+[00:34:20.399] the entire codebase. We're trying to to
+[00:34:22.800] minimize to to aggregate to to filter
+[00:34:25.919] and so that I think is one of the thing
+[00:34:28.079] things that makes this uh work. Yeah.
+[00:34:30.240] Yeah. I'll say that when we tried out uh
+[00:34:33.040] different stuff uh as the as the context
+[00:34:35.919] gets longer, the LLM starts uh just
+[00:34:38.560] forgetting stuff that you said. Um so
+[00:34:40.720] not replying the structure you asked or
+[00:34:43.040] just uh forgetting some kind of I love
+[00:34:46.320] the do not do blah blah blah uh uh
+[00:34:49.280] instructions and it just forgets them
+[00:34:51.040] and does it anyway. Uh and those are the
+[00:34:53.040] things that happen when the context gets
+[00:34:54.480] too large. Yeah. Okay. Awesome. Uh we're
+[00:34:58.240] about a minute and a half over, but
+[00:35:00.240] because I'm a terrible host, I'm gonna
+[00:35:01.760] ask one more question. I think it'll be
+[00:35:03.200] a quick one. Um so a couple of
+[00:35:05.760] questions. One from in fact similar
+[00:35:07.680] questions. One, uh Richard Doc uh from
+[00:35:10.960] uh from Discord asks, "Is there any
+[00:35:13.599] example code for the TDF approach?" You
+[00:35:18.000] remember two days? So
+[00:35:22.480] I I think we deleted that code actually.
+[00:35:24.640] And uh I I have I think it's called a
+[00:35:27.119] pet peeve like uh where I do a lot of
+[00:35:29.839] too many things in SQL. TF was like a
+[00:35:33.040] 600 line SQL queries that I don't think
+[00:35:35.440] anybody wants. Um but but there there I
+[00:35:39.119] mean TF at the end of the day is like a
+[00:35:41.839] I don't you know it's an equation or a
+[00:35:44.560] formula but it's really simple. I mean
+[00:35:46.560] it's a you can search like TF in
+[00:35:49.200] Wikipedia and you can see the
+[00:35:50.400] calculation. It's super simple. uh once
+[00:35:52.720] you understand like the gist of it,
+[00:35:54.320] implementation is really
+[00:35:55.680] straightforward.
+[00:35:57.520] Awesome. Cool. Cool. Cool. Well, a
+[00:35:59.200] massive thank you uh to Nimrod and
+[00:36:01.359] Nimrod for all of your insights and and
+[00:36:03.760] and and uh and wishing Baz all the best
+[00:36:06.800] as well and thank you very much for
+[00:36:08.680] supporting two years in a row. So, very
+[00:36:10.960] very much appreciate that. Thank you.
+[00:36:13.280] Bye, Simon.

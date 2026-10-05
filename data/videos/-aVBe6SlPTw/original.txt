@@ -1,0 +1,531 @@
+[00:00:09.280] So in the world of AI assisted
+[00:00:11.679] development and AIcentric development,
+[00:00:14.480] obviously the the level of speed up that
+[00:00:16.560] we see from code creation is intense.
+[00:00:19.279] And one of the areas that really then
+[00:00:22.000] start becoming a pinch, becoming a
+[00:00:23.519] bottleneck is how do we actually review
+[00:00:25.439] that code? How do we actually validate
+[00:00:27.439] that the code is is that is being
+[00:00:29.279] generated at speed is of the right
+[00:00:31.920] quality. Um so
+[00:00:35.440] we have Snehar Tuli here who is the
+[00:00:37.360] principal product manager at Microsoft.
+[00:00:39.600] Uh and Snehar is going to be talking
+[00:00:41.440] about how AI assisted code reviews on
+[00:00:45.200] PRs can work at scale and this is based
+[00:00:48.079] on Snehar's experience at Microsoft and
+[00:00:51.120] how some of their learnings uh across
+[00:00:53.600] this roll out uh occurred. So um please
+[00:00:56.879] give a very warm welcome to Sneha.
+[00:01:02.225] [music]
+[00:01:04.239] >> Hello everyone. It is a privilege to be
+[00:01:06.479] here amongst all of you who are not only
+[00:01:08.960] helping shape how we code but also the
+[00:01:12.479] future of how we will work and live in
+[00:01:14.479] years ahead. I will be talking about AI
+[00:01:17.280] assisted code reviews on pull request.
+[00:01:19.920] how we scaled it from a proof of concept
+[00:01:22.159] to full-fledged rollout in the in one of
+[00:01:24.640] the world's largest engineering
+[00:01:26.159] organization.
+[00:01:29.439] I would like to ground ourselves into
+[00:01:31.680] some magnitude. We are talking here a
+[00:01:34.479] company with more than 100k engineers,
+[00:01:36.560] product managers and designers, more
+[00:01:39.040] than 800k PRs created and reviewed on a
+[00:01:42.400] monthly basis and 150k repositories. You
+[00:01:46.000] can only imagine the extent we are
+[00:01:47.840] talking here. the vast code base, the
+[00:01:49.680] diversity in each team's conventions,
+[00:01:53.200] best practices, frameworks, and even
+[00:01:56.000] security requirements.
+[00:02:00.079] Making sure quality and security at this
+[00:02:02.640] scale is a massive undertaking.
+[00:02:07.119] In most of the large organizations,
+[00:02:08.959] there's immense pressure to boost
+[00:02:11.360] developer productivity and that we want
+[00:02:14.400] to empower our developers so that they
+[00:02:16.720] can ship high quality code at a very
+[00:02:18.879] rapid pace. That does not only mean
+[00:02:21.680] coding fast but also means reviewing at
+[00:02:24.400] a fast pace such that it safeguards
+[00:02:27.120] quality and security. But what is the
+[00:02:30.080] reality?
+[00:02:31.680] How many times your PRs are just stuck
+[00:02:33.760] over and you're waiting if not days at
+[00:02:36.400] least hours for someone to give first
+[00:02:38.959] pass on the review. As a reviewer, is it
+[00:02:42.160] really exciting to deep dive into
+[00:02:44.319] someone else's code and spend time in
+[00:02:46.879] reviewing each and every line?
+[00:02:49.440] There are inconsistent review practices
+[00:02:51.680] as you switch teams. And also often
+[00:02:54.879] times because of tight constraints
+[00:02:57.760] some obvious or nonobvious critical
+[00:03:00.560] issues can slip into production.
+[00:03:03.360] We [snorts] had a hypothesis why don't
+[00:03:05.360] we use AI for routine checks and
+[00:03:08.159] reviewers only focus on on 10 to 20% of
+[00:03:11.599] the checks that really deserve their
+[00:03:14.480] expertise. We put this hypothesis to
+[00:03:17.040] test and what happened. Today we review
+[00:03:20.319] more than 90% of the pull requests in
+[00:03:23.120] the company impacting more than 95% of
+[00:03:25.680] the developers. Based on different
+[00:03:28.000] experiments we have seen 10 to 20%
+[00:03:30.319] improvement in PR completion time
+[00:03:33.440] and also our usefulness rating is
+[00:03:35.280] between 50 to 60%. The scale at which we
+[00:03:38.640] are talking about it's hundreds and
+[00:03:40.400] thousands of suggestions that get
+[00:03:42.400] accepted and even thousands of hours
+[00:03:44.640] that get saved.
+[00:03:46.879] I'll just quickly gl mention what we
+[00:03:50.080] developed and then I will talk about the
+[00:03:52.720] learnings and lessons along the way and
+[00:03:55.440] I hope you will be able to take some
+[00:03:57.120] practical learnings that you can
+[00:03:59.040] incorporate in your AI journey. What did
+[00:04:02.159] we build? First of all, anytime a pull
+[00:04:04.720] request gets created, we left a summary
+[00:04:07.599] on that pull request which would
+[00:04:09.200] describe at very high level what this
+[00:04:11.200] pull request is about and key changes in
+[00:04:13.599] this pull request. This was important
+[00:04:15.360] for reviewers to glance through what the
+[00:04:17.919] what are they getting into before even
+[00:04:19.680] they review the PR.
+[00:04:21.919] Then AI would automatically immediately
+[00:04:24.320] again as a PR gets created review the
+[00:04:27.120] content of the PR and if there are any
+[00:04:30.160] suggestions it would post comments
+[00:04:32.160] aligned with the change lines so that
+[00:04:34.880] reviewers can fix them. It would also
+[00:04:37.120] give a suggestion of exactly how this
+[00:04:39.360] can be resolved. And lastly, there is an
+[00:04:42.479] interactive Q&A where reviewers or
+[00:04:45.120] developers can ask questions like is
+[00:04:47.919] this method fine or is there any other
+[00:04:49.840] better alternative?
+[00:04:51.840] And again, it's a collaborative space.
+[00:04:53.919] Everything is on the PR thread. The way
+[00:04:55.919] human reviewers and developers interact
+[00:04:57.840] with each other.
+[00:05:01.759] When we started, we started really small
+[00:05:04.000] with caution. This was in 2023
+[00:05:07.039] when AI had just started. We did not
+[00:05:09.280] know what to expect. We did not know
+[00:05:11.600] what the impact is going to be. So we
+[00:05:14.240] started with some repositories. The very
+[00:05:16.960] first thing we did was we developed a
+[00:05:18.560] feedback collection mechanism even
+[00:05:20.320] before rolling it out. Not only thumbs
+[00:05:22.800] up, thumbs down, verbatim feedback and
+[00:05:25.759] we came up with creative ways to
+[00:05:28.160] understand suggestion acceptance rate.
+[00:05:30.240] For verbatim feedback, we sent all of it
+[00:05:32.880] to LLM to take a pass at what's working
+[00:05:35.520] and what needs improvement.
+[00:05:38.639] Then prompt engineering the very basic
+[00:05:40.320] capability that everyone has to work on
+[00:05:42.479] even before they are starting a project.
+[00:05:44.400] We worked on iteratively.
+[00:05:46.639] We wanted a prompt that is not very
+[00:05:48.639] complex for LLM to understand like like
+[00:05:52.880] get confused or it's not too short for
+[00:05:55.039] it to start assuming things. But what
+[00:05:57.680] worked the most is prompt version
+[00:05:59.440] control. We started versioning our
+[00:06:01.840] prompts and then tracked the usefulness.
+[00:06:04.160] Why did we do that? We realized with
+[00:06:07.039] minor changes with prom it can have
+[00:06:08.800] significant impact on the usefulness.
+[00:06:11.039] For example, initially our comments were
+[00:06:14.160] pretty verbose. The suggestions we had
+[00:06:16.880] to literally scroll through the comment
+[00:06:18.400] to get to what the AI is suggesting.
+[00:06:20.800] Well, that's an exaggeration, but you
+[00:06:22.479] get the point. We updated the prompt to
+[00:06:25.280] say please be clear and precise while
+[00:06:27.840] explaining.
+[00:06:29.520] And with that, we saw the usefulness
+[00:06:31.120] improved by 5%. Whereas on the other
+[00:06:34.160] scenario, we updated the prompt to say
+[00:06:37.199] anytime you see high severity issue,
+[00:06:39.280] flag it as critical. We thought
+[00:06:41.520] developers will like it, but our
+[00:06:43.280] usefulness rating rating went down. Why?
+[00:06:46.080] Now AI was just commenting on high
+[00:06:48.800] severity issues and not the holistic
+[00:06:50.960] picture and that was a miss at our end.
+[00:06:54.240] We reverted back. Hence having a prompt
+[00:06:57.440] version control system that monitors
+[00:07:00.000] prompt version the prompt changes with
+[00:07:02.160] the usefulness is very important.
+[00:07:08.400] By now we were getting positive signals
+[00:07:10.400] and we knew we could roll it out a bit
+[00:07:12.080] broadly. So we enabled it to 5% of the
+[00:07:14.720] company's PRs.
+[00:07:17.280] The feedback we were getting initially
+[00:07:20.960] we were posting just one blob of comment
+[00:07:23.120] with all the suggestions in it. Why? We
+[00:07:25.440] did not want to spam the reviewers or
+[00:07:27.759] developers with too many comments.
+[00:07:30.880] But then what happened? Our developers
+[00:07:33.039] did not want that. They wanted a
+[00:07:35.360] humanlike experience. The way they would
+[00:07:37.919] if they are commenting on someone's PR,
+[00:07:40.639] they would pick a line or a div and
+[00:07:43.039] comment on that. They won't leave a blob
+[00:07:45.120] of comment. And that's exactly what they
+[00:07:47.360] wanted.
+[00:07:48.960] We did AB testing and we see we saw a
+[00:07:51.840] difference of 20% in usefulness rating.
+[00:07:54.879] It was significant. We adapted. Hence we
+[00:07:57.919] integrated into the existing workflow
+[00:07:59.840] and experience. That's what developers
+[00:08:01.599] want. They don't want a new experience
+[00:08:03.280] crafted all together.
+[00:08:07.360] The quality of suggestion is important
+[00:08:09.599] but so is integration. Ease of
+[00:08:11.919] integrating that experience. In our
+[00:08:14.240] case, developers did not want to say
+[00:08:16.639] that comment, go back to IDE, make
+[00:08:18.720] changes and come back. They wanted it to
+[00:08:21.360] be easy and quick to apply that
+[00:08:22.960] suggestion. We came up with this apply
+[00:08:25.599] change feature. We integrated this and
+[00:08:28.960] developers could write their create a
+[00:08:31.039] new iteration on the PR.
+[00:08:34.719] This one is my favorite. Whenever we
+[00:08:36.959] were getting feedback, developers were
+[00:08:38.800] saying AI is asking me to make this
+[00:08:41.440] change which is incorrect.
+[00:08:43.599] I want to highlight the word asking.
+[00:08:45.680] Never did they say it's suggesting. We
+[00:08:48.480] went back to the comments and we
+[00:08:50.720] realized that AI is sometimes being too
+[00:08:53.279] assertive. It is using words like this
+[00:08:56.000] will fail because of XX reason. So we
+[00:09:00.240] changed our prompt for AI to be
+[00:09:02.880] encouraging and supportive. Our
+[00:09:05.279] suggestion started showing up as this
+[00:09:07.040] could be problematic. It would be better
+[00:09:08.880] to do this. And again our suggestion
+[00:09:11.760] acceptance increased with this because
+[00:09:13.839] developers were now seeing it as a buddy
+[00:09:16.560] versus a faultfinder.
+[00:09:20.399] We had to earn trust. Initially we were
+[00:09:23.360] kind of spamming the developers with lot
+[00:09:25.440] many comments. So we created a small
+[00:09:29.040] language model
+[00:09:31.279] based on the past reviews. So anytime a
+[00:09:35.120] PR was created the diffs were passed
+[00:09:36.880] through this SLM which was hosted by us.
+[00:09:39.360] Not only did it save cost but only
+[00:09:42.160] important risky diffs were not were now
+[00:09:44.160] getting sent to LLM. This reduced the
+[00:09:46.000] noise significantly. We started earning
+[00:09:48.399] trust and then we knew like we could
+[00:09:50.800] lower the thresholds once we have earned
+[00:09:52.640] the trust and go to an optimal threshold
+[00:09:54.959] of what riskiness or what level of
+[00:09:57.040] issues each team wants.
+[00:10:00.800] By now we had a system which we knew has
+[00:10:03.040] earned the trust of the developers and
+[00:10:04.880] was working well integrated into the PR
+[00:10:07.600] loop. But we had different set of
+[00:10:10.160] challenges. The other half of the puzzle
+[00:10:12.240] was still remaining. What will happen if
+[00:10:14.640] we scale it across the company with so
+[00:10:16.480] many different code bases.
+[00:10:19.279] There's so much variation by each team.
+[00:10:22.160] For one team, using a method would be
+[00:10:24.160] difficult. They don't want it because of
+[00:10:25.920] performance issues. For another team,
+[00:10:28.000] they might have some steps of security
+[00:10:29.839] they want to be followed. So we gave
+[00:10:32.560] teams the option they could specify
+[00:10:35.279] repository specific instructions or even
+[00:10:37.519] create custom prompts for their
+[00:10:39.200] repository which AI would take into
+[00:10:41.120] account while reviewing. With this we
+[00:10:43.839] could increase our scope our user base
+[00:10:46.399] because now if teams want a different
+[00:10:48.160] experience they had the option to do
+[00:10:49.920] that.
+[00:10:52.240] Missing context. This is a common one.
+[00:10:54.880] The context of each codebase is
+[00:10:56.720] different. If we just send the pull
+[00:10:58.880] request details and a method is used or
+[00:11:01.519] referenced which AI has no idea what is
+[00:11:04.800] the definition behind this method then
+[00:11:06.959] the reviews will be irrelevant.
+[00:11:09.519] So we work through semantic search graph
+[00:11:11.760] rack and we are I will be candid
+[00:11:13.360] continuously even now working on it.
+[00:11:15.440] It's not a resolved scenario on what's
+[00:11:17.360] the right optimal
+[00:11:19.440] u context that LLM needs for the best
+[00:11:22.800] review.
+[00:11:25.120] Multi-agent orchestration if you have
+[00:11:26.880] not heard it enough throughout all the
+[00:11:28.720] sessions I'll repeat it so we had a
+[00:11:31.279] review agent we also came up with a
+[00:11:33.279] critic agent why because there were
+[00:11:35.760] misses LLM was making instead of having
+[00:11:38.160] all those instructions and processes in
+[00:11:41.360] the review agent we came up with a
+[00:11:42.800] critic agent review agent would first
+[00:11:44.959] come up with a suggestion this critic
+[00:11:46.720] agent would look for things like are the
+[00:11:49.040] suggestions really associated with
+[00:11:50.720] changed lines of code because sometimes
+[00:11:53.040] it can provide recommend commendations
+[00:11:55.200] on changes the developer has not made as
+[00:11:57.200] a part of that pull request and
+[00:11:58.959] developers do not want that. So review
+[00:12:01.920] critic agent combination really worked
+[00:12:03.920] for us. Also we saw differences based on
+[00:12:06.959] language types C++ even files. So we
+[00:12:11.839] came up with language specific agents so
+[00:12:14.639] that we could give best practices or
+[00:12:17.120] true information that mattered for AI to
+[00:12:19.760] review.
+[00:12:21.440] And lastly, AB testing framework very
+[00:12:23.839] important.
+[00:12:25.600] It's not just a product development
+[00:12:28.639] good to have anymore. It's a core
+[00:12:30.320] capability. Anytime a new model comes
+[00:12:32.959] in, you might want to just jump into
+[00:12:35.279] update that new model into your product.
+[00:12:38.399] But is that model LLM model really
+[00:12:40.480] making a difference significant
+[00:12:42.320] difference for you to go and try it out
+[00:12:44.079] or change the entire user experience to
+[00:12:46.959] that model? That needs to be validated
+[00:12:49.360] before you even roll that out. Maybe
+[00:12:51.200] it's a marginal difference. Maybe it's
+[00:12:53.040] same.
+[00:12:56.000] By now again we not only had a product
+[00:12:58.560] which has scale which was scalable
+[00:13:00.240] across the company. It had on trust was
+[00:13:02.639] a decent quality
+[00:13:05.839] with any product. Security is very
+[00:13:08.160] important. You need to have guardrails
+[00:13:10.320] for safety and compliance.
+[00:13:13.360] From the very beginning, we made sure we
+[00:13:15.760] had processes in place to detect and
+[00:13:18.079] ignore any malicious instru instructions
+[00:13:20.240] so that there is no prompt injection.
+[00:13:23.200] Any unsafe or sensitive output such as
+[00:13:25.680] credentials do not show up.
+[00:13:29.920] We had systems in place to apply
+[00:13:31.920] emergency break anytime there was any
+[00:13:34.160] anomaly like we could roll back
+[00:13:36.639] immediately. We could turn it off and
+[00:13:38.480] just go back to human reviews if need
+[00:13:40.320] be. Human
+[00:13:43.279] in the loop very crucial AI can suggest
+[00:13:47.200] but if that suggestion is worth
+[00:13:49.040] accepting that decision is on a human
+[00:13:52.880] and with this
+[00:13:55.279] just like any human review they would
+[00:13:57.120] leave a comment and it's on the
+[00:13:59.279] developer if they want to accept it
+[00:14:00.959] dismiss it or debate over it similarly
+[00:14:03.519] with our AI comment they could do the
+[00:14:06.079] same and transparency any AI suggestion
+[00:14:11.040] should be pointed out as coming from AI
+[00:14:13.920] and the human who reviews it should be
+[00:14:16.639] held accountable and they have to use
+[00:14:19.120] their judgment before accepting it. This
+[00:14:22.000] is a core I would say principle we have
+[00:14:24.959] been following.
+[00:14:29.440] Hence
+[00:14:31.519] following user feedback giving teams the
+[00:14:34.320] option to customize their experience
+[00:14:36.399] transparency and integrating into the
+[00:14:38.880] existing workflow. All of this worked
+[00:14:42.320] really well for us. What's ahead? Not
+[00:14:45.040] just for us but for the industry
+[00:14:46.639] overall.
+[00:14:48.800] Exciting direction.
+[00:14:51.040] Planner. There will be multiple agents.
+[00:14:53.839] One planner which will diagnose and
+[00:14:56.480] devise the next steps. It will take it
+[00:14:58.639] to next level. If an API is getting
+[00:15:00.800] updated, it needs to have proper
+[00:15:03.120] authorization and authentication in
+[00:15:05.519] place. If there is a complex business
+[00:15:07.920] logic, it needs to have right unit
+[00:15:09.920] tests, integration tests. If a
+[00:15:12.320] dependency is updated, there should be
+[00:15:14.399] downstream compatibility. Hence, review
+[00:15:16.959] should be taking a big deeper uh
+[00:15:20.160] experience into account.
+[00:15:23.360] More context does not always mean better
+[00:15:25.839] decisions. AI can get confused. So AIS
+[00:15:29.279] will become LL our agents will become
+[00:15:30.959] smart enough to decide what is the right
+[00:15:34.079] context for a particular scenario. In
+[00:15:36.639] some case it might want to look into
+[00:15:39.040] previous commits and in some cases it
+[00:15:41.920] might want to pull in some
+[00:15:42.959] documentation.
+[00:15:44.880] For both of this good planning and
+[00:15:47.040] better context we need to give AI the
+[00:15:50.399] right tools in a secure manner. If it
+[00:15:53.120] has to pull the previous historical PRs
+[00:15:56.000] it should have the tool for that. If it
+[00:15:58.240] has to pull unit test file, it should
+[00:16:00.480] have a tool for that
+[00:16:03.279] memory retention. It will go to next
+[00:16:05.759] level where it will start learning. If a
+[00:16:08.800] team repeatedly dismisses a particular
+[00:16:10.880] type of suggestion, it should be added
+[00:16:13.040] into its best practice or its knowledge
+[00:16:15.600] base that this kind of suggestion I
+[00:16:17.199] should not be giving to this team.
+[00:16:18.560] There's something off. If there is a
+[00:16:20.639] production defect, it should feed back
+[00:16:23.519] into the review process so that that
+[00:16:25.360] does not happen again.
+[00:16:28.560] And lastly, transparency. It needs to
+[00:16:32.000] explain the reasoning so that developers
+[00:16:34.320] really find it trustworthy to accept the
+[00:16:36.639] suggestion.
+[00:16:38.240] For example, if it is asking to add a
+[00:16:40.480] validation and it references past PR in
+[00:16:43.440] which the validation was added to avoid
+[00:16:45.920] any injection attacks that earns the
+[00:16:48.480] trust of developer and they are more
+[00:16:50.399] prone to accept the suggestion.
+[00:16:53.199] Soon AI will start scheduling coffee
+[00:16:55.040] breaks for us. one you might be needing
+[00:16:57.440] right now.
+[00:17:01.680] In closing,
+[00:17:05.120] AI is here to help augment our
+[00:17:06.880] experiences.
+[00:17:09.199] We really need to give the right context
+[00:17:10.959] to AI to get better output. Human in the
+[00:17:14.079] loop is crucial. AI can suggest this is
+[00:17:17.199] a better method to be used, but is it
+[00:17:19.280] truly better is the decision we have to
+[00:17:22.000] make. It can schedule a coffee break for
+[00:17:24.240] me. But today, am I in the mood of
+[00:17:26.799] drinking espresso or coffee latte? That
+[00:17:28.960] decision is on me. It is a revolutionary
+[00:17:31.919] time. We have to accept. We have to
+[00:17:33.760] adapt. Thank you.
+[00:17:38.492] [applause]
+[00:17:40.400] >> Okay.
+[00:17:41.120] >> Awesome. Any questions at all?
+[00:17:51.280] >> One sec. I'm just going to I'll come
+[00:17:53.360] back to you.
+[00:17:55.039] >> Hello.
+[00:17:55.600] >> Yeah.
+[00:17:56.000] >> Uh the question that I had was does this
+[00:17:58.400] already exist in um latest releases of
+[00:18:00.960] co-pilot?
+[00:18:03.200] >> Sorry.
+[00:18:03.840] >> Does this already exist this agent?
+[00:18:06.080] >> It is our learnings internally whatever
+[00:18:08.720] we learned it has also helped influence
+[00:18:11.120] GitHub copilot code review.
+[00:18:13.360] >> Mhm.
+[00:18:13.760] >> So yes, GitHub has a code review service
+[00:18:16.080] which is slightly different like this is
+[00:18:17.840] internal because it has more context of
+[00:18:19.679] our code bases etc. But it does exist in
+[00:18:23.120] GitHub copilot code review experience.
+[00:18:25.919] >> Okay.
+[00:18:32.960] >> Okay. I don't have this deeply thought
+[00:18:34.400] out, but you have 5% of your I guess the
+[00:18:38.080] phrasing company PRs is what I was
+[00:18:40.240] asking about. Do you have some kind of
+[00:18:42.000] is there some kind of like control point
+[00:18:43.919] that you have that reviews everything?
+[00:18:46.240] Does this is this all internally facing
+[00:18:48.160] code bases? Maybe
+[00:18:49.280] >> that is right. It is all internal
+[00:18:50.960] spacing code bases and anytime a pull
+[00:18:54.080] request gets created that's the control
+[00:18:56.240] point.
+[00:18:57.280] >> Got it. Thank you.
+[00:19:05.120] >> Uh I have three questions. The first
+[00:19:07.760] question will be um how would you um
+[00:19:10.880] measure the PR code review quality? So
+[00:19:14.559] based on my experience, if you're using
+[00:19:16.640] different LMS
+[00:19:18.559] um to review the same piece of code, it
+[00:19:21.679] might give you different uh review
+[00:19:23.840] results. And um yeah, this will be the
+[00:19:27.039] first question. And the second question
+[00:19:28.160] is that um
+[00:19:31.600] do uh how do you uh do the code reviews
+[00:19:35.039] for monor repo versus the um um
+[00:19:39.039] different uh across the company
+[00:19:41.039] different repos because um when you're
+[00:19:43.840] working on a single repo it's missing
+[00:19:45.679] the context of the overall picture
+[00:19:47.760] especially working on some uh
+[00:19:49.760] microservices distributed services they
+[00:19:51.919] have some dependencies. So how would you
+[00:19:54.320] solve that? Yeah,
+[00:19:56.240] >> I'll start off with the second one. This
+[00:19:58.080] was a very good question. So for mono
+[00:20:00.799] repos, we came up with an approach where
+[00:20:02.880] at each branch level they could specify
+[00:20:05.679] best practices and they generally
+[00:20:08.640] generally monor repos each teams do have
+[00:20:10.880] best practices that they follow
+[00:20:12.480] internally. So for each branch we gave
+[00:20:15.280] the capability not just repository level
+[00:20:17.520] even within repository level each branch
+[00:20:19.520] or each folder they could specify what
+[00:20:22.559] instructions what are the best practices
+[00:20:24.320] for them and especially two two of our
+[00:20:27.760] monor repos have been extensively using
+[00:20:29.679] that capability. Now coming for forward
+[00:20:32.400] to the usefulness we have different
+[00:20:35.039] indicators we have been tracking
+[00:20:36.720] usefulness like the votes given by
+[00:20:38.480] developers is something we continuously
+[00:20:40.400] track and that has been an impactful
+[00:20:42.720] metric for us we have devised our own
+[00:20:44.960] creative ways to come up with like what
+[00:20:46.799] percent is getting accepted and we saw
+[00:20:49.200] if we change the model like for example
+[00:20:51.360] when there was 03 mini and 03 versus
+[00:20:54.559] GPT4 so we tested based on different
+[00:20:56.960] languages different models and track
+[00:20:59.440] these different metrics that we we are
+[00:21:00.960] following and whichever was working best
+[00:21:03.200] that's where we got signals from that
+[00:21:04.880] okay this is the model that is working
+[00:21:06.640] best at this point in time in future
+[00:21:08.960] though it is definitely getting better
+[00:21:11.360] so the inconsistency you are saying
+[00:21:13.520] hopefully we will not see in future
+[00:21:15.280] models
+[00:21:19.520] >> we have a question online um the
+[00:21:22.640] question is uh
+[00:21:27.039] oh a thought sorry uh is that based on
+[00:21:30.000] that previous talk from Neil. Uh perhaps
+[00:21:32.640] there is an idea to combine code review
+[00:21:34.880] agent with with a fitness function. Um
+[00:21:37.840] imagine the agent detecting dependency
+[00:21:39.840] on an on an incorrect API and suggesting
+[00:21:42.720] a better one from the enterprise
+[00:21:44.559] catalog. Um any final questions from the
+[00:21:47.679] room?
+[00:21:54.080] No. Then I'm going to sell. Any final
+[00:21:56.400] questions? Feel like an auctioneer.
+[00:21:58.559] Wonderful. Thank you very much. Give it
+[00:21:59.919] up for Sneha.
+[00:22:01.039] >> Thank you
+[00:22:01.600] >> so much.
+[00:22:18.835] [music]
+[00:22:24.075] >> [music]

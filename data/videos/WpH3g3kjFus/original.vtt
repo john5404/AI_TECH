@@ -1,0 +1,6569 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.600
+The challenge with incomplete
+
+2
+00:00:02.000 --> 00:00:05.480
+requirements going into a model when
+
+3
+00:00:03.600 --> 00:00:07.640
+it's building a software system is that
+
+4
+00:00:05.480 --> 00:00:09.360
+ambiguity at a minimum becomes some sort
+
+5
+00:00:07.640 --> 00:00:11.040
+of hallucinated feature that the model
+
+6
+00:00:09.360 --> 00:00:13.760
+has made up and potentially becomes
+
+7
+00:00:11.040 --> 00:00:15.800
+masses of rework and wasted tokens and
+
+8
+00:00:13.760 --> 00:00:17.640
+ultimately real kind of code smell in
+
+9
+00:00:15.800 --> 00:00:20.200
+the repository as well. So the ultimate
+
+10
+00:00:17.640 --> 00:00:22.400
+artifacts winds up harmed as well. And
+
+11
+00:00:20.200 --> 00:00:24.600
+so I think of it as as almost like
+
+12
+00:00:22.400 --> 00:00:26.320
+context engineering on steroids for
+
+13
+00:00:24.600 --> 00:00:28.760
+software projects and making sure that
+
+14
+00:00:26.320 --> 00:00:31.360
+the model is as well as possible
+
+15
+00:00:28.760 --> 00:00:33.120
+grounded in the what that it's building.
+
+16
+00:00:31.360 --> 00:00:34.680
+Be able to give that steer not in a
+
+17
+00:00:33.120 --> 00:00:37.480
+one-shot prompt, but in some
+
+18
+00:00:34.680 --> 00:00:39.200
+documentation. That's where I see spec
+
+19
+00:00:37.480 --> 00:00:41.280
+driven and BMA being really really
+
+20
+00:00:39.200 --> 00:00:42.960
+strong. What does BMA mean to you? Build
+
+21
+00:00:41.280 --> 00:00:44.960
+more architect dream. It's this really
+
+22
+00:00:42.960 --> 00:00:47.280
+interesting open-source project. What
+
+23
+00:00:44.960 --> 00:00:49.880
+it's about is giving a model the best
+
+24
+00:00:47.280 --> 00:00:53.040
+context possible to go and autonomously
+
+25
+00:00:49.880 --> 00:00:53.040
+build software.
+
+26
+00:00:53.710 --> 00:00:55.730
+&gt;&gt; [music]
+
+27
+00:00:58.880 --> 00:01:02.080
+&gt;&gt; Before we jump into this episode, I
+
+28
+00:01:00.440 --> 00:01:04.760
+wanted to let you know that this podcast
+
+29
+00:01:02.080 --> 00:01:06.880
+is for developers building with AI at
+
+30
+00:01:04.760 --> 00:01:09.520
+the core. So whether that's exploring
+
+31
+00:01:06.880 --> 00:01:12.040
+the latest tools, the workflows, or the
+
+32
+00:01:09.520 --> 00:01:14.320
+best practices, this podcast is for you.
+
+33
+00:01:12.040 --> 00:01:15.720
+And really quick ask, 90% of people who
+
+34
+00:01:14.320 --> 00:01:17.480
+are listening to this haven't yet
+
+35
+00:01:15.720 --> 00:01:19.320
+subscribed. So if this content has
+
+36
+00:01:17.480 --> 00:01:21.680
+helped you build smarter, hit that
+
+37
+00:01:19.320 --> 00:01:23.800
+subscribe button and maybe a like. All
+
+38
+00:01:21.680 --> 00:01:26.520
+right, back to the episode.
+
+39
+00:01:23.800 --> 00:01:28.800
+Hello and welcome to another episode of
+
+40
+00:01:26.520 --> 00:01:30.720
+the AI Native Dev. My name is Simon
+
+41
+00:01:28.800 --> 00:01:32.480
+Maple and I'm your host uh for this this
+
+42
+00:01:30.720 --> 00:01:34.360
+episode and uh today we're going to have
+
+43
+00:01:32.480 --> 00:01:37.880
+a really fun chat about something called
+
+44
+00:01:34.360 --> 00:01:39.480
+BMA and the BMA method. Um so this is I
+
+45
+00:01:37.880 --> 00:01:41.400
+I believe it's called a Build More
+
+46
+00:01:39.480 --> 00:01:43.760
+Architect Dream, which is a which is a
+
+47
+00:01:41.400 --> 00:01:46.640
+fun way of of really talking about a
+
+48
+00:01:43.760 --> 00:01:48.640
+spec driven approach to to to building
+
+49
+00:01:46.640 --> 00:01:51.000
+software um where we really think about
+
+50
+00:01:48.640 --> 00:01:53.280
+specifications first and then drive the
+
+51
+00:01:51.000 --> 00:01:55.720
+code uh from there. It allows us to
+
+52
+00:01:53.280 --> 00:01:58.680
+really think about how we create uh our
+
+53
+00:01:55.720 --> 00:02:00.600
+intent versus thinking about the how too
+
+54
+00:01:58.680 --> 00:02:02.480
+early. We capture those behaviors and
+
+55
+00:02:00.600 --> 00:02:04.800
+those constraints uh very very early in
+
+56
+00:02:02.480 --> 00:02:08.119
+the process. And taking us through this
+
+57
+00:02:04.800 --> 00:02:09.920
+is uh Kean Clark uh from Nearform. And
+
+58
+00:02:08.119 --> 00:02:12.720
+Kean and I have done a a couple of
+
+59
+00:02:09.920 --> 00:02:15.560
+things including actually uh we we we we
+
+60
+00:02:12.720 --> 00:02:18.120
+shared the stage at AI Native Dev uh oh
+
+61
+00:02:15.560 --> 00:02:20.080
+sorry, AI Native Dev Con in New York in
+
+62
+00:02:18.120 --> 00:02:22.400
+May and we also uh we also did a a
+
+63
+00:02:20.080 --> 00:02:24.640
+meetup very recently as well in London.
+
+64
+00:02:22.400 --> 00:02:26.360
+Um Kean, welcome to the podcast. How are
+
+65
+00:02:24.640 --> 00:02:28.600
+you? Yeah, thanks so much for having me.
+
+66
+00:02:26.360 --> 00:02:31.120
+I'm doing well. Brilliant brilliant. And
+
+67
+00:02:28.600 --> 00:02:32.160
+so you're ahead of AI at at Nearform,
+
+68
+00:02:31.120 --> 00:02:33.800
+right? Tell us a little bit about what
+
+69
+00:02:32.160 --> 00:02:35.480
+that entails.
+
+70
+00:02:33.800 --> 00:02:37.640
+Yeah, absolutely. So it's really about
+
+71
+00:02:35.480 --> 00:02:39.480
+realizing customers' ambitions in the
+
+72
+00:02:37.640 --> 00:02:41.160
+world of AI. Uh and more recently of
+
+73
+00:02:39.480 --> 00:02:42.280
+course lots of generative AI. That's
+
+74
+00:02:41.160 --> 00:02:44.800
+been something that's been keeping us
+
+75
+00:02:42.280 --> 00:02:46.560
+pretty busy. Um and so that might look
+
+76
+00:02:44.800 --> 00:02:48.520
+like, you know, unearthing a bunch of
+
+77
+00:02:46.560 --> 00:02:50.280
+proprietary knowledge that some customer
+
+78
+00:02:48.520 --> 00:02:52.680
+might have in their product to their end
+
+79
+00:02:50.280 --> 00:02:54.440
+customers. It might be, you know,
+
+80
+00:02:52.680 --> 00:02:56.880
+building some sort of agentic system to
+
+81
+00:02:54.440 --> 00:02:57.600
+make their teams go faster.
+
+82
+00:02:56.880 --> 00:02:59.280
+Um
+
+83
+00:02:57.600 --> 00:03:01.560
+but of late we've also been thinking an
+
+84
+00:02:59.280 --> 00:03:03.200
+awful lot not just about what we build
+
+85
+00:03:01.560 --> 00:03:05.640
+in the space of AI, but also how we
+
+86
+00:03:03.200 --> 00:03:08.080
+build it. Yeah. Um and so Nearform sort
+
+87
+00:03:05.640 --> 00:03:09.560
+of came of age in the era of Node.js and
+
+88
+00:03:08.080 --> 00:03:11.920
+that's been sort of the technology we've
+
+89
+00:03:09.560 --> 00:03:13.760
+been known for. Um and actually we've
+
+90
+00:03:11.920 --> 00:03:16.240
+been thinking a lot lately about AI
+
+91
+00:03:13.760 --> 00:03:18.320
+native delivery and and delivering with
+
+92
+00:03:16.240 --> 00:03:20.520
+AI models and the enhanced capabilities
+
+93
+00:03:18.320 --> 00:03:22.440
+of coding models and spec driven.
+
+94
+00:03:20.520 --> 00:03:24.000
+And so that's really brought our paths
+
+95
+00:03:22.440 --> 00:03:26.120
+together, I suppose.
+
+96
+00:03:24.000 --> 00:03:28.680
+Um since we are very interested in all
+
+97
+00:03:26.120 --> 00:03:31.120
+of the tool sets and and ways to to to
+
+98
+00:03:28.680 --> 00:03:33.120
+build software artifacts through AI. So,
+
+99
+00:03:31.120 --> 00:03:34.960
+you know, more about the how we build as
+
+100
+00:03:33.120 --> 00:03:36.120
+well as what we build with AI. Which is
+
+101
+00:03:34.960 --> 00:03:37.800
+super interesting cuz like, you know,
+
+102
+00:03:36.120 --> 00:03:39.280
+there's a lot of obviously kind of like
+
+103
+00:03:37.800 --> 00:03:40.880
+you you know, consultancies and people
+
+104
+00:03:39.280 --> 00:03:42.920
+like that who who are really not
+
+105
+00:03:40.880 --> 00:03:44.200
+adopting AI in a very interesting way,
+
+106
+00:03:42.920 --> 00:03:46.640
+but you're really kind of like leading a
+
+107
+00:03:44.200 --> 00:03:49.440
+lot of the way with with a very you
+
+108
+00:03:46.640 --> 00:03:52.240
+know, spec oriented and and and future
+
+109
+00:03:49.440 --> 00:03:53.760
+thinking path of building with AI. So
+
+110
+00:03:52.240 --> 00:03:54.400
+we'll explore some of this
+
+111
+00:03:53.760 --> 00:03:56.120
+um
+
+112
+00:03:54.400 --> 00:03:58.000
+in just a second. Let What do we first
+
+113
+00:03:56.120 --> 00:04:00.760
+talk a little bit about about BMA? What
+
+114
+00:03:58.000 --> 00:04:02.440
+What What's What does BMA mean to you?
+
+115
+00:04:00.760 --> 00:04:05.680
+Yeah, absolutely. So to me it's sort of
+
+116
+00:04:02.440 --> 00:04:08.160
+the best approximation we have right now
+
+117
+00:04:05.680 --> 00:04:10.040
+of what a comprehensive spec driven
+
+118
+00:04:08.160 --> 00:04:10.680
+workflow looks like.
+
+119
+00:04:10.040 --> 00:04:12.840
+Um
+
+120
+00:04:10.680 --> 00:04:14.440
+and so it it's, you know, the the
+
+121
+00:04:12.840 --> 00:04:16.799
+there's a a sort of a tagline attached
+
+122
+00:04:14.440 --> 00:04:18.400
+to BMA of Build More Architect Dream,
+
+123
+00:04:16.799 --> 00:04:20.160
+but it's also sort of named by the the
+
+124
+00:04:18.400 --> 00:04:21.440
+guy who created it, Brian Madsen. So
+
+125
+00:04:20.160 --> 00:04:22.040
+BMA.
+
+126
+00:04:21.440 --> 00:04:23.400
+Um
+
+127
+00:04:22.040 --> 00:04:25.320
+and it's it's this really interesting
+
+128
+00:04:23.400 --> 00:04:27.320
+open-source project, which I think is
+
+129
+00:04:25.320 --> 00:04:29.040
+quite important to us at Nearform since
+
+130
+00:04:27.320 --> 00:04:30.480
+a lot of our pedigree comes from the
+
+131
+00:04:29.040 --> 00:04:32.040
+world of open source and and
+
+132
+00:04:30.480 --> 00:04:34.200
+contributing upstream to things like
+
+133
+00:04:32.040 --> 00:04:36.480
+Fastify and Node core.
+
+134
+00:04:34.200 --> 00:04:38.960
+Um and so yeah, the fact that this is an
+
+135
+00:04:36.480 --> 00:04:41.200
+open-source framework that is also open
+
+136
+00:04:38.960 --> 00:04:43.440
+to the selection of model vendor and
+
+137
+00:04:41.200 --> 00:04:45.240
+open to the selection of IDE tool set as
+
+138
+00:04:43.440 --> 00:04:47.280
+well is something that really really
+
+139
+00:04:45.240 --> 00:04:48.760
+appealed to us. Um and in my head
+
+140
+00:04:47.280 --> 00:04:51.320
+actually at its very core what it's
+
+141
+00:04:48.760 --> 00:04:53.840
+about is just like really intelligent
+
+142
+00:04:51.320 --> 00:04:56.200
+context engineering with a model.
+
+143
+00:04:53.840 --> 00:04:57.600
+Um and that's kind of what spec driven
+
+144
+00:04:56.200 --> 00:04:59.680
+is all about.
+
+145
+00:04:57.600 --> 00:05:02.680
+Um at least in my head, you know, giving
+
+146
+00:04:59.680 --> 00:05:05.040
+a model the best context possible to go
+
+147
+00:05:02.680 --> 00:05:07.320
+and autonomously build software. Right.
+
+148
+00:05:05.040 --> 00:05:09.000
+And it as I say, best approximation I've
+
+149
+00:05:07.320 --> 00:05:10.480
+seen to date of how to go about doing
+
+150
+00:05:09.000 --> 00:05:12.080
+that. And I didn't know that about the
+
+151
+00:05:10.480 --> 00:05:14.400
+name, the BMA. That's That's Brian
+
+152
+00:05:12.080 --> 00:05:16.080
+Madison, is it? That's it. Yeah. Mad
+
+153
+00:05:14.400 --> 00:05:18.080
+Madison Madson. I think it's Madison.
+
+154
+00:05:16.080 --> 00:05:19.440
+&gt;&gt; Madison, sorry. Madison. So so it so so
+
+155
+00:05:18.080 --> 00:05:21.200
+it started as a name and it was
+
+156
+00:05:19.440 --> 00:05:23.280
+searching for an acronym. That's what
+
+157
+00:05:21.200 --> 00:05:25.400
+That That really I think so. Yeah,
+
+158
+00:05:23.280 --> 00:05:27.200
+exactly. The acronym now is uh is a bit
+
+159
+00:05:25.400 --> 00:05:29.200
+of a stretch, I feel. But Now the Build
+
+160
+00:05:27.200 --> 00:05:30.480
+More Architect Dream makes a ton more
+
+161
+00:05:29.200 --> 00:05:31.760
+sense. I was looking at it and thinking,
+
+162
+00:05:30.480 --> 00:05:33.080
+"Wow, where where where did this come
+
+163
+00:05:31.760 --> 00:05:34.600
+from?" But now it all makes a lot more
+
+164
+00:05:33.080 --> 00:05:36.120
+sense. But it's it's a catchy name,
+
+165
+00:05:34.600 --> 00:05:37.520
+yeah. Um and it started with this
+
+166
+00:05:36.120 --> 00:05:39.400
+person, but you know, there's a huge
+
+167
+00:05:37.520 --> 00:05:41.600
+suite of contributors now on this this
+
+168
+00:05:39.400 --> 00:05:43.400
+tool set. And it's this really vibrant
+
+169
+00:05:41.600 --> 00:05:45.760
+open-source project that's gone through
+
+170
+00:05:43.400 --> 00:05:47.440
+a couple of different versions. Um it's
+
+171
+00:05:45.760 --> 00:05:49.360
+got a really cool the V6 version that's
+
+172
+00:05:47.440 --> 00:05:52.840
+just released has a bunch of really nice
+
+173
+00:05:49.360 --> 00:05:54.600
+developments in terms of uh being able
+
+174
+00:05:52.840 --> 00:05:56.200
+to select the like the scale of project
+
+175
+00:05:54.600 --> 00:05:57.400
+you're working on. It's got a module
+
+176
+00:05:56.200 --> 00:05:59.480
+system where you can bring your own
+
+177
+00:05:57.400 --> 00:06:01.280
+roles. So it's it's really evolved
+
+178
+00:05:59.480 --> 00:06:03.000
+massively over the last kind of couple
+
+179
+00:06:01.280 --> 00:06:04.760
+of months. Yeah, yeah. Let's Let's get
+
+180
+00:06:03.000 --> 00:06:06.120
+into that a little bit. But I guess the
+
+181
+00:06:04.760 --> 00:06:07.880
+one question that I'd love to ask cuz I
+
+182
+00:06:06.120 --> 00:06:09.840
+know Nearform, you know, do a lot of
+
+183
+00:06:07.880 --> 00:06:10.920
+work in kind of like the the discovery
+
+184
+00:06:09.840 --> 00:06:12.840
+of various, you know, a lot of the
+
+185
+00:06:10.920 --> 00:06:15.000
+research and discovery of various tools.
+
+186
+00:06:12.840 --> 00:06:16.600
+I know you're you're big fans of Keiro,
+
+187
+00:06:15.000 --> 00:06:19.200
+for example. I know we've talked in the
+
+188
+00:06:16.600 --> 00:06:20.720
+past about about using Tessell for, you
+
+189
+00:06:19.200 --> 00:06:22.560
+know, discovering context and learning
+
+190
+00:06:20.720 --> 00:06:25.240
+about, you know, how agents can be you
+
+191
+00:06:22.560 --> 00:06:26.400
+know, much better enabled. Um where did
+
+192
+00:06:25.240 --> 00:06:27.600
+you Where did you first learn about
+
+193
+00:06:26.400 --> 00:06:29.360
+Where did you How did you kind of like
+
+194
+00:06:27.600 --> 00:06:30.880
+go through the discovery period with
+
+195
+00:06:29.360 --> 00:06:33.480
+with BMA?
+
+196
+00:06:30.880 --> 00:06:36.080
+Yeah, so it sort of came out of our own
+
+197
+00:06:33.480 --> 00:06:37.840
+internal discovery process really.
+
+198
+00:06:36.080 --> 00:06:39.800
+Um and we would do very frequently in
+
+199
+00:06:37.840 --> 00:06:42.160
+consulting this kind of discovery
+
+200
+00:06:39.800 --> 00:06:43.920
+process that we call ignite, which is
+
+201
+00:06:42.160 --> 00:06:45.560
+about aligning a bunch of stakeholders
+
+202
+00:06:43.920 --> 00:06:46.920
+on what it that exactly it is that they
+
+203
+00:06:45.560 --> 00:06:47.680
+want to build.
+
+204
+00:06:46.920 --> 00:06:48.680
+Um
+
+205
+00:06:47.680 --> 00:06:50.600
+and you know, in in the world of
+
+206
+00:06:48.680 --> 00:06:52.000
+consulting we call this discovery, but
+
+207
+00:06:50.600 --> 00:06:53.320
+like it happens in every company.
+
+208
+00:06:52.000 --> 00:06:55.720
+Basically a bunch of folk getting
+
+209
+00:06:53.320 --> 00:06:56.960
+together and um talking about what the
+
+210
+00:06:55.720 --> 00:06:58.440
+requirements are for the thing they're
+
+211
+00:06:56.960 --> 00:07:00.280
+looking to build. What's really
+
+212
+00:06:58.440 --> 00:07:03.160
+important, like what levers within the
+
+213
+00:07:00.280 --> 00:07:05.000
+business is it going to impact. Um and
+
+214
+00:07:03.160 --> 00:07:07.160
+being able to document some of that
+
+215
+00:07:05.000 --> 00:07:09.120
+stuff, you know, really really well. And
+
+216
+00:07:07.160 --> 00:07:11.480
+we noticed that we could use things like
+
+217
+00:07:09.120 --> 00:07:13.480
+AI note takers within the meeting to be
+
+218
+00:07:11.480 --> 00:07:15.200
+able to capture a lot of that context
+
+219
+00:07:13.480 --> 00:07:17.320
+and then distill it down into playback
+
+220
+00:07:15.200 --> 00:07:19.200
+decks and also distill it down into
+
+221
+00:07:17.320 --> 00:07:20.840
+requirements documents.
+
+222
+00:07:19.200 --> 00:07:23.720
+Um and so it was the folk who were
+
+223
+00:07:20.840 --> 00:07:25.160
+facilitating these sessions um that
+
+224
+00:07:23.720 --> 00:07:26.800
+observed that actually you can get
+
+225
+00:07:25.160 --> 00:07:29.440
+really good requirements documentation
+
+226
+00:07:26.800 --> 00:07:32.760
+and backlogs off the back of these
+
+227
+00:07:29.440 --> 00:07:34.680
+meetings just talking about how and what
+
+228
+00:07:32.760 --> 00:07:36.440
+it is exactly that we want to build. And
+
+229
+00:07:34.680 --> 00:07:38.400
+I know the folks in AWS do this a lot
+
+230
+00:07:36.440 --> 00:07:40.600
+with their pre-read time in meetings
+
+231
+00:07:38.400 --> 00:07:42.000
+when they're doing their PRFAQ's.
+
+232
+00:07:40.600 --> 00:07:43.640
+And now they've moved to this term
+
+233
+00:07:42.000 --> 00:07:45.640
+called squad mobbing. So this is, you
+
+234
+00:07:43.640 --> 00:07:47.760
+know, really big, you know, methodology
+
+235
+00:07:45.640 --> 00:07:49.600
+in industry as well. This idea of
+
+236
+00:07:47.760 --> 00:07:51.640
+gathering requirements
+
+237
+00:07:49.600 --> 00:07:54.520
+um as a group and then using that as an
+
+238
+00:07:51.640 --> 00:07:55.880
+artifact to then later go and build.
+
+239
+00:07:54.520 --> 00:07:57.720
+And so we kind of spotted, you know, we
+
+240
+00:07:55.880 --> 00:07:59.440
+had been vibe coding prototypes that we
+
+241
+00:07:57.720 --> 00:08:00.600
+would later throw away and because
+
+242
+00:07:59.440 --> 00:08:02.760
+that's what you tend to do with an
+
+243
+00:08:00.600 --> 00:08:05.720
+artifact that's vibe coded. But actually
+
+244
+00:08:02.760 --> 00:08:07.720
+like could we ground the the the process
+
+245
+00:08:05.720 --> 00:08:09.290
+of using AI to develop with these
+
+246
+00:08:07.720 --> 00:08:09.520
+artifacts?
+
+247
+00:08:09.290 --> 00:08:11.000
+&gt;&gt; [snorts]
+
+248
+00:08:09.520 --> 00:08:12.600
+&gt;&gt; And that kind of aha moment happened
+
+249
+00:08:11.000 --> 00:08:14.480
+probably about 6 months ago and it
+
+250
+00:08:12.600 --> 00:08:16.640
+wasn't me who had it. It's It's a member
+
+251
+00:08:14.480 --> 00:08:18.520
+of my team, James, who who helped helped
+
+252
+00:08:16.640 --> 00:08:21.200
+out there and discovered this tool
+
+253
+00:08:18.520 --> 00:08:24.080
+called BMA along the way that is really
+
+254
+00:08:21.200 --> 00:08:25.920
+really good at taking some of that
+
+255
+00:08:24.080 --> 00:08:27.760
+documentation and using it to hone the
+
+256
+00:08:25.920 --> 00:08:29.560
+output of a model. Um
+
+257
+00:08:27.760 --> 00:08:32.039
+and so I discovered this spec driven
+
+258
+00:08:29.560 --> 00:08:34.440
+thing and as a pretty like skeptic, you
+
+259
+00:08:32.039 --> 00:08:36.599
+know, vibe coding skeptic, that this was
+
+260
+00:08:34.440 --> 00:08:37.640
+sort of a revelation for me because all
+
+261
+00:08:36.599 --> 00:08:40.000
+of a sudden you were actually able to
+
+262
+00:08:37.640 --> 00:08:41.680
+steer what the model did. And yeah, that
+
+263
+00:08:40.000 --> 00:08:42.840
+was that was pretty powerful, I think.
+
+264
+00:08:41.680 --> 00:08:44.080
+Yeah, and a lot of the things that
+
+265
+00:08:42.840 --> 00:08:45.560
+you're kind of like talking about here,
+
+266
+00:08:44.080 --> 00:08:47.040
+whether it's spec driven or BMA, they're
+
+267
+00:08:45.560 --> 00:08:50.520
+they're really they're really kind of
+
+268
+00:08:47.040 --> 00:08:52.280
+like smart and and I guess, you know,
+
+269
+00:08:50.520 --> 00:08:53.640
+they're solutions that are well thought
+
+270
+00:08:52.280 --> 00:08:55.160
+out. But I guess
+
+271
+00:08:53.640 --> 00:08:57.720
+when we when we go back to the root
+
+272
+00:08:55.160 --> 00:08:59.320
+problem, what what would you say is the
+
+273
+00:08:57.720 --> 00:09:01.440
+What would you say is the need for these
+
+274
+00:08:59.320 --> 00:09:04.240
+for these types of solutions?
+
+275
+00:09:01.440 --> 00:09:05.920
+Yeah, for for me it it came down to like
+
+276
+00:09:04.240 --> 00:09:07.640
+forcing the the world of vibe coding to
+
+277
+00:09:05.920 --> 00:09:11.040
+sort of grow up a little bit and have
+
+278
+00:09:07.640 --> 00:09:11.640
+some guardrails. Uh and so distilling
+
+279
+00:09:11.040 --> 00:09:13.760
+that
+
+280
+00:09:11.640 --> 00:09:15.280
+um you know, uncertainty with what the
+
+281
+00:09:13.760 --> 00:09:17.440
+where the model would would would fill
+
+282
+00:09:15.280 --> 00:09:18.640
+in the gap, instead have stakeholders
+
+283
+00:09:17.440 --> 00:09:20.960
+fill in the gap and make sure the
+
+284
+00:09:18.640 --> 00:09:23.240
+requirements were actually complete.
+
+285
+00:09:20.960 --> 00:09:24.920
+Um because the the the challenge with
+
+286
+00:09:23.240 --> 00:09:26.160
+incomplete requirements going into a
+
+287
+00:09:24.920 --> 00:09:28.640
+model when it's building a software
+
+288
+00:09:26.160 --> 00:09:29.960
+system is that ambiguity at a minimum
+
+289
+00:09:28.640 --> 00:09:31.640
+becomes some sort of, you know,
+
+290
+00:09:29.960 --> 00:09:33.880
+hallucinated feature that the model has
+
+291
+00:09:31.640 --> 00:09:37.040
+made up. Uh and potentially becomes
+
+292
+00:09:33.880 --> 00:09:38.800
+masses of rework and wasted tokens
+
+293
+00:09:37.040 --> 00:09:40.960
+and ultimately, you know, real kind of
+
+294
+00:09:38.800 --> 00:09:43.280
+code smell in the repository as well. So
+
+295
+00:09:40.960 --> 00:09:45.520
+the ultimate artifacts winds up kind of
+
+296
+00:09:43.280 --> 00:09:48.040
+harmed as well. And so I kind of think
+
+297
+00:09:45.520 --> 00:09:50.480
+of it as as, you know, almost like
+
+298
+00:09:48.040 --> 00:09:52.200
+context engineering on steroids for
+
+299
+00:09:50.480 --> 00:09:54.640
+software projects and making sure that
+
+300
+00:09:52.200 --> 00:09:57.280
+the model is as well as possible
+
+301
+00:09:54.640 --> 00:09:59.880
+grounded in the what that it's building
+
+302
+00:09:57.280 --> 00:10:01.760
+as well as the how you want it to build.
+
+303
+00:09:59.880 --> 00:10:03.240
+Being able to give that steer, not in a
+
+304
+00:10:01.760 --> 00:10:05.240
+one-shot prompt, but in some
+
+305
+00:10:03.240 --> 00:10:08.120
+documentation. That that's kind of where
+
+306
+00:10:05.240 --> 00:10:10.000
+I see spec-driven and and BEMAD being
+
+307
+00:10:08.120 --> 00:10:11.360
+really really strong. And what's really
+
+308
+00:10:10.000 --> 00:10:13.087
+interesting here is kind of like when we
+
+309
+00:10:11.360 --> 00:10:14.160
+think about what, you know, the way
+
+310
+00:10:13.087 --> 00:10:15.640
+[clears throat] BEMAD goes around trying
+
+311
+00:10:14.160 --> 00:10:17.160
+to solve this. And so and specs, you
+
+312
+00:10:15.640 --> 00:10:20.240
+know, if we if we think back well part
+
+313
+00:10:17.160 --> 00:10:21.520
+well before kind of the AI boom here,
+
+314
+00:10:20.240 --> 00:10:23.280
+you know, we were doing the we were
+
+315
+00:10:21.520 --> 00:10:25.520
+thinking about these types of these
+
+316
+00:10:23.280 --> 00:10:27.080
+types of things back in the BDD days and
+
+317
+00:10:25.520 --> 00:10:28.520
+things like that. And it's interesting
+
+318
+00:10:27.080 --> 00:10:31.840
+that when we talk about the problem now,
+
+319
+00:10:28.520 --> 00:10:33.680
+the problem is is is very, you know,
+
+320
+00:10:31.840 --> 00:10:37.120
+the problem definition is peppered with
+
+321
+00:10:33.680 --> 00:10:39.600
+AI terms. And and I think like now the
+
+322
+00:10:37.120 --> 00:10:40.720
+problem is actually far greater because
+
+323
+00:10:39.600 --> 00:10:42.000
+of those types of things. So a lot of
+
+324
+00:10:40.720 --> 00:10:43.440
+things that you say about, you know, the
+
+325
+00:10:42.000 --> 00:10:45.680
+issues around vibe coding, those types
+
+326
+00:10:43.440 --> 00:10:47.760
+of things, they magnify the problem
+
+327
+00:10:45.680 --> 00:10:49.400
+which, you know, like you say, vague
+
+328
+00:10:47.760 --> 00:10:51.120
+requirements and things like that that
+
+329
+00:10:49.400 --> 00:10:52.880
+we previously had. It's just magnified
+
+330
+00:10:51.120 --> 00:10:55.480
+so much more because of the additional
+
+331
+00:10:52.880 --> 00:10:57.240
+complexity that that that that that vibe
+
+332
+00:10:55.480 --> 00:10:58.920
+coding and these types of agents can
+
+333
+00:10:57.240 --> 00:11:01.000
+bring along as well. Yeah, like as
+
+334
+00:10:58.920 --> 00:11:02.600
+engineers, if we had a gap in
+
+335
+00:11:01.000 --> 00:11:04.720
+requirements documentation that seemed
+
+336
+00:11:02.600 --> 00:11:06.280
+really obvious that would impact users,
+
+337
+00:11:04.720 --> 00:11:08.000
+you know, we would go and ask a
+
+338
+00:11:06.280 --> 00:11:09.600
+clarifying question of a product manager
+
+339
+00:11:08.000 --> 00:11:11.400
+of somebody who's a stakeholder on the
+
+340
+00:11:09.600 --> 00:11:12.800
+project. And we'd be a little annoyed by
+
+341
+00:11:11.400 --> 00:11:14.440
+it. Like, come on, we're mid-sprint, why
+
+342
+00:11:12.800 --> 00:11:16.200
+didn't you think of this? But we'd fill
+
+343
+00:11:14.440 --> 00:11:17.480
+in that gap. The model just makes
+
+344
+00:11:16.200 --> 00:11:19.600
+up, right? That's that's not a great
+
+345
+00:11:17.480 --> 00:11:21.360
+outcome. Yeah. Yeah. Yeah. Sometimes it
+
+346
+00:11:19.600 --> 00:11:23.960
+is, but sometimes a lot of the time it
+
+347
+00:11:21.360 --> 00:11:26.200
+isn't. Yeah. Yeah. Um so so let let
+
+348
+00:11:23.960 --> 00:11:28.120
+let's go ahead and and kind of like talk
+
+349
+00:11:26.200 --> 00:11:31.480
+take us through an example kind of like
+
+350
+00:11:28.120 --> 00:11:32.880
+NearForm rollout, I guess, of a BEMAD
+
+351
+00:11:31.480 --> 00:11:34.960
+project, I guess. I guess there are
+
+352
+00:11:32.880 --> 00:11:36.280
+certain times when it's worked better
+
+353
+00:11:34.960 --> 00:11:37.480
+and certain times when maybe you've
+
+354
+00:11:36.280 --> 00:11:39.160
+actually learned actually, you know,
+
+355
+00:11:37.480 --> 00:11:40.839
+it's not quite as good here. Talk us
+
+356
+00:11:39.160 --> 00:11:43.040
+through, you know, one of the one of the
+
+357
+00:11:40.839 --> 00:11:44.760
+most solid kind of BEMAD rollouts that
+
+358
+00:11:43.040 --> 00:11:45.760
+that you guys have done.
+
+359
+00:11:44.760 --> 00:11:49.040
+Yeah, [clears throat] so it's it's sort
+
+360
+00:11:45.760 --> 00:11:50.680
+of to date become the tool of choice for
+
+361
+00:11:49.040 --> 00:11:53.000
+dev teams at NearForm who are looking to
+
+362
+00:11:50.680 --> 00:11:55.160
+progress things in an AI-native manner.
+
+363
+00:11:53.000 --> 00:11:56.640
+Probably alongside Kiro as the other
+
+364
+00:11:55.160 --> 00:11:58.560
+strong contender.
+
+365
+00:11:56.640 --> 00:12:00.839
+And all along, the observation I had had
+
+366
+00:11:58.560 --> 00:12:03.080
+was that it is not a great tool for
+
+367
+00:12:00.839 --> 00:12:05.040
+actually kind of rapid prototyping and
+
+368
+00:12:03.080 --> 00:12:07.280
+building, you know, a functional
+
+369
+00:12:05.040 --> 00:12:08.640
+prototype that you plan to throw away at
+
+370
+00:12:07.280 --> 00:12:10.960
+the end
+
+371
+00:12:08.640 --> 00:12:12.400
+because the process is quite heavy.
+
+372
+00:12:10.960 --> 00:12:16.520
+It has actually made great leaps and
+
+373
+00:12:12.400 --> 00:12:18.680
+bounds in V6's release in terms of
+
+374
+00:12:16.520 --> 00:12:19.760
+enabling you to say the sort of level of
+
+375
+00:12:18.680 --> 00:12:20.480
+project that you're looking to build.
+
+376
+00:12:19.760 --> 00:12:22.440
+And if you're looking to build a
+
+377
+00:12:20.480 --> 00:12:24.200
+prototype, it simplifies the workflow.
+
+378
+00:12:22.440 --> 00:12:27.040
+Haven't had enough hands-on time with it
+
+379
+00:12:24.200 --> 00:12:28.839
+to to form an opinion but traditionally
+
+380
+00:12:27.040 --> 00:12:30.760
+rapid prototyping still reaching for
+
+381
+00:12:28.839 --> 00:12:32.200
+bold.new or something. But where we're
+
+382
+00:12:30.760 --> 00:12:33.480
+looking to actually build some sort of
+
+383
+00:12:32.200 --> 00:12:35.880
+MVP and something that's actually
+
+384
+00:12:33.480 --> 00:12:37.843
+shippable in the greenfield, we found it
+
+385
+00:12:35.880 --> 00:12:38.498
+absolutely fantastic.
+
+386
+00:12:37.843 --> 00:12:38.680
+&gt;&gt; [cough]
+
+387
+00:12:38.498 --> 00:12:39.800
+[clears throat]
+
+388
+00:12:38.680 --> 00:12:41.680
+&gt;&gt; I think there are probably some
+
+389
+00:12:39.800 --> 00:12:44.000
+challenges to date in the brownfield,
+
+390
+00:12:41.680 --> 00:12:45.800
+although it is the best thing I've come
+
+391
+00:12:44.000 --> 00:12:48.040
+across for working in large brownfield
+
+392
+00:12:45.800 --> 00:12:49.360
+codebases. Nonetheless,
+
+393
+00:12:48.040 --> 00:12:50.480
+you know, there there are challenges
+
+394
+00:12:49.360 --> 00:12:52.839
+with that.
+
+395
+00:12:50.480 --> 00:12:54.320
+But for greenfield projects, it's been
+
+396
+00:12:52.839 --> 00:12:56.080
+fantastic.
+
+397
+00:12:54.320 --> 00:12:58.040
+And the way I kind of try to approach
+
+398
+00:12:56.080 --> 00:12:59.640
+this, so my my background is not in
+
+399
+00:12:58.040 --> 00:13:01.640
+consulting. I'm relatively new to the
+
+400
+00:12:59.640 --> 00:13:03.520
+world of consulting. I've mostly worked
+
+401
+00:13:01.640 --> 00:13:06.520
+in product companies through engineering
+
+402
+00:13:03.520 --> 00:13:08.000
+leadership roles. And I like to think
+
+403
+00:13:06.520 --> 00:13:09.520
+about, you know, rolling out these tool
+
+404
+00:13:08.000 --> 00:13:12.839
+sets to teams of developers through the
+
+405
+00:13:09.520 --> 00:13:14.240
+context of like developer empathy.
+
+406
+00:13:12.839 --> 00:13:15.480
+So we talk a lot about customer empathy
+
+407
+00:13:14.240 --> 00:13:17.040
+in the sales process, but I think
+
+408
+00:13:15.480 --> 00:13:19.320
+developer empathy is actually a very
+
+409
+00:13:17.040 --> 00:13:21.680
+important thing to recognize as an
+
+410
+00:13:19.320 --> 00:13:23.240
+engineering leader. And it's like this,
+
+411
+00:13:21.680 --> 00:13:25.200
+when you were, you know, when you were
+
+412
+00:13:23.240 --> 00:13:27.560
+hands-on keyboard walking in the shoes
+
+413
+00:13:25.200 --> 00:13:30.040
+of a developer, what stuff did you just
+
+414
+00:13:27.560 --> 00:13:31.839
+hate? Like, what drove you mad? And so
+
+415
+00:13:30.040 --> 00:13:34.360
+like, you know, writing infrastructure
+
+416
+00:13:31.839 --> 00:13:36.720
+as code stacks only to have the the
+
+417
+00:13:34.360 --> 00:13:38.000
+CloudFormation deploy roll back 15 times
+
+418
+00:13:36.720 --> 00:13:39.800
+in a row and having to go back and
+
+419
+00:13:38.000 --> 00:13:42.920
+delete stuff manually and just that that
+
+420
+00:13:39.800 --> 00:13:45.080
+drudgery I used hate. Or, you know,
+
+421
+00:13:42.920 --> 00:13:47.000
+fixing an automation test that's that's
+
+422
+00:13:45.080 --> 00:13:48.839
+blown up because a pixel moved 10 pixels
+
+423
+00:13:47.000 --> 00:13:50.160
+to the button moved 10 pixels to the
+
+424
+00:13:48.839 --> 00:13:52.360
+right in the middle of the night. Like,
+
+425
+00:13:50.160 --> 00:13:54.480
+that's really frustrating, not a good
+
+426
+00:13:52.360 --> 00:13:56.200
+use of my time.
+
+427
+00:13:54.480 --> 00:13:59.080
+Even documentation. So all of those
+
+428
+00:13:56.200 --> 00:14:01.160
+tasks, you know, how can we introduce
+
+429
+00:13:59.080 --> 00:14:04.320
+tooling into the AI development life
+
+430
+00:14:01.160 --> 00:14:06.800
+cycle AI into the development life cycle
+
+431
+00:14:04.320 --> 00:14:09.240
+to make those things
+
+432
+00:14:06.800 --> 00:14:11.520
+a lot less painful.
+
+433
+00:14:09.240 --> 00:14:13.640
+So like, what would developers really
+
+434
+00:14:11.520 --> 00:14:15.200
+gravitate towards,
+
+435
+00:14:13.640 --> 00:14:18.280
+you know, in trying to automate away
+
+436
+00:14:15.200 --> 00:14:20.240
+some of that pain? And to that end, you
+
+437
+00:14:18.280 --> 00:14:21.839
+know, something that I wonder is like,
+
+438
+00:14:20.240 --> 00:14:24.000
+do developers actually really enjoy
+
+439
+00:14:21.839 --> 00:14:26.680
+writing documentation and specs, right?
+
+440
+00:14:24.000 --> 00:14:28.160
+Cuz this whole methodology is based on
+
+441
+00:14:26.680 --> 00:14:29.520
+spending a lot of time with a markdown
+
+442
+00:14:28.160 --> 00:14:32.480
+file.
+
+443
+00:14:29.520 --> 00:14:34.160
+And I think some do, some don't.
+
+444
+00:14:32.480 --> 00:14:36.640
+But but as I think about how to roll
+
+445
+00:14:34.160 --> 00:14:39.280
+out, you know, both BEMAD and a broader
+
+446
+00:14:36.640 --> 00:14:41.320
+suite of sort of MCP-enabled tools that
+
+447
+00:14:39.280 --> 00:14:42.480
+are that are connected into an IDE, I
+
+448
+00:14:41.320 --> 00:14:44.360
+like to think about the sort of
+
+449
+00:14:42.480 --> 00:14:45.640
+developer archetypes that are going to
+
+450
+00:14:44.360 --> 00:14:47.360
+be interacting with these systems and
+
+451
+00:14:45.640 --> 00:14:49.320
+what are they actually getting from it?
+
+452
+00:14:47.360 --> 00:14:52.320
+What makes their life like that bit
+
+453
+00:14:49.320 --> 00:14:53.160
+easier? Super interesting. And and yeah,
+
+454
+00:14:52.320 --> 00:14:54.839
+it's it's interesting actually. I
+
+455
+00:14:53.160 --> 00:14:58.160
+remember giving a I think I gave the it
+
+456
+00:14:54.839 --> 00:15:00.600
+was the closing keynote at Devops UK.
+
+457
+00:14:58.160 --> 00:15:02.200
+And I gave I gave a session and and
+
+458
+00:15:00.600 --> 00:15:03.839
+about, you know, you know, what a future
+
+459
+00:15:02.200 --> 00:15:05.640
+world will look like with AI-native
+
+460
+00:15:03.839 --> 00:15:06.920
+development. And they came back they
+
+461
+00:15:05.640 --> 00:15:08.600
+came up to me at the end of the of the
+
+462
+00:15:06.920 --> 00:15:09.800
+session and they and they were like they
+
+463
+00:15:08.600 --> 00:15:11.240
+you know, they had like worry on their
+
+464
+00:15:09.800 --> 00:15:12.839
+face going, you know, you're you're
+
+465
+00:15:11.240 --> 00:15:14.480
+projecting a future here where where
+
+466
+00:15:12.839 --> 00:15:16.800
+developers just don't code. Is that is
+
+467
+00:15:14.480 --> 00:15:19.560
+that true? And I'm like, well, you know,
+
+468
+00:15:16.800 --> 00:15:21.360
+honestly, I I think you'll you'll you'll
+
+469
+00:15:19.560 --> 00:15:23.240
+be hard-pressed to find anyone who will
+
+470
+00:15:21.360 --> 00:15:26.240
+say at some, you know, code will always
+
+471
+00:15:23.240 --> 00:15:28.200
+be a thing. And I and I, you know, while
+
+472
+00:15:26.240 --> 00:15:30.480
+you'll have some skeptics that will say
+
+473
+00:15:28.200 --> 00:15:32.520
+not in my lifetime, it's it's going to
+
+474
+00:15:30.480 --> 00:15:34.480
+happen at some point. It's just a level
+
+475
+00:15:32.520 --> 00:15:36.560
+of abstraction above where we are. The
+
+476
+00:15:34.480 --> 00:15:38.560
+question is, I think, when. And and I
+
+477
+00:15:36.560 --> 00:15:41.079
+think, yeah, it depends, I guess,
+
+478
+00:15:38.560 --> 00:15:43.240
+whether a developer is so attached to
+
+479
+00:15:41.079 --> 00:15:45.000
+the coding or whether they're attached
+
+480
+00:15:43.240 --> 00:15:47.040
+to the creation like, you know, the the
+
+481
+00:15:45.000 --> 00:15:49.440
+the build, the complexity of of the
+
+482
+00:15:47.040 --> 00:15:51.240
+problem-solving and the creation. And I
+
+483
+00:15:49.440 --> 00:15:53.440
+always think people who people who care
+
+484
+00:15:51.240 --> 00:15:55.800
+about the creation, the construction
+
+485
+00:15:53.440 --> 00:15:57.720
+almost, the the how I build this thing
+
+486
+00:15:55.800 --> 00:15:59.640
+in terms of how I architect it, how I
+
+487
+00:15:57.720 --> 00:16:01.959
+think about various things fit, you
+
+488
+00:15:59.640 --> 00:16:04.200
+know, integrating and building together,
+
+489
+00:16:01.959 --> 00:16:05.959
+that's all that's going to be there.
+
+490
+00:16:04.200 --> 00:16:06.839
+And hopefully we'll
+
+491
+00:16:05.959 --> 00:16:08.920
+Yeah,
+
+492
+00:16:06.839 --> 00:16:10.760
+hopefully we'll abstract ourselves on
+
+493
+00:16:08.920 --> 00:16:11.959
+top of that pile still and we can still
+
+494
+00:16:10.760 --> 00:16:13.640
+make, you know, have input into those
+
+495
+00:16:11.959 --> 00:16:16.040
+discussions. But I think for people who
+
+496
+00:16:13.640 --> 00:16:17.720
+are like fully attached to code, that's
+
+497
+00:16:16.040 --> 00:16:19.160
+that's, in my opinion, certainly and I
+
+498
+00:16:17.720 --> 00:16:21.920
+think a lot of people's, it's it's
+
+499
+00:16:19.160 --> 00:16:23.480
+absolutely going to be reduced and and
+
+500
+00:16:21.920 --> 00:16:26.000
+someday most likely I think pushing the
+
+501
+00:16:23.480 --> 00:16:26.400
+whole, isn't it? It is. It's a very hard
+
+502
+00:16:26.000 --> 00:16:29.600
+thing.
+
+503
+00:16:26.400 --> 00:16:31.560
+&gt;&gt; is definitely becoming less important.
+
+504
+00:16:29.600 --> 00:16:33.440
+That doesn't mean that the quality of
+
+505
+00:16:31.560 --> 00:16:34.800
+the output of that artifact doesn't
+
+506
+00:16:33.440 --> 00:16:36.280
+matter. In fact, all of the best
+
+507
+00:16:34.800 --> 00:16:38.480
+practices that we followed all these
+
+508
+00:16:36.280 --> 00:16:39.760
+years are just as important as before.
+
+509
+00:16:38.480 --> 00:16:41.440
+And, you know, having code that is
+
+510
+00:16:39.760 --> 00:16:43.440
+linted such that you can actually read
+
+511
+00:16:41.440 --> 00:16:44.640
+it and maintain it is really important.
+
+512
+00:16:43.440 --> 00:16:47.520
+And having code that is incredibly
+
+513
+00:16:44.640 --> 00:16:49.440
+well-structured is really important.
+
+514
+00:16:47.520 --> 00:16:51.160
+And, you know, the art of selecting what
+
+515
+00:16:49.440 --> 00:16:52.800
+dependencies that you're using, you
+
+516
+00:16:51.160 --> 00:16:54.440
+know, don't definitely want to be
+
+517
+00:16:52.800 --> 00:16:56.520
+picking the latest version version of
+
+518
+00:16:54.440 --> 00:16:59.320
+Next.js as as recent events have shown
+
+519
+00:16:56.520 --> 00:17:01.320
+us. But the the the art of like actually
+
+520
+00:16:59.320 --> 00:17:03.079
+picking what modules, dependencies,
+
+521
+00:17:01.320 --> 00:17:04.959
+architecture that you're going to use
+
+522
+00:17:03.079 --> 00:17:07.240
+becomes the part of the craft that
+
+523
+00:17:04.959 --> 00:17:09.600
+becomes more important in my head. And,
+
+524
+00:17:07.240 --> 00:17:11.400
+you know, the actual line-by-line
+
+525
+00:17:09.600 --> 00:17:13.199
+writing and production of code is sort
+
+526
+00:17:11.400 --> 00:17:14.520
+of the thing that that that becomes
+
+527
+00:17:13.199 --> 00:17:16.000
+less.
+
+528
+00:17:14.520 --> 00:17:17.800
+One of the funny things about NearForm
+
+529
+00:17:16.000 --> 00:17:19.880
+is as a business we've always hired
+
+530
+00:17:17.800 --> 00:17:21.439
+senior staff. So I think the average
+
+531
+00:17:19.880 --> 00:17:24.000
+experience in the business runs about 8
+
+532
+00:17:21.439 --> 00:17:25.800
+years. But last, you know, 10, 15, 20
+
+533
+00:17:24.000 --> 00:17:28.960
+years of experience.
+
+534
+00:17:25.800 --> 00:17:31.160
+And it feels like those types of of of
+
+535
+00:17:28.960 --> 00:17:33.120
+developers are going to have a much more
+
+536
+00:17:31.160 --> 00:17:34.400
+productive time in steering some of
+
+537
+00:17:33.120 --> 00:17:36.240
+these tools, right? Like, it's it's
+
+538
+00:17:34.400 --> 00:17:38.320
+going to be interesting to see over the
+
+539
+00:17:36.240 --> 00:17:40.080
+next couple of years what that does to
+
+540
+00:17:38.320 --> 00:17:42.240
+the shape of general software
+
+541
+00:17:40.080 --> 00:17:44.080
+engineering teams.
+
+542
+00:17:42.240 --> 00:17:46.240
+One, you know, really unfortunate
+
+543
+00:17:44.080 --> 00:17:48.480
+artifact we've seen of this AI-native
+
+544
+00:17:46.240 --> 00:17:51.120
+era is probably the the the the kind of
+
+545
+00:17:48.480 --> 00:17:52.240
+reduction in hiring pipelines and also
+
+546
+00:17:51.120 --> 00:17:53.040
+what the
+
+547
+00:17:52.240 --> 00:17:54.480
+what [clears throat] the future looks
+
+548
+00:17:53.040 --> 00:17:56.160
+like for junior developers. It's it's
+
+549
+00:17:54.480 --> 00:17:57.240
+become a bit of a challenging time and,
+
+550
+00:17:56.160 --> 00:17:59.080
+you know, that that's something that
+
+551
+00:17:57.240 --> 00:18:00.040
+probably bums me out a little bit. Yeah,
+
+552
+00:17:59.080 --> 00:18:01.760
+and I guess there's a lot of kind of
+
+553
+00:18:00.040 --> 00:18:03.320
+like, I mean, the fear, uncertainty, and
+
+554
+00:18:01.760 --> 00:18:04.400
+doubt here is quite high in terms of
+
+555
+00:18:03.320 --> 00:18:06.400
+what does this mean for junior
+
+556
+00:18:04.400 --> 00:18:08.240
+developers?
+
+557
+00:18:06.400 --> 00:18:11.480
+But I guess kind of like
+
+558
+00:18:08.240 --> 00:18:13.080
+my opinion almost on this is is
+
+559
+00:18:11.480 --> 00:18:16.560
+I guess senior developers are more
+
+560
+00:18:13.080 --> 00:18:18.360
+likely to be able to naturally switch
+
+561
+00:18:16.560 --> 00:18:19.720
+over because they just have that
+
+562
+00:18:18.360 --> 00:18:22.000
+experience and they have that underlying
+
+563
+00:18:19.720 --> 00:18:23.760
+knowledge. I think the path of a junior
+
+564
+00:18:22.000 --> 00:18:24.800
+developer is just going to be different.
+
+565
+00:18:23.760 --> 00:18:27.000
+I think they're going to have to learn
+
+566
+00:18:24.800 --> 00:18:29.080
+different things. And arguably, I could
+
+567
+00:18:27.000 --> 00:18:30.440
+I could almost say, well, actually,
+
+568
+00:18:29.080 --> 00:18:32.120
+by being a junior developer, you're
+
+569
+00:18:30.440 --> 00:18:34.400
+going to be naturally more AI-native
+
+570
+00:18:32.120 --> 00:18:36.240
+because it's that's the path you learn.
+
+571
+00:18:34.400 --> 00:18:38.360
+And so we're going to have probably have
+
+572
+00:18:36.240 --> 00:18:39.360
+this this switch over where
+
+573
+00:18:38.360 --> 00:18:40.240
+the junior developers are actually going
+
+574
+00:18:39.360 --> 00:18:43.000
+to be
+
+575
+00:18:40.240 --> 00:18:45.480
+somewhat more reliant but also more more
+
+576
+00:18:43.000 --> 00:18:48.240
+happy, more more more
+
+577
+00:18:45.480 --> 00:18:50.400
+they will choose to use AI probably with
+
+578
+00:18:48.240 --> 00:18:51.560
+a lower level with a lower bar than more
+
+579
+00:18:50.400 --> 00:18:53.600
+of a senior developer. So they're
+
+580
+00:18:51.560 --> 00:18:54.960
+probably jumping into it more.
+
+581
+00:18:53.600 --> 00:18:56.280
+But that senior developer today
+
+582
+00:18:54.960 --> 00:18:57.400
+certainly does have that kind of like
+
+583
+00:18:56.280 --> 00:18:59.200
+more of that knowledge, particularly
+
+584
+00:18:57.400 --> 00:19:00.919
+around when they're writing specs, what
+
+585
+00:18:59.200 --> 00:19:02.560
+they want and why they they know why
+
+586
+00:19:00.919 --> 00:19:02.988
+they want it that way.
+
+587
+00:19:02.560 --> 00:19:03.040
+Yeah.
+
+588
+00:19:02.988 --> 00:19:04.840
+&gt;&gt; [snorts]
+
+589
+00:19:03.040 --> 00:19:06.240
+&gt;&gt; And I'm even not not as worried about
+
+590
+00:19:04.840 --> 00:19:08.159
+this notion of, you know, all of a
+
+591
+00:19:06.240 --> 00:19:10.440
+sudden teams just being seniors and the
+
+592
+00:19:08.159 --> 00:19:12.200
+pipeline of junior talent drying up. I
+
+593
+00:19:10.440 --> 00:19:13.760
+think the reality of market economics is
+
+594
+00:19:12.200 --> 00:19:16.040
+that nobody's going to let that happen.
+
+595
+00:19:13.760 --> 00:19:17.800
+And the need junior team members is
+
+596
+00:19:16.040 --> 00:19:19.400
+going to be very, you know, very quickly
+
+597
+00:19:17.800 --> 00:19:20.960
+solved by
+
+598
+00:19:19.400 --> 00:19:23.720
+you know, hiring pipelines and so on.
+
+599
+00:19:20.960 --> 00:19:24.760
+That that's going to have to be balanced
+
+600
+00:19:23.720 --> 00:19:26.280
+at some point in the future. And there
+
+601
+00:19:24.760 --> 00:19:27.520
+might be a minor reckoning, but we're
+
+602
+00:19:26.280 --> 00:19:29.800
+still going to need junior developers
+
+603
+00:19:27.520 --> 00:19:31.240
+that we grow into senior talent. Maybe
+
+604
+00:19:29.800 --> 00:19:32.520
+that more progressive mindset of
+
+605
+00:19:31.240 --> 00:19:34.400
+somebody who hasn't been doing this for
+
+606
+00:19:32.520 --> 00:19:36.080
+as long is more open to the change that
+
+607
+00:19:34.400 --> 00:19:37.640
+AI-native brings and actually it ends up
+
+608
+00:19:36.080 --> 00:19:40.040
+being an advantage. Who knows, right?
+
+609
+00:19:37.640 --> 00:19:41.320
+Yeah. No, I very much agree.
+
+610
+00:19:40.040 --> 00:19:42.679
+So so we talked a little bit about specs
+
+611
+00:19:41.320 --> 00:19:44.040
+there as well.
+
+612
+00:19:42.679 --> 00:19:45.880
+I guess when we think about from the
+
+613
+00:19:44.040 --> 00:19:46.919
+developer point of view,
+
+614
+00:19:45.880 --> 00:19:48.280
+the developers are going to be
+
+615
+00:19:46.919 --> 00:19:50.080
+potentially writing specs, maybe
+
+616
+00:19:48.280 --> 00:19:52.120
+manually, maybe through agents or or
+
+617
+00:19:50.080 --> 00:19:54.560
+LLMs.
+
+618
+00:19:52.120 --> 00:19:57.600
+The the specs ultimately will absolutely
+
+619
+00:19:54.560 --> 00:19:59.600
+be consumed by agents. Um but we're at
+
+620
+00:19:57.600 --> 00:20:02.320
+that at funny crossroad where kind of
+
+621
+00:19:59.600 --> 00:20:03.640
+like both the agent or both an LLM and
+
+622
+00:20:02.320 --> 00:20:06.720
+and an agent
+
+623
+00:20:03.640 --> 00:20:08.240
+and a human need to need to read this
+
+624
+00:20:06.720 --> 00:20:09.640
+and need to understand it and because
+
+625
+00:20:08.240 --> 00:20:11.160
+one is generating code from it, the
+
+626
+00:20:09.640 --> 00:20:12.720
+other one is trying to maintain it from
+
+627
+00:20:11.160 --> 00:20:13.840
+the point of view of
+
+628
+00:20:12.720 --> 00:20:14.720
+uh you know, making sure the features
+
+629
+00:20:13.840 --> 00:20:17.040
+are
+
+630
+00:20:14.720 --> 00:20:20.040
+are correct and well-written, etc.
+
+631
+00:20:17.040 --> 00:20:22.480
+Who's the who would you say needs to be
+
+632
+00:20:20.040 --> 00:20:24.320
+the the primary stakeholder? Who's the
+
+633
+00:20:22.480 --> 00:20:27.360
+person where this specification should
+
+634
+00:20:24.320 --> 00:20:29.440
+be written for? A person. And I guess a
+
+635
+00:20:27.360 --> 00:20:32.120
+little bit of a a little bit of a
+
+636
+00:20:29.440 --> 00:20:34.720
+a comparison here, I guess, is when we
+
+637
+00:20:32.120 --> 00:20:36.480
+write code today, we have two options.
+
+638
+00:20:34.720 --> 00:20:38.400
+We either make it, you know, the most
+
+639
+00:20:36.480 --> 00:20:39.960
+performant, most effective code
+
+640
+00:20:38.400 --> 00:20:42.680
+possible, which means we're writing for
+
+641
+00:20:39.960 --> 00:20:44.320
+a for a you know, maybe it's a JDK to or
+
+642
+00:20:42.680 --> 00:20:45.840
+you know, the machine code that is that
+
+643
+00:20:44.320 --> 00:20:47.680
+is the most performant, most effective
+
+644
+00:20:45.840 --> 00:20:50.520
+possible. That makes it far less
+
+645
+00:20:47.680 --> 00:20:52.000
+maintainable. So, we very often take you
+
+646
+00:20:50.520 --> 00:20:54.240
+know, make decisions to make something
+
+647
+00:20:52.000 --> 00:20:55.400
+more maintainable because we feel well,
+
+648
+00:20:54.240 --> 00:20:57.200
+we're the ones who are trying to
+
+649
+00:20:55.400 --> 00:20:59.640
+maintain this and read this as well.
+
+650
+00:20:57.200 --> 00:21:01.880
+Let's make it most readable for us and
+
+651
+00:20:59.640 --> 00:21:03.240
+then and let the let the compilers and
+
+652
+00:21:01.880 --> 00:21:05.720
+everything else
+
+653
+00:21:03.240 --> 00:21:07.640
+deal with a lot of the efficiencies
+
+654
+00:21:05.720 --> 00:21:09.640
+after the sake. So,
+
+655
+00:21:07.640 --> 00:21:11.120
+yeah, who is this primary artifact, the
+
+656
+00:21:09.640 --> 00:21:12.920
+spec,
+
+657
+00:21:11.120 --> 00:21:14.640
+uh written for
+
+658
+00:21:12.920 --> 00:21:16.000
+uh you know, primarily?
+
+659
+00:21:14.640 --> 00:21:18.000
+Yeah, that's an interesting question and
+
+660
+00:21:16.000 --> 00:21:19.960
+I I like the sort of code optimization
+
+661
+00:21:18.000 --> 00:21:21.360
+comparison. Um I also love that you have
+
+662
+00:21:19.960 --> 00:21:22.600
+to get the JDK and there's somewhere
+
+663
+00:21:21.360 --> 00:21:24.520
+your roots are showing through here,
+
+664
+00:21:22.600 --> 00:21:27.440
+Simon. That's great.
+
+665
+00:21:24.520 --> 00:21:31.400
+Yeah, my my JDK my JDK gray hairs, yeah.
+
+666
+00:21:27.440 --> 00:21:33.280
+Yeah, yeah. Um I think that ultimately,
+
+667
+00:21:31.400 --> 00:21:35.720
+for me at least, writing the specs for
+
+668
+00:21:33.280 --> 00:21:37.120
+human consumption is absolutely vital
+
+669
+00:21:35.720 --> 00:21:39.720
+because that review phase is quite
+
+670
+00:21:37.120 --> 00:21:41.760
+important. Um if you are writing outputs
+
+671
+00:21:39.720 --> 00:21:43.440
+purely for the consumption of a model,
+
+672
+00:21:41.760 --> 00:21:45.160
+um you're probably not really reviewing
+
+673
+00:21:43.440 --> 00:21:46.720
+what it is that's that's been generated.
+
+674
+00:21:45.160 --> 00:21:47.960
+You know, if you're generating a PRD off
+
+675
+00:21:46.720 --> 00:21:49.640
+of a transcript and just blindly
+
+676
+00:21:47.960 --> 00:21:51.520
+accepting it, in my eyes, you've
+
+677
+00:21:49.640 --> 00:21:53.080
+probably missed the purpose of spectrum
+
+678
+00:21:51.520 --> 00:21:55.080
+development in the first place. And
+
+679
+00:21:53.080 --> 00:21:56.520
+actually, the honing of that spec, you
+
+680
+00:21:55.080 --> 00:21:58.640
+know, however much some developers may
+
+681
+00:21:56.520 --> 00:22:00.679
+not enjoy, you know, crafting markdown
+
+682
+00:21:58.640 --> 00:22:02.440
+is actually the the really important
+
+683
+00:22:00.679 --> 00:22:03.160
+part of this process.
+
+684
+00:22:02.440 --> 00:22:05.600
+Um
+
+685
+00:22:03.160 --> 00:22:06.720
+in terms of like,
+
+686
+00:22:05.600 --> 00:22:08.400
+you know, the model being able to
+
+687
+00:22:06.720 --> 00:22:09.400
+interpret what's been written, I
+
+688
+00:22:08.400 --> 00:22:11.240
+actually don't [clears throat] know how
+
+689
+00:22:09.400 --> 00:22:13.760
+much of a consideration that's been in
+
+690
+00:22:11.240 --> 00:22:16.080
+my experience. Um you know, models are
+
+691
+00:22:13.760 --> 00:22:17.400
+incredibly adaptable, for sure. You
+
+692
+00:22:16.080 --> 00:22:19.480
+know, if we're putting in like, I don't
+
+693
+00:22:17.400 --> 00:22:20.600
+know, a PDF of a Gantt chart, we're
+
+694
+00:22:19.480 --> 00:22:22.400
+probably going to have a bad time.
+
+695
+00:22:20.600 --> 00:22:24.880
+That's not going to go well.
+
+696
+00:22:22.400 --> 00:22:27.679
+Um but, you know, things like Mermaid JS
+
+697
+00:22:24.880 --> 00:22:29.280
+syntax, which I've always done anyway,
+
+698
+00:22:27.679 --> 00:22:31.240
+or or even just the the subset of web
+
+699
+00:22:29.280 --> 00:22:32.000
+sequence diagram syntax, that type of
+
+700
+00:22:31.240 --> 00:22:33.240
+thing
+
+701
+00:22:32.000 --> 00:22:36.120
+in technical documentation is
+
+702
+00:22:33.240 --> 00:22:37.760
+invaluable. If you've been If you've
+
+703
+00:22:36.120 --> 00:22:40.880
+sort of come of age as a developer in
+
+704
+00:22:37.760 --> 00:22:42.679
+the world of building specifications in
+
+705
+00:22:40.880 --> 00:22:45.040
+markdown on GitHub, you're going to have
+
+706
+00:22:42.679 --> 00:22:47.880
+a great time. If you've come of age in
+
+707
+00:22:45.040 --> 00:22:49.520
+the world of oh, I don't know,
+
+708
+00:22:47.880 --> 00:22:52.080
+um you know, Microsoft Word documents
+
+709
+00:22:49.520 --> 00:22:54.880
+and diagrams scaffolded using those
+
+710
+00:22:52.080 --> 00:22:56.640
+constructs in in in in XML, which is
+
+711
+00:22:54.880 --> 00:22:58.440
+ultimately what the Word format breaks
+
+712
+00:22:56.640 --> 00:22:59.960
+down to, probably not going to have as
+
+713
+00:22:58.440 --> 00:23:01.679
+good of a time.
+
+714
+00:22:59.960 --> 00:23:03.560
+Um I've found that, you know, the kind
+
+715
+00:23:01.679 --> 00:23:06.000
+of modern way the developers architect
+
+716
+00:23:03.560 --> 00:23:07.360
+their their documentation, models are
+
+717
+00:23:06.000 --> 00:23:10.000
+just really good at reading and that's a
+
+718
+00:23:07.360 --> 00:23:11.600
+really nice coincidence. Yeah. Yeah, no,
+
+719
+00:23:10.000 --> 00:23:13.280
+absolutely. And we talked we we kind of
+
+720
+00:23:11.600 --> 00:23:15.920
+like mentioned there a little bit about
+
+721
+00:23:13.280 --> 00:23:17.679
+maintenance. I guess um
+
+722
+00:23:15.920 --> 00:23:19.480
+we're going to have the same issue with
+
+723
+00:23:17.679 --> 00:23:22.040
+specs, right? How do we make sure that
+
+724
+00:23:19.480 --> 00:23:24.920
+specifications don't become stale, that
+
+725
+00:23:22.040 --> 00:23:26.720
+developers are continually upgrading the
+
+726
+00:23:24.920 --> 00:23:29.440
+the the spec and it doesn't it doesn't,
+
+727
+00:23:26.720 --> 00:23:32.160
+you know, get out of sync. Um I guess
+
+728
+00:23:29.440 --> 00:23:34.960
+how when when we think about like BEMAD
+
+729
+00:23:32.160 --> 00:23:37.240
+specifications, the the BEMAD method,
+
+730
+00:23:34.960 --> 00:23:39.080
+how do we how do we make sure that this
+
+731
+00:23:37.240 --> 00:23:40.160
+isn't a turning into a maintenance hell
+
+732
+00:23:39.080 --> 00:23:41.720
+and that we don't get stale
+
+733
+00:23:40.160 --> 00:23:43.120
+documentation that just sits there,
+
+734
+00:23:41.720 --> 00:23:45.679
+nobody reads it, similar to a kind of
+
+735
+00:23:43.120 --> 00:23:47.080
+like what we saw the PRD become? I think
+
+736
+00:23:45.679 --> 00:23:49.120
+there's this like continuum, isn't
+
+737
+00:23:47.080 --> 00:23:51.960
+there? Um in the the world of spectrum
+
+738
+00:23:49.120 --> 00:23:54.520
+and between spec as source as the kind
+
+739
+00:23:51.960 --> 00:23:57.600
+of the first term, um you know, the
+
+740
+00:23:54.520 --> 00:23:59.480
+the spec as the the baseline artifact
+
+741
+00:23:57.600 --> 00:24:01.040
+that the code is generated off such that
+
+742
+00:23:59.480 --> 00:24:03.240
+you throw away the spec and get the
+
+743
+00:24:01.040 --> 00:24:05.200
+exact same code artifact or very similar
+
+744
+00:24:03.240 --> 00:24:07.600
+code artifact as a result when you
+
+745
+00:24:05.200 --> 00:24:10.440
+regenerate your code, versus a a more
+
+746
+00:24:07.600 --> 00:24:12.920
+kind of spec-first um driven methodology
+
+747
+00:24:10.440 --> 00:24:14.360
+where the specs are essentially, you
+
+748
+00:24:12.920 --> 00:24:16.280
+know, they last for the lifecycle of the
+
+749
+00:24:14.360 --> 00:24:19.160
+epic or the feature or the task and then
+
+750
+00:24:16.280 --> 00:24:20.560
+get thrown away. And so, you know, tied
+
+751
+00:24:19.160 --> 00:24:22.560
+back to that is this world of
+
+752
+00:24:20.560 --> 00:24:25.040
+maintaining the documentation. And I
+
+753
+00:24:22.560 --> 00:24:27.240
+feel like as the frameworks evolve, we
+
+754
+00:24:25.040 --> 00:24:28.800
+will end up more in a world of spec as
+
+755
+00:24:27.240 --> 00:24:31.480
+source where the really important
+
+756
+00:24:28.800 --> 00:24:32.800
+artifact is the spec.
+
+757
+00:24:31.480 --> 00:24:34.760
+You know, cascading all the way back to
+
+758
+00:24:32.800 --> 00:24:36.800
+the product requirements document. But
+
+759
+00:24:34.760 --> 00:24:39.160
+in the in the immediate term, we are
+
+760
+00:24:36.800 --> 00:24:41.080
+definitely seeing some degree of like
+
+761
+00:24:39.160 --> 00:24:43.760
+documentation rot and documentation
+
+762
+00:24:41.080 --> 00:24:44.679
+going out of out of state or out of out
+
+763
+00:24:43.760 --> 00:24:45.840
+of sync, [clears throat] a little bit
+
+764
+00:24:44.679 --> 00:24:48.440
+stale.
+
+765
+00:24:45.840 --> 00:24:50.760
+Um in BEMAD specifically, I've seen this
+
+766
+00:24:48.440 --> 00:24:54.072
+solved for a little bit through the
+
+767
+00:24:50.760 --> 00:24:54.400
+ability to inject into the backlog
+
+768
+00:24:54.072 --> 00:24:57.120
+&gt;&gt; [clears throat]
+
+769
+00:24:54.400 --> 00:24:58.480
+&gt;&gt; new work items that,
+
+770
+00:24:57.120 --> 00:25:01.080
+you know, might might alter the course
+
+771
+00:24:58.480 --> 00:25:02.920
+of development. And within that work log
+
+772
+00:25:01.080 --> 00:25:05.280
+item in the backlog, you will also have
+
+773
+00:25:02.920 --> 00:25:06.240
+a specific spec for the story that talks
+
+774
+00:25:05.280 --> 00:25:07.760
+a little bit about the detailed
+
+775
+00:25:06.240 --> 00:25:10.080
+implementation of that story and what we
+
+776
+00:25:07.760 --> 00:25:11.679
+expect from it. Does that cascade back
+
+777
+00:25:10.080 --> 00:25:14.040
+neatly to the PRD and architecture
+
+778
+00:25:11.679 --> 00:25:16.360
+document if if needed? Sometimes, but
+
+779
+00:25:14.040 --> 00:25:19.240
+not always. Um and that just feels like
+
+780
+00:25:16.360 --> 00:25:19.240
+a a direction of
+
+781
+00:25:20.679 --> 00:25:26.040
+type documentation will wind up also
+
+782
+00:25:23.560 --> 00:25:27.320
+being kept in sync. Um feels feels like
+
+783
+00:25:26.040 --> 00:25:28.600
+that's the way that that that the
+
+784
+00:25:27.320 --> 00:25:30.520
+tooling is headed, but we're certainly
+
+785
+00:25:28.600 --> 00:25:32.800
+not there yet. Yeah. It's interesting
+
+786
+00:25:30.520 --> 00:25:33.920
+when we talk about it cuz there's like,
+
+787
+00:25:32.800 --> 00:25:34.920
+you know, you talk about tooling there
+
+788
+00:25:33.920 --> 00:25:37.280
+and that's the way the tooling is
+
+789
+00:25:34.920 --> 00:25:40.120
+heading. And and I guess there's like
+
+790
+00:25:37.280 --> 00:25:41.640
+like any major kind of change to it to
+
+791
+00:25:40.120 --> 00:25:42.880
+our industry, there's there's there's
+
+792
+00:25:41.640 --> 00:25:44.679
+different things that need to change.
+
+793
+00:25:42.880 --> 00:25:46.720
+There's tooling, there's practices and
+
+794
+00:25:44.679 --> 00:25:47.840
+process, there's the human cultural
+
+795
+00:25:46.720 --> 00:25:49.240
+side.
+
+796
+00:25:47.840 --> 00:25:52.280
+Um And and like DevOps [clears throat]
+
+797
+00:25:49.240 --> 00:25:54.080
+is a great example of people sometimes
+
+798
+00:25:52.280 --> 00:25:55.640
+initially over over-rotating on the
+
+799
+00:25:54.080 --> 00:25:57.280
+tooling, but actually coming back to
+
+800
+00:25:55.640 --> 00:25:59.240
+realize actually, this is a this is a
+
+801
+00:25:57.280 --> 00:26:01.679
+team approach, it's cultural change that
+
+802
+00:25:59.240 --> 00:26:03.640
+we need to address first. Um I guess
+
+803
+00:26:01.679 --> 00:26:05.880
+BEMAD, let's let's ask the same question
+
+804
+00:26:03.640 --> 00:26:08.160
+of BEMAD. Is this fundamentally
+
+805
+00:26:05.880 --> 00:26:09.560
+um a technological problem or is this a
+
+806
+00:26:08.160 --> 00:26:10.920
+cultural practice that we need to
+
+807
+00:26:09.560 --> 00:26:12.520
+change?
+
+808
+00:26:10.920 --> 00:26:14.800
+I think it's a mixture of both, but it
+
+809
+00:26:12.520 --> 00:26:17.720
+sort of starts out in the world as a as
+
+810
+00:26:14.800 --> 00:26:20.160
+a a change in culture. Mhm. Um so, what
+
+811
+00:26:17.720 --> 00:26:22.160
+what it sort of does is it forces you up
+
+812
+00:26:20.160 --> 00:26:23.480
+front to expose a lot of the assumptions
+
+813
+00:26:22.160 --> 00:26:24.640
+that might exist within a software
+
+814
+00:26:23.480 --> 00:26:26.240
+project.
+
+815
+00:26:24.640 --> 00:26:27.720
+Um because, you know, as we discussed
+
+816
+00:26:26.240 --> 00:26:29.920
+earlier, if you if you're unearthing
+
+817
+00:26:27.720 --> 00:26:31.880
+these discoveries and these assumptions
+
+818
+00:26:29.920 --> 00:26:33.600
+um as development is ongoing, you know,
+
+819
+00:26:31.880 --> 00:26:36.720
+results may vary. And so, it's very
+
+820
+00:26:33.600 --> 00:26:39.160
+important to have a well-aligned
+
+821
+00:26:36.720 --> 00:26:40.679
+um piece of documentation with all of
+
+822
+00:26:39.160 --> 00:26:42.480
+the stakeholders that talks about what
+
+823
+00:26:40.679 --> 00:26:44.280
+exactly it is that you're building. And
+
+824
+00:26:42.480 --> 00:26:45.400
+to me, that's, you know, a pure cultural
+
+825
+00:26:44.280 --> 00:26:47.560
+change.
+
+826
+00:26:45.400 --> 00:26:49.600
+Um There are also kind of technical
+
+827
+00:26:47.560 --> 00:26:51.840
+practice changes coming about as a
+
+828
+00:26:49.600 --> 00:26:53.840
+result of the use of many of these STD
+
+829
+00:26:51.840 --> 00:26:54.520
+tools, BEMAD included.
+
+830
+00:26:53.840 --> 00:26:56.480
+Um
+
+831
+00:26:54.520 --> 00:26:59.080
+in particular, probably the the worst
+
+832
+00:26:56.480 --> 00:27:01.280
+culture technical change that I've seen
+
+833
+00:26:59.080 --> 00:27:03.320
+is probably the the transition from
+
+834
+00:27:01.280 --> 00:27:04.960
+teams to sort of the sole contributor.
+
+835
+00:27:03.320 --> 00:27:07.720
+And that's one of the things we are most
+
+836
+00:27:04.960 --> 00:27:09.640
+focused in trying to solve for. Um is
+
+837
+00:27:07.720 --> 00:27:12.160
+how do you scale
+
+838
+00:27:09.640 --> 00:27:13.800
+um a spec-driven framework to an entire
+
+839
+00:27:12.160 --> 00:27:16.040
+team of developers rather than a an
+
+840
+00:27:13.800 --> 00:27:18.679
+individual contributor that is taking on
+
+841
+00:27:16.040 --> 00:27:21.560
+the role of DevOps plus front-end
+
+842
+00:27:18.679 --> 00:27:23.000
+engineer plus back-end engineer plus,
+
+843
+00:27:21.560 --> 00:27:25.120
+you know, the list goes on. I think
+
+844
+00:27:23.000 --> 00:27:26.320
+that's that's almost, you know, not a
+
+845
+00:27:25.120 --> 00:27:28.640
+great way to be building within the
+
+846
+00:27:26.320 --> 00:27:30.760
+enterprise and we need to better solve
+
+847
+00:27:28.640 --> 00:27:32.679
+for that collaboration piece.
+
+848
+00:27:30.760 --> 00:27:35.120
+Um and although right now the challenges
+
+849
+00:27:32.679 --> 00:27:37.320
+are purely technical,
+
+850
+00:27:35.120 --> 00:27:39.600
+um it feels like ultimately a you know,
+
+851
+00:27:37.320 --> 00:27:40.840
+it's a cultural it impacts the culture
+
+852
+00:27:39.600 --> 00:27:41.920
+because, you know, you're expecting an
+
+853
+00:27:40.840 --> 00:27:43.440
+individual contributor to be able to
+
+854
+00:27:41.920 --> 00:27:45.240
+wear all these hats.
+
+855
+00:27:43.440 --> 00:27:48.040
+The the the limitation is purely
+
+856
+00:27:45.240 --> 00:27:50.400
+technical. It is that right now,
+
+857
+00:27:48.040 --> 00:27:51.880
+we are mixing, you know, the the work of
+
+858
+00:27:50.400 --> 00:27:54.240
+the back-end and the front-end engineer
+
+859
+00:27:51.880 --> 00:27:55.000
+in a decomposed task lists
+
+860
+00:27:54.240 --> 00:27:57.080
+um
+
+861
+00:27:55.000 --> 00:27:58.640
+uh that that that are output of of a lot
+
+862
+00:27:57.080 --> 00:28:00.400
+of these spec-driven tools, assuming
+
+863
+00:27:58.640 --> 00:28:02.240
+full-stack engineering, but in reality,
+
+864
+00:28:00.400 --> 00:28:03.920
+we could be aligning these tasks to
+
+865
+00:28:02.240 --> 00:28:06.480
+individual individual roles and have
+
+866
+00:28:03.920 --> 00:28:08.320
+people contribute. So, I'm um
+
+867
+00:28:06.480 --> 00:28:10.240
+I am optimistic of the future for the
+
+868
+00:28:08.320 --> 00:28:12.520
+sort of more collaborative culture that
+
+869
+00:28:10.240 --> 00:28:13.760
+spec-driven will will bring. Um but the
+
+870
+00:28:12.520 --> 00:28:15.880
+the tooling right now just needs to
+
+871
+00:28:13.760 --> 00:28:17.400
+catch up. Yeah. I love to I love the
+
+872
+00:28:15.880 --> 00:28:18.840
+phrase you used there as well where it's
+
+873
+00:28:17.400 --> 00:28:20.360
+it's like I think you
+
+874
+00:28:18.840 --> 00:28:22.640
+you mentioned forcing function, which I
+
+875
+00:28:20.360 --> 00:28:24.679
+think, you know, problems with a culture
+
+876
+00:28:22.640 --> 00:28:26.800
+change in terms of the way we go about
+
+877
+00:28:24.679 --> 00:28:29.800
+building software or or doing anything
+
+878
+00:28:26.800 --> 00:28:31.720
+in in the space of tech, you you often
+
+879
+00:28:29.800 --> 00:28:33.200
+have all the desire you want in trying
+
+880
+00:28:31.720 --> 00:28:34.760
+to make that change, but ultimately,
+
+881
+00:28:33.200 --> 00:28:37.600
+it's the tooling which is the forcing
+
+882
+00:28:34.760 --> 00:28:39.640
+function that encourages and ensures
+
+883
+00:28:37.600 --> 00:28:40.960
+people are actually taking those steps.
+
+884
+00:28:39.640 --> 00:28:43.679
+And I think it's the way it's the
+
+885
+00:28:40.960 --> 00:28:47.159
+tooling that helps train us to make
+
+886
+00:28:43.679 --> 00:28:49.640
+those cultural kind of steps
+
+887
+00:28:47.159 --> 00:28:52.200
+to to to ensure we actually follow that.
+
+888
+00:28:49.640 --> 00:28:53.679
+And over time, yeah, we probably do
+
+889
+00:28:52.200 --> 00:28:55.679
+we'll probably do that without even
+
+890
+00:28:53.679 --> 00:28:57.200
+thinking, but it's that transition
+
+891
+00:28:55.679 --> 00:28:58.760
+whereby the tooling can really help
+
+892
+00:28:57.200 --> 00:29:01.280
+teams
+
+893
+00:28:58.760 --> 00:29:02.320
+grow fast. And I think if we I I really
+
+894
+00:29:01.280 --> 00:29:03.640
+liked what you were talking about with
+
+895
+00:29:02.320 --> 00:29:05.159
+the collaboration and the teams. And I
+
+896
+00:29:03.640 --> 00:29:07.480
+guess I'd love to ask a couple of
+
+897
+00:29:05.159 --> 00:29:09.159
+questions. When First of all, maybe go
+
+898
+00:29:07.480 --> 00:29:11.120
+into more depth on specs and then I'd
+
+899
+00:29:09.159 --> 00:29:13.320
+I'd love to kind of like understand at
+
+900
+00:29:11.120 --> 00:29:15.000
+what point does that does that make it
+
+901
+00:29:13.320 --> 00:29:17.400
+too heavy weight? So, so why don't we
+
+902
+00:29:15.000 --> 00:29:19.000
+start with specs? Um
+
+903
+00:29:17.400 --> 00:29:20.960
+this is a cultural change to actually,
+
+904
+00:29:19.000 --> 00:29:23.040
+you know, get people to sit down and and
+
+905
+00:29:20.960 --> 00:29:24.720
+and and write those specifications and
+
+906
+00:29:23.040 --> 00:29:27.240
+think out what they need to put into
+
+907
+00:29:24.720 --> 00:29:30.480
+those specifications. I guess at what at
+
+908
+00:29:27.240 --> 00:29:33.600
+what depth do we need um detail about
+
+909
+00:29:30.480 --> 00:29:35.000
+every aspect of a project uh whereby
+
+910
+00:29:33.600 --> 00:29:37.400
+that's going to maybe we overthink
+
+911
+00:29:35.000 --> 00:29:39.880
+things or it actually starts slowing us
+
+912
+00:29:37.400 --> 00:29:41.880
+down versus versus helping us. Where's
+
+913
+00:29:39.880 --> 00:29:42.880
+the where's the right level for for
+
+914
+00:29:41.880 --> 00:29:44.360
+detail, I guess, in those
+
+915
+00:29:42.880 --> 00:29:45.800
+specifications?
+
+916
+00:29:44.360 --> 00:29:47.600
+Yeah, it's it's interesting because I
+
+917
+00:29:45.800 --> 00:29:50.360
+think in the world of startups, you
+
+918
+00:29:47.600 --> 00:29:51.880
+know, the the idea of overly verbosely
+
+919
+00:29:50.360 --> 00:29:55.360
+specifying what it is that you want to
+
+920
+00:29:51.880 --> 00:29:58.040
+build is, you know, almost sort of a bad
+
+921
+00:29:55.360 --> 00:30:00.880
+word, right? The super detailed spec can
+
+922
+00:29:58.040 --> 00:30:03.480
+can slow teams down. Um
+
+923
+00:30:00.880 --> 00:30:06.000
+I feel like the right size
+
+924
+00:30:03.480 --> 00:30:07.560
+spec problem is something that is
+
+925
+00:30:06.000 --> 00:30:09.520
+another challenge with the tooling right
+
+926
+00:30:07.560 --> 00:30:12.000
+now. We talked earlier a little bit
+
+927
+00:30:09.520 --> 00:30:14.160
+about rapid prototyping not being a
+
+928
+00:30:12.000 --> 00:30:16.200
+great fit for vibe coding
+
+929
+00:30:14.160 --> 00:30:17.880
+bug fixing not being a great fit for a
+
+930
+00:30:16.200 --> 00:30:18.960
+vibe coding.
+
+931
+00:30:17.880 --> 00:30:21.480
+Um
+
+932
+00:30:18.960 --> 00:30:23.280
+And right now it feels like the
+
+933
+00:30:21.480 --> 00:30:25.120
+the sort of the scale of the specs that
+
+934
+00:30:23.280 --> 00:30:26.920
+frameworks like BMAT produce can be
+
+935
+00:30:25.120 --> 00:30:27.840
+quite excessively verbose and heavy.
+
+936
+00:30:26.920 --> 00:30:30.400
+That's one of the things that we're
+
+937
+00:30:27.840 --> 00:30:31.880
+looking to try and trim.
+
+938
+00:30:30.400 --> 00:30:33.840
+Because not only we're looking to
+
+939
+00:30:31.880 --> 00:30:35.280
+right-size the specs for human context,
+
+940
+00:30:33.840 --> 00:30:37.960
+right? But we're also limited in how
+
+941
+00:30:35.280 --> 00:30:40.040
+much the model can can comprehend. And
+
+942
+00:30:37.960 --> 00:30:41.640
+the quality of outputs will go down the
+
+943
+00:30:40.040 --> 00:30:45.800
+more and more the context window we take
+
+944
+00:30:41.640 --> 00:30:47.280
+off with with with just specs, right? Um
+
+945
+00:30:45.800 --> 00:30:48.680
+so that right-size question is probably
+
+946
+00:30:47.280 --> 00:30:51.320
+one of the most important things for
+
+947
+00:30:48.680 --> 00:30:53.080
+these frameworks to get right. Um it
+
+948
+00:30:51.320 --> 00:30:55.520
+feels to me like BMAT is the closest
+
+949
+00:30:53.080 --> 00:30:57.040
+approximation of that I've seen to date.
+
+950
+00:30:55.520 --> 00:31:00.080
+But it's not perfect. It does some
+
+951
+00:30:57.040 --> 00:31:02.400
+really clever things around very lengthy
+
+952
+00:31:00.080 --> 00:31:04.920
+documents like PRDs and architecture
+
+953
+00:31:02.400 --> 00:31:06.400
+documents called sharding.
+
+954
+00:31:04.920 --> 00:31:08.360
+Which is super clever. So what it will
+
+955
+00:31:06.400 --> 00:31:09.840
+do is split up a requirements document
+
+956
+00:31:08.360 --> 00:31:11.800
+such that the functional requirements
+
+957
+00:31:09.840 --> 00:31:13.960
+per epic are split.
+
+958
+00:31:11.800 --> 00:31:15.640
+And then a architecture document such
+
+959
+00:31:13.960 --> 00:31:17.080
+that components are split such as front
+
+960
+00:31:15.640 --> 00:31:19.400
+end and back end.
+
+961
+00:31:17.080 --> 00:31:21.560
+And only subsets of those shared
+
+962
+00:31:19.400 --> 00:31:23.760
+documents are included in the context
+
+963
+00:31:21.560 --> 00:31:25.200
+window when interacting with the model.
+
+964
+00:31:23.760 --> 00:31:26.840
+And it's some of the cleverness like
+
+965
+00:31:25.200 --> 00:31:29.080
+that that makes me think this is like
+
+966
+00:31:26.840 --> 00:31:31.200
+the best approximation right now of what
+
+967
+00:31:29.080 --> 00:31:34.600
+spec driven looks like in providing the
+
+968
+00:31:31.200 --> 00:31:35.720
+best possible honed context to a model.
+
+969
+00:31:34.600 --> 00:31:37.640
+Yeah.
+
+970
+00:31:35.720 --> 00:31:38.880
+In theory every line of spec helps the
+
+971
+00:31:37.640 --> 00:31:40.640
+model and it's really just about
+
+972
+00:31:38.880 --> 00:31:42.960
+optimizing for context window. But in
+
+973
+00:31:40.640 --> 00:31:44.200
+reality that can become excessive. So
+
+974
+00:31:42.960 --> 00:31:45.800
+like it's one of the most important
+
+975
+00:31:44.200 --> 00:31:48.520
+things I think to optimize for that
+
+976
+00:31:45.800 --> 00:31:50.160
+length of a spec and you know, how big
+
+977
+00:31:48.520 --> 00:31:52.400
+can it be before it starts hurting
+
+978
+00:31:50.160 --> 00:31:53.720
+rather than being helpful.
+
+979
+00:31:52.400 --> 00:31:56.040
+That's where these frameworks I think
+
+980
+00:31:53.720 --> 00:31:58.320
+are going to longer term help us. Yeah.
+
+981
+00:31:56.040 --> 00:32:00.440
+And gosh, this resonates so so much. I'm
+
+982
+00:31:58.320 --> 00:32:03.400
+literally doing something right now with
+
+983
+00:32:00.440 --> 00:32:07.880
+a whole bunch of a whole bunch of kind
+
+984
+00:32:03.400 --> 00:32:09.560
+of like spec style documentation
+
+985
+00:32:07.880 --> 00:32:11.480
+markdown files
+
+986
+00:32:09.560 --> 00:32:13.320
+that are kind of like sharing core
+
+987
+00:32:11.480 --> 00:32:14.720
+security practices and I was practices
+
+988
+00:32:13.320 --> 00:32:17.280
+and we're talking like 80 different
+
+989
+00:32:14.720 --> 00:32:19.600
+files of of
+
+990
+00:32:17.280 --> 00:32:21.920
+best practices and policies of how to
+
+991
+00:32:19.600 --> 00:32:25.200
+write secure software. Now if we was to
+
+992
+00:32:21.920 --> 00:32:26.880
+throw all of that directly at a
+
+993
+00:32:25.200 --> 00:32:28.000
+an LLM and say right do a code review
+
+994
+00:32:26.880 --> 00:32:29.720
+here,
+
+995
+00:32:28.000 --> 00:32:31.440
+there's just too much context for it to
+
+996
+00:32:29.720 --> 00:32:33.480
+kind of like hold in and
+
+997
+00:32:31.440 --> 00:32:34.760
+say yeah, I'm going to
+
+998
+00:32:33.480 --> 00:32:36.560
+I'm going to do all of this and I'll do
+
+999
+00:32:34.760 --> 00:32:38.360
+I'll do it very very carefully. But the
+
+1000
+00:32:36.560 --> 00:32:39.640
+more I'm thinking about it and and the
+
+1001
+00:32:38.360 --> 00:32:41.040
+way I'm trying to the way I'm
+
+1002
+00:32:39.640 --> 00:32:42.480
+approaching this maybe even as a code
+
+1003
+00:32:41.040 --> 00:32:45.560
+review is to perhaps say well, let's
+
+1004
+00:32:42.480 --> 00:32:48.920
+actually let's actually try and target
+
+1005
+00:32:45.560 --> 00:32:50.200
+you know, various flows whereby I'm
+
+1006
+00:32:48.920 --> 00:32:52.120
+sharding is a great way of saying
+
+1007
+00:32:50.200 --> 00:32:53.560
+actually. I'm looking at very specific
+
+1008
+00:32:52.120 --> 00:32:55.440
+areas. Maybe start off with
+
+1009
+00:32:53.560 --> 00:32:56.920
+authentication. Let's let's see let's do
+
+1010
+00:32:55.440 --> 00:32:58.640
+a code review for authentication across
+
+1011
+00:32:56.920 --> 00:33:00.800
+this across this massive app. Because
+
+1012
+00:32:58.640 --> 00:33:02.120
+otherwise you've got so much context and
+
+1013
+00:33:00.800 --> 00:33:04.000
+you've got so much code that you're
+
+1014
+00:33:02.120 --> 00:33:06.640
+trying to look at. It's just it's not
+
+1015
+00:33:04.000 --> 00:33:08.440
+going to go do a good job I don't think.
+
+1016
+00:33:06.640 --> 00:33:10.520
+Really interesting to see is like how
+
+1017
+00:33:08.440 --> 00:33:12.760
+much So right now a lot of the logic for
+
+1018
+00:33:10.520 --> 00:33:14.600
+how this is sharded is said sat in a
+
+1019
+00:33:12.760 --> 00:33:16.040
+framework called BMAT. But if you go up
+
+1020
+00:33:14.600 --> 00:33:18.160
+the chain, right? So like if you look at
+
+1021
+00:33:16.040 --> 00:33:19.679
+the IDE and how it selects the most
+
+1022
+00:33:18.160 --> 00:33:21.280
+relevant piece of context to send to the
+
+1023
+00:33:19.679 --> 00:33:22.200
+foundation model, then you go up the
+
+1024
+00:33:21.280 --> 00:33:24.080
+chain again and you look at the
+
+1025
+00:33:22.200 --> 00:33:26.200
+foundation model as it reasons while
+
+1026
+00:33:24.080 --> 00:33:28.280
+completing a coding task and decides
+
+1027
+00:33:26.200 --> 00:33:31.040
+which bits of context to pull. How much
+
+1028
+00:33:28.280 --> 00:33:33.520
+we can align on, you know, standardized
+
+1029
+00:33:31.040 --> 00:33:35.280
+specs that we're using to to develop.
+
+1030
+00:33:33.520 --> 00:33:37.520
+You know, we have some constructs now
+
+1031
+00:33:35.280 --> 00:33:39.080
+like agents.md.
+
+1032
+00:33:37.520 --> 00:33:40.600
+Um but then we get into, you know, do we
+
+1033
+00:33:39.080 --> 00:33:42.920
+use dot cursor rules or a project
+
+1034
+00:33:40.600 --> 00:33:44.628
+constitution or a
+
+1035
+00:33:42.920 --> 00:33:44.880
+cloud.md. Um
+
+1036
+00:33:44.628 --> 00:33:46.120
+&gt;&gt; [clears throat]
+
+1037
+00:33:44.880 --> 00:33:47.520
+&gt;&gt; Right now it's a little bit of the wild
+
+1038
+00:33:46.120 --> 00:33:50.400
+west. You know, it was nice to see the
+
+1039
+00:33:47.520 --> 00:33:51.840
+MCP get get standard get released into a
+
+1040
+00:33:50.400 --> 00:33:54.280
+an open source foundation. But there's a
+
+1041
+00:33:51.840 --> 00:33:57.640
+lot more to be done on standardizing on
+
+1042
+00:33:54.280 --> 00:33:59.600
+this sort of base building blocks of
+
+1043
+00:33:57.640 --> 00:34:01.400
+specs across model vendors and across
+
+1044
+00:33:59.600 --> 00:34:03.000
+IDEs.
+
+1045
+00:34:01.400 --> 00:34:05.480
+And it's it's sort of exciting to me to
+
+1046
+00:34:03.000 --> 00:34:06.720
+see how much of the sort of techniques
+
+1047
+00:34:05.480 --> 00:34:08.560
+and terminology that we use in the
+
+1048
+00:34:06.720 --> 00:34:11.000
+framework land right now all the way up
+
+1049
+00:34:08.560 --> 00:34:13.359
+here is going to eventually cascade down
+
+1050
+00:34:11.000 --> 00:34:16.520
+into foundation model vendors and also
+
+1051
+00:34:13.359 --> 00:34:18.520
+IDE tool vendors. Um so yeah, you know,
+
+1052
+00:34:16.520 --> 00:34:20.120
+shout out to the the the the vendors of
+
+1053
+00:34:18.520 --> 00:34:21.640
+tools here like let's let's get a bit of
+
+1054
+00:34:20.120 --> 00:34:22.919
+standardization going. The more the
+
+1055
+00:34:21.640 --> 00:34:24.159
+better, right? Absolutely. And I think
+
+1056
+00:34:22.919 --> 00:34:26.280
+that's the key as well because you'll
+
+1057
+00:34:24.159 --> 00:34:29.120
+get you'll get people like using whether
+
+1058
+00:34:26.280 --> 00:34:31.640
+it's IDEs or agents across a company
+
+1059
+00:34:29.120 --> 00:34:33.760
+even wanting the same the same style.
+
+1060
+00:34:31.640 --> 00:34:35.280
+And that agent like the agent agnostic
+
+1061
+00:34:33.760 --> 00:34:36.960
+approach is going to be is going to be
+
+1062
+00:34:35.280 --> 00:34:38.320
+so so important
+
+1063
+00:34:36.960 --> 00:34:40.560
+for for for for this.
+
+1064
+00:34:38.320 --> 00:34:42.760
+So so so you mentioned about
+
+1065
+00:34:40.560 --> 00:34:45.560
+startups. I guess the startup culture of
+
+1066
+00:34:42.760 --> 00:34:48.359
+of really valuing speed and delivery and
+
+1067
+00:34:45.560 --> 00:34:50.600
+experimentation as well.
+
+1068
+00:34:48.359 --> 00:34:52.240
+Is this the wrong approach then for for
+
+1069
+00:34:50.600 --> 00:34:54.480
+a startup or do you feel like there's a
+
+1070
+00:34:52.240 --> 00:34:55.600
+there's a path for where BMAT can be
+
+1071
+00:34:54.480 --> 00:34:57.880
+used there as well? That's a great
+
+1072
+00:34:55.600 --> 00:34:59.440
+question. And like where on the spectrum
+
+1073
+00:34:57.880 --> 00:35:02.720
+does this belong within a startup as
+
+1074
+00:34:59.440 --> 00:35:04.840
+well? Yeah. Um I think the sort of you
+
+1075
+00:35:02.720 --> 00:35:06.200
+know, the world of the the vibe coder is
+
+1076
+00:35:04.840 --> 00:35:07.480
+going to find this very frustrating,
+
+1077
+00:35:06.200 --> 00:35:09.840
+right? Because it's going to slow them
+
+1078
+00:35:07.480 --> 00:35:12.680
+down. And the idea of having gone from
+
+1079
+00:35:09.840 --> 00:35:15.019
+seeing outputs in 20 minutes to an hour
+
+1080
+00:35:12.680 --> 00:35:15.600
+to seeing outputs at the end of a
+
+1081
+00:35:15.019 --> 00:35:17.560
+&gt;&gt; [clears throat]
+
+1082
+00:35:15.600 --> 00:35:19.880
+&gt;&gt; five six hour documentation session will
+
+1083
+00:35:17.560 --> 00:35:22.920
+be inherently frustrating to somebody
+
+1084
+00:35:19.880 --> 00:35:25.440
+who's used to in a in a really low
+
+1085
+00:35:22.920 --> 00:35:27.680
+diligence way just prompting their way
+
+1086
+00:35:25.440 --> 00:35:29.880
+to a really cool application.
+
+1087
+00:35:27.680 --> 00:35:32.520
+Um but for me at least the penny drop
+
+1088
+00:35:29.880 --> 00:35:34.440
+moment was when the quality reflected
+
+1089
+00:35:32.520 --> 00:35:36.840
+the fact that you know, that slight
+
+1090
+00:35:34.440 --> 00:35:38.359
+increase in effort was was put in. And
+
+1091
+00:35:36.840 --> 00:35:39.880
+so you know, when I was able to build
+
+1092
+00:35:38.359 --> 00:35:42.880
+something in let's say you know, two
+
+1093
+00:35:39.880 --> 00:35:44.680
+days of of spec authoring and iterating
+
+1094
+00:35:42.880 --> 00:35:47.000
+through a backlog
+
+1095
+00:35:44.680 --> 00:35:47.920
+that I felt like I understood
+
+1096
+00:35:47.000 --> 00:35:49.359
+as a
+
+1097
+00:35:47.920 --> 00:35:50.840
+and and it felt like an artifact that
+
+1098
+00:35:49.359 --> 00:35:52.880
+would have taken me a month to produce
+
+1099
+00:35:50.840 --> 00:35:54.720
+otherwise
+
+1100
+00:35:52.880 --> 00:35:56.400
+and was probably better code than I
+
+1101
+00:35:54.720 --> 00:35:58.080
+would have written, you know, it's
+
+1102
+00:35:56.400 --> 00:36:00.800
+that's when the the penny really dropped
+
+1103
+00:35:58.080 --> 00:36:02.920
+for me. And a repository with linted
+
+1104
+00:36:00.800 --> 00:36:05.440
+code that had you know, two three 400
+
+1105
+00:36:02.920 --> 00:36:06.560
+unit tests, automation tests,
+
+1106
+00:36:05.440 --> 00:36:07.840
+you know, an architecturally separate
+
+1107
+00:36:06.560 --> 00:36:10.840
+front end and back end, infrastructure
+
+1108
+00:36:07.840 --> 00:36:13.720
+as code like just real wow factor. And I
+
+1109
+00:36:10.840 --> 00:36:16.589
+think that any startup that isn't
+
+1110
+00:36:13.720 --> 00:36:17.200
+leveraging this build methodology
+
+1111
+00:36:16.589 --> 00:36:21.359
+&gt;&gt; [snorts]
+
+1112
+00:36:17.200 --> 00:36:24.640
+&gt;&gt; is going to find it very hard to compete
+
+1113
+00:36:21.359 --> 00:36:26.320
+in a world where you know, the vast
+
+1114
+00:36:24.640 --> 00:36:29.040
+majority of for example Y Combinator
+
+1115
+00:36:26.320 --> 00:36:30.640
+startups are using AI tooling to
+
+1116
+00:36:29.040 --> 00:36:32.200
+a statistic I don't want to misquote but
+
+1117
+00:36:30.640 --> 00:36:35.120
+some you know, incredibly high
+
+1118
+00:36:32.200 --> 00:36:35.120
+percentage of
+
+1119
+00:36:36.160 --> 00:36:40.000
+of startups in Y Combinator are using
+
+1120
+00:36:37.760 --> 00:36:41.600
+tools like this.
+
+1121
+00:36:40.000 --> 00:36:44.720
+It just gives that sort of competitive
+
+1122
+00:36:41.600 --> 00:36:47.560
+edge and the world of building products
+
+1123
+00:36:44.720 --> 00:36:49.080
+just looks so different now because
+
+1124
+00:36:47.560 --> 00:36:51.240
+anybody can show up with a vibe coder
+
+1125
+00:36:49.080 --> 00:36:53.040
+prototype and and show something shiny
+
+1126
+00:36:51.240 --> 00:36:54.400
+to investors. But actually transitioning
+
+1127
+00:36:53.040 --> 00:36:57.280
+it into something that would scale to
+
+1128
+00:36:54.400 --> 00:37:00.880
+the first even 500 or 1,000 users is a
+
+1129
+00:36:57.280 --> 00:37:02.560
+very different question. Um and I I feel
+
+1130
+00:37:00.880 --> 00:37:05.000
+like spec driven is like the the
+
+1131
+00:37:02.560 --> 00:37:07.000
+methodology for doing this. Yeah. And I
+
+1132
+00:37:05.000 --> 00:37:09.280
+think it's it's it's interesting I see
+
+1133
+00:37:07.000 --> 00:37:10.920
+when I see spec driven approaches and I
+
+1134
+00:37:09.280 --> 00:37:12.760
+see kind of more prompt driven
+
+1135
+00:37:10.920 --> 00:37:14.120
+approaches. You almost like start
+
+1136
+00:37:12.760 --> 00:37:16.200
+looking at a prompt driven approach
+
+1137
+00:37:14.120 --> 00:37:18.000
+being a very proto type style where
+
+1138
+00:37:16.200 --> 00:37:20.640
+doing things. I've even known someone to
+
+1139
+00:37:18.000 --> 00:37:22.240
+start with a prompt driven approach and
+
+1140
+00:37:20.640 --> 00:37:24.040
+they send their kind of like code logs
+
+1141
+00:37:22.240 --> 00:37:26.320
+or whatever it is over and say look,
+
+1142
+00:37:24.040 --> 00:37:28.760
+build me a a spec based on these
+
+1143
+00:37:26.320 --> 00:37:30.560
+prompts. You know from my prompts where
+
+1144
+00:37:28.760 --> 00:37:32.000
+my intents are. You can see from the
+
+1145
+00:37:30.560 --> 00:37:34.280
+code that's been generated what has been
+
+1146
+00:37:32.000 --> 00:37:36.359
+built, what I'm happy with. Build a spec
+
+1147
+00:37:34.280 --> 00:37:38.520
+that represents this. And I I guess kind
+
+1148
+00:37:36.359 --> 00:37:41.280
+of like do you feel like that if you
+
+1149
+00:37:38.520 --> 00:37:44.440
+were to like go fully vibe in like
+
+1150
+00:37:41.280 --> 00:37:46.040
+prompts without without building a spec.
+
+1151
+00:37:44.440 --> 00:37:48.640
+Do you feel like that would be a like a
+
+1152
+00:37:46.040 --> 00:37:51.000
+strong limiter for people who actually
+
+1153
+00:37:48.640 --> 00:37:52.880
+wants to go much further, much closer to
+
+1154
+00:37:51.000 --> 00:37:55.160
+production, those who want to scale AI
+
+1155
+00:37:52.880 --> 00:37:56.440
+within their organizations? As you've
+
+1156
+00:37:55.160 --> 00:37:58.640
+probably gathered like that's kind of
+
+1157
+00:37:56.440 --> 00:38:00.600
+the framework of how I think of things
+
+1158
+00:37:58.640 --> 00:38:02.160
+that have purely been prompted. Like
+
+1159
+00:38:00.600 --> 00:38:04.320
+that's not to say that you couldn't
+
+1160
+00:38:02.160 --> 00:38:06.120
+construct a perfect prompt that actually
+
+1161
+00:38:04.320 --> 00:38:08.200
+encapsulates all of the context from
+
+1162
+00:38:06.120 --> 00:38:10.240
+your specs. And just perfectly
+
+1163
+00:38:08.200 --> 00:38:13.720
+right-sizes your context window such
+
+1164
+00:38:10.240 --> 00:38:16.120
+that it's built, you know, task by task
+
+1165
+00:38:13.720 --> 00:38:16.800
+a bunch of different
+
+1166
+00:38:16.120 --> 00:38:18.920
+a
+
+1167
+00:38:16.800 --> 00:38:20.200
+a bunch of different smaller stories in
+
+1168
+00:38:18.920 --> 00:38:22.200
+just you know, very well crafted
+
+1169
+00:38:20.200 --> 00:38:24.320
+prompts. That's definitely possible. But
+
+1170
+00:38:22.200 --> 00:38:26.800
+the methodology of spec driven with the
+
+1171
+00:38:24.320 --> 00:38:29.920
+combination of a framework makes you
+
+1172
+00:38:26.800 --> 00:38:31.520
+more likely to be successful. Yeah.
+
+1173
+00:38:29.920 --> 00:38:33.440
+What's also interesting is like you
+
+1174
+00:38:31.520 --> 00:38:35.440
+know, is spec driven what the future of
+
+1175
+00:38:33.440 --> 00:38:37.560
+AI native engineering looks like? Like
+
+1176
+00:38:35.440 --> 00:38:38.960
+I'm not actually that dogged on the fact
+
+1177
+00:38:37.560 --> 00:38:42.280
+that it is. I'm not completely
+
+1178
+00:38:38.960 --> 00:38:44.160
+convinced. Um it feels as though Cursor
+
+1179
+00:38:42.280 --> 00:38:45.600
+in particular has been slow to adopt a
+
+1180
+00:38:44.160 --> 00:38:47.241
+lot of the primitives and have stayed
+
+1181
+00:38:45.600 --> 00:38:47.280
+gone through the
+
+1182
+00:38:47.241 --> 00:38:49.400
+&gt;&gt; [clears throat]
+
+1183
+00:38:47.280 --> 00:38:52.280
+&gt;&gt; the the recent release with plan mode
+
+1184
+00:38:49.400 --> 00:38:54.480
+feels like a a spec similar to spec
+
+1185
+00:38:52.280 --> 00:38:57.560
+driven or spec driven compatible way of
+
+1186
+00:38:54.480 --> 00:38:59.400
+operation. But it's not exactly that. Um
+
+1187
+00:38:57.560 --> 00:39:00.960
+so like you know, it feels like the best
+
+1188
+00:38:59.400 --> 00:39:03.400
+approximation right now how to work with
+
+1189
+00:39:00.960 --> 00:39:05.440
+these models this this this spec driven
+
+1190
+00:39:03.400 --> 00:39:07.640
+methodology and also the BMAT framework
+
+1191
+00:39:05.440 --> 00:39:09.720
+itself. But that's not to say that you
+
+1192
+00:39:07.640 --> 00:39:11.440
+know, next year that's that's what
+
+1193
+00:39:09.720 --> 00:39:13.440
+things are going to look like. My
+
+1194
+00:39:11.440 --> 00:39:15.600
+if I've learned one thing in the world
+
+1195
+00:39:13.440 --> 00:39:17.359
+of the in the kind of world wind that's
+
+1196
+00:39:15.600 --> 00:39:19.240
+been the last nine months,
+
+1197
+00:39:17.359 --> 00:39:20.647
+it is that my crystal ball is inherently
+
+1198
+00:39:19.240 --> 00:39:22.120
+faulty and I will make terrible
+
+1199
+00:39:20.647 --> 00:39:23.960
+&gt;&gt; [laughter]
+
+1200
+00:39:22.120 --> 00:39:26.400
+&gt;&gt; Who knows? Yeah.
+
+1201
+00:39:23.960 --> 00:39:28.080
+The crystal ball will be I I I saw an
+
+1202
+00:39:26.400 --> 00:39:30.800
+eight ball the other day where it's an
+
+1203
+00:39:28.080 --> 00:39:33.040
+LLM it is an LLM implemented eight ball
+
+1204
+00:39:30.800 --> 00:39:34.600
+which is like oh yeah, everything's
+
+1205
+00:39:33.040 --> 00:39:35.800
+everything's going in the future. So the
+
+1206
+00:39:34.600 --> 00:39:38.987
+crystal ball will be
+
+1207
+00:39:35.800 --> 00:39:40.120
+repeatedly say You're absolutely right.
+
+1208
+00:39:38.987 --> 00:39:42.440
+&gt;&gt; [laughter]
+
+1209
+00:39:40.120 --> 00:39:45.200
+&gt;&gt; So so when we when we think about how
+
+1210
+00:39:42.440 --> 00:39:46.720
+LLMs, you know, typically are are kind
+
+1211
+00:39:45.200 --> 00:39:49.760
+of like better with the the more
+
+1212
+00:39:46.720 --> 00:39:52.120
+structured specs, with with kind of like
+
+1213
+00:39:49.760 --> 00:39:54.040
+clear requirements. When we think about
+
+1214
+00:39:52.120 --> 00:39:56.160
+those specifications or those systems
+
+1215
+00:39:54.040 --> 00:39:58.240
+that are poorly specified, what do they
+
+1216
+00:39:56.160 --> 00:40:00.960
+become? Do they become something which
+
+1217
+00:39:58.240 --> 00:40:03.600
+just, you know, holds technical debt? Or
+
+1218
+00:40:00.960 --> 00:40:05.240
+are they now a liability because because
+
+1219
+00:40:03.600 --> 00:40:06.720
+of the way an LLM is going to is is
+
+1220
+00:40:05.240 --> 00:40:08.680
+essentially going to implement that and
+
+1221
+00:40:06.720 --> 00:40:11.200
+and and make assumptions?
+
+1222
+00:40:08.680 --> 00:40:13.160
+Yeah, it's a an interesting kind of
+
+1223
+00:40:11.200 --> 00:40:15.240
+question, isn't it? Like what becomes of
+
+1224
+00:40:13.160 --> 00:40:17.280
+technical debt? Does, you know, do we
+
+1225
+00:40:15.240 --> 00:40:18.560
+have this new thing that is spec debt or
+
+1226
+00:40:17.280 --> 00:40:20.240
+requirements debt or, you know,
+
+1227
+00:40:18.560 --> 00:40:22.600
+inadequate requirements? Because when
+
+1228
+00:40:20.240 --> 00:40:23.920
+you think about a tech debt, surely
+
+1229
+00:40:22.600 --> 00:40:26.280
+should
+
+1230
+00:40:23.920 --> 00:40:29.120
+at least fade into the background um
+
+1231
+00:40:26.280 --> 00:40:32.200
+because it's now easier to tackle
+
+1232
+00:40:29.120 --> 00:40:33.840
+backlogs of tech debt through agentic
+
+1233
+00:40:32.200 --> 00:40:35.920
+coding, right? You know, the the sort of
+
+1234
+00:40:33.840 --> 00:40:37.000
+drudgery of Well, actually, it doesn't
+
+1235
+00:40:35.920 --> 00:40:39.320
+feel like drudgery sometimes. It's
+
+1236
+00:40:37.000 --> 00:40:41.720
+really rewarding. But but the the art of
+
+1237
+00:40:39.320 --> 00:40:44.720
+like eliminating tech debt is now much
+
+1238
+00:40:41.720 --> 00:40:46.640
+easier to to go after with an agentic
+
+1239
+00:40:44.720 --> 00:40:49.120
+coding system typically. So, you know,
+
+1240
+00:40:46.640 --> 00:40:50.520
+does that become really important um
+
+1241
+00:40:49.120 --> 00:40:52.240
+when you can solve for tech debt much
+
+1242
+00:40:50.520 --> 00:40:54.160
+easier? And in fact, it's actually
+
+1243
+00:40:52.240 --> 00:40:56.280
+something that's not really aligned to
+
+1244
+00:40:54.160 --> 00:40:58.800
+what you wanted to build that becomes a,
+
+1245
+00:40:56.280 --> 00:41:01.480
+you know, the problem. So, like poorly
+
+1246
+00:40:58.800 --> 00:41:03.760
+defined requirements, um does it become
+
+1247
+00:41:01.480 --> 00:41:05.960
+harder after going through, you know,
+
+1248
+00:41:03.760 --> 00:41:07.800
+three, four days worth of of spec-driven
+
+1249
+00:41:05.960 --> 00:41:10.080
+development where you suddenly have this
+
+1250
+00:41:07.800 --> 00:41:11.760
+20, 30,000 line repository? Is it
+
+1251
+00:41:10.080 --> 00:41:13.160
+actually harder to recover from the fact
+
+1252
+00:41:11.760 --> 00:41:15.280
+that you missed some requirements along
+
+1253
+00:41:13.160 --> 00:41:16.920
+the way? And is there flexibility
+
+1254
+00:41:15.280 --> 00:41:19.640
+sufficient in the workflow to be able to
+
+1255
+00:41:16.920 --> 00:41:21.360
+make up for that? Um certainly some of
+
+1256
+00:41:19.640 --> 00:41:23.880
+the techniques I've tried have been
+
+1257
+00:41:21.360 --> 00:41:25.840
+things like injecting new backlog items
+
+1258
+00:41:23.880 --> 00:41:27.640
+to the end of a a backlog to try and
+
+1259
+00:41:25.840 --> 00:41:29.600
+recover and still following the
+
+1260
+00:41:27.640 --> 00:41:31.760
+spec-driven methodology rather than sort
+
+1261
+00:41:29.600 --> 00:41:33.840
+of bailing to vibe coding, which is
+
+1262
+00:41:31.760 --> 00:41:36.040
+definitely a temptation, but following
+
+1263
+00:41:33.840 --> 00:41:39.560
+the the methodology to sort of steer
+
+1264
+00:41:36.040 --> 00:41:42.080
+towards the the desired output. Um but
+
+1265
+00:41:39.560 --> 00:41:42.800
+yeah, it's it's definitely tricky.
+
+1266
+00:41:42.080 --> 00:41:44.360
+Um
+
+1267
+00:41:42.800 --> 00:41:46.680
+the the sort of robustness as well in
+
+1268
+00:41:44.360 --> 00:41:48.680
+that kind of requirements documentation
+
+1269
+00:41:46.680 --> 00:41:50.400
+artifact. Like I know the the Kiro team
+
+1270
+00:41:48.680 --> 00:41:53.960
+are doing loads of really interesting
+
+1271
+00:41:50.400 --> 00:41:56.480
+research at the moment on what makes a
+
+1272
+00:41:53.960 --> 00:41:58.720
+like really good, well-defined,
+
+1273
+00:41:56.480 --> 00:42:01.160
+structured requirements document through
+
+1274
+00:41:58.720 --> 00:42:01.720
+I think the use of like formal methods
+
+1275
+00:42:01.160 --> 00:42:03.560
+um
+
+1276
+00:42:01.720 --> 00:42:06.240
+to to ensure that that that that the
+
+1277
+00:42:03.560 --> 00:42:08.680
+requirements are are um
+
+1278
+00:42:06.240 --> 00:42:10.200
+well-formed and that they complete and
+
+1279
+00:42:08.680 --> 00:42:13.280
+that the gaps are actually identifiable
+
+1280
+00:42:10.200 --> 00:42:15.440
+by the the model as well. Yeah. Yeah.
+
+1281
+00:42:13.280 --> 00:42:18.560
+And and I guess, you know, the goal the
+
+1282
+00:42:15.440 --> 00:42:20.960
+goal here um of of B mad when we think
+
+1283
+00:42:18.560 --> 00:42:21.880
+about agents as they are today,
+
+1284
+00:42:20.960 --> 00:42:23.000
+um
+
+1285
+00:42:21.880 --> 00:42:24.360
+agents are becoming more and more
+
+1286
+00:42:23.000 --> 00:42:24.920
+autonomous.
+
+1287
+00:42:24.360 --> 00:42:26.960
+Uh
+
+1288
+00:42:24.920 --> 00:42:28.800
+are we trying to make them more
+
+1289
+00:42:26.960 --> 00:42:31.560
+autonomous through things like
+
+1290
+00:42:28.800 --> 00:42:34.440
+specifications and through
+
+1291
+00:42:31.560 --> 00:42:38.360
+uh B mad methods because that allows us
+
+1292
+00:42:34.440 --> 00:42:40.600
+to create a a more detailed brain dump
+
+1293
+00:42:38.360 --> 00:42:43.360
+of what we're thinking? Or is it
+
+1294
+00:42:40.600 --> 00:42:46.000
+actually are we still aiming for that
+
+1295
+00:42:43.360 --> 00:42:47.440
+very assisted back-and-forth chat style
+
+1296
+00:42:46.000 --> 00:42:49.680
+flow
+
+1297
+00:42:47.440 --> 00:42:51.160
+uh whereby it just makes it safer
+
+1298
+00:42:49.680 --> 00:42:53.000
+because we're giving it the guardrails
+
+1299
+00:42:51.160 --> 00:42:54.400
+it needs? Is there a Is there a kind of
+
+1300
+00:42:53.000 --> 00:42:56.360
+like a north star that we're we're
+
+1301
+00:42:54.400 --> 00:42:57.760
+trying to get to or both very
+
+1302
+00:42:56.360 --> 00:42:59.840
+applicable?
+
+1303
+00:42:57.760 --> 00:43:01.384
+Yeah, I think it's a bit of both. I need
+
+1304
+00:42:59.840 --> 00:43:02.120
+to get off my fence, don't I?
+
+1305
+00:43:01.384 --> 00:43:05.240
+&gt;&gt; [laughter]
+
+1306
+00:43:02.120 --> 00:43:06.624
+&gt;&gt; If you had to choose one though, Kieran.
+
+1307
+00:43:05.240 --> 00:43:07.200
+I refuse.
+
+1308
+00:43:06.624 --> 00:43:09.560
+&gt;&gt; [laughter]
+
+1309
+00:43:07.200 --> 00:43:11.200
+&gt;&gt; But backlog decomposition for me feels
+
+1310
+00:43:09.560 --> 00:43:13.000
+like the place where there's a little
+
+1311
+00:43:11.200 --> 00:43:14.040
+bit of room now to speed up with the
+
+1312
+00:43:13.000 --> 00:43:14.800
+sort of
+
+1313
+00:43:14.040 --> 00:43:16.160
+um
+
+1314
+00:43:14.800 --> 00:43:17.480
+kind of safety we've injected and
+
+1315
+00:43:16.160 --> 00:43:19.760
+guardrails we've injected into some of
+
+1316
+00:43:17.480 --> 00:43:21.920
+these frameworks. So, like the iteration
+
+1317
+00:43:19.760 --> 00:43:23.920
+of an architecture document and a
+
+1318
+00:43:21.920 --> 00:43:25.520
+requirements document, that feels like a
+
+1319
+00:43:23.920 --> 00:43:27.160
+pretty important stage to still have a
+
+1320
+00:43:25.520 --> 00:43:29.080
+human in the loop. But when you've
+
+1321
+00:43:27.160 --> 00:43:30.480
+decomposed a backlog and reordered it to
+
+1322
+00:43:29.080 --> 00:43:32.560
+your heart's content and you feel like
+
+1323
+00:43:30.480 --> 00:43:34.120
+the the stories that a an agent is going
+
+1324
+00:43:32.560 --> 00:43:36.520
+to go after one by one with a new
+
+1325
+00:43:34.120 --> 00:43:39.040
+context window for each one is in good
+
+1326
+00:43:36.520 --> 00:43:41.160
+shape, I'm not sure that me sitting
+
+1327
+00:43:39.040 --> 00:43:43.080
+there and trusting every single command
+
+1328
+00:43:41.160 --> 00:43:45.640
+that the model suggests I run is
+
+1329
+00:43:43.080 --> 00:43:47.120
+necessarily a great use of my time when
+
+1330
+00:43:45.640 --> 00:43:49.600
+I can, you know, run the agent in a
+
+1331
+00:43:47.120 --> 00:43:51.560
+sandbox and force it between each story
+
+1332
+00:43:49.600 --> 00:43:54.040
+to get commit, get push. And if it
+
+1333
+00:43:51.560 --> 00:43:55.520
+decides to rm -rf / star, that's okay by
+
+1334
+00:43:54.040 --> 00:43:57.880
+me cuz I have everything in Git and it's
+
+1335
+00:43:55.520 --> 00:43:59.760
+in a container and who cares, right? Um
+
+1336
+00:43:57.880 --> 00:44:02.000
+you know, you see all the memes of of
+
+1337
+00:43:59.760 --> 00:44:04.680
+folk vibe coding and seeing it rm -rf
+
+1338
+00:44:02.000 --> 00:44:06.240
+their their entire directory or rm -rf.
+
+1339
+00:44:04.680 --> 00:44:07.600
+Um yeah, the
+
+1340
+00:44:06.240 --> 00:44:08.880
+that becomes less of a problem when
+
+1341
+00:44:07.600 --> 00:44:10.800
+you've got sufficient guardrails and
+
+1342
+00:44:08.880 --> 00:44:12.000
+you're operating in a nice sandbox VM
+
+1343
+00:44:10.800 --> 00:44:12.560
+and so on.
+
+1344
+00:44:12.000 --> 00:44:14.280
+Um
+
+1345
+00:44:12.560 --> 00:44:16.280
+and so it just feels like sat there
+
+1346
+00:44:14.280 --> 00:44:18.280
+iterating through every single story
+
+1347
+00:44:16.280 --> 00:44:19.960
+maybe less useful. I'd love to be able
+
+1348
+00:44:18.280 --> 00:44:21.440
+to accelerate through a bunch of stories
+
+1349
+00:44:19.960 --> 00:44:23.840
+and just review the output of epics
+
+1350
+00:44:21.440 --> 00:44:25.400
+maybe. And so you get towards more of
+
+1351
+00:44:23.840 --> 00:44:28.320
+that autonomy
+
+1352
+00:44:25.400 --> 00:44:30.000
+um when it comes to, you know, as I said
+
+1353
+00:44:28.320 --> 00:44:31.720
+that that earlier phase of actually
+
+1354
+00:44:30.000 --> 00:44:33.960
+writing the specs, authoring the specs,
+
+1355
+00:44:31.720 --> 00:44:35.400
+aligning on the specs, I feel [gasps]
+
+1356
+00:44:33.960 --> 00:44:38.680
+like there's less room for autonomy
+
+1357
+00:44:35.400 --> 00:44:40.920
+right now. Um but but if if we were able
+
+1358
+00:44:38.680 --> 00:44:42.280
+to also make that highly autonomous,
+
+1359
+00:44:40.920 --> 00:44:44.400
+like where do we end up? Are we actually
+
+1360
+00:44:42.280 --> 00:44:44.840
+back to vibe coding somehow? I don't
+
+1361
+00:44:44.400 --> 00:44:46.400
+know.
+
+1362
+00:44:44.840 --> 00:44:48.040
+&gt;&gt; It kind of like relies a lot on trust,
+
+1363
+00:44:46.400 --> 00:44:49.680
+right? Cuz like the if we don't have
+
+1364
+00:44:48.040 --> 00:44:51.520
+trust, we just plain don't have autonomy
+
+1365
+00:44:49.680 --> 00:44:53.640
+because the the the the trust is that
+
+1366
+00:44:51.520 --> 00:44:56.680
+piece in the culture that allows us to
+
+1367
+00:44:53.640 --> 00:44:59.000
+allow the AI agents to to to to stretch
+
+1368
+00:44:56.680 --> 00:45:00.080
+those legs and you know, run run as fast
+
+1369
+00:44:59.000 --> 00:45:00.880
+as Yeah, again, right? It's like having
+
+1370
+00:45:00.080 --> 00:45:03.040
+the
+
+1371
+00:45:00.880 --> 00:45:05.720
+agent enabling you to go after CI/CD and
+
+1372
+00:45:03.040 --> 00:45:07.480
+and then, yeah. Yeah, yeah. So, so So,
+
+1373
+00:45:05.720 --> 00:45:09.560
+does B mad I guess B mad changes that
+
+1374
+00:45:07.480 --> 00:45:10.720
+model then when we think about trust in
+
+1375
+00:45:09.560 --> 00:45:12.000
+terms of it, you know, does it provide
+
+1376
+00:45:10.720 --> 00:45:14.400
+us with more trust and maybe we kind of
+
+1377
+00:45:12.000 --> 00:45:15.080
+like lean a little bit more into
+
+1378
+00:45:14.400 --> 00:45:17.880
+um
+
+1379
+00:45:15.080 --> 00:45:21.280
+I guess quality, the quality of of of AI
+
+1380
+00:45:17.880 --> 00:45:22.160
+output and and how specifications can
+
+1381
+00:45:21.280 --> 00:45:24.520
+you know, can [clears throat] provide
+
+1382
+00:45:22.160 --> 00:45:25.960
+that greater quality because it's
+
+1383
+00:45:24.520 --> 00:45:28.480
+providing those guardrails and as a
+
+1384
+00:45:25.960 --> 00:45:29.960
+result, knowing if those guardrails can
+
+1385
+00:45:28.480 --> 00:45:32.000
+be whether there's automation in the
+
+1386
+00:45:29.960 --> 00:45:33.800
+validation and things like that so that,
+
+1387
+00:45:32.000 --> 00:45:35.880
+you know, things can be raised to us to
+
+1388
+00:45:33.800 --> 00:45:37.400
+say, "No, this is actually
+
+1389
+00:45:35.880 --> 00:45:40.560
+going against the things that we've said
+
+1390
+00:45:37.400 --> 00:45:42.480
+in the spec." We can not just recognize
+
+1391
+00:45:40.560 --> 00:45:44.640
+we know there's high quality here, but
+
+1392
+00:45:42.480 --> 00:45:46.920
+we then have greater trust. Is that Is
+
+1393
+00:45:44.640 --> 00:45:48.800
+that Is that a path where we can, you
+
+1394
+00:45:46.920 --> 00:45:50.520
+know, raise the autonomy bar? Yeah, I
+
+1395
+00:45:48.800 --> 00:45:52.200
+think that that is exactly the lever
+
+1396
+00:45:50.520 --> 00:45:54.320
+that we need to be able to make the
+
+1397
+00:45:52.200 --> 00:45:55.800
+transition in autonomy is you know,
+
+1398
+00:45:54.320 --> 00:45:58.400
+being able to trust the outputs of the
+
+1399
+00:45:55.800 --> 00:46:00.400
+agent. And so, like if in the short term
+
+1400
+00:45:58.400 --> 00:46:02.320
+it looks like, you know, on a per
+
+1401
+00:46:00.400 --> 00:46:04.800
+context window, per story basis we're
+
+1402
+00:46:02.320 --> 00:46:06.880
+reviewing outputs, so be it. But the
+
+1403
+00:46:04.800 --> 00:46:09.200
+more that the sort of quality metric is
+
+1404
+00:46:06.880 --> 00:46:10.920
+pushed further to the right,
+
+1405
+00:46:09.200 --> 00:46:13.160
+um the more that we can afford that
+
+1406
+00:46:10.920 --> 00:46:15.640
+autonomy and the more that we can afford
+
+1407
+00:46:13.160 --> 00:46:18.600
+to accelerate. And so, I think what will
+
+1408
+00:46:15.640 --> 00:46:21.560
+get very interesting is
+
+1409
+00:46:18.600 --> 00:46:23.280
+as we transition um as models are
+
+1410
+00:46:21.560 --> 00:46:25.040
+writing more and more tests to cover
+
+1411
+00:46:23.280 --> 00:46:27.160
+what it is they've done. It's funny, you
+
+1412
+00:46:25.040 --> 00:46:29.760
+know, that the same tricks ring true
+
+1413
+00:46:27.160 --> 00:46:31.400
+like TDD and so on. The the more that
+
+1414
+00:46:29.760 --> 00:46:32.680
+models are able to actually test their
+
+1415
+00:46:31.400 --> 00:46:34.600
+outputs
+
+1416
+00:46:32.680 --> 00:46:37.200
+um and prove that what they claim is
+
+1417
+00:46:34.600 --> 00:46:38.920
+working is is in fact truth um through a
+
+1418
+00:46:37.200 --> 00:46:41.280
+completely separate artifact to it just
+
+1419
+00:46:38.920 --> 00:46:43.520
+interpreting the code, um the more that
+
+1420
+00:46:41.280 --> 00:46:45.040
+we can trust that autonomy. Um and it's
+
+1421
+00:46:43.520 --> 00:46:46.840
+like it's the traditional software
+
+1422
+00:46:45.040 --> 00:46:49.359
+engineering techniques that we've always
+
+1423
+00:46:46.840 --> 00:46:50.800
+used to build trust in a in an artifact
+
+1424
+00:46:49.359 --> 00:46:53.920
+and build trust in the deployment of an
+
+1425
+00:46:50.800 --> 00:46:56.480
+artifact just being used by by agents.
+
+1426
+00:46:53.920 --> 00:46:59.800
+Like I do sometimes wonder is there a a
+
+1427
+00:46:56.480 --> 00:47:01.760
+world where there's some new construct
+
+1428
+00:46:59.800 --> 00:47:03.480
+that that models use to test the
+
+1429
+00:47:01.760 --> 00:47:04.800
+validity of code that we don't
+
+1430
+00:47:03.480 --> 00:47:06.640
+traditionally do in a in a software
+
+1431
+00:47:04.800 --> 00:47:08.920
+development life cycle that can be, you
+
+1432
+00:47:06.640 --> 00:47:10.440
+know, that can be used here. Maybe
+
+1433
+00:47:08.920 --> 00:47:11.359
+that's where the research goes, I don't
+
+1434
+00:47:10.440 --> 00:47:13.280
+know.
+
+1435
+00:47:11.359 --> 00:47:15.359
+Um the the the Kiro folks again,
+
+1436
+00:47:13.280 --> 00:47:17.640
+shout-out to to them have probably done
+
+1437
+00:47:15.359 --> 00:47:19.800
+the most in this space with their
+
+1438
+00:47:17.640 --> 00:47:21.960
+Oh, what do they call them? Checks, I
+
+1439
+00:47:19.800 --> 00:47:23.760
+think. Um but they have a new, you know,
+
+1440
+00:47:21.960 --> 00:47:26.040
+testing methodology that checks for
+
+1441
+00:47:23.760 --> 00:47:28.280
+completeness in a in a way that's not
+
+1442
+00:47:26.040 --> 00:47:29.640
+TDD and is not BDD, but is something
+
+1443
+00:47:28.280 --> 00:47:31.040
+different.
+
+1444
+00:47:29.640 --> 00:47:32.880
+Yeah. And it's funny when we talk about
+
+1445
+00:47:31.040 --> 00:47:34.040
+TDD and like when we think about specs
+
+1446
+00:47:32.880 --> 00:47:35.560
+and I remember in the early days of
+
+1447
+00:47:34.040 --> 00:47:37.200
+Tessel when we were when we were looking
+
+1448
+00:47:35.560 --> 00:47:39.600
+at what goes into a spec and and how
+
+1449
+00:47:37.200 --> 00:47:42.280
+should it be how should it be phrased?
+
+1450
+00:47:39.600 --> 00:47:44.720
+What I what I found like immediately
+
+1451
+00:47:42.280 --> 00:47:46.400
+very interesting was how, well, if you
+
+1452
+00:47:44.720 --> 00:47:48.080
+were to write down a capability in a
+
+1453
+00:47:46.400 --> 00:47:49.480
+specification, you know, you can think
+
+1454
+00:47:48.080 --> 00:47:51.760
+about that in two ways. You can think
+
+1455
+00:47:49.480 --> 00:47:54.240
+about that as this is something I want
+
+1456
+00:47:51.760 --> 00:47:56.520
+the application to do, but also just
+
+1457
+00:47:54.240 --> 00:47:58.440
+slightly written differently, it's it
+
+1458
+00:47:56.520 --> 00:48:01.120
+can be written as a test. You can say
+
+1459
+00:47:58.440 --> 00:48:02.920
+when when this happens, I want you to
+
+1460
+00:48:01.120 --> 00:48:04.680
+provide this back. And that, you know,
+
+1461
+00:48:02.920 --> 00:48:06.680
+it actually turns it into just a slight
+
+1462
+00:48:04.680 --> 00:48:08.960
+rephrasing turns it into actually a
+
+1463
+00:48:06.680 --> 00:48:10.840
+test-driven test-driven development
+
+1464
+00:48:08.960 --> 00:48:13.359
+style approach where actually your
+
+1465
+00:48:10.840 --> 00:48:16.320
+specification is is a list of is a list
+
+1466
+00:48:13.359 --> 00:48:19.280
+of things that you want to be true,
+
+1467
+00:48:16.320 --> 00:48:20.920
+um essentially test cases. So, I guess,
+
+1468
+00:48:19.280 --> 00:48:22.560
+you know, what came first, the chicken
+
+1469
+00:48:20.920 --> 00:48:25.040
+or the egg? What what should come first
+
+1470
+00:48:22.560 --> 00:48:27.520
+in the spec, the the code or rather the
+
+1471
+00:48:25.040 --> 00:48:30.520
+capability or the test?
+
+1472
+00:48:27.520 --> 00:48:32.080
+That requirements writing style, uh
+
+1473
+00:48:30.520 --> 00:48:34.480
+EARS, is that what it's called? EARS
+
+1474
+00:48:32.080 --> 00:48:36.960
+requirements? Um it is setting you up
+
+1475
+00:48:34.480 --> 00:48:38.880
+quite nicely for
+
+1476
+00:48:36.960 --> 00:48:41.000
+a specification of what a test to
+
+1477
+00:48:38.880 --> 00:48:43.000
+subsequently validate that requirement
+
+1478
+00:48:41.000 --> 00:48:46.520
+could be. And so it feels like that is
+
+1479
+00:48:43.000 --> 00:48:47.680
+vastly more important than I don't know,
+
+1480
+00:48:46.520 --> 00:48:50.200
+you know, your your dump from your
+
+1481
+00:48:47.680 --> 00:48:52.520
+brainstorming session earlier on. So,
+
+1482
+00:48:50.200 --> 00:48:54.280
+actually getting a succinct statement of
+
+1483
+00:48:52.520 --> 00:48:56.560
+what that requirement is and being able
+
+1484
+00:48:54.280 --> 00:48:59.560
+to use it as a testable artifact, highly
+
+1485
+00:48:56.560 --> 00:49:01.000
+valuable. Yeah. Um you know, maybe maybe
+
+1486
+00:48:59.560 --> 00:49:02.840
+we'll we'll be in a world where a
+
+1487
+00:49:01.000 --> 00:49:04.680
+Playwright automation test is written to
+
+1488
+00:49:02.840 --> 00:49:06.680
+validate a piece of functionality purely
+
+1489
+00:49:04.680 --> 00:49:08.600
+off of observation of the produced
+
+1490
+00:49:06.680 --> 00:49:09.960
+interface plus that statement with no
+
+1491
+00:49:08.600 --> 00:49:12.600
+insight into the code. The code is a
+
+1492
+00:49:09.960 --> 00:49:13.960
+black box. And the methodology is,
+
+1493
+00:49:12.600 --> 00:49:15.320
+here's the interface, here's the
+
+1494
+00:49:13.960 --> 00:49:17.720
+requirement, prove that this actually
+
+1495
+00:49:15.320 --> 00:49:20.040
+works. Model, off you go. Yeah. And it's
+
+1496
+00:49:17.720 --> 00:49:21.640
+just a LLM as a judge LLM as a judge
+
+1497
+00:49:20.040 --> 00:49:22.920
+style just trying to look at what's been
+
+1498
+00:49:21.640 --> 00:49:24.520
+created.
+
+1499
+00:49:22.920 --> 00:49:25.960
+Yeah, absolutely. And I think actually
+
+1500
+00:49:24.520 --> 00:49:27.520
+there's been there are several papers
+
+1501
+00:49:25.960 --> 00:49:30.240
+that actually show that is a valid that
+
+1502
+00:49:27.520 --> 00:49:32.200
+is a very valid way of of, you know,
+
+1503
+00:49:30.240 --> 00:49:34.160
+running evals and and actually very,
+
+1504
+00:49:32.200 --> 00:49:36.280
+very accurate as well.
+
+1505
+00:49:34.160 --> 00:49:37.720
+Um yeah, cool. I guess what do we wrap
+
+1506
+00:49:36.280 --> 00:49:39.040
+up with kind of like a little bit more
+
+1507
+00:49:37.720 --> 00:49:41.320
+on some of the some of the things that
+
+1508
+00:49:39.040 --> 00:49:42.800
+Nearform have done. Um
+
+1509
+00:49:41.320 --> 00:49:44.960
+I guess you know,
+
+1510
+00:49:42.800 --> 00:49:47.240
+you've run a number of experiments
+
+1511
+00:49:44.960 --> 00:49:49.520
+certainly around Be Mad and SDD and I
+
+1512
+00:49:47.240 --> 00:49:50.800
+think you're from talking with a you
+
+1513
+00:49:49.520 --> 00:49:52.840
+know, a large number of people. I think
+
+1514
+00:49:50.800 --> 00:49:54.840
+you're probably from from a consultancy
+
+1515
+00:49:52.840 --> 00:49:58.080
+point of view definitely the the the the
+
+1516
+00:49:54.840 --> 00:49:59.480
+group that have you know, jumped in
+
+1517
+00:49:58.080 --> 00:50:01.200
+most with this kind of thing. So I'd
+
+1518
+00:49:59.480 --> 00:50:02.800
+love to kind of hear what are what are
+
+1519
+00:50:01.200 --> 00:50:04.520
+some of the most interesting experiments
+
+1520
+00:50:02.800 --> 00:50:06.920
+I guess that that that you have that
+
+1521
+00:50:04.520 --> 00:50:08.240
+you've played around in New Zealand.
+
+1522
+00:50:06.920 --> 00:50:09.600
+Yeah, we've definitely gone hell for
+
+1523
+00:50:08.240 --> 00:50:11.640
+leather.
+
+1524
+00:50:09.600 --> 00:50:14.120
+And so I suppose some of the kind of
+
+1525
+00:50:11.640 --> 00:50:16.720
+challenges that we found in rolling out
+
+1526
+00:50:14.120 --> 00:50:17.960
+a framework like Be Mad to a team of
+
+1527
+00:50:16.720 --> 00:50:19.960
+people since that's how we tend to
+
+1528
+00:50:17.960 --> 00:50:21.720
+operate have forced us to sort of
+
+1529
+00:50:19.960 --> 00:50:23.720
+experiment a little bit with you know,
+
+1530
+00:50:21.720 --> 00:50:25.800
+how we overcome that.
+
+1531
+00:50:23.720 --> 00:50:27.840
+And so I've done a little bit of spiking
+
+1532
+00:50:25.800 --> 00:50:30.120
+on how to codify some of the rules of
+
+1533
+00:50:27.840 --> 00:50:31.880
+our team within Be Mad.
+
+1534
+00:50:30.120 --> 00:50:33.320
+A colleague of mine Luca, shout out to
+
+1535
+00:50:31.880 --> 00:50:36.040
+Luca is doing incredible things at the
+
+1536
+00:50:33.320 --> 00:50:38.680
+moment in forcing the backlog generator
+
+1537
+00:50:36.040 --> 00:50:40.240
+from Be Mad to be able to sync with a an
+
+1538
+00:50:38.680 --> 00:50:41.600
+issue management system like GitHub
+
+1539
+00:50:40.240 --> 00:50:43.200
+issues.
+
+1540
+00:50:41.600 --> 00:50:45.280
+And also being able to orchestrate these
+
+1541
+00:50:43.200 --> 00:50:46.560
+workflows not just locally on a
+
+1542
+00:50:45.280 --> 00:50:47.920
+developer's machine but through
+
+1543
+00:50:46.560 --> 00:50:49.520
+something like a GitHub actions
+
+1544
+00:50:47.920 --> 00:50:52.680
+workflow.
+
+1545
+00:50:49.520 --> 00:50:55.280
+So a super cool way of running
+
+1546
+00:50:52.680 --> 00:50:57.560
+spec-driven development tasks through a
+
+1547
+00:50:55.280 --> 00:50:59.600
+more shared interface where the sort of
+
+1548
+00:50:57.560 --> 00:51:01.400
+work log is visible by all members of
+
+1549
+00:50:59.600 --> 00:51:03.160
+the team through a web browser rather
+
+1550
+00:51:01.400 --> 00:51:04.760
+than an IDE.
+
+1551
+00:51:03.160 --> 00:51:07.560
+Helps with that kind of going parallel
+
+1552
+00:51:04.760 --> 00:51:09.360
+as well. And that's been most of our
+
+1553
+00:51:07.560 --> 00:51:11.880
+experimentation throughout the kind of
+
+1554
+00:51:09.360 --> 00:51:13.800
+latter half of 2025.
+
+1555
+00:51:11.880 --> 00:51:16.040
+And so what we're now toying with as a
+
+1556
+00:51:13.800 --> 00:51:18.240
+business is do we
+
+1557
+00:51:16.040 --> 00:51:20.280
+just you know, embrace chaos and let you
+
+1558
+00:51:18.240 --> 00:51:22.400
+know, a bunch of really clever people
+
+1559
+00:51:20.280 --> 00:51:23.120
+drive their own experiments which yes,
+
+1560
+00:51:22.400 --> 00:51:24.040
+absolutely.
+
+1561
+00:51:23.120 --> 00:51:26.560
+&gt;&gt; [laughter]
+
+1562
+00:51:24.040 --> 00:51:28.920
+&gt;&gt; The open source way. And then 2026 you
+
+1563
+00:51:26.560 --> 00:51:30.360
+know, the hope is that we'll be able to
+
+1564
+00:51:28.920 --> 00:51:33.680
+harvest from a bunch of these really
+
+1565
+00:51:30.360 --> 00:51:36.800
+clever ideas a more kind of unified
+
+1566
+00:51:33.680 --> 00:51:38.480
+Nearform way of delivering at scale
+
+1567
+00:51:36.800 --> 00:51:40.680
+overcoming some of the challenges that
+
+1568
+00:51:38.480 --> 00:51:42.120
+we have with the core framework.
+
+1569
+00:51:40.680 --> 00:51:43.760
+You know, does that one up a module
+
+1570
+00:51:42.120 --> 00:51:45.400
+within Be Mad? Do we roll our own
+
+1571
+00:51:43.760 --> 00:51:47.320
+framework? Do we contribute back to Be
+
+1572
+00:51:45.400 --> 00:51:49.840
+Mad? You know, that very much remains up
+
+1573
+00:51:47.320 --> 00:51:51.640
+for grabs. But it feels like an area
+
+1574
+00:51:49.840 --> 00:51:52.960
+where we're going to need to contribute
+
+1575
+00:51:51.640 --> 00:51:54.840
+something.
+
+1576
+00:51:52.960 --> 00:51:57.280
+Um you know, the hope would be something
+
+1577
+00:51:54.840 --> 00:51:58.800
+in the open source domain
+
+1578
+00:51:57.280 --> 00:52:00.400
+to to try and solve in particular if
+
+1579
+00:51:58.800 --> 00:52:02.080
+we're going parallel across multiple
+
+1580
+00:52:00.400 --> 00:52:04.560
+teams.
+
+1581
+00:52:02.080 --> 00:52:06.320
+That that's been the big area focus.
+
+1582
+00:52:04.560 --> 00:52:08.400
+Yeah. Super interesting. And and to be
+
+1583
+00:52:06.320 --> 00:52:10.000
+honest, I love I love working with you
+
+1584
+00:52:08.400 --> 00:52:12.400
+guys and I I can't say enough nice
+
+1585
+00:52:10.000 --> 00:52:14.920
+things about about you and the team. For
+
+1586
+00:52:12.400 --> 00:52:17.120
+for folks who want to learn more about
+
+1587
+00:52:14.920 --> 00:52:18.520
+or first of all, keep up to date with
+
+1588
+00:52:17.120 --> 00:52:20.480
+you know, some of the great things that
+
+1589
+00:52:18.520 --> 00:52:21.880
+Nearform are doing or you know, reach
+
+1590
+00:52:20.480 --> 00:52:24.480
+out to work with you. What what's the
+
+1591
+00:52:21.880 --> 00:52:26.400
+best ways of of getting in contact and
+
+1592
+00:52:24.480 --> 00:52:27.840
+learning more about Nearform?
+
+1593
+00:52:26.400 --> 00:52:29.800
+Yeah, absolutely. I mean great place to
+
+1594
+00:52:27.840 --> 00:52:31.560
+start nearform.com. The jobs board is up
+
+1595
+00:52:29.800 --> 00:52:33.680
+there. In terms of what we've been
+
+1596
+00:52:31.560 --> 00:52:36.320
+experimenting with spec-driven, I'm the
+
+1597
+00:52:33.680 --> 00:52:37.760
+worst on our blog.
+
+1598
+00:52:36.320 --> 00:52:39.040
+Nothing. I think I've written more on
+
+1599
+00:52:37.760 --> 00:52:40.800
+your blog than I have on my own at the
+
+1600
+00:52:39.040 --> 00:52:42.040
+moment. [laughter]
+
+1601
+00:52:40.800 --> 00:52:43.560
+But
+
+1602
+00:52:42.040 --> 00:52:46.120
+you know, shameless plug come follow me
+
+1603
+00:52:43.560 --> 00:52:48.400
+on LinkedIn. I tend to you know, talk
+
+1604
+00:52:46.120 --> 00:52:49.960
+post fairly techy stuff on the world of
+
+1605
+00:52:48.400 --> 00:52:52.760
+spec-driven development pretty
+
+1606
+00:52:49.960 --> 00:52:56.800
+sporadically.
+
+1607
+00:52:52.760 --> 00:52:58.280
+Our own Nearform insights account on on
+
+1608
+00:52:56.800 --> 00:53:00.160
+LinkedIn also post a bunch of great
+
+1609
+00:52:58.280 --> 00:53:02.400
+content. A couple of my colleagues post
+
+1610
+00:53:00.160 --> 00:53:04.480
+a lot retweeted by the main account in
+
+1611
+00:53:02.400 --> 00:53:05.920
+the world of spec-driven.
+
+1612
+00:53:04.480 --> 00:53:08.600
+And so we're pretty active bunch on
+
+1613
+00:53:05.920 --> 00:53:10.000
+LinkedIn and that tends to be where we
+
+1614
+00:53:08.600 --> 00:53:11.480
+you know, where we talk the most about
+
+1615
+00:53:10.000 --> 00:53:12.680
+our experiments in spec-driven and
+
+1616
+00:53:11.480 --> 00:53:14.000
+what's working and also what's not
+
+1617
+00:53:12.680 --> 00:53:15.520
+working. You know, we're pretty we're
+
+1618
+00:53:14.000 --> 00:53:17.240
+pretty open book when things don't go
+
+1619
+00:53:15.520 --> 00:53:18.760
+well as well. Yeah, yeah. Sounds
+
+1620
+00:53:17.240 --> 00:53:21.120
+amazing. Well, Kieran I think we've got
+
+1621
+00:53:18.760 --> 00:53:23.360
+about two to three hours of content in
+
+1622
+00:53:21.120 --> 00:53:26.080
+somehow around 50 just over 50 minutes.
+
+1623
+00:53:23.360 --> 00:53:27.360
+So we we did well. We did well.
+
+1624
+00:53:26.080 --> 00:53:28.600
+Kieran I think you so much for having me
+
+1625
+00:53:27.360 --> 00:53:29.760
+Simon. Oh, it's been an absolute
+
+1626
+00:53:28.600 --> 00:53:31.280
+pleasure Kieran. I really enjoyed the
+
+1627
+00:53:29.760 --> 00:53:32.760
+conversation and thank you thank you
+
+1628
+00:53:31.280 --> 00:53:35.320
+very much for bringing you know, all of
+
+1629
+00:53:32.760 --> 00:53:37.400
+your and and and Nearform's expertise
+
+1630
+00:53:35.320 --> 00:53:38.680
+and experience to to share with our
+
+1631
+00:53:37.400 --> 00:53:40.320
+listeners. So I appreciate it. Thank you
+
+1632
+00:53:38.680 --> 00:53:42.040
+very much. Absolutely. I'm sure we'll
+
+1633
+00:53:40.320 --> 00:53:43.360
+chat again next time I'm over in London
+
+1634
+00:53:42.040 --> 00:53:45.080
+which I've no doubt will be sometime in
+
+1635
+00:53:43.360 --> 00:53:46.360
+January. Oh, wonderful. We'll see you
+
+1636
+00:53:45.080 --> 00:53:47.880
+there.
+
+1637
+00:53:46.360 --> 00:53:49.120
+Yeah, I hope everyone enjoyed that
+
+1638
+00:53:47.880 --> 00:53:51.280
+episode.
+
+1639
+00:53:49.120 --> 00:53:53.520
+Tell us what you thought and speak to
+
+1640
+00:53:51.280 --> 00:53:54.920
+you soon and see you in the next tune
+
+1641
+00:53:53.520 --> 00:53:57.920
+into the next episode rather. Thank you
+
+1642
+00:53:54.920 --> 00:53:57.920
+very much. Bye for now.

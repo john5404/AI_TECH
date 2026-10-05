@@ -1,0 +1,456 @@
+[00:00:05.720] Hi. I'm Marc.
+[00:00:07.600] I’m a product manager here at Tessl working on Tessl code review.
+[00:00:11.360] And I'm here with my colleague Colin, who will introduce himself.
+[00:00:15.320] Hi I'm Colin.
+[00:00:16.760] I'm a software engineer here at Tessl.
+[00:00:19.040] I built a lot of the architecture of code review.
+[00:00:22.800] Perfect. Thanks, Colin.
+[00:00:24.200] And today we're going to be taking you through Tessl Code review, telling you
+[00:00:27.720] a little bit about it, how it works, how you can set it up for yourself,
+[00:00:31.640] and how you can customize it for your organization.
+[00:00:35.640] Along the way, we'll also talk a bit about Tessl and software factories,
+[00:00:40.160] and where code review fits in software factories and a lot more.
+[00:00:44.840] Bear in mind we'll be keeping some time at the end
+[00:00:47.240] to answer your questions, so feel free to drop them into the chat as we go along.
+[00:00:52.760] We'll make sure that we have a look at them at the end
+[00:00:55.200] and get through everyone's questions with that.
+[00:00:59.000] Should we get stuck in? Let's do it. Cool.
+[00:01:04.120] So before
+[00:01:05.240] I get started with Tessl code review,
+[00:01:08.320] let me just take a few moments to talk about what is Tessl,
+[00:01:11.440] especially for those of you not familiar with what we do.
+[00:01:15.560] Tessl is building tools to help
+[00:01:18.320] you build your software factory.
+[00:01:21.400] Now, we've been doing this for ourselves for a couple of years already,
+[00:01:25.280] and one of the things we've learned is that building
+[00:01:28.200] a software factory isn't just about building the plumbing.
+[00:01:31.280] It's actually quite straightforward to build the necessary steps
+[00:01:34.920] to take an issue to an agent, to generate code and create a PR.
+[00:01:40.640] What's really difficult is for that PR to actually have code
+[00:01:44.280] you can trust, code you're willing to merge into your code base.
+[00:01:48.640] And so with that in mind, Tessl's learned along the way that in order
+[00:01:54.120] to build trustworthy code with an agent, you need to have the right context.
+[00:01:59.600] And so for a long time, Tessl has worked on managing context,
+[00:02:03.760] building tools to inventory the context that you have in your repo
+[00:02:08.280] to evaluate how good it is, and make sure that you're
+[00:02:11.800] always improving the context that's in that repo.
+[00:02:15.440] And in doing that on our own repo, we started to
+[00:02:19.920] learn it's not just about building a context,
+[00:02:22.120] but building loops on top of that context, because any context you build
+[00:02:26.280] is going to start rotting almost straight away.
+[00:02:29.520] And the longer you leave it untouched,
+[00:02:31.480] the more damage that it might actually cause to your agent over time.
+[00:02:35.280] And so by building self-improvement loops on top of context
+[00:02:40.000] loops that look at the context check when the last time it was updated
+[00:02:45.840] evaluated to see if it's still the context
+[00:02:48.080] is still relevant for the repo, for the code, for the
+[00:02:51.080] the work that the agent is doing, but also observing the code
+[00:02:55.040] that is being generated, the PR that are being merged and checking
+[00:02:58.640] if they are correct, if they are starting to fail,
+[00:03:01.680] if there are signs that things are starting to go wrong.
+[00:03:04.680] By observing these things, you can then act on them and go back to the repo.
+[00:03:09.480] Go back to the skills and improve that context.
+[00:03:11.840] And this self-improvement loop means your skills don't go stale.
+[00:03:15.720] Your agents always have the best possible context
+[00:03:18.880] and therefore are producing the highest quality code.
+[00:03:22.760] And what we found
+[00:03:23.680] when doing this for ourselves over the course of a long period of time,
+[00:03:27.800] is that a collection of loops that build on top of each other
+[00:03:32.280] and actually feed into each other and work on your SDLC
+[00:03:36.040] is essentially a factory, but one that's tuned to your repo
+[00:03:39.720] and your organization the way you and your team work.
+[00:03:43.080] And so Tessl's building not just tools for managing context,
+[00:03:46.200] but also increasingly managing loops.
+[00:03:48.480] And where we're getting to is composing and building your factory as well.
+[00:03:56.120] Now if we look at the software development lifecycle
+[00:03:59.000] from issue creation to production level code, as I mentioned,
+[00:04:04.360] there are multiple different loops in that flow that we can think about.
+[00:04:09.800] I'm not going to go through them today.
+[00:04:11.800] We're going to focus on one particular loop,
+[00:04:13.560] which occurs at the end of that flow, which is the code review improvement loop.
+[00:04:18.080] Now, code review is arguably one of the most essential steps
+[00:04:21.360] in a factory, because it doesn't matter
+[00:04:25.240] what your agent is doing in code creation, if it's producing low quality code
+[00:04:30.720] that is unable to be approved
+[00:04:33.960] by an agent, you can have to have a human come in and clean up the mess.
+[00:04:38.040] The.
+[00:04:39.400] And when humans are coming in to clean up the mess, then you're turning software
+[00:04:43.080] engineers into full time reviewers and nobody wants to do that.
+[00:04:47.240] So the more we can get agent code review to be useful and to catch those issues,
+[00:04:51.440] but also to feed back into the factory to make it better so those issues
+[00:04:55.280] don't surface in the first place.
+[00:04:57.200] That's the job we're trying to do here.
+[00:04:59.240] And so that's what we're going to be talking about today.
+[00:05:04.360] So as we
+[00:05:05.800] were building our own factory and building up our context
+[00:05:08.520] and exploring these loops and so on, one of the things we found from using
+[00:05:13.120] a variety of different code review tools was they didn't quite fit
+[00:05:17.640] the Tessl philosophy of the factory being composed of skills and loops.
+[00:05:23.400] We found that a lot of our tools we were using were black boxes.
+[00:05:27.760] There was no way to build a self-improvement loop on them.
+[00:05:30.760] We were discovering all these issues with code generation
+[00:05:34.080] and context, and creating skills and plugins to help address that.
+[00:05:37.440] But our code review is still the same old code review we were using.
+[00:05:40.960] And so we were increasingly thinking about how to make code review
+[00:05:44.760] a part of the context, a part of the
+[00:05:47.880] the Tessl structure that can be self improved as we go along.
+[00:05:52.880] And with that, that meant we ended up building our own code review.
+[00:05:56.840] We ran it over several months and built it up over time
+[00:06:00.360] to address our needs and to make it fit the factory native way of thinking.
+[00:06:04.880] And got to a point where we were finding
+[00:06:09.000] Tessl's code review was detecting
+[00:06:12.760] defects in in pairs
+[00:06:15.400] at a rate of around 74%, compared to the 50%
+[00:06:18.800] rate that we were seeing at the beginning of of working on this.
+[00:06:23.560] And one of the reasons we see such a significant jump in the
+[00:06:27.920] ability of our code review to find defects is because we have this self-improvement
+[00:06:33.280] built into it, and this ability to customize based on the skills
+[00:06:37.560] that power Tessl code review, that,
+[00:06:42.400] you know,
+[00:06:42.640] the code review we're doing here is very fine tuned to our repo and our way
+[00:06:46.400] of working, and also feeds into the skills we're using to write
+[00:06:49.440] the code in the first place.
+[00:06:52.800] And we believe this isn't something that's only Tessl specific.
+[00:06:56.160] This is something any organization can benefit from.
+[00:06:58.720] And so the way we've built Tessl code review is at a very high level.
+[00:07:03.600] And Collins going to talk us through the details here in a few moments.
+[00:07:06.240] But we take a pull request.
+[00:07:08.480] We run it through the Tessl code review GitHub app.
+[00:07:11.200] We have a set of skills that do the code review a set of four different skills
+[00:07:16.960] that look at the the pull requests from a couple of different angles.
+[00:07:21.360] You get four out of the box, but the idea is that it's very easy
+[00:07:24.680] to customize either those four skills or to add your own skills on top of that.
+[00:07:29.040] And in fact, Tessl has ended up building three additional Tessl
+[00:07:32.920] specific skills that have come about through our self-improvement loops.
+[00:07:36.880] And so these seven skills are part of our code review
+[00:07:40.200] and our selective selected depending on the PR.
+[00:07:43.960] And then the output from that is of course,
+[00:07:46.600] the findings from the code review, which end up as a comment on the PR,
+[00:07:50.600] and also a mechanism for approving or requesting changes on the PR.
+[00:07:56.520] So we're going to be covering
+[00:07:58.080] all this and more over the next 20, 30 minutes.
+[00:08:02.040] We're going to show you what a Tessl code review looks like.
+[00:08:05.560] The pull request looks like.
+[00:08:07.920] We'll walk you through how to set it up and how easy it is,
+[00:08:11.840] how to configure it and customize it, and what a custom
+[00:08:16.720] code review lens looks like, at least for Tessl.
+[00:08:19.880] And what I might look like for you.
+[00:08:21.400] And then at the end, I'll show you, talk a bit about what's coming next,
+[00:08:25.640] and we'll make sure this in time for questions.
+[00:08:29.280] With that, I'm going to hand it over to Colin who's
+[00:08:31.840] going to walk us through Tessl code review.
+[00:08:35.760] Great. Thank you. Mark.
+[00:08:38.080] You should all be able to see my screen now.
+[00:08:41.360] So for this webinar,
+[00:08:44.400] I've vibe coded a little project that I've had in mind for a while.
+[00:08:48.120] It's an ambient music generator
+[00:08:51.760] based on my PC's current performance and stats.
+[00:08:56.920] I like music and I like vibe coding, so it's a nice synergy of things I love.
+[00:09:02.440] Does it get more intense or like more relaxing as things heat up?
+[00:09:06.160] Definitely more intense, but it's ambient, so it's never super intense.
+[00:09:09.200] It's always quite relaxing. So.
+[00:09:12.520] So, yeah.
+[00:09:12.960] What are you looking at?
+[00:09:13.600] Here is a pull request.
+[00:09:17.080] And made some changes.
+[00:09:20.360] I've introduced atmospheric atmospheric sub base, pulse generator.
+[00:09:25.040] Kind of essential. And
+[00:09:29.000] you can see Tessl reviewer has
+[00:09:32.960] approved the changes, but it's left some optional suggestions.
+[00:09:36.920] So let's have a look at them.
+[00:09:39.360] Minor
+[00:09:41.760] thing about telemetry.
+[00:09:44.160] And another one here.
+[00:09:48.320] So he's.
+[00:09:50.600] So talk us through what's happened here.
+[00:09:53.000] You know, what's the flow that this has gone through to get at what you're seeing?
+[00:09:58.120] Yeah.
+[00:09:58.440] So essentially I've opened a PR and this runs automatically
+[00:10:02.680] when the PR opens and it looks
+[00:10:06.040] through the changes and identifies the misuse.
+[00:10:09.480] And I'll come to
+[00:10:10.040] how I've configured
+[00:10:11.160] what changes are being looked at and how they're being looked at in a second.
+[00:10:15.600] And then leaves a comment and then I can choose to fix them.
+[00:10:19.920] I can choose to ignore them,
+[00:10:21.000] I can choose to say they're not true, but mostly they're they're pretty solid.
+[00:10:26.120] And so you can see I've fixed it here
+[00:10:31.080] and I've rerun the review and it says, yes, you've addressed it.
+[00:10:35.520] Well done.
+[00:10:36.480] And I've invoked using this command here Tessl code review.
+[00:10:41.280] And next one it says cool.
+[00:10:44.560] Your changes have addressed our findings.
+[00:10:47.600] Good to merge.
+[00:10:50.080] And that's essentially the the process from a PR perspective.
+[00:10:54.160] And you can see being GitHub app we have the native checks.
+[00:10:59.320] Approve can also request changes.
+[00:11:03.760] And yeah so that's what that looks like.
+[00:11:07.240] So how do you install this.
+[00:11:09.040] It's actually super easy.
+[00:11:10.800] So you go to your Tessl.io org page and your integrations.
+[00:11:16.720] You can literally just install the integration manager on GitHub.
+[00:11:20.760] And then you have a few configuration options which I'll talk through.
+[00:11:24.880] So just before you get there, for those who maybe haven't installed
+[00:11:28.720] Tessl yet or who are new, it's really straightforward, right?
+[00:11:32.200] To install Tessl, how would you go about getting to this stage?
+[00:11:37.320] Yeah, totally.
+[00:11:38.080] So you can install the Tessl CLI
+[00:11:41.400] and then you can just run Tessl agent,
+[00:11:44.440] which is our own agent that will guide you how to do all this stuff.
+[00:11:48.280] You can also just go to create an account and you'll have access to it super easy.
+[00:11:54.080] And at that point, all you need to do is install the GitHub app on this page.
+[00:11:59.160] And almost good to go.
+[00:12:00.640] So the next part would be configuring it.
+[00:12:02.920] So these are how and when it runs.
+[00:12:06.320] So I've decided when it's opened or been mentioned.
+[00:12:10.880] But you can also have it run on every push.
+[00:12:12.720] If you want.
+[00:12:13.920] You can set the review behavior so you can enforce it.
+[00:12:17.320] So this will approve or block pull requests or advisory.
+[00:12:22.360] If you just want to kind of
+[00:12:24.680] test the waters with with it.
+[00:12:26.800] Would you recommend if you're trying Tessl code review for the first time,
+[00:12:29.760] maybe to switch it into advisory just to get a feel for it?
+[00:12:33.840] I would say no, put it in forcing.
+[00:12:38.400] But, you know, I've used it a lot.
+[00:12:40.360] So yeah, for a first year, if you want to just kind of dip your toes, the water,
+[00:12:43.720] see how it would do, definitely put it on, let it run for a bit. See.
+[00:12:48.600] See how you find it.
+[00:12:50.120] Yeah.
+[00:12:52.560] And the last option here is auto approve after all Tessl threads are resolved.
+[00:12:55.920] So this is click resolve on all the threads.
+[00:12:58.600] Leave a message and it will approve your PR.
+[00:13:01.800] Yeah.
+[00:13:03.520] So that's pretty much all it is to set it up.
+[00:13:06.480] And that's configurable per repo.
+[00:13:08.680] As well. Exactly.
+[00:13:09.640] So right now I just have a single repository here,
+[00:13:12.160] but I can add more and I can configure it more differently.
+[00:13:15.920] So they can have different rules for how you, how they run.
+[00:13:19.800] So yeah that's how you add the app.
+[00:13:22.400] But the cool part is how to kind of configure the the review itself.
+[00:13:27.520] So here I've got my review
+[00:13:31.320] audio DSP and synthesis engine skill.
+[00:13:35.280] So this is a skill that specifically talks about how to review code.
+[00:13:40.880] That is to do with audio processing and audio signal processing.
+[00:13:45.240] I won't go into the nerdy details, but
+[00:13:49.240] for example, glitch and pop prevention must fix.
+[00:13:52.320] So yeah, finding issues where the audio being generated
+[00:13:57.680] has is clipping or popping.
+[00:14:00.000] These are bugs that must be flagged.
+[00:14:02.440] This is really cool
+[00:14:03.280] because obviously this app is all about generating ambient sound.
+[00:14:06.680] Don't want any glitches or pops.
+[00:14:08.160] I want smooth ambient.
+[00:14:10.600] Does the kind of thing you wouldn't have instructions about this kind of stuff in a
+[00:14:14.600] out of the box code review, because it's so specific to music generation in.
+[00:14:19.720] This case.
+[00:14:20.080] Yeah, exactly.
+[00:14:20.920] And what was cool is I created this lens with Tessl agent.
+[00:14:26.280] I said, hey, Tessl agent, look at my current code base, suggest
+[00:14:32.240] some good lenses that will catch the bugs that I care about.
+[00:14:35.920] And came up with this, which was really great.
+[00:14:38.080] When you say, look at your code base, what was it looking at in the code base?
+[00:14:41.240] So looking at the source code was also looking at some of my
+[00:14:45.280] Readme docs, some major MDS trying to assess
+[00:14:49.160] what are my kind of best practices, what are the things to look for.
+[00:14:52.000] And also, you know, putting in best practices
+[00:14:55.320] for audio signal processing, which there are many.
+[00:14:58.400] Yeah. And it came up with this and then
+[00:15:03.040] we're all kind of glues together.
+[00:15:04.680] Is this YAML file where we can,
+[00:15:09.080] do some cool stuff, where we can firstly configure how strict we want it.
+[00:15:13.480] So I've set relaxed mode because let's be real, this is a vibe code project.
+[00:15:17.960] No one else is ever going to see it for you guys.
+[00:15:20.080] Of course.
+[00:15:20.760] But I didn't want to be too strict.
+[00:15:24.200] But here's the cool part.
+[00:15:25.840] Under lenses, you can pass a ref to your lens
+[00:15:30.080] and you can say under what path it runs in.
+[00:15:33.760] So I only want my audio DSP lens to run under source audio,
+[00:15:38.640] because I wouldn't want this lens to run against stuff that,
+[00:15:42.800] you know, is not to do with audio, because it'd be irrelevant.
+[00:15:46.120] And you can go super deep with this, have a whole bunch of nested lenses
+[00:15:50.320] running at very specific points in in your code base to have very,
+[00:15:56.120] yeah, specific reviews, both for your repository,
+[00:15:58.640] but also for the area being looked at.
+[00:16:00.520] And yeah, that's kind of what it is.
+[00:16:03.400] So you run that and you get reviews.
+[00:16:06.160] So just jumping back to this page, you can see this
+[00:16:09.840] review came from a little text here audio DSP.
+[00:16:13.640] So that lens will tell you which lens caught which bug.
+[00:16:16.720] And the last bit is outside of GitHub altogether.
+[00:16:20.920] You can also run it directly on your CLI.
+[00:16:24.000] So I've already run it here.
+[00:16:26.040] So Tessl code review give it the profile that's just showed you run
+[00:16:30.880] that against your local unsaved changes and it'll tell you what to do.
+[00:16:35.360] So this is a nice way to iterate locally before opening the PR even.
+[00:16:39.360] Got it.
+[00:16:39.760] So if you just want to get a feel for how it works,
+[00:16:41.920] it's really easy to come here and run
+[00:16:43.360] this sort of ad hoc review and see what kind of output there is.
+[00:16:46.640] Yeah, totally.
+[00:16:47.400] And it's really useful, especially if you have an agent working on your code.
+[00:16:51.600] You can say, run the review a few times before opening the PR to hopefully catch
+[00:16:57.040] the majority of the issues before it even reaches GitHub.
+[00:17:00.840] And would this be a good mechanism for if you are writing a custom lens
+[00:17:04.680] to test it out?
+[00:17:06.400] Yeah, totally. I mean, you can iterate locally like this.
+[00:17:08.920] I can make changes to my lens right here, rerun the review and
+[00:17:14.800] yeah, see us catching what I wanted to catch,
+[00:17:17.360] you know, do this in a loop and kind of improve it yourself.
+[00:17:22.080] And just to, to take a few more moments to talk about these customized lenses,
+[00:17:26.000] because I think this is really one of the key differentiators
+[00:17:29.440] with Tessl's code review, the fact that you can fine
+[00:17:32.840] tune it to how you and your organization like to work.
+[00:17:36.120] Could you tell us a little bit more, for a start, about the default
+[00:17:40.240] lenses that ship with this and what they each doing?
+[00:17:43.680] Yeah, totally.
+[00:17:44.760] And actually, let me show you the default lenses.
+[00:17:49.160] Because they're actually really cool.
+[00:17:51.120] We spent a long time tuning these.
+[00:17:55.120] Here they are.
+[00:17:56.920] And so you're showing us here, these are available in our public repo.
+[00:18:01.080] Yes, exactly.
+[00:18:02.360] So we ship with four lenses by default that run.
+[00:18:07.800] So if I was to run here without giving the the
+[00:18:11.840] the profile, it would run with these four default lenses.
+[00:18:15.680] And there we spent a long time tuning them.
+[00:18:19.040] And actually you can see them right here.
+[00:18:20.440] So we have four lenses here correctness and data integrity.
+[00:18:23.000] Security and privacy scale and resilience, maintainability and code quality.
+[00:18:27.600] And we felt this combination of four covers
+[00:18:30.960] the vast majority of vanilla use cases for any code base,
+[00:18:35.800] no matter what language, what frameworks, anything like that.
+[00:18:39.360] And yeah, super solid.
+[00:18:41.080] And yeah, these defaults, you're good to go.
+[00:18:44.760] But what I'm excited about is the kind of custom lenses that you can do.
+[00:18:49.320] Yeah.
+[00:18:49.960] And talk us through then the custom lens that you just showed us.
+[00:18:53.920] What was the process you went to
+[00:18:55.520] to create that for, you know, this, this vibe repo.
+[00:18:59.480] Vibe repo.
+[00:19:00.240] So, yeah, like I said, I used the Tessl agent.
+[00:19:05.800] Maybe I can just show you right here.
+[00:19:07.800] So, agent,
+[00:19:14.080] So I can say,
+[00:19:16.520] help me create a new custom lens for my
+[00:19:23.400] vibe project.
+[00:19:26.040] And essentially, this is all it is.
+[00:19:29.240] We won't go for all of this, but, yeah,
+[00:19:32.360] there's a skill that directs the agent how to do this.
+[00:19:35.760] It'll read through everything.
+[00:19:37.280] And then the the result is
+[00:19:41.440] a pretty bespoke lens
+[00:19:44.280] that is directly related to your code base and your best practices.
+[00:19:49.520] Of course, you can tune it further as you go.
+[00:19:51.800] And that's where this nice local iteration comes in as well.
+[00:19:55.400] Got it.
+[00:19:56.240] And the key thing here is that we've built,
+[00:20:00.120] a skill in our registry that's available in the agent as well.
+[00:20:03.440] Or you can install it into whatever agent you're using to not only set up
+[00:20:07.880] code review, Tessl code review, but also to
+[00:20:11.360] then create custom lenses as and when you want to.
+[00:20:15.560] Yeah, exactly.
+[00:20:17.400] And yeah, like I said, there's a lot of configurability there.
+[00:20:21.760] And as you go into it more,
+[00:20:23.720] you'll probably find that you want to configure it even further.
+[00:20:26.680] And the more you configure it kind of more valuable.
+[00:20:29.040] I think it becomes to your stock.
+[00:20:32.760] Brilliant.
+[00:20:33.880] And that gives us a, that brings us
+[00:20:36.960] to where we are today with the Tessl code review product.
+[00:20:40.160] It's currently live in beta.
+[00:20:43.040] It's still actively being developed, but,
+[00:20:47.480] we are planning to launch it out of beta next week.
+[00:20:50.640] We're going to be at AI DevCon in New York.
+[00:20:53.440] And with that, we'll be taking it out of beta.
+[00:20:57.320] We're also going to be introducing our first public self-improvement loop.
+[00:21:02.800] So the lens that Colin was talking about, the mechanism
+[00:21:06.680] that you go through in order to create that right now,
+[00:21:10.440] you can do it with the beta as a manual, ad hoc thing, but we'll be introducing the
+[00:21:15.760] ability to schedule that and have that be something that runs on a regular basis.
+[00:21:20.040] And so you can set it up one time and it will be self improving over time.
+[00:21:24.200] And this is the first
+[00:21:25.200] of many such self-improvement loops that we're going to be introducing,
+[00:21:29.120] not just for Tessl code review, but for across Tessl's product suite in general.
+[00:21:33.800] And as I mentioned at the start, we believe it's that composition of loops
+[00:21:38.600] that you build up over time on top of the skills that you have in your repo
+[00:21:42.160] that will eventually help you build your factory.
+[00:21:47.320] And so with that, I think we've covered everything.
+[00:21:51.080] We have some time for questions.
+[00:21:54.800] I'm just going to have a look to see
+[00:21:57.800] what's come through.
+[00:22:00.760] I've got a question here.
+[00:22:03.880] How does it handle really large PRs
+[00:22:06.280] or mono repos?
+[00:22:09.280] Yeah. So
+[00:22:11.600] if you just use a vanilla, it does pretty well.
+[00:22:14.400] But what's exciting and what's cool about
+[00:22:18.520] this is the custom globs that you can have for your lenses.
+[00:22:23.560] So of course, you might have a mono repo with tens to hundreds different projects
+[00:22:28.920] in that you don't want necessarily one lens to be on all of them.
+[00:22:34.040] So you can say, well, if this piece of code attaching the back
+[00:22:38.280] end or system, there's this particular lens for that.
+[00:22:41.640] So it becomes very specific.
+[00:22:43.200] So you kind of break down a very large PR into smaller sections
+[00:22:48.600] that can then be reviewed by the lens specific to that section.
+[00:22:52.600] Got it.
+[00:22:53.240] So you want to avoid you don't want to have
+[00:22:55.320] the same set of lenses for every single PR.
+[00:22:58.080] You want to make sure you are fine tuning it in that way.
+[00:23:00.440] And I guess that's also the strength of.
+[00:23:03.080] You could feasibly have ten dozens of lenses
+[00:23:06.800] on a sufficiently large repo, but if you are then dictating
+[00:23:11.880] where they are active, you're not going to be overloading
+[00:23:15.000] your agent with trying to review every, every PR in every possible way.
+[00:23:19.280] That makes sense.
+[00:23:20.040] Yeah, yeah, yeah, exactly.
+[00:23:21.400] The kind of a hierarchy of lenses, right?
+[00:23:23.160] You might have one lens that is for everything.
+[00:23:26.640] There is some very specific rule that goes across the organization.
+[00:23:31.000] But then you might have lenses at a very specific
+[00:23:33.840] that you would only want to run on certain things.
+[00:23:36.400] And it's kind of up to you how you configure it.
+[00:23:41.200] And so we've got another question here,
+[00:23:42.320] but I think we may have answered it inadvertently.
+[00:23:45.000] Can I choose different review lenses for different repos or types of change.
+[00:23:50.720] Yeah.
+[00:23:51.160] So firstly for different repos, every repo can have a different profile
+[00:23:55.280] with a different set of custom lenses.
+[00:23:56.880] But yeah, like I said, you can totally configure
+[00:24:01.400] different lenses for different parts of the code base.
+[00:24:04.480] And I should mention you can also configure the effort level
+[00:24:07.000] in which they run.
+[00:24:08.160] So you can have a
+[00:24:10.560] very simple review lens
+[00:24:12.400] running at low effort or a very complicated lens,
+[00:24:16.200] or very like critical path type lens running at a high effort.
+[00:24:20.600] And that's another degree of configuration you have.
+[00:24:23.560] And there's all globs scoped, which is cool.
+[00:24:26.760] Perfect.
+[00:24:27.880] I've got one more question here.
+[00:24:30.200] How many rounds does it do per PR.
+[00:24:34.200] So it depends on the size of the PR.
+[00:24:36.400] Yeah.
+[00:24:36.800] Bit of a how long are the piece of string question.
+[00:24:40.560] But on average in our monitoring and we run it on I think
+[00:24:46.400] good — three to four thousand plus PRs —
+[00:24:50.960] is we're looking at 2 to 3 rounds per PR.
+[00:24:54.800] Some big complicated changes might take longer.
+[00:24:58.880] You might be making changes as you go.
+[00:25:00.800] Some symbol changes will be one round and it's good to go.
+[00:25:04.480] But yeah roughly 2 to 3 rounds per pair.
+[00:25:08.240] Got it. Cool.
+[00:25:10.120] Well I think that brings us to the end.
+[00:25:11.880] Thank you so much, Colin.
+[00:25:13.960] And thank you for for watching and for sharing your questions.
+[00:25:18.280] If you're interested in trying out
+[00:25:20.240] Tessl code review, it's really easy to get started.
+[00:25:23.280] Simply type into your CLI Tessl install code
+[00:25:27.040] review, that's Tessl install code review or visit our website.
+[00:25:34.200] And you'll see how to sign up for Tessl.
+[00:25:36.600] And our onboarding will walk you through the code review setup process.
+[00:25:39.680] Anyway,
+[00:25:42.880] thanks for watching.
+[00:25:44.280] Thank you.

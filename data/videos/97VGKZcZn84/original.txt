@@ -1,0 +1,1322 @@
+[00:00:04.584] [music]
+[00:00:09.920] Hi. Uh, I'm Bill Maxwell. As Patrick
+[00:00:12.960] said, I will be going over how to build
+[00:00:15.040] NextG agents uh with MCP.
+[00:00:18.800] And so we'll just kind of set some
+[00:00:21.119] context with what MCP is, how to use it,
+[00:00:24.560] what are and how it kind of works. And
+[00:00:27.680] then we will get into building our own
+[00:00:30.640] agent that will end up playing chess
+[00:00:32.960] with us. Um, and we'll be starting with
+[00:00:35.840] a textbased game and moving our way to a
+[00:00:38.879] graphical one where you can interact
+[00:00:41.040] with um the agent through uh a graphical
+[00:00:45.920] chessboard.
+[00:00:48.559] So I'm not going to go super in depth on
+[00:00:51.520] what MCP is. Tomorrow I'm giving another
+[00:00:53.920] talk on the guts of MCP. But for the
+[00:00:57.280] purpose of this uh workshop, we're going
+[00:01:00.719] to go with uh MCP servers are
+[00:01:03.359] essentially like USBC ports for
+[00:01:06.000] application AI applications. So being
+[00:01:08.240] able to plug in systems into models and
+[00:01:11.920] making that easy to uh consume. They're
+[00:01:15.760] portable between models and systems. So
+[00:01:18.240] any of your clients that support MCP um
+[00:01:21.280] will be able to use those tools and have
+[00:01:23.920] those capabilities.
+[00:01:26.799] Um, they connect in two primary methods.
+[00:01:30.080] You've probably seen uh JSON snippets
+[00:01:33.040] that have either like a npx or uvx when
+[00:01:35.759] running your MCP server. That's
+[00:01:37.840] typically running at local and it'll be
+[00:01:39.920] communicating over standard IO. And in
+[00:01:42.560] that case, you know, it's just basically
+[00:01:44.159] a local process and your client is
+[00:01:46.560] passing messages directly to um uh the
+[00:01:51.119] MCP server. And that was sort of the way
+[00:01:54.079] it started out uh and where it
+[00:01:56.640] originated from. And it's evolved uh to
+[00:02:00.240] streamable HTTP. So now you can have uh
+[00:02:03.200] centralized hosted MCP servers that your
+[00:02:06.079] clients can connect to um uh remotely
+[00:02:10.319] and they you know or also as a third
+[00:02:13.760] party if you want to provide an MCP
+[00:02:15.920] server to your customers and users um
+[00:02:19.360] your systems uh you can also build and
+[00:02:21.599] host and platform or manage it that way.
+[00:02:24.640] Uh, previously they attempted to do the
+[00:02:27.840] remote bits over uh, SSE. Um, you'll
+[00:02:31.599] still possibly see a few of those around
+[00:02:33.440] just because all of the indexes get
+[00:02:35.519] scraped and they're [snorts] really not
+[00:02:37.200] going for quality just yet. Um, so you
+[00:02:40.560] might run across a few of the older uh,
+[00:02:42.480] SSE based servers.
+[00:02:46.239] On a server side, uh an MCP server, the
+[00:02:49.840] core thing I think everyone thinks of
+[00:02:51.440] when they think of MCP servers is tools.
+[00:02:54.239] And basically that is the actions that
+[00:02:56.640] uh the agent and the client are going to
+[00:02:59.360] be able to take and interact with those
+[00:03:02.239] systems. And so basically with these uh
+[00:03:05.680] you know you can get records, get um you
+[00:03:09.200] know change a database, query a
+[00:03:10.879] database, uh call an API, any of those
+[00:03:14.159] um are pretty common pieces. The other
+[00:03:17.440] bits are more around some of the UX and
+[00:03:19.920] the data that might be interacted with.
+[00:03:21.840] So prompts guide the user uh and how to
+[00:03:25.040] interact with that server. uh resources
+[00:03:27.760] are files or URLs to data or records in
+[00:03:31.280] a database uh that need to be referenced
+[00:03:34.159] um and so the server can present those
+[00:03:36.720] uh to the client.
+[00:03:41.920] Uh the reason I bring some of these up
+[00:03:43.680] is tools and resources are going to be
+[00:03:45.440] pretty core to uh what we end up
+[00:03:47.760] building today. Um so those are some
+[00:03:49.920] important concepts.
+[00:03:52.159] The others that are on the client side
+[00:03:54.640] uh are sampling, which is a weird name
+[00:03:56.879] and they'll admit it. Uh but basically
+[00:03:59.120] it is the server requesting the client
+[00:04:01.200] to make an LLM call. So if you've pulled
+[00:04:04.560] some text, you can ask the LLM the
+[00:04:06.799] client to summarize those that text for
+[00:04:08.879] you, have it go back to the tool, get
+[00:04:10.560] processed and sent back. Elicitations
+[00:04:13.519] are a pretty vital part. Uh those come
+[00:04:15.920] back and confirm actions from the user.
+[00:04:18.479] So the user can either, you know,
+[00:04:20.959] confirm or deny an action or did you
+[00:04:23.520] really mean to deposit a million
+[00:04:25.680] dollars, you know, like confirm that the
+[00:04:27.520] data and the information is correct? And
+[00:04:30.240] then roots, um, I don't really think
+[00:04:33.120] anyone uses those, but basically they
+[00:04:35.680] just tell you where in the file system,
+[00:04:37.919] uh, tells the server where in the file
+[00:04:39.600] system they can interact with things.
+[00:04:44.000] So let's get to the fun part uh where we
+[00:04:46.960] actually build and uh do the code. Um
+[00:04:50.960] you will need an open AI key. Uh if you
+[00:04:53.600] go to this URL, you will go to a word
+[00:04:55.680] doc or a Google doc that will have an
+[00:04:58.000] API key that you can use for this if you
+[00:05:00.479] don't want to use your own. Um
+[00:05:03.440] so yep if you visit this it will take
+[00:05:06.720] you to
+[00:05:09.919] this document where you can get the key.
+[00:05:13.600] I previously tried this with a QR code
+[00:05:15.520] and then it ended up on everyone's
+[00:05:16.960] phone. So I'm hoping just the URL this
+[00:05:19.280] time.
+[00:05:27.199] So I put this on the next slide. Um, for
+[00:05:30.000] those of you who have the key, the next
+[00:05:32.560] bit is to install Nanobot. So, we're
+[00:05:34.960] going to be using Nanobot for this. It
+[00:05:36.960] is an open source project by Obot. It is
+[00:05:40.560] uh like a lightweight agent framework um
+[00:05:43.120] that uh basically is a full MCP client
+[00:05:46.720] implements all of the the bits. It
+[00:05:48.560] allows you to define an agent which
+[00:05:50.800] we'll go with as a model, instructions,
+[00:05:53.520] and tools. The tools will be provided by
+[00:05:55.520] the MCP server. Um and we'll be using
+[00:05:58.240] nanobots. So we'll go into a little bit
+[00:05:59.919] more on that. So if you're going to
+[00:06:01.759] build you will need uh nanobot.
+[00:06:15.759] Okay.
+[00:06:19.919] And then last you will want to clone
+[00:06:22.560] this repository.
+[00:06:24.479] Um, and this will have everything we
+[00:06:28.080] need to set up the
+[00:06:30.720] uh uh agent today.
+[00:06:44.794] [snorts]
+[00:06:58.720] while we wait for everyone. Yep.
+[00:07:02.000] >> Yep.
+[00:07:06.800] Do you need this one or the pre? Okay.
+[00:07:10.400] >> Sorry. Yeah. Please stop me if I'm going
+[00:07:12.160] too fast or
+[00:07:14.319] you have questions, please ask. Uh,
+[00:07:16.639] happy to
+[00:08:06.319] Okay. Is everyone been able to install
+[00:08:08.720] Nanobot
+[00:08:10.800] and clone the repo.
+[00:08:14.000] Then we need help.
+[00:08:17.280] Okay.
+[00:08:24.479] Okay. So, I'm going to work out of this
+[00:08:28.639] uh here for the most part going through
+[00:08:31.680] the uh the repository. If you go into
+[00:08:36.479] your the chess MCP directory, you'll see
+[00:08:40.159] there is a workshop and a workshop live
+[00:08:44.399] folder. You'll want to go into that
+[00:08:46.560] folder um as we work through this.
+[00:08:49.920] And um
+[00:08:52.480] that'll be the primary. If you get lost
+[00:08:54.640] or get stuck, the solutions are in the
+[00:08:57.440] solutions folder and the readme and
+[00:09:00.880] these slides that I'll be working off of
+[00:09:03.519] uh exist in both the
+[00:09:07.279] I am going to cheat a little bit and
+[00:09:09.440] just give you I am going to have the
+[00:09:12.320] readme open in another folder um because
+[00:09:15.920] I don't want to type everything.
+[00:09:19.680] Okay, so we are going to build a fully
+[00:09:23.680] functioning uh chess MCP server. Uh it
+[00:09:26.560] will have a backend. You'll be able
+[00:09:28.080] it'll have some tools uh to be able to
+[00:09:30.320] make a move. It will uh be able to, you
+[00:09:33.920] know, have the rules enforced. Um and
+[00:09:36.240] you'll be able to actually play chess.
+[00:09:39.600] Um
+[00:09:41.200] so it accepts the algebraic notation
+[00:09:44.560] which is you knight to E4 and that type
+[00:09:48.160] of thing. I personally am not super
+[00:09:50.480] wellversed in it and have to often ask
+[00:09:52.640] uh what I mean when I from the model and
+[00:09:56.080] have it tell me. Um but then this will
+[00:09:59.120] have state. It will have a way to
+[00:10:01.680] display the board and then we're going
+[00:10:03.200] to take a moment and go over like uh MCP
+[00:10:06.640] UI and then we will implement the UI
+[00:10:09.519] elements for this agent and then you can
+[00:10:12.399] drag and drop and play chess.
+[00:10:15.279] Um
+[00:10:17.360] yeah. So you will need NodeJS. Uh you'll
+[00:10:20.800] need some basic uh TypeScript. Um your
+[00:10:24.880] editor of choice. I'm going to use VS
+[00:10:26.640] Code. Uh command line. You'll need two.
+[00:10:29.519] One to run the uh server and one to run
+[00:10:34.160] uh the nanobot instance.
+[00:10:39.440] And we've already cloned.
+[00:10:43.279] And now, so in the workshop live folder,
+[00:10:47.120] you're going to want to install our npm
+[00:10:49.839] dependencies.
+[00:10:51.680] Um, what we're going to be installing is
+[00:10:55.200] we're going to be using MCPUI server.
+[00:10:57.120] We're just going to install that now.
+[00:10:58.640] We're going to use the official SDK from
+[00:11:01.360] the model context protocol. Uh, we're
+[00:11:04.320] going to use chest.js, JS which is the
+[00:11:06.640] backend for the chess engine and then
+[00:11:09.279] express and zod for um
+[00:11:14.079] uh
+[00:11:16.079] types.
+[00:11:24.640] Okay.
+[00:11:31.920] Got held them myself.
+[00:11:34.800] All right.
+[00:11:36.560] So now we're going to create our minimal
+[00:11:39.040] uh MCP server. Um we're going to be
+[00:11:42.800] adding we're going to look at the basic
+[00:11:44.800] structure of the server. We're going to
+[00:11:46.079] register our first tool. Uh we're going
+[00:11:48.240] to fire up um we're going to set up the
+[00:11:51.519] transport layer. And then we are going
+[00:11:53.839] to um yeah have our first tool and test
+[00:11:57.519] that out with Nanobot. And so our first
+[00:12:00.640] goal is to uh create the serverts file.
+[00:12:05.279] And you will find that in source lib
+[00:12:08.320] serverts. You should see it empty uh
+[00:12:11.600] with that. And like I said, I'm going to
+[00:12:14.160] cheat
+[00:12:17.360] and copy this
+[00:12:20.480] and I will walk through it.
+[00:12:30.320] Y zoom in a little bit
+[00:12:33.440] just
+[00:12:33.920] >> Oh yeah.
+[00:12:44.393] [clears throat]
+[00:12:53.440] Okay.
+[00:12:55.120] So, in this file, we're going to add our
+[00:12:58.480] imports. Uh, we're going to do add
+[00:13:01.519] express. We're going to add our
+[00:13:02.800] middleware. Um, we're going to pull in
+[00:13:05.519] the MCP server from the SDK. And then
+[00:13:08.720] we're going to use ZOD.
+[00:13:12.480] So, here, can everyone see this? Is this
+[00:13:14.959] a good size? Good. Thank you. Um, we're
+[00:13:18.720] going to create our new server. Um, in
+[00:13:22.480] this function here,
+[00:13:24.959] um,
+[00:13:26.959] we're basically just giving it a sample
+[00:13:28.560] name and a version.
+[00:13:48.800] So then once we've created our server,
+[00:13:52.399] we're going to register our tool.
+[00:13:56.000] This one is going to just add numbers.
+[00:13:58.079] So for this one, we're just going to
+[00:13:59.360] keep it nice and simple. Um, we're going
+[00:14:01.680] to define our tool and give it a a
+[00:14:04.160] description and its input schema. This
+[00:14:07.920] is going to take the left and right
+[00:14:10.160] operand of an add function. Um,
+[00:14:13.920] and so here you can see we're using ZOD
+[00:14:16.000] to describe that it's numbers and then
+[00:14:18.639] give it these uh descriptions so that
+[00:14:22.560] the model can view these things. Your
+[00:14:24.720] tool names and your descriptions, your
+[00:14:27.120] tool name probably is most important
+[00:14:29.360] followed by the description of each of
+[00:14:31.360] these when building your MCP servers if
+[00:14:33.120] you want to have success. um you'll want
+[00:14:35.519] to make sure that those are very
+[00:14:37.680] descriptive and accurate so that the
+[00:14:40.079] model doesn't really guess.
+[00:14:43.760] Then [sighs]
+[00:14:44.880] we're going to create the actual body of
+[00:14:47.760] the tool. And so here
+[00:14:50.560] we are going to return content
+[00:14:55.360] of type text
+[00:14:58.000] and basically just say the sum of the
+[00:15:00.240] left and right is the left and right.
+[00:15:06.240] And we'll close that out and then return
+[00:15:08.720] the server.
+[00:15:19.279] Just make sure you can see the whole
+[00:15:20.639] function.
+[00:15:31.279] And then we will wire up Express. And so
+[00:15:34.880] we'll mount it to SLMCP which is the
+[00:15:37.360] convention of
+[00:15:39.920] U MCP servers that are over streamable
+[00:15:42.240] HTTP. We'll log and we will listen on
+[00:15:45.360] port 3000.
+[00:16:05.839] Sorry.
+[00:16:18.160] Okay,
+[00:16:20.959] sorry. Was everyone able to get this? If
+[00:16:24.720] you fall behind the again the solutions,
+[00:16:28.320] if you want to look at the files, they
+[00:16:30.160] are in the steps. So, we're on step one.
+[00:16:33.040] You can also see it in here. I'm going
+[00:16:35.360] to actually copy out the nanobot yaml
+[00:16:38.480] because it's currently in the form for a
+[00:16:41.040] later version.
+[00:16:50.240] So you want to edit your nanobot yaml to
+[00:16:52.959] look more like this for this particular
+[00:16:56.240] part. And so just kind of breaking down
+[00:16:59.440] our nanoboty file. Uh this is basically
+[00:17:04.480] as we were saying earlier this is our
+[00:17:06.480] agent. It's really quite simple. Um it
+[00:17:09.600] is just a model, some instructions and
+[00:17:12.959] some tools. And those tools
+[00:17:15.439] um are basically just provided by the
+[00:17:17.760] MCP server that we've just built. Um,
+[00:17:20.319] we're going to use GPT41
+[00:17:22.799] and we're just going to give it some
+[00:17:24.319] simple um
+[00:17:27.600] simple instructions to basically use the
+[00:17:29.760] tool that it has access to.
+[00:18:27.360] All right.
+[00:18:29.760] So, if everyone's okay, anyone need more
+[00:18:33.440] time? I'm going to start the MCP server.
+[00:18:38.080] I'm going to just do npm rundev.
+[00:18:43.280] So, now we've started the MCP server. We
+[00:18:45.520] basic because when we set up our express
+[00:18:47.919] app we're listening on port 3000MCP
+[00:18:51.840] and so now we are up and running and now
+[00:18:56.720] uh
+[00:18:59.280] we have our nanobotl file. So I'm also
+[00:19:02.799] in this live folder and I'm going to do
+[00:19:05.120] npm or sorry nanobot.
+[00:19:09.679] Oh, sorry. I'm skipping a step here.
+[00:19:13.200] Before you run nanobot in your terminal,
+[00:19:16.000] uh export that open AI uh yeah, open AI
+[00:19:19.200] key um through this environment
+[00:19:21.679] variable.
+[00:19:23.679] So, if you copy what I put in the um
+[00:19:26.960] document, that uh should just work.
+[00:19:35.738] [clears throat]
+[00:19:37.840] So,
+[00:19:39.600] So basically what's going to happen is
+[00:19:41.039] when nanobot starts it looks for that
+[00:19:42.640] environment variable then it has an API
+[00:19:44.320] key to talk to uh openai.
+[00:19:48.080] So then we will run nanobot
+[00:19:53.039] run nanobot yaml file and you'll see
+[00:19:57.280] that you should see that it starts up
+[00:20:01.039] and that it comes and starts listening
+[00:20:03.280] on port 8080.
+[00:20:11.919] So then if you go to your browser, you
+[00:20:14.640] should see a nanobot
+[00:20:17.200] UI.
+[00:20:22.240] Does everyone Is this working? Not
+[00:20:24.799] working? Anyone need help?
+[00:20:27.280] All right. Now you should be able to
+[00:20:28.799] just chat with it. So now I should be
+[00:20:30.480] able to say uh add, you know, 9 + 8. And
+[00:20:36.400] you should see that it'll run and it
+[00:20:38.640] knows to use its uh tool. So it's
+[00:20:41.600] calling our MCP server and it is adding
+[00:20:46.480] uh basically it gets the output in the
+[00:20:49.360] format that we said it should and
+[00:20:51.360] returns
+[00:20:52.880] the correct answer.
+[00:20:57.200] Anyone not seeing this or hitting some
+[00:20:59.039] errors? Need any
+[00:21:01.919] any help? Yep.
+[00:21:10.720] the export and then just getting
+[00:21:16.000] >> Is that in the same
+[00:21:18.480] Is it in the same folder?
+[00:21:19.679] >> Yeah.
+[00:21:21.120] >> Yeah.
+[00:21:24.080] >> Oh, that one. Are you in the live
+[00:21:25.760] folder?
+[00:21:26.320] >> Yeah. Yeah. Live.
+[00:21:27.120] >> Yeah. So, it needs to should run that
+[00:21:29.919] one.
+[00:21:37.760] >> It cheats.
+[00:21:38.480] >> It does.
+[00:21:39.360] >> Yeah.
+[00:21:40.720] Look, look, look here. Wait, let me show
+[00:21:42.159] you.
+[00:21:43.039] >> I was I put my queen here and then he
+[00:21:45.600] said he captured with this pawn. I'm
+[00:21:46.960] like, that's an illegal move down.
+[00:21:48.720] >> So, he did an illegal move and then cuz
+[00:21:50.320] I made him think the board and then I
+[00:21:51.919] came back here and I'm like, that's not
+[00:21:53.280] a valid move, you cheater. [laughter]
+[00:21:55.679] >> And then and then he wrote back like,
+[00:21:57.840] oh, right. He put the piece back.
+[00:21:59.360] >> Huh?
+[00:21:59.600] >> You should say,
+[00:22:00.080] >> well, you tried to cheat.
+[00:22:01.280] >> You should say. [laughter]
+[00:22:05.120] >> All right. So, if you run it with slash,
+[00:22:07.280] what does it do?
+[00:22:10.960] Yeah, try that. There you go.
+[00:22:17.280] >> What directory do we refer to inside the
+[00:22:19.200] nanobot runtime? Because it says that
+[00:22:21.360] the file is not found, but it is
+[00:22:23.520] >> kind of cool.
+[00:22:25.120] >> Yeah. Um,
+[00:22:29.679] >> sorry. I'll be right back.
+[00:22:37.039] So you should be in the working
+[00:22:39.200] directory. So you're in working
+[00:22:41.919] directory.
+[00:22:42.480] >> Y
+[00:22:43.360] >> and uh let me just run this.
+[00:22:48.480] >> Delete that.
+[00:22:50.080] >> Dude space dot
+[00:22:51.760] >> queen to
+[00:22:53.039] >> Yep. Try that.
+[00:22:55.520] It's not available.
+[00:23:03.840] >> See how you installed that? How you
+[00:23:06.640] install nanomot?
+[00:23:08.159] >> Uh, I used group.
+[00:23:10.799] >> Did you use the full rule cask?
+[00:23:13.039] >> Right.
+[00:23:13.520] >> Okay.
+[00:23:15.360] >> That's amazing.
+[00:23:16.240] >> Should I install it again?
+[00:23:20.240] >> Just take over. Just take over the
+[00:23:23.919] >> That's amazing.
+[00:23:29.200] Let me go check one thing real quick.
+[00:23:52.400] So
+[00:24:04.946] >> [laughter]
+[00:24:09.919] >> kind of
+[00:24:21.600] Was it moving my Look, I'm moving my P.
+[00:24:47.440] You should do one more
+[00:25:04.400] >> possibly, but it looks like it's got
+[00:25:06.240] some sort of validation error.
+[00:25:10.240] E5 to E7.
+[00:25:13.279] >> Demo.
+[00:25:23.360] >> Oh, sorry.
+[00:25:32.559] >> Do you have
+[00:25:40.577] >> [clears throat]
+[00:25:41.200] >> Okay, that's up.
+[00:25:46.080] >> Oh, he put his knight there.
+[00:25:48.640] >> The dev servers do not restart
+[00:25:50.080] automatically, do they?
+[00:25:51.039] >> They do not. No.
+[00:25:51.919] >> Okay, maybe I'll just try restarting
+[00:25:53.440] because I just changed the name of the
+[00:25:55.039] server. It was a mismatch. So,
+[00:25:57.120] >> yeah. So these two have to match and
+[00:26:00.000] then
+[00:26:01.520] >> it's not just
+[00:26:02.720] >> like it is silly but it's example how
+[00:26:05.360] gaming might look in the future
+[00:26:07.200] >> like a kid will just be like
+[00:26:08.742] [clears throat]
+[00:26:09.360] >> this is how the game's going to work
+[00:26:10.559] today
+[00:26:11.840] >> and it's just like
+[00:26:14.159] >> on the fly they'll be able to play games
+[00:26:15.760] the way they want to
+[00:26:16.720] >> that's okay
+[00:26:18.799] >> can you copy the nanobot yl out of step
+[00:26:21.200] one and just copy the file directly
+[00:26:22.799] there and try that
+[00:26:24.559] >> you can cheat really
+[00:26:26.720] >> I That's how you started nanobot.
+[00:26:28.799] >> Oh, it is uh you export the openi a kpi
+[00:26:34.000] key and in the same terminal it is
+[00:26:35.760] nanobot run
+[00:26:40.080] >> space
+[00:26:41.679] nanobot.yamlot.
+[00:26:47.679] >> Cool.
+[00:26:48.799] >> You are
+[00:26:54.000] >> Did that help?
+[00:26:55.200] >> No. No.
+[00:26:57.200] >> What do we expect in schema?
+[00:26:59.679] >> Uh I don't it's I'm guessing it's like a
+[00:27:03.200] validation thing. It doesn't seem to
+[00:27:05.520] like
+[00:27:08.400] >> which nanobayl file is this?
+[00:27:10.720] >> Uh it's this one. I just copy the
+[00:27:12.960] content from
+[00:27:13.600] >> you think it's
+[00:27:15.279] >> okay.
+[00:27:17.440] >> Yeah. And that should be
+[00:27:21.520] >> main test. Okay.
+[00:27:24.400] >> Yeah. This really shouldn't.
+[00:27:28.880] >> Can you brew uninstall it?
+[00:27:30.880] >> Oh, uninstall.
+[00:27:32.799] >> Yeah. And then
+[00:27:35.760] >> because there's a a version there's a
+[00:27:38.080] brew install nanobot and then that one
+[00:27:40.960] is broken.
+[00:27:42.080] >> Oh,
+[00:27:42.880] >> so there's one with the Yeah, let me put
+[00:27:44.960] it back up on the screen for you.
+[00:27:55.509] >> [sighs]
+[00:27:56.399] >> So, if you're seeing an error when you
+[00:27:59.440] install Nanobot, if you did brew install
+[00:28:02.159] Nanobot without putting the Nanobot AI
+[00:28:05.120] tap, uh, that version is broken. We're
+[00:28:08.559] still working with Upstream to actually
+[00:28:10.240] get that fixed. So, if you could brew
+[00:28:12.960] uninstall the nanobot that way and brew
+[00:28:15.760] install this nanobot, hopefully that
+[00:28:18.640] fixes the issue.
+[00:28:26.799] Okay.
+[00:28:28.080] >> You're supposed to install the tap,
+[00:28:29.200] right? Tap.
+[00:28:30.080] >> Yeah, you're supposed to install the
+[00:28:31.039] tab.
+[00:28:31.440] >> I was supposed to install the tap.
+[00:28:32.480] >> Yeah. Oh, okay. That's what happened.
+[00:28:34.159] Never mind.
+[00:28:35.039] >> Okay.
+[00:28:39.039] >> This is what we get
+[00:28:41.279] request.
+[00:28:43.039] >> Did you
+[00:28:43.919] >> I ran the server here. Did npmi?
+[00:28:46.880] >> Yep.
+[00:28:47.360] >> Uh server ts files. We looked at the
+[00:28:49.919] solutions for step one looks the same.
+[00:28:51.360] The file identifies look the same.
+[00:28:53.840] >> Sure.
+[00:28:54.159] >> And then is there anything else we're
+[00:28:55.279] supposed to do?
+[00:28:57.600] >> API.
+[00:28:59.440] >> Yep. That should be good. And then here
+[00:29:01.440] you're getting
+[00:29:04.320] >> Oh, you want to start the nanobot server
+[00:29:06.240] and hit it on 8080. You're
+[00:29:08.215] [clears throat] not speaking MCP when
+[00:29:09.760] you go to it in the URL in the browser.
+[00:29:12.559] >> Okay.
+[00:29:14.159] Uh
+[00:29:14.399] >> what do I need to do?
+[00:29:15.279] >> Go to 80 uh port 8080, not 3000.
+[00:29:21.279] Uh, did you start the nanobot process?
+[00:29:23.279] >> I don't think so. I think that's the
+[00:29:24.720] missing part.
+[00:29:25.279] >> Yep. You need to start nanobot and then
+[00:29:26.799] that will listen on that.
+[00:29:28.159] >> And really quickly, I've got the the yo
+[00:29:31.200] here and I try to start nanobot in live.
+[00:29:33.440] Is that the right folder to start it in?
+[00:29:35.120] >> Yes, it's in live. Oh, the nanobot yl
+[00:29:38.399] should be out here.
+[00:29:40.399] >> So, this one is already there, right?
+[00:29:42.000] >> Yeah. Overwrite that one.
+[00:29:43.679] >> Overwrite that one with this one. Okay.
+[00:29:46.559] And how do you start?
+[00:29:48.000] >> And then nanobot.
+[00:29:49.360] >> No nanobots in live.
+[00:29:51.279] >> Yeah, it should be the live folder. So
+[00:29:53.039] then do nanobot
+[00:29:55.600] >> uh space run
+[00:29:58.720] dot slash dot forward slash
+[00:30:00.799] >> forward this one.
+[00:30:01.600] >> Uh dot forward slash
+[00:30:03.679] >> uh nanoboty.
+[00:30:05.840] There you go.
+[00:30:06.720] >> Spaced. Cool.
+[00:30:09.039] >> Awesome.
+[00:30:09.360] >> Now you should be on 8080
+[00:30:10.799] >> brother.
+[00:30:12.720] >> Hey, don't worry. It's like trying to
+[00:30:14.080] find the Docker file.
+[00:30:15.200] >> Oh, did you export your Open AI key in
+[00:30:18.399] that?
+[00:30:18.720] >> Oh, not in this one.
+[00:30:19.760] >> Yeah, you're gonna need that.
+[00:30:21.039] >> Oh, I didn't do that either.
+[00:30:22.399] >> Okay, you're gonna need that.
+[00:30:24.799] >> Okay, but I can do that without that.
+[00:30:27.760] >> There we go.
+[00:30:28.960] >> Cool. Now, you should be able to ask it.
+[00:30:32.960] >> Huh?
+[00:30:34.559] You're running it in a folder above the
+[00:30:36.880] live workshop live.
+[00:30:38.320] >> Okay.
+[00:30:38.799] >> You're running
+[00:30:41.840] one down here. Okay, doors. Thanks.
+[00:30:46.080] >> Okay, so you guys are good.
+[00:30:51.919] >> Oops. Sorry.
+[00:30:54.080] >> Yeah, I will not do that twice.
+[00:30:57.279] All right.
+[00:30:59.279] Were you able to Nope.
+[00:31:03.200] Okay. I'm sorry. I will look at this
+[00:31:05.600] with you.
+[00:31:06.480] >> Not a problem.
+[00:31:07.200] >> Okay. Thanks.
+[00:31:10.159] All right.
+[00:31:11.679] So, I know a few of you have this up and
+[00:31:14.480] running. Um,
+[00:31:17.279] so hopefully you've had fun adding
+[00:31:18.799] numbers.
+[00:31:21.279] Let's make it do more interesting
+[00:31:23.679] things.
+[00:31:28.559] So, just to recap though, what we've
+[00:31:30.799] done though is we have created the MCP
+[00:31:33.440] server. We added the tool for adding and
+[00:31:37.679] basically the middleware layer. Um the
+[00:31:39.919] reason we're using the middleware layer
+[00:31:41.279] helps us run both MCP and standard HTTP
+[00:31:45.679] over the thing uh the same proto same
+[00:31:47.840] port and we are getting our responses
+[00:31:51.760] back.
+[00:31:53.519] So now let's get into the chess side of
+[00:31:56.320] things which is the more fun and
+[00:31:58.559] interesting bits.
+[00:32:01.200] And so here what we'll do is we'll use
+[00:32:04.000] the chessjs library. Um we'll implement
+[00:32:08.000] uh uh the chess tools that we'll need
+[00:32:10.799] for this and then it handles the
+[00:32:14.399] validation and then we will add uh game
+[00:32:17.600] state. It will return the formatted game
+[00:32:19.679] state.
+[00:32:21.679] So chessjs is an open uh is a library
+[00:32:25.200] that's out there. Uh we've already
+[00:32:27.360] installed it. Um it has the complete
+[00:32:30.399] rules. It's a pretty cool backend. Um so
+[00:32:32.799] we'll get asy board rendering. Um, it
+[00:32:35.519] helps validate the moves apparently not
+[00:32:37.440] very well. Um, and then it manages the
+[00:32:42.159] uh game state for us.
+[00:32:45.600] So now let's edit our
+[00:32:49.600] uh server. We're going to delete the
+[00:32:52.720] tool here.
+[00:33:12.240] and we will add the new tool.
+[00:33:19.679] So you know first we will
+[00:33:23.440] add our import
+[00:33:27.279] for chest.js JS.
+[00:33:30.640] Uh, we'll have the new chess.
+[00:33:33.360] We are going to We still have our same
+[00:33:35.919] server. That part's still good. Uh,
+[00:33:38.640] we're going to register our new uh tool
+[00:33:42.559] called the
+[00:33:45.279] um
+[00:33:48.080] chess move.
+[00:33:54.320] it'll take the move um as a parameter.
+[00:34:04.278] [clears throat]
+[00:34:05.120] And then when we actually go to do the
+[00:34:06.640] move, we'll create a a new chess object.
+[00:34:10.240] We will do the move and then we will
+[00:34:13.679] return the state.
+[00:35:02.960] Okay.
+[00:35:14.160] So, I'm going to save that.
+[00:35:21.359] I'm going to kill my MCP server. I kill
+[00:35:25.359] Nanobot and bring them back up.
+[00:35:30.400] So, here's my new
+[00:35:32.960] uh MCP server. It's started back up. And
+[00:35:35.359] then I will run Nanobot. I'll use the
+[00:35:38.079] same uh Nanobot file that we had from
+[00:35:41.440] before.
+[00:35:46.720] And
+[00:35:48.320] When I reload,
+[00:35:51.839] start a new chat. I'm just going to say
+[00:35:54.400] E4.
+[00:35:57.680] So, it now knows
+[00:36:01.760] to call the chess move.
+[00:36:05.839] And you can see that it is now um
+[00:36:10.079] returning the response as we told it to
+[00:36:12.800] in our file. So here we're still telling
+[00:36:16.240] it that our response is going to be a
+[00:36:18.480] text. It's going to have the current
+[00:36:20.720] board state. Um this just dumps it in
+[00:36:24.240] that notation. Um it gives a list of
+[00:36:27.119] valid moves and then it gives the ASKI
+[00:36:30.160] format of the
+[00:36:32.560] uh game state.
+[00:36:36.240] And you'll note if you do
+[00:36:40.560] so if you say E5, it'll make the chess
+[00:36:43.040] move again.
+[00:36:44.720] But
+[00:36:46.960] um yeah, you'll notice that it's
+[00:36:50.000] actually not keeping state and you get a
+[00:36:52.880] new board every time in this particular
+[00:36:55.280] step.
+[00:36:58.960] Has everyone had a chance to get it to
+[00:37:01.280] the point where it's now running this
+[00:37:04.000] first step? Uh
+[00:37:07.119] >> I was uh I didn't get the ask to show up
+[00:37:10.800] >> in the
+[00:37:13.040] showing type show.
+[00:37:16.800] >> You're running the complete final
+[00:37:18.640] solution. This version will only have
+[00:37:21.040] the move tool.
+[00:37:26.240] >> Oh,
+[00:37:27.599] >> yeah.
+[00:37:35.440] >> Are you running? Where are you running
+[00:37:36.960] your nanobot file from?
+[00:37:42.960] I was running it from
+[00:37:44.400] >> I took the one that was there and
+[00:37:45.760] uncommented.
+[00:37:49.200] >> Are you in is your terminal in the live
+[00:37:51.599] folder?
+[00:37:52.960] >> Yes.
+[00:37:56.000] >> No,
+[00:37:57.839] server.
+[00:37:58.240] >> Yeah, it's in the workshop live.
+[00:37:59.680] >> Okay. And then is your MCP server
+[00:38:01.920] running out of
+[00:38:05.520] >> which will
+[00:38:06.480] >> Yeah, I took the I took the
+[00:38:10.560] server code from the reunion.
+[00:38:12.320] >> Yeah.
+[00:38:12.640] >> For step two.
+[00:38:14.000] >> Okay.
+[00:38:16.640] >> And it's it seemed to be persistent
+[00:38:18.880] state
+[00:38:29.520] >> and that was after you made your first
+[00:38:31.440] chess move. It's
+[00:38:33.839] >> it's probably the model remembering
+[00:38:35.520] where which state
+[00:38:41.346] >> [clears throat]
+[00:38:49.280] >> That can't be
+[00:39:19.040] I tried to do um installing but then
+[00:39:22.800] somehow this is impossible. Xcode is
+[00:39:25.280] fine. I can open it.
+[00:39:28.320] >> Do you have the
+[00:39:30.480] >> I mean it's up and running. It's right
+[00:39:32.160] here. I'm downloading simulators, but
+[00:39:33.839] it's the latest version.
+[00:39:35.359] >> Do you have the Xcode and CLI tools?
+[00:39:37.839] >> Oh, yeah.
+[00:39:41.440] Build
+[00:39:44.240] I did hyphen version and it's the latest
+[00:39:47.200] app store.
+[00:39:52.079] >> It's either outdated or was modified.
+[00:39:53.920] Please update your Xcode or delete it if
+[00:39:55.680] there are no updates available.
+[00:39:58.320] >> Are you on 15?
+[00:39:59.520] >> Yeah.
+[00:39:59.920] >> Seems weird.
+[00:40:00.640] >> I know, right? Everything's like pretty
+[00:40:02.079] much the latest
+[00:40:05.839] >> Sequoia 156.
+[00:40:07.599] >> Yeah,
+[00:40:09.440] >> but your Xcode is the 261.
+[00:40:11.920] >> Yeah, that's that's the latest in the
+[00:40:12.960] app store. I already double check. It's
+[00:40:14.560] not like a like a you know developer
+[00:40:16.240] version or anything.
+[00:40:17.040] >> No, no,
+[00:40:19.520] just [clears throat] kind of like
+[00:40:20.480] stalled.
+[00:40:22.160] I'll just have to pile on later.
+[00:40:23.680] >> I'm sorry.
+[00:40:26.000] >> That's weird. I
+[00:40:27.680] >> never seen that before. I try restarting
+[00:40:29.520] the terminal too. The session is gonna
+[00:40:31.359] be a good reboot.
+[00:40:34.560] >> Maybe um we'll let you do like a brew
+[00:40:38.160] update and brew upgrade brew.
+[00:40:42.400] >> Uh not for Xcode, but maybe it's brew
+[00:40:45.280] trying to use something in its area. I
+[00:40:46.880] don't know what's actually throwing the
+[00:40:48.079] error.
+[00:40:48.480] >> Oh, yeah.
+[00:40:53.680] >> Okay.
+[00:40:55.760] I'm pretty sure that basically the board
+[00:40:58.000] and what the model think are existing
+[00:41:00.000] are not coinciding. So when it shows the
+[00:41:03.359] board, it shows the white move, but
+[00:41:05.200] black can't move because it goes to
+[00:41:07.119] move, but white needs to go first.
+[00:41:10.880] At least that's what's happening on
+[00:41:12.079] mine.
+[00:41:15.680] Okay. So [sighs]
+[00:41:17.599] now let's add state um so that we can
+[00:41:20.480] actually
+[00:41:22.240] get kind of going back and forth.
+[00:41:26.160] So I'm going to kill those.
+[00:41:40.000] So we're going to we did that played a
+[00:41:44.240] little chess. So each request generates
+[00:41:46.640] a new game. So basically there is no
+[00:41:48.960] state persisted although the model is
+[00:41:51.680] smart enough to remember that it got a
+[00:41:53.839] tool call response and the state of the
+[00:41:55.440] board. So it's just kind of holding on
+[00:41:57.280] to that and it won't let it go.
+[00:42:01.200] So [sighs] again we can now see the
+[00:42:03.200] board. We're actually able to make the
+[00:42:04.720] moves. We're calling our tool. The
+[00:42:06.240] backend is kicking in.
+[00:42:08.640] And so now what we're going to want to
+[00:42:10.720] do is actually have state management so
+[00:42:12.560] we can survive multiple turns.
+[00:42:16.560] And so here we're just going to use a
+[00:42:18.480] simple uh session state based on the
+[00:42:21.760] session ID. So every time you connect to
+[00:42:23.599] the MCP server, you are generating a
+[00:42:26.400] session ID. um we're going to store that
+[00:42:30.079] use that to store um on the file system
+[00:42:33.520] the state of the game and then we will
+[00:42:36.319] load that before every move for that
+[00:42:38.480] session and then we will be able to play
+[00:42:41.599] and continue.
+[00:42:45.359] So now we're going to create a new file
+[00:42:47.839] in our lib directory
+[00:42:52.720] uh store.ts TS.
+[00:43:15.920] And so here we're just bringing in write
+[00:43:18.079] file, read file, and make dur um
+[00:43:22.480] see if it exists. and the chess game.
+[00:43:26.720] So, we're going to bring in the backend
+[00:43:27.920] from chess
+[00:43:31.040] and we're going to create a save game
+[00:43:32.800] function. We're going to take the
+[00:43:35.040] session ID from the MCP server. Um,
+[00:43:38.000] we're going to take the game from chess
+[00:43:40.319] and the chess back end. We're going to
+[00:43:43.280] check if it uh exists. If it doesn't,
+[00:43:46.240] we're going to make a games uh directory
+[00:43:49.359] with there. And then we're going to
+[00:43:52.079] write the JSON file um with our session
+[00:43:56.079] ID and stringify the uh the game. So
+[00:44:00.400] then it's just going to dump it uh to
+[00:44:02.560] file.
+[00:44:07.920] Then we're going to write the flip side
+[00:44:10.960] and we're going to do the load game. And
+[00:44:12.960] so it will also take the session ID. Um
+[00:44:16.480] it will then read the games folder for
+[00:44:19.359] that JSON file. And if it exists, it
+[00:44:22.480] will return that data
+[00:44:25.920] as a JSON or as a chess object with the
+[00:44:30.000] um with that data.
+[00:44:37.359] So now we'll update our server.
+[00:44:52.560] And so here,
+[00:44:54.960] instead of creating a new game every
+[00:44:57.440] time,
+[00:44:59.119] we'll let game equal await
+[00:45:02.400] load.
+[00:45:09.119] So we'll bring in our load game and
+[00:45:14.000] save game.
+[00:45:21.680] And then we'll say
+[00:45:24.720] if move
+[00:45:54.480] So here we're checking to see if it's a
+[00:45:56.880] new move or
+[00:45:59.440] if there's no game coming back from the
+[00:46:02.240] uh from our load game state. And then we
+[00:46:05.680] are going to make the move and
+[00:46:07.760] immediately after we are going to save
+[00:46:10.160] our game. after we make that move
+[00:46:12.646] [snorts]
+[00:46:17.200] and we are going to continue returning
+[00:46:20.000] the same content that we've returned
+[00:46:21.599] before
+[00:46:25.839] and now we should see it persist state
+[00:46:28.240] and we should be able to make multiple
+[00:46:30.000] moves.
+[00:46:32.800] So we will fire up the MCP server and
+[00:46:36.640] then we will fire up Nanobot,
+[00:46:38.847] [clears throat]
+[00:46:41.760] start a new chat.
+[00:46:51.920] Okay, so here now in theory I should be
+[00:46:55.680] able to say E5.
+[00:47:02.160] Cool. And so now if you look at our ASI
+[00:47:05.440] or I can say showboard,
+[00:47:09.760] you can see both pieces have moved and
+[00:47:12.480] black was actually able to go because it
+[00:47:14.400] was Black's term according to the back
+[00:47:16.000] end. The nice thing about when you're
+[00:47:17.760] building these MCP servers is all your
+[00:47:19.680] business logic can go into the MCP
+[00:47:22.720] server and that way you're not really
+[00:47:24.480] relying on the model and its guard rails
+[00:47:28.480] to uh um make the right choices or
+[00:47:32.319] decisions. So here you get a bit more
+[00:47:34.079] security by embedding your business
+[00:47:35.680] logic into the tools into the backend
+[00:47:37.760] MCP server. Um and then you're able to
+[00:47:40.480] actually,
+[00:47:42.160] you know, build reliable uh systems.
+[00:47:46.800] Cool. Was everyone able to get their MCP
+[00:47:50.960] server to save this state? And if we go
+[00:47:54.160] back and look, we should see that our
+[00:47:57.680] games are now being stored in our um by
+[00:48:01.760] session in our folder here.
+[00:48:18.240] And here why don't we also enhance our
+[00:48:22.000] uh nano nanobot eml file. We'll go back
+[00:48:26.000] to the fancy one.
+[00:48:29.680] So that will improve this gives you some
+[00:48:34.319] um
+[00:48:37.680] some nice things here. So I'll go over
+[00:48:39.440] that.
+[00:48:42.240] So, we can say, "Let's play a game of
+[00:48:43.920] chess. I'll go first. Whoever goes first
+[00:48:46.160] is
+[00:48:51.760] uh
+[00:48:53.920] is typically the the white color pieces
+[00:48:56.160] and
+[00:48:58.160] um it'll be able to actually execute and
+[00:49:00.559] get going." Oh, no. This one's too
+[00:49:03.440] fancy. We're going to use step threes.
+[00:49:10.640] Sorry about that.
+[00:49:26.880] So here what we're doing is just adding
+[00:49:28.720] a little bit of niceness. Um so we're
+[00:49:32.319] adding some starter messages. So when
+[00:49:34.559] you load your agent typically in a chat
+[00:49:37.280] window you're just presented with a
+[00:49:39.119] chat. And so that's what you type. Uh so
+[00:49:42.559] with starter messages, we're able to
+[00:49:44.319] give it um
+[00:49:46.800] basically a nice UI button that lets you
+[00:49:49.200] click and kick off the conversation and
+[00:49:51.520] then you'll be able to um enhance the UX
+[00:49:55.839] a bit. So here
+[00:50:00.960] when I create a new one. So here now
+[00:50:03.680] it's got the uh chest piece logo. And
+[00:50:08.240] now you've got some starter buttons. So
+[00:50:09.760] you can say let's play. I'll go first.
+[00:50:12.480] And so then I can say I'm going to be
+[00:50:15.920] move to E4.
+[00:50:19.040] And now it automatically knew and picked
+[00:50:21.359] up and started playing. And so the game,
+[00:50:23.599] the agent is now actually starting to
+[00:50:25.280] play back and forth with you. And so if
+[00:50:27.359] you know chess notation, uh you can keep
+[00:50:30.160] playing. I know E4 moves it. And then I
+[00:50:32.559] I think I've memorized now that knight
+[00:50:34.720] can move to
+[00:50:38.400] knight to E F3.
+[00:50:43.040] So that will move.
+[00:50:46.000] If I look at the board.
+[00:50:55.040] So here now we're looking at this and
+[00:50:57.200] you have a way to actually play chess
+[00:50:59.280] with an agent and go back and forth. The
+[00:51:01.599] downside to this at the moment is we're
+[00:51:04.000] chatting and we have to do everything in
+[00:51:06.079] text and in this case text is not great,
+[00:51:09.200] right? Like you have to kind of know
+[00:51:10.800] this notation. I mean, I guess if you
+[00:51:13.200] already knew it, it wouldn't be so bad,
+[00:51:14.640] but it's not visual. It's not really
+[00:51:17.680] easy way to think through it. It's not
+[00:51:20.240] super like it's just bad UX.
+[00:51:24.400] And I think you know where chat sort of
+[00:51:26.559] falls down a little bit.
+[00:51:31.839] So,
+[00:51:35.359] let's bring up MCP UI.
+[00:51:40.400] So, MTP UI, this is what's going to this
+[00:51:44.559] helps us um we'll be using this to add
+[00:51:50.559] interactive UI elements to the chess
+[00:51:54.240] game. And so, this will allow us to
+[00:51:56.960] basically ultimately have a drag and
+[00:51:58.720] drop way to interact with it. So,
+[00:52:03.599] real quick, um, not real quick, but so
+[00:52:06.559] MCPUI is a project by a team out of
+[00:52:09.040] Shopify. Um, I don't know if you're
+[00:52:10.800] aware of this, but every Shopify account
+[00:52:12.960] has its orfront has its own MCP server.
+[00:52:16.160] And one of the things they wanted to be
+[00:52:17.760] able to do was be able to, you know,
+[00:52:19.920] still have that interactive chat
+[00:52:22.559] experience while still being able to
+[00:52:24.079] shop. So if you go to the with a client
+[00:52:26.960] that supports MCP UI, if you go to the
+[00:52:29.760] Shopify MCP stores like All Birds or
+[00:52:32.640] something like that, you can actually
+[00:52:34.319] get like and say you're shopping for
+[00:52:36.160] shoes, it will, you know, pull up a
+[00:52:38.640] catalog of shoes. It'll let you click
+[00:52:40.480] through the carousels. It gives you a
+[00:52:42.480] way to completely interact with and
+[00:52:44.720] still kind of have that visual
+[00:52:46.640] experience that you kind of want when
+[00:52:48.240] you're buying something like shoes or
+[00:52:50.640] clothing or any number of things. You
+[00:52:52.559] kind of want to see it, right? And so
+[00:52:53.920] that's one of the nice things um
+[00:52:57.520] about uh
+[00:53:00.640] yeah having a UI um and so
+[00:53:05.200] yeah they they wanted to be able to do
+[00:53:06.640] that and so from that you can also add
+[00:53:08.480] things to cart and then you have to go
+[00:53:09.760] and actually complete the cart
+[00:53:11.280] experience out there but what is nice
+[00:53:13.520] about sort of the chat pieces or what
+[00:53:15.200] it's bringing is you can say I'm
+[00:53:16.960] shopping for shoes and you don't have to
+[00:53:18.400] worry about the navigation of going to a
+[00:53:20.079] website entering into a search bar
+[00:53:21.680] clicking on you know men's shoes, then
+[00:53:24.319] sneakers, then all these things, right?
+[00:53:26.400] If you think about half the things that
+[00:53:28.720] you're doing on a website when you're
+[00:53:30.240] building it or looking at it, um you're
+[00:53:33.040] basically thinking through the
+[00:53:34.640] navigation and how do I find something,
+[00:53:36.319] right? Like that's where you spend most
+[00:53:37.520] of your time. How do I get my users from
+[00:53:39.359] A to B? Chat is really nice because it
+[00:53:42.079] cuts out a lot of that and what it um
+[00:53:46.240] what you need to do there. And so the
+[00:53:49.839] MCP UI guys, they actually uh saw MCP,
+[00:53:54.319] they really like the protocol and they
+[00:53:56.720] figured out how to build on top of it
+[00:53:58.079] and extend um which makes it nice as a
+[00:54:00.880] protocol. So what they've done is
+[00:54:03.920] uh figured out a way to build rich
+[00:54:06.000] interactive UI experiences on top of uh
+[00:54:09.040] MCP.
+[00:54:11.520] And so by doing it this way, they've
+[00:54:13.839] standardized uh the way of like the
+[00:54:17.119] client server side things uh as far as
+[00:54:19.839] like SDKs and being able to define
+[00:54:22.480] specific interfaces and how you can
+[00:54:24.160] communicate back and forth. Um they've
+[00:54:27.440] done it in a secure way. So when you
+[00:54:28.800] render it on the client side, it is
+[00:54:31.599] sandboxed in an iframe and so you're
+[00:54:33.680] able to, you know, trust the code to
+[00:54:37.200] some degree there that's running in
+[00:54:38.640] there. Um, it's interactive, so you can
+[00:54:41.839] click within the UI or you can chat and
+[00:54:44.800] have it do things in the UI as well. So,
+[00:54:46.640] it can go both ways, which is pretty
+[00:54:48.240] cool. Um, it's uh flexible in that it
+[00:54:52.640] can embed or have raw content and then
+[00:54:56.640] it's, you know, they're just extending
+[00:54:58.720] and so they're doing it in a way that
+[00:55:00.559] doesn't back anyone or paint anyone in
+[00:55:02.400] any corners. Um, I believe
+[00:55:06.960] uh the OpenAI
+[00:55:09.680] uh apps SDK, I think that's the new one
+[00:55:12.640] they released, is actually a smaller
+[00:55:14.079] subset of some of the capabilities that
+[00:55:16.240] you can do with um MCP UI.
+[00:55:21.200] And so on the server side,
+[00:55:24.818] [clears throat] excuse me, um you're
+[00:55:27.119] basically in your MCP server, you're
+[00:55:29.040] rendering UI resources. um these write
+[00:55:32.800] on top of just regular MCP type
+[00:55:34.880] resources. Um and then they're also
+[00:55:37.119] making use of the spec where a tool call
+[00:55:40.720] can return an embedded resource. And so
+[00:55:43.200] as part of its response and you can
+[00:55:44.720] actually return both the text and um
+[00:55:48.640] these embedded resources and it's up to
+[00:55:50.480] the client to figure out what to do. And
+[00:55:52.960] so it actually gives you a way to
+[00:55:54.960] degrade gracefully. So if you send both
+[00:55:57.520] and your client doesn't actually support
+[00:55:59.839] MCP UI or the extensions, then it can
+[00:56:02.319] just render the text and it never knows
+[00:56:04.480] anything about the UI bits. Um or it can
+[00:56:07.760] prefer the UI or it can do some
+[00:56:10.240] combination of both. Um so they've come
+[00:56:14.079] up with the URI schema. Uh they're
+[00:56:16.799] picking the UI uh and then giving it a
+[00:56:20.079] component name and then some sort of
+[00:56:21.440] instance ID.
+[00:56:25.680] on the client side. Um there's another
+[00:56:28.160] SDK to pick up. It will render those UI
+[00:56:31.440] resources looking at the uh URI schema
+[00:56:34.640] and validating that. Um and then to
+[00:56:38.400] communicate between the um iframe and
+[00:56:42.559] the application uh there's a it's just
+[00:56:45.280] making use of the post message API uh
+[00:56:48.400] the standard one. And so you're able to
+[00:56:51.359] out of the box they've got some actions
+[00:56:54.640] that are predefined. Uh so the intent is
+[00:56:58.079] you know the user wants to do this or
+[00:57:00.720] add this to uh cart. Um it can notify it
+[00:57:05.359] can uh just submit a prompt on behalf of
+[00:57:08.480] the user. Um it can make a direct tool
+[00:57:11.040] call. um and then supporting uh links
+[00:57:15.839] out of the uh iframe into the system.
+[00:57:19.920] So they've done a pretty good job with
+[00:57:22.720] this and so we'll see this in action,
+[00:57:24.720] but I wanted to give everyone a quick
+[00:57:27.520] overview of kind of the components that
+[00:57:30.640] excuse me uh that we'll be leveraging.
+[00:57:34.799] Any questions?
+[00:57:39.440] Cool.
+[00:57:52.640] So here we will start with um adding
+[00:57:56.240] basic UI elements to this. We're going
+[00:57:58.880] to just return uh simple HTML raw. Um
+[00:58:04.640] we'll do just the the basics of what we
+[00:58:07.520] would want to see. The our first pass
+[00:58:09.280] will just be sort of the HTML element.
+[00:58:11.920] Uh we're not going to do the interactive
+[00:58:13.599] just yet. We'll add that next. Um
+[00:58:18.400] so here we're going to add our UI
+[00:58:21.520] resource after importing the
+[00:58:25.359] um
+[00:58:33.359] bring in the MCP UI bits.
+[00:58:53.599] So really here the piece that we're
+[00:58:55.440] going to be changing is our return. So
+[00:58:57.200] we're going to instead of just returning
+[00:58:59.520] the
+[00:59:01.520] uh text piece of it, we are also going
+[00:59:04.000] to return the UI element.
+[00:59:09.040] So here we're going to create a UI
+[00:59:10.720] resource.
+[00:59:41.760] Get text type
+[00:59:54.799] and
+[00:59:57.119] our content. And
+[01:00:05.920] stop it.
+[01:00:12.720] Our content is going to be type
+[01:00:16.000] raw HTML
+[01:00:19.119] and the HTML is going to be
+[01:00:52.400] I'm just going to dump the ASKI into a
+[01:00:54.319] pre-formatted HTML text block
+[01:01:02.160] and
+[01:01:10.240] Then we're going to do UI metadata
+[01:01:17.119] and we're going to say that we want to
+[01:01:19.599] prefer an I frame size.
+[01:01:49.040] So yeah, here we're creating our
+[01:01:51.200] resource. We've added the new type.
+[01:01:53.280] We're going to give it the URI that it
+[01:01:55.359] is a board. Um, we're going to encode it
+[01:01:58.319] in text. We're just going to dump the
+[01:02:00.400] ASKI straight out to a pre-formatted
+[01:02:02.880] block. And then here in this UI
+[01:02:05.760] metadata,
+[01:02:07.680] we're telling the client library that's
+[01:02:10.640] going to render this that we would
+[01:02:12.079] prefer the iframe to be 700 by 700
+[01:02:14.480] pixels.
+[01:02:26.480] So, we'll fire that back up.
+[01:02:29.040] fire back up our Nanobot server,
+[01:02:34.000] start a new thread,
+[01:02:39.040] and now move E4.
+[01:02:42.079] So now it'll actually render this
+[01:02:45.280] pre-formatted ASKI board game every
+[01:02:47.280] time. And so
+[01:02:50.880] here if we inspect
+[01:02:56.160] you'll see that we're in the pre-tags
+[01:02:58.079] and that the client has done the iframe
+[01:03:01.119] for us and so
+[01:03:04.319] it is drawing and rendering this for us
+[01:03:06.160] and the client is picking this. Not
+[01:03:08.720] every client supports these UI
+[01:03:10.559] extensions. Um, but the ones that do,
+[01:03:13.520] uh, you can take advantage of this.
+[01:03:18.559] Was everyone able to
+[01:03:22.079] get the pre-formatted HTML?
+[01:03:25.440] Cool.
+[01:03:33.200] So again, the key thing here is that we
+[01:03:36.480] are returning both types. the text and
+[01:03:39.119] the UI element. And so it's up to the
+[01:03:41.440] client to decide what to display. Um,
+[01:03:45.520] and it still gives us portability. Our
+[01:03:47.680] MCP server would still work with a
+[01:03:49.599] client that does not support the UI bits
+[01:03:51.599] because it would just degrade and use
+[01:03:53.200] the text bits.
+[01:03:57.280] But now we can move on to the fun side
+[01:04:00.240] with the chessboard and actually be able
+[01:04:02.720] to drag and drop the chest pieces
+[01:04:06.160] and build that. So here we're going to
+[01:04:09.119] pull in uh a library that gives you a
+[01:04:12.000] graphical chessboard and we will then be
+[01:04:14.880] able to move the pieces around um and
+[01:04:19.440] then be able to Yeah. And we're going to
+[01:04:22.799] be using chessboard.js for this
+[01:04:24.319] visualization.
+[01:04:28.559] So we will now create a new function in
+[01:04:31.680] our MCP server.
+[01:04:34.400] So
+[01:04:37.680] this will uh get the game UI. So I'll
+[01:04:41.200] going to copy it because it's a bit
+[01:04:44.160] lengthy.
+[01:04:58.880] But I will walk through it. So here what
+[01:05:02.559] we're doing [sighs] is again we're
+[01:05:04.079] create we created a function that'll
+[01:05:06.000] generate the uh create UI resource bit
+[01:05:08.559] for us. And so here we're doing another
+[01:05:11.119] preferred we're setting our metadata.
+[01:05:13.440] We're giving it a a UI element. Um and
+[01:05:17.520] this time we're going to go with a 500
+[01:05:18.720] by 500. We are encoding it as text and
+[01:05:21.520] we're sticking with the raw HTML. Um, if
+[01:05:25.200] you wanted to get more fancy, you could
+[01:05:27.280] put a templating system in your MCP
+[01:05:28.960] server, read render templates, and put
+[01:05:31.039] that back out um as raw text or as raw
+[01:05:34.880] HTML if you want. Um, so you get the
+[01:05:37.680] ability to build really complex
+[01:05:39.839] applications with MCP servers.
+[01:05:43.359] And so here we're bringing in some
+[01:05:44.960] stylesheets that basically just kind of
+[01:05:47.119] make it pretty. Um, we have the
+[01:05:49.599] chessboard and we're calling the piece
+[01:05:52.160] themes and just rendering this board
+[01:05:54.160] element and then putting it into the the
+[01:05:57.920] body.
+[01:05:59.520] So now we'll update our return
+[01:06:06.160] content bit. So instead of returning it
+[01:06:08.480] all here,
+[01:06:19.839] we will
+[01:06:24.960] just return we'll call the method and
+[01:06:27.119] return that element as well. So we're
+[01:06:29.039] still doing the same thing we were
+[01:06:30.240] previously which is that we are
+[01:06:32.640] returning the text and a graphical
+[01:06:36.000] element.
+[01:06:39.839] And so now we reload our MCP server
+[01:06:45.200] and we
+[01:06:47.599] fire up Nanobot.
+[01:06:59.839] I say E4.
+[01:07:03.280] I now get an actual chessboard. And now
+[01:07:07.359] this is much much better because now let
+[01:07:11.760] me tell it to go ahead and move.
+[01:07:23.200] That's less fun.
+[01:07:26.079] So here you're able to make these moves
+[01:07:28.880] and then I can say you go back and forth
+[01:07:33.599] and you're able to start interacting
+[01:07:34.960] with and now you're actually playing
+[01:07:36.720] chess with the model.
+[01:07:40.720] Oops.
+[01:07:43.599] It's not very good with error correction
+[01:07:45.359] but or if you make an error to fix it.
+[01:07:48.720] But here the key thing is is now this is
+[01:07:52.319] a much better way more fun way to
+[01:07:54.240] interact and play chess with your agents
+[01:07:56.480] um than it is to type the notation each
+[01:08:00.160] time.
+[01:08:01.760] And so if you want to see
+[01:08:08.000] was everyone able to see their
+[01:08:09.520] chessboard?
+[01:08:11.440] Cool.
+[01:08:13.039] So [clears throat]
+[01:08:16.159] yeah.
+[01:08:17.759] So we're still calling the tool active
+[01:08:20.880] tool hand the chest move tool that we
+[01:08:22.799] built earlier. Um the UI is making use
+[01:08:26.080] of the um the handler which handles the
+[01:08:30.000] drag and drop messages which then posts
+[01:08:32.640] the message back to the nanomot window
+[01:08:35.279] letting it know that it should invoke
+[01:08:36.719] the chess move tool. Um, and then the UI
+[01:08:40.239] updates the the board.
+[01:08:44.319] And so
+[01:08:46.719] now you basically have a fully
+[01:08:49.679] functioning way to play chess. Um, if
+[01:08:52.960] you wanted to enhance this, you can add
+[01:08:56.480] additional tools which would get valid
+[01:08:58.640] moves or undo a move, which would be
+[01:09:02.000] nice to have. Um, get the history of the
+[01:09:04.560] game, uh, analyze its positions.
+[01:09:07.679] mentioned we're roughly an hour in. So
+[01:09:10.319] maybe if you do like five minutes of
+[01:09:12.239] questions then you continue break a
+[01:09:14.400] little bit.
+[01:09:15.040] >> Okay.
+[01:09:15.359] >> Would that work?
+[01:09:16.080] >> I mean yeah
+[01:09:16.719] >> whenever
+[01:09:17.359] >> I mean we're Yeah, we're pretty actually
+[01:09:19.920] we're further ahead than I thought we
+[01:09:21.679] would be with the last one.
+[01:09:22.960] >> Yeah.
+[01:09:26.159] Um yeah, but any questions? Um
+[01:09:32.799] about what we've been doing or what we
+[01:09:35.359] can use here.
+[01:09:40.000] We used basically a file-based storage.
+[01:09:42.080] You could enhance this. You could use a
+[01:09:44.239] database and actually store this. Um,
+[01:09:46.640] you know, you could add O to it and then
+[01:09:48.480] actually host this and then have a way
+[01:09:50.319] to actually play uh chess against, you
+[01:09:53.359] know, agents and have people connect to
+[01:09:55.120] it.
+[01:09:56.880] Um, you can have better UI elements. So
+[01:09:59.840] you could show all the pieces that were
+[01:10:02.719] uh taken off the board or um
+[01:10:06.960] you know anything that wasn't um yep
+[01:10:11.199] basically any potential next moves you
+[01:10:13.360] can just continue to enhance um
+[01:10:16.719] and uh show different things.
+[01:10:23.679] So yeah, um if you'd like the
+[01:10:28.239] root of this outside of the workshop
+[01:10:30.480] directory is the complete
+[01:10:33.440] implementation. You can see that that
+[01:10:36.159] one
+[01:10:41.280] has everything implemented and is pretty
+[01:10:43.600] cool.
+[01:10:54.320] So we can run nanobot.
+[01:11:07.199] So here now let's play a game of chess.
+[01:11:09.440] And now it has all of the tools. So this
+[01:11:11.280] is a bit more fullfeatured than what you
+[01:11:13.280] would expect. So here, if I move the
+[01:11:15.600] pieces, the agent knows to automatically
+[01:11:18.320] move again. The board updates and
+[01:11:20.320] refreshes. You know, here we can see
+[01:11:22.480] that as you're moving, it's going back
+[01:11:25.040] and forth and able to play. I've yet to
+[01:11:26.960] actually beat GBT41. Um, but hopefully
+[01:11:30.960] someone can. Uh, I guess it cheats, but
+[01:11:37.199] yeah.
+[01:11:43.040] So, we actually went by pretty quick.
+[01:11:45.440] Um, I'm going to be here, um, yeah, for
+[01:11:48.880] the rest of this time. And I'm happy to
+[01:11:50.719] help anyone or troubleshoot any issues.
+[01:11:52.960] I know we ran into a few. Um,
+[01:11:56.320] I did want to say if you would, thank
+[01:11:58.800] you for staying. And if you would like
+[01:12:01.280] to have a chance at winning a $100 Visa
+[01:12:03.760] gift card, um, please feel free to
+[01:12:07.040] enter. Uh, you can come by our booth
+[01:12:09.040] tomorrow. um to claim the prize. And we
+[01:12:13.440] will also be raffling off a Nintendo
+[01:12:16.960] Switch 2 uh which you can enter at the
+[01:12:19.679] table tomorrow. Um but yes, if you do
+[01:12:22.960] have any questions or if there's
+[01:12:25.040] anything I can help with uh trying to
+[01:12:27.360] get through I know there were a few
+[01:12:29.520] issues, but happy to walk through those
+[01:12:31.840] with you.
+[01:12:34.080] >> Thank you, Bill. Thanks for uh you know
+[01:12:36.080] spreading your wisdom on MCP amps pui or
+[01:12:39.040] bot like so many stuff for people to try
+[01:12:41.360] and play with. So I hope you enjoy
+[01:12:43.760] enjoyed the session like you said he'll
+[01:12:46.560] talk more tomorrow and at the booth uh
+[01:12:48.719] you can find them. Um do give speakers
+[01:12:52.000] feedback right this is important for us
+[01:12:54.880] and the speakers as uh we know whether
+[01:12:57.360] you liked it or not and what they can
+[01:12:59.440] improve. It's always hard to get
+[01:13:01.120] feedback right Bill?
+[01:13:02.000] >> It is.
+[01:13:02.480] >> Yeah. [laughter]
+[01:13:03.840] So, uh, and I think you're off now for,
+[01:13:07.360] you know, a break a little bit faster
+[01:13:09.040] than expected. Uh, so you can get
+[01:13:10.880] probably some food or wander around, uh,
+[01:13:13.360] the campus. Um, and yeah, I think that's
+[01:13:17.280] it from me. So, don't forget the survey
+[01:13:19.360] and we're going to start again for the
+[01:13:21.679] last workshop. Uh, I hope you enjoyed it
+[01:13:23.760] as much as this one. Thank you very
+[01:13:25.040] much, Bill.
+[01:13:25.600] >> Thank you, Andrew.
+[01:13:27.545] [applause]
+[01:13:30.165] >> [music]

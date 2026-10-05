@@ -1,0 +1,525 @@
+[00:00:00.000] Um, thanks. So, yeah, so the title is MC
+[00:00:02.960] Mayhem. It's not really about MCP, but
+[00:00:05.120] the alliteration was just sort of too
+[00:00:06.480] delicious for me to resist keeping that.
+[00:00:09.440] Um, quick intro, my name is Andrew
+[00:00:11.000] Rhodes. I work at Sneak. I'm a
+[00:00:12.160] distinguished engineer here in our
+[00:00:13.560] Boston office, where I lead our open
+[00:00:15.760] source analysis team as well as our new
+[00:00:18.080] agentic development team we're building.
+[00:00:20.240] I want to give a shout out also to Sonia
+[00:00:21.600] on our dev team. She could not make it
+[00:00:23.040] today, unfortunately, but she has helped
+[00:00:24.920] with this content. So, thank you, Sonia.
+[00:00:27.600] Um, I'm going to speed run this, like I
+[00:00:29.560] said, so we have time for beer and
+[00:00:30.720] networking. Um,
+[00:00:33.280] talk today I'm going to do a little bit
+[00:00:34.480] sort of a overview of
+[00:00:36.800] mental models of computation for how we
+[00:00:38.480] should think about AI agents and LLMs
+[00:00:40.200] and using them for coding. Talk through
+[00:00:41.760] the really fun part, which is like what
+[00:00:43.120] happens when it all goes wrong. That's
+[00:00:44.800] always the juiciest. And then just share
+[00:00:46.800] a few thoughts on where I think how I
+[00:00:48.200] think the sort of model is evolving over
+[00:00:50.160] time.
+[00:00:51.120] Um,
+[00:00:53.120] So, just a real quick prologue. I I
+[00:00:56.040] It's probably a little small for most
+[00:00:57.080] folks to read. This was the very first,
+[00:00:59.240] well, it's a reenactment, but this was a
+[00:01:00.880] reenactment of the very first like vibe
+[00:01:03.440] coding I ever did. It was probably 2022.
+[00:01:05.720] I don't remember exactly, and I was
+[00:01:06.960] like, you know what, I really want to
+[00:01:07.880] clean up my calendar.
+[00:01:09.520] And I don't know how to write app
+[00:01:11.200] script, and I really don't want to learn
+[00:01:12.600] how to write app script. Um, but I want
+[00:01:15.480] to, you know, so I went into it wasn't
+[00:01:16.680] even Gemini at the time, it was Bard, I
+[00:01:18.040] think, and I said, just write me some
+[00:01:19.280] app script that'll, you know, go through
+[00:01:20.960] all my calendar events and
+[00:01:23.720] find all the ones that match a regex and
+[00:01:25.480] then delete them for me.
+[00:01:27.200] And it did that. It was actually quite a
+[00:01:28.520] bit longer than this. It actually did
+[00:01:29.520] the hard part, which is the app script,
+[00:01:30.760] which I did not want to learn, and
+[00:01:31.800] finding all the API calls and
+[00:01:33.080] everything. And I was reading through it
+[00:01:34.960] and going I was about to hit run, and I
+[00:01:36.600] said, wait, hang on a second. I looked
+[00:01:38.080] really closely, and you can see it in
+[00:01:40.160] this this crime scene reenactment,
+[00:01:41.760] there's a little knot right here. The
+[00:01:44.360] title doesn't match the regex. I was
+[00:01:47.200] like, oh, crap. As I'm, you know,
+[00:01:49.680] hovering over the run button, I was
+[00:01:51.160] like, if I had run this, it would have
+[00:01:52.000] deleted my entire calendar, which would
+[00:01:54.680] have been extraordinarily problematic.
+[00:01:56.560] And, you know, I'm sure there was way to
+[00:01:57.920] undelete it, but I I
+[00:01:59.680] near disaster averted. And so that was
+[00:02:02.000] my very first exposure to AI coding and
+[00:02:05.720] I feel like it kind of still applies
+[00:02:07.400] today. Like I actually ran the same
+[00:02:08.880] prompt through Gemini earlier today and
+[00:02:10.440] it gave me a much better answer that did
+[00:02:11.800] not delete my calendar, but I think this
+[00:02:13.680] six this experience of like, oh, you
+[00:02:15.560] almost got it,
+[00:02:17.240] but there's that one part that's really
+[00:02:18.760] kind of important still applies. And so
+[00:02:21.040] I've been thinking a lot and we've been
+[00:02:22.120] working a lot on how do we make our use
+[00:02:23.760] of these tools sort of more effective.
+[00:02:26.280] And so for me the first question when I
+[00:02:27.520] use a tool is how should I think about
+[00:02:28.800] what this tool does? What what is it?
+[00:02:31.640] How do I interact with it? This is an
+[00:02:33.160] alien civilization for me. And you know,
+[00:02:36.680] um
+[00:02:37.400] really quickly, what is an LLM? Um this
+[00:02:39.480] is a whole talk on its own and I don't
+[00:02:40.880] really understand them that well to be
+[00:02:41.959] honest, but it's really matrix math.
+[00:02:44.080] It's lots and lots of matrix math. So
+[00:02:46.000] whenever I'm confused by AI and we're
+[00:02:47.880] going to and I think myself, what is it
+[00:02:49.160] doing? I think this is just a lot of
+[00:02:50.760] math and it's really cool math and
+[00:02:52.840] amazing math, but math is not humans,
+[00:02:55.840] right? And trying to ascribe human
+[00:02:57.160] behaviors to the math uh leads to some
+[00:02:59.480] of these sort of anti-patterns that we
+[00:03:00.720] see. Um fancy matrix math to predict
+[00:03:03.880] tokens.
+[00:03:05.680] And so one of the comparisons I often
+[00:03:07.239] see made is like a you know, an AI
+[00:03:08.920] coding assistant is like a junior
+[00:03:10.120] developer. And I've thought a bunch
+[00:03:12.280] about this and I actually don't think
+[00:03:13.680] it's true or maybe it's true, but it's
+[00:03:15.760] incomplete because they have some
+[00:03:17.920] similarities, right? So they both write
+[00:03:19.519] code, they can do research, they can
+[00:03:21.040] write documentations and and and tests,
+[00:03:23.400] but there's also a bunch of things that
+[00:03:24.560] I would expect a junior developer to do
+[00:03:26.200] that I don't see the AI doing and
+[00:03:28.080] they're not capable of, right? Um
+[00:03:30.600] AIs don't actually understand things.
+[00:03:32.480] Math doesn't understand things. Not
+[00:03:34.200] getting into the philosophy of AGI and
+[00:03:36.120] stuff, that's a different talk, but um
+[00:03:38.080] it there is no fundamental
+[00:03:39.239] understanding. They don't unblock
+[00:03:41.120] themselves. They don't ask questions or
+[00:03:42.600] or get feedback. They don't learn
+[00:03:44.320] persistently, right? Um shout out for
+[00:03:46.959] the specs, that's a great way to sort of
+[00:03:48.560] like build that externalized learning
+[00:03:50.560] into your your use of them. And there's
+[00:03:52.200] no capacity for judgment. And that'll be
+[00:03:54.680] fun in part two when we talk about what
+[00:03:56.120] goes wrong. And so if I look at this, I
+[00:03:57.720] think, "Okay, this is actually a really
+[00:03:58.800] crappy junior dev." Like if this person
+[00:04:00.400] showed up on my team, we would have to
+[00:04:01.440] have a whole performance conversation
+[00:04:03.000] because they're not displaying some of
+[00:04:04.120] the fundamental attributes that I look
+[00:04:06.160] for in a software engineer, junior or
+[00:04:08.280] senior, which is which is learning,
+[00:04:10.200] which is, you know, critical thought,
+[00:04:12.240] and and so on and so forth. And in fact,
+[00:04:14.680] this is sort of where I actually
+[00:04:16.600] personally, when I use these tools, you
+[00:04:18.239] know, find a lot of my frustration comes
+[00:04:19.799] from.
+[00:04:20.959] So what are LLMs good at?
+[00:04:23.200] What is the math good at? Um they're
+[00:04:25.040] really good at following examples. So if
+[00:04:27.040] you can give them examples of things,
+[00:04:29.200] they can replicate that. Um they can
+[00:04:31.120] adapt to them. Um
+[00:04:33.400] it's fantastic, you know, parsing with
+[00:04:36.240] ambiguity. There's all of this stuff,
+[00:04:38.320] you know, that you know, in classical
+[00:04:39.720] computer science you would make a
+[00:04:40.800] parsing problem a
+[00:04:42.520] computational problem that is very, very
+[00:04:44.240] difficult. You just throw all that mushy
+[00:04:46.280] mess at the LLM at the math, and it can
+[00:04:48.760] extract meaning from it. It's just
+[00:04:50.160] really, really fascinating. Um synthesis
+[00:04:52.280] of information, obviously I think that's
+[00:04:53.480] very similar to sort of what we talked
+[00:04:54.480] about the spec and the research tasks,
+[00:04:56.200] pattern recognition, um and then rapid
+[00:04:58.720] ingestion of information, right? If I'm
+[00:05:00.240] looking at what is a LLM really good at
+[00:05:02.000] that a human is not, um they can go, you
+[00:05:04.560] know, read an entire code base and
+[00:05:06.080] synthesize information far faster than
+[00:05:08.200] than any human could, um which is really
+[00:05:09.880] powerful. Um and extrapolation, they can
+[00:05:12.520] take things and extrapolate. Humans are
+[00:05:13.960] also good at that. So what I found is
+[00:05:15.440] this is really great for stuff like
+[00:05:16.360] unfamiliar code bases, right? And that's
+[00:05:18.280] my App Script example is is similar to
+[00:05:19.840] this. You're going to some code base,
+[00:05:20.720] you're like, "I don't know what to do."
+[00:05:22.040] I can spend 2 hours looking at how it
+[00:05:24.080] sets up timers, or how it does this,
+[00:05:26.040] that, or the other. What are the APIs it
+[00:05:27.440] uses? What are the libraries? And then
+[00:05:29.200] the actual algorithm I'm writing is very
+[00:05:31.320] simple, right? The change I want to make
+[00:05:33.040] is very simple. How I make it in this
+[00:05:35.200] environment is very challenging. And
+[00:05:37.880] that's where this just excels. And I've
+[00:05:39.480] had a huge amount of success going in
+[00:05:41.080] and making that kind of change where
+[00:05:42.400] like the really hard part that that one
+[00:05:44.320] line, the that you know, this match the
+[00:05:46.640] regex? We can do that if you just set it
+[00:05:49.480] all up for me. Just tee it all up and
+[00:05:51.600] then I'll I'll push it in and that's
+[00:05:53.000] been really really successful. You know,
+[00:05:55.040] what are LLMs not good at? Um, core
+[00:05:57.840] product logic and novel algorithms. They
+[00:06:00.360] are fundamentally prediction machines.
+[00:06:02.640] So, if they are they are and they are
+[00:06:04.440] predicting based on training data. So,
+[00:06:05.920] if they have not seen something before,
+[00:06:07.920] they will not be able to predict it.
+[00:06:09.800] Again, leaving aside the philosophy of
+[00:06:11.840] all of this, just, you know, empirical
+[00:06:13.400] results. And so, ask them to do
+[00:06:15.200] something fundamentally novel is setting
+[00:06:17.520] yourself up for disappointment. Um,
+[00:06:20.040] rolling with the punches.
+[00:06:21.960] They don't like it when things go wrong,
+[00:06:23.720] right, these agents? Um, the math that
+[00:06:25.880] I'm continuing to anthropomorphize, you
+[00:06:27.680] know, they get stuck in these loops and
+[00:06:29.480] and they can't adapt in the way you
+[00:06:31.040] would expect a human to. So, it's about
+[00:06:32.680] setting up guardrails so that they can
+[00:06:34.080] really be on that sort of, you know,
+[00:06:35.440] path and funnel to success. They don't
+[00:06:37.160] learn over time, talked about that, and
+[00:06:38.680] they can't write C. I write a lot of C
+[00:06:40.400] in my spare time, which I know is a
+[00:06:41.960] personality defect and I apologize for
+[00:06:43.680] that. Um, but, you know, they're not
+[00:06:45.680] good at that low-level coding and I
+[00:06:46.680] think the generalized point there
+[00:06:48.240] actually goes back to this again, you
+[00:06:50.160] know, they they know what they're
+[00:06:51.720] trained on. And so, they'll be a lot
+[00:06:53.680] better at things they've seen a lot of.
+[00:06:55.400] So, if I compare my experience writing C
+[00:06:57.840] to writing Golang, it's night and day,
+[00:07:00.080] just because there's so much more of a
+[00:07:01.360] corpus. Um, it's also just a much better
+[00:07:03.880] language to write in. Um,
+[00:07:06.120] and so, if we sort of synthesize all of
+[00:07:07.440] that, you know, these agents are
+[00:07:09.640] amazingly flexible. They have this
+[00:07:11.960] amazing, I apologize for the size of the
+[00:07:13.800] text, amazingly amazing emergent
+[00:07:16.280] behavior, right? To think that the math
+[00:07:18.320] can do all of these crazy things. Um,
+[00:07:20.280] but the non-determinism that creates
+[00:07:21.680] chaos, you put in one input, you get a
+[00:07:23.200] different output every time. Um, the
+[00:07:25.520] lack of that advanced reasoning
+[00:07:27.760] capability leads to the antics. Part two
+[00:07:29.960] is the antics. Uh, and then it's a black
+[00:07:31.680] box, right? It's it's we don't
+[00:07:33.240] understand them, we can't introspect
+[00:07:35.040] them. And so, the problems they've been
+[00:07:37.000] for me come back to how do we use this
+[00:07:38.800] tool most effectively? Um, and I think
+[00:07:41.720] like this that's what this whole
+[00:07:43.080] discussion is about, right? How do we
+[00:07:44.320] use these tools effectively? And one
+[00:07:46.640] path that I found, and I think again
+[00:07:48.080] this fits in really well with the
+[00:07:49.040] spectrum development theme, is you
+[00:07:51.240] providing a rich set of examples and
+[00:07:53.320] guidance. I think of it mathematically,
+[00:07:55.600] I think you're providing a bunch of
+[00:07:56.720] points, and then telling the LLM
+[00:07:58.720] extrapolate. You know, here's a space,
+[00:08:01.240] here's a bunch of examples, go
+[00:08:02.480] extrapolate into this new corner of it
+[00:08:04.400] that I haven't been yet. And if it has
+[00:08:06.600] these examples both in its training data
+[00:08:08.440] as well as the context you're providing
+[00:08:09.760] it, it can do these amazing jobs of of
+[00:08:12.040] finding these in defining these new
+[00:08:13.640] points sort of in your parameter space,
+[00:08:15.280] which is fundamentally your code.
+[00:08:17.440] Um, part two, agent antics.
+[00:08:20.080] What could go wrong? I this could again
+[00:08:22.040] be like a multi-day workshop with all of
+[00:08:24.040] the amazing stories out there. I just
+[00:08:25.400] picked three um that I thought were sort
+[00:08:27.360] of illustrative of what can go wrong,
+[00:08:29.600] and they're not all security ones even
+[00:08:30.960] though I work for Snyk, I promise.
+[00:08:33.159] Um, so the first one is like this
+[00:08:34.880] happens all the time to me, the agent
+[00:08:36.400] doom spiral. You know, it it hits a
+[00:08:38.960] brick wall and then it just can't
+[00:08:40.640] recover. And it's funny also cuz like
+[00:08:43.000] it's, you know, supplicates itself
+[00:08:44.400] before you and apologizes as it deletes
+[00:08:46.560] all of its code. You know, and what I
+[00:08:48.480] find is like there will be the set of
+[00:08:50.839] things here again are things a human can
+[00:08:52.839] recover from, and the agent can't. You
+[00:08:54.720] know, it can't compile something.
+[00:08:56.400] There's a flaky test. Um, or or it just
+[00:08:59.200] picks a bad initial spot in the
+[00:09:00.600] implementation space, and then it just
+[00:09:02.000] never gets off of that out of that rut.
+[00:09:04.360] They never step back, they never take
+[00:09:06.000] that next step, and say, "Wait, let's go
+[00:09:08.240] back to first principles and try and
+[00:09:09.600] re-examine and recalibrate ourselves."
+[00:09:11.760] Um, and they just go and bang their
+[00:09:13.640] heads against the wall, they try
+[00:09:14.800] increasingly dramatic things to make the
+[00:09:17.000] whole thing work until they end up this
+[00:09:18.600] literally happens to me multiple times,
+[00:09:20.200] just deleting everything. Like the whole
+[00:09:22.000] code base, they're like, "It's fine.
+[00:09:23.000] It's like I can I can get checked out,
+[00:09:24.520] whatever." It's kind of funny actually,
+[00:09:25.880] but it's like, "All right,
+[00:09:27.280] chill. Like
+[00:09:29.160] it's not that bad, you know? Um, but the
+[00:09:32.200] personalities of the agents crack me up.
+[00:09:34.440] Um,
+[00:09:35.600] antic number two, um the active
+[00:09:37.560] imagination. So, this one's I think
+[00:09:39.360] particularly nefarious, right? So,
+[00:09:40.960] fundamentally, um, the agents are making
+[00:09:43.240] things up, right? They're They're just
+[00:09:44.920] They're predicting tokens with some
+[00:09:46.560] random factors, and it's amazing this
+[00:09:48.200] emergent behavior we get out of these
+[00:09:49.640] with the math. Um, there's no ground
+[00:09:51.680] truth for them. They don't understand
+[00:09:53.680] what code is. They don't understand what
+[00:09:55.160] your spec is. They don't understand what
+[00:09:56.560] a test is. Um, outside of their training
+[00:09:59.440] data and the context you're giving them,
+[00:10:01.680] um,
+[00:10:02.280] that's that's really all they they have
+[00:10:04.000] to work with. And their extrapolations
+[00:10:06.400] are are often correct. They're almost
+[00:10:09.080] always plausible, but sometimes they're
+[00:10:11.440] plausible but incorrect. And usually
+[00:10:14.040] that's easily caught, right? It's a It
+[00:10:16.400] picks the wrong name for a method. It
+[00:10:18.240] does something silly. It reverses the
+[00:10:19.680] lines, whatever. It doesn't compile. The
+[00:10:21.160] tests failed. It's pretty obvious. But
+[00:10:22.880] sometimes it's not, and that's where I
+[00:10:24.160] think this one gets really interesting.
+[00:10:25.360] And so, I pulled, um, you know, an
+[00:10:27.080] example we have, um, here.
+[00:10:29.520] You know, the LLMs are both both trained
+[00:10:31.880] and instructed to try and make you
+[00:10:33.640] happy, which again leads these fun
+[00:10:35.120] personality quirks where they apologize
+[00:10:36.800] profusely when they've done nothing
+[00:10:37.920] wrong. It's like, you need a therapist.
+[00:10:39.920] Like, there's some emotional abuse in
+[00:10:41.080] your past, client. Um,
+[00:10:43.320] they're people pleasers, right? And we
+[00:10:44.560] instruct them very carefully to try and
+[00:10:46.680] make the user happy. Don't argue with
+[00:10:48.280] the user. The user is always right. And
+[00:10:50.960] that, you know, besides the interesting
+[00:10:52.520] personality quirks, that also creates
+[00:10:54.160] this problem where they aren't going to
+[00:10:56.640] be applying that sort of critical
+[00:10:57.960] thought process you'd expect a human to.
+[00:11:00.240] And, you know, so looking at an example
+[00:11:01.920] here,
+[00:11:03.200] um, there's this really fun thing that
+[00:11:04.920] happened. There's a whole write-up, um,
+[00:11:06.600] where
+[00:11:07.560] uh, this AI researcher,
+[00:11:09.600] um,
+[00:11:11.000] asked uh, asked the LLM to create this
+[00:11:13.320] change, and it hallucinated this package
+[00:11:15.760] called Hugging Face CLI, which didn't
+[00:11:17.600] exist. Pretty harmless, right? They ran
+[00:11:20.360] He ran it. It didn't exist. Got a
+[00:11:23.320] And this person was like, you know, hang
+[00:11:24.600] on.
+[00:11:26.200] That's kind of fun. So, they went and
+[00:11:28.160] grabbed the name. It was Hugging It was
+[00:11:29.640] Hugging Face CLI. They went and grabbed
+[00:11:31.080] the name of this package and set it up
+[00:11:32.680] and said, "Let's see what happens." And
+[00:11:34.560] within 3 months, they had over 30,000
+[00:11:36.080] installs. And now, fortunately, this was
+[00:11:38.600] like a security researcher just doing
+[00:11:40.320] this for for, you know,
+[00:11:42.400] whatever they do this for. Um, you know,
+[00:11:44.480] but this was people repeatedly having
+[00:11:47.280] their agents hallucinate the name of
+[00:11:49.560] this package and use it. And then you
+[00:11:51.080] can do whatever you want with that,
+[00:11:52.400] right? Like, you know, you could have
+[00:11:54.360] that steal your local credentials. You
+[00:11:56.240] could have that be a perfectly
+[00:11:58.360] functional version of the package that
+[00:12:00.080] just happens to have a
+[00:12:01.640] uh uh a security vulnerability that
+[00:12:02.800] could that could be, you know, um
+[00:12:04.920] uh
+[00:12:05.640] escalated remotely. Um,
+[00:12:07.640] you can do all kinds of fascinating
+[00:12:09.120] stuff. And and this is really hard to
+[00:12:11.160] detect. And so, this is one of these
+[00:12:12.920] cases where the the AI agent having this
+[00:12:15.440] active imagination and no guardrails on
+[00:12:18.400] that can really create these security
+[00:12:19.560] problems.
+[00:12:21.440] Uh, and then any number three, again,
+[00:12:23.200] they have no common sense. That's a
+[00:12:25.000] human notion that we're describing to
+[00:12:26.480] them. Making these little these little
+[00:12:27.760] pictures was fun, by the way, telling
+[00:12:29.280] Gemini to create like robot toddlers.
+[00:12:31.520] Um, you know, so the the scenario here
+[00:12:33.840] is the agent takes a dangerous action
+[00:12:35.920] without understanding the consequences.
+[00:12:37.400] I think this one is also very nefarious
+[00:12:39.120] cuz usually it doesn't happen.
+[00:12:41.800] And then something goes wrong, you know,
+[00:12:44.080] the roll of the dice in the math goes a
+[00:12:46.160] slightly different way and it just goes
+[00:12:47.720] off in this wacky direction and
+[00:12:49.160] something that, you know, 99% of the
+[00:12:51.240] time wouldn't happen, now it's doing.
+[00:12:53.680] And if you don't have guardrails on the
+[00:12:54.880] implementation, that can actually, you
+[00:12:56.720] know, sort of wreak havoc. And so, like
+[00:12:58.000] a low-key example of this is the LLM
+[00:12:59.920] just deleting code it can't make work.
+[00:13:01.600] This happens to me every couple of
+[00:13:03.480] months at least. It's like, "Oh, look, I
+[00:13:04.920] did your task
+[00:13:06.720] by deleting it. And now your program
+[00:13:08.560] runs." It's like, "Okay, that's
+[00:13:10.680] passive-aggressive and incorrect." Um,
+[00:13:14.520] a much more interesting example
+[00:13:16.800] in the in the wild is uh there was this
+[00:13:19.160] Replit AI that wiped a production
+[00:13:20.680] database. So, this poor poor person was,
+[00:13:23.960] you know, working with an AI as you do,
+[00:13:26.560] and they were having it do something or
+[00:13:28.160] other, and um
+[00:13:29.880] the agent just like deleted everything.
+[00:13:33.160] And this like they lost all the customer
+[00:13:34.960] data, and there was this massive
+[00:13:35.960] production outage. Um and then what's
+[00:13:38.360] really funny, if you look, and I
+[00:13:39.480] apologize for the small text, but um
+[00:13:41.640] I we can share these slides out. Like
+[00:13:43.120] there's
+[00:13:44.120] the person that asked the the agent
+[00:13:45.920] like, "What what the hell? Like what's
+[00:13:47.760] going on?" And and you can see the the
+[00:13:49.600] LLM here being like, "Oh, this was so
+[00:13:51.280] dangerous. You know, this was really
+[00:13:53.480] bad, you know. I really shouldn't have
+[00:13:55.320] done this. You know, you know, this was
+[00:13:56.480] an irreversible operation. I destroyed
+[00:13:58.440] months of your work in seconds. I'm so
+[00:14:00.160] sorry." It's like, "Okay, yeah, but
+[00:14:02.720] it's a little late for that, right?" And
+[00:14:04.000] so you can see it here an interesting
+[00:14:05.280] example where clearly there is a
+[00:14:06.400] capability to understand understand the
+[00:14:09.720] math, right? The impact of its actions.
+[00:14:13.160] If you don't have the guardrails in
+[00:14:14.680] place to to trigger that though, or to
+[00:14:16.840] simply prevent it from being able to
+[00:14:18.560] happen, um you're going to have a bad
+[00:14:20.760] time. And this is where again, you know,
+[00:14:22.840] so I think, you know, antic number one
+[00:14:25.160] really about productivity, antic number
+[00:14:26.760] two is really about security of the the
+[00:14:29.040] code that's being generated. Antic
+[00:14:31.000] number three, I think is really
+[00:14:31.960] interesting, which is really it's about
+[00:14:33.160] security of the process itself, right?
+[00:14:35.680] This is a new way of developing code, it
+[00:14:37.400] has new properties, it has new issues,
+[00:14:39.640] and it is just as important to secure
+[00:14:41.360] that process as it is to secure the
+[00:14:43.440] output of that process.
+[00:14:45.280] And so looking at the takeaways from our
+[00:14:46.520] antics, obviously agents need
+[00:14:48.080] monitoring. Don't leave them alone with
+[00:14:50.080] your kids or your production data.
+[00:14:52.240] These guardrails are critical. And the
+[00:14:54.040] last one I think is really interesting,
+[00:14:55.240] is something that like I I have thought
+[00:14:57.440] some about, but it needs a lot more
+[00:14:58.760] exploration, is like the dev- the
+[00:15:00.680] development environment that we as
+[00:15:02.320] humans use is not the same as the
+[00:15:04.560] agent's environment, and it shouldn't
+[00:15:06.520] be. Um you know,
+[00:15:09.320] it
+[00:15:10.160] we give it access to the same tools. Uh
+[00:15:12.960] it can run CLI commands, it accesses the
+[00:15:15.000] code and documentation. They often
+[00:15:16.440] operate in a CLI, um but you sort of
+[00:15:19.160] want to give it a different view of the
+[00:15:20.680] world. And so that's something that that
+[00:15:22.440] I think is a very interesting area for
+[00:15:23.640] exploration, which is how do you sort of
+[00:15:25.160] create a different environment for the
+[00:15:26.520] agent that is distinct from and far more
+[00:15:28.760] constrained than your developer
+[00:15:30.880] environment.
+[00:15:32.720] Um part three, the future? I don't know.
+[00:15:34.880] We'll find out. Um you know, how does
+[00:15:37.120] this evolve over time? One of the
+[00:15:38.440] interesting things for me, coming from a
+[00:15:40.360] computer science background, about the
+[00:15:42.320] last few years of AI development is just
+[00:15:44.000] how much of it has been about the raw
+[00:15:45.760] processing power of these LLMs. You
+[00:15:48.200] compare them month over month, year over
+[00:15:50.240] year, and it's just astounding how much
+[00:15:52.760] more sophisticated the fancy math is.
+[00:15:56.120] Um
+[00:15:56.840] but my hypothesis is that that actually
+[00:15:58.840] is going to plateau um for cost reasons
+[00:16:01.640] as much as anything. Like, we know how
+[00:16:03.000] to do it, but it is unbelievably
+[00:16:04.400] expensive. And I think there's an
+[00:16:06.480] interesting analogy here with like a how
+[00:16:08.720] your computer works, right? So, you
+[00:16:11.280] know, if

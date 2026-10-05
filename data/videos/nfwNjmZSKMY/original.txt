@@ -1,0 +1,508 @@
+[00:00:00.200] Good morning. Okay, good. That's all working.
+[00:00:02.720] This is being turned into a skill right.
+[00:00:05.680] So okay. Very important.
+[00:00:08.360] Use the GitHub API to start eval states
+[00:00:11.640] repositories finish use skill.
+[00:00:14.760] Good morning.
+[00:00:16.400] My name is Shaun Smith.
+[00:00:19.240] As Alan kindly introduced I work at Hugging face on open source
+[00:00:24.480] connectivity and MCP and agents initiatives.
+[00:00:28.400] Also look after one of the maintainers of our skills repository
+[00:00:31.680] and a tool we have called upskill.
+[00:00:33.680] So I've heard a lot of people talking about kind of looking
+[00:00:36.840] at evaluating and testing skills and so on, so that's worth checking out.
+[00:00:39.920] I also maintain a pretty good harness,
+[00:00:44.200] I think, called fast-agent, which
+[00:00:47.920] which lets you kind of connect a lot of things up and automate
+[00:00:51.800] all kinds of things.
+[00:00:52.920] So hugging face, we I'm assuming most people
+[00:00:57.200] in the audience have got a rough idea of what Hugging Face does.
+[00:01:00.440] So we're kind of a central hub for machine learning research.
+[00:01:04.280] We host a lot of data sets, we hosted a lot of models,
+[00:01:09.040] and it gives people the opportunity to publish research.
+[00:01:12.840] And you can connect to those,
+[00:01:15.840] connect with a lot of those, collect a lot of those models.
+[00:01:18.920] So what we're going to talk talk about today then is we'll talk about
+[00:01:21.840] how we've adopted MCP at hugging face in our public facing product.
+[00:01:27.840] We'll look at some kind of
+[00:01:29.520] analytics and details of how clients connect to our MCP server.
+[00:01:35.200] And then we'll kind of look at what some of the current issues with the MCP
+[00:01:38.880] protocol are and run through some of the specification changes.
+[00:01:43.000] And if we get time, there might be some advice live demos as well.
+[00:01:47.000] So so there we go.
+[00:01:49.480] So our MCP server has been in production
+[00:01:52.520] for a bit over a year, and it's kind of like
+[00:01:56.320] a multi-purpose hub for agents and assistance to connect to our services.
+[00:02:01.680] So you can search for models, you can inspect data sets,
+[00:02:05.000] you can conduct research all through the MCP server.
+[00:02:08.880] It's configurable.
+[00:02:10.400] So we let you choose
+[00:02:12.320] which particular bouquet of tools are active at any particular time.
+[00:02:16.320] And we do that in quite a novel way where we let you specify
+[00:02:20.160] on the URL what you want active.
+[00:02:22.040] Well, we have a user interface that lets you do that as well.
+[00:02:25.760] Slightly unusually for a lot of MCP servers, we also
+[00:02:29.320] have we allow both authenticated and anonymous access.
+[00:02:33.680] So it's actually kind of like a very, very good and easy
+[00:02:38.000] MCP server to connect with.
+[00:02:41.080] And one of the other
+[00:02:42.360] kind of really important things about it is the one that's
+[00:02:45.440] actually playing at the moment, is it also acts as an inference gateway.
+[00:02:48.840] So through the MCP server you can find and connect
+[00:02:52.320] to other models and do things right.
+[00:02:55.880] So you can generate images, you can generate videos,
+[00:02:59.080] lots of multimedia multimodal multimodal kind of stuff.
+[00:03:04.120] So and again everything you're kind of looking at
+[00:03:07.480] there is all open wait open source software, the entire stack.
+[00:03:14.600] So when we
+[00:03:16.280] kind of think about MCP, I'll just kind of
+[00:03:20.440] quickly kind of introduce what MCP is.
+[00:03:22.680] I'm sure most people are already fairly familiar, but
+[00:03:26.080] the MCP protocol
+[00:03:28.720] by its design was designed to be bidirectional.
+[00:03:31.280] Okay.
+[00:03:31.560] So the kind of the basic idea was that you would have MCP clients
+[00:03:35.440] and they would connect to MCP servers,
+[00:03:37.480] and they'd almost been this kind of peer to peer relationship,
+[00:03:40.800] where the pairings of them would work together to to kind of modify
+[00:03:45.040] the context of the, of what you were using.
+[00:03:49.160] Okay.
+[00:03:49.480] So MCP clients can obviously use tools and prompts and so on.
+[00:03:53.400] And the idea being that MCP servers could also make requests to the client
+[00:03:58.200] and use things like the LM attached or the file system attached.
+[00:04:02.720] So again, quite similar to the way that LSP
+[00:04:07.200] servers work, work with Ides
+[00:04:11.240] now kind
+[00:04:12.760] of almost famously when it was launched,
+[00:04:15.960] MCP launched with two transports local transport, which
+[00:04:19.560] which runs in normally the same processes as your application
+[00:04:23.400] can access the file system and so on, and also a remote transport called SSE.
+[00:04:28.960] But there was no authentication at all.
+[00:04:31.280] Shortly afterwards,
+[00:04:33.800] it was kind of quite clear that the SAC transport
+[00:04:36.800] was pretty difficult to work with in that in that way.
+[00:04:42.120] So a new transport
+[00:04:43.440] was launched called stream of HTTP to make it a bit easier to deploy.
+[00:04:47.400] And at that time, authentication
+[00:04:50.520] was also added, with the MCP server
+[00:04:54.360] meant to be acting as an authorization server, which again turned out to be
+[00:04:57.520] slightly too complicated, and so ultimately a better design to use.
+[00:05:02.560] A water resource server was then introduced.
+[00:05:05.040] And that's kind of where we where we kicked off.
+[00:05:09.320] So at launch time for us about 12 months ago,
+[00:05:11.800] we were still at the point where we weren't sure
+[00:05:13.400] whether to use the SSE transport
+[00:05:14.760] or how to tackle their walls, but we kind of just went right.
+[00:05:17.160] We're doing the new stuff
+[00:05:19.880] now when
+[00:05:22.200] when we kind of first launch the graph that you're seeing here,
+[00:05:26.680] the yellow bars are showing the number of initializations that we get per day.
+[00:05:31.760] And this is on a week by week basis.
+[00:05:34.240] And the blue line is showing how many connections are coming through.
+[00:05:40.000] Using an adapter that lets you use a standard IO client with a remote server.
+[00:05:44.760] Because this was a lot of the very, very early clients
+[00:05:47.880] only really had standard IO support.
+[00:05:49.760] So there was a tool that kind of let
+[00:05:51.680] you just connect your ordinary client through to your remote server.
+[00:05:55.800] And as you can see, the,
+[00:05:59.400] you know,
+[00:05:59.880] the traffic's kind of dropped off and we can kind of zoom in
+[00:06:02.240] and look at particular clients so we can say,
+[00:06:03.800] right, well, actually, Claude Code initially only had standard IO support.
+[00:06:07.640] And you can see that the traffic kind of drops off.
+[00:06:09.920] And at the moment, Claude, code usage looks like it's
+[00:06:12.840] probably dropping off because because of the day I took the data.
+[00:06:16.480] But again, a very, very few remote connections.
+[00:06:19.320] So by and large, you know, the the migration away from local
+[00:06:23.360] to remote services pretty much done.
+[00:06:26.560] We'll look at a little bit more of that in a moment.
+[00:06:32.560] The other kind of question that you'll often,
+[00:06:36.080] you'll often want to answer is if I've got lots of MCP clients
+[00:06:40.120] and they're all connecting to my server, what's actually going on?
+[00:06:42.640] And we often kind of think, right, well,
+[00:06:46.120] is lots of initializations a good thing?
+[00:06:48.960] Do I measure the number of tool calls?
+[00:06:50.640] What kind of things make sense to understand.
+[00:06:53.600] So as you can see the blue line there is showing tool
+[00:06:56.240] calls against initializations.
+[00:06:58.440] That big spike by the way was a performance test
+[00:07:02.480] from, from one of the inference providers that that
+[00:07:05.680] I discovered.
+[00:07:09.040] About.
+[00:07:09.520] But yeah.
+[00:07:10.040] So feel free to have, you know, use our server that kind of thing.
+[00:07:13.600] But polite to talk to me first.
+[00:07:17.080] So when it comes to kind
+[00:07:19.040] of understanding activity on the MCP server, there's kind of a few things
+[00:07:24.520] to think about if you're kind of running it in production.
+[00:07:28.080] And the first one is quite often you might think that initializations
+[00:07:32.040] might be quite a good, a good thing to to track.
+[00:07:35.320] And it's not really the case because while in some clients, initializations
+[00:07:40.520] will kind of mean that you've got an ambient installation, because every time
+[00:07:44.040] someone opens their tool, it connects to our server.
+[00:07:48.040] In other cases, clients will cache and only initialize
+[00:07:52.200] when they make it all call.
+[00:07:53.560] We also tend to find a lot of clients are not necessarily as stable
+[00:07:58.160] as they should be, and will sometimes get into runaway loops where they kind of
+[00:08:02.120] just carry on initializing and causing a bit of trouble.
+[00:08:06.600] The other one, which we kind of look at is tool calls.
+[00:08:10.200] Now, often people will think, well, actually, you know, we're doing better
+[00:08:13.640] if we've got more tool calls.
+[00:08:14.760] And that's not necessarily the case, because if you get lots of repeated
+[00:08:18.960] tool calls, that may simply mean that your tool design
+[00:08:21.480] is causing confusion to the downstream agent.
+[00:08:23.960] And again, someone using
+[00:08:27.080] this through an through an interactive chatter system that's going to be doing
+[00:08:30.880] something quite different to what they would be doing
+[00:08:33.120] if they were using it interactively through, say, ChatGPT.
+[00:08:38.880] So what we tend
+[00:08:40.480] to or what I tend to look at is session conversion.
+[00:08:44.640] So how many clients connect and then make at least one tool call.
+[00:08:48.760] And that's quite, quite an interesting count for me on the right.
+[00:08:51.760] Again, the the session conversion efficiency
+[00:08:54.280] kind of shows some of the main clients that attached to us,
+[00:08:57.280] the ones at the top will connect and make a tool call.
+[00:09:00.520] So OpenMCP: 96.2% of the time.
+[00:09:03.440] No surprise, it's the agent builder that does that because of the nature
+[00:09:06.640] of how it's built.
+[00:09:07.720] MCP remote fallback test.
+[00:09:10.280] Of course, it's a fallback test. It never makes it all call.
+[00:09:12.480] So more efficiency isn't necessarily better because if
+[00:09:16.280] you've incorrectly cached it at all list,
+[00:09:18.240] you're not going to be making a call to the MCP server itself.
+[00:09:21.600] So these are some quite difficult things to balance
+[00:09:26.160] when kind of trying to understand activity.
+[00:09:29.680] But if we look at the last few weeks,
+[00:09:32.880] Codex is a very efficient client
+[00:09:34.600] and is more and more people have kind of gone on to Codex.
+[00:09:36.840] One thing I've actually seen here
+[00:09:38.600] is, is the the conversion rate has kind of gone up.
+[00:09:42.720] And again, we can see that there's still an increasing amount
+[00:09:46.040] of useful session to talk or conversion
+[00:09:49.040] traffic.
+[00:09:53.360] We also publish
+[00:09:55.280] an data set, which contains
+[00:09:59.200] a kind of list of all of the clients that we've seen and their capabilities.
+[00:10:03.160] So if you kind of want to have a look at what version
+[00:10:08.320] clients are at, what capabilities or extensions they've got installed,
+[00:10:13.200] then that data set is a very, very good place to start.
+[00:10:16.240] So have a look, check it out because,
+[00:10:20.120] you know, probably be publishing a bit more data through there fairly soon.
+[00:10:24.800] Now in production,
+[00:10:29.400] the MCP kind of gives us a couple of challenges.
+[00:10:33.240] And the main challenge is comes back from that initial design, right?
+[00:10:38.160] Which is that if I have a kind of a client and servant pairing,
+[00:10:41.720] there's an assumption in the protocol that the
+[00:10:46.720] the relationship between them is stateful.
+[00:10:50.320] So what's actually happening here is, is that the client will make a request
+[00:10:55.880] to the server, and the server says I've initialized.
+[00:11:01.800] And then the client sends back a notification and they've kind of hand
+[00:11:05.440] shaken.
+[00:11:06.200] So we've already kind of two messages from the client
+[00:11:08.280] to the server in before we've actually established a session.
+[00:11:12.120] After that, the client then will normally check and say, right,
+[00:11:15.280] well give me the list of tools,
+[00:11:16.800] give me the list of prompts, give me the list of resources.
+[00:11:18.760] We're so we're now kind of we're at four calls in before we've actually even
+[00:11:22.960] we've actually even serviced anything.
+[00:11:24.120] And then finally we'll get a tool call
+[00:11:27.520] in the information.
+[00:11:29.160] We'll go back to the client.
+[00:11:30.800] Now again kind of typically
+[00:11:33.800] what what we'll see in these kind of scenarios is if we've got state
+[00:11:38.080] at both the client and the server, that starts to get rather
+[00:11:41.880] rather tricky to manage.
+[00:11:44.400] And it's also very, very chatty.
+[00:11:47.360] So I kind of ran this I think it was on Sunday morning.
+[00:11:52.080] This number kind of varies a bit based on the mix of clients we've recently seen.
+[00:11:56.920] But at the moment, for every 10 million protocol messages that we get.
+[00:12:00.440] So these are the kind of MCP protocol methods and calls, 1.2
+[00:12:04.520] million of them are initialize events, which can may be interesting,
+[00:12:09.080] but actually only 62,000 of them at all calls.
+[00:12:11.960] So the kind of overhead of managing that stateful connection
+[00:12:17.560] is, is quite high from from a protocol level.
+[00:12:21.480] Now there is a kind of semi documented
+[00:12:26.680] undocumented mode where you can kind of run MCP stateless.
+[00:12:30.480] It's a bit ambiguous, but if you do that,
+[00:12:33.000] you lose any ability to kind of capture analytics.
+[00:12:36.560] So some of the challenges then we have with with stateful.
+[00:12:40.040] So one is that ambiguity around, around the protocol,
+[00:12:45.000] the use of elicitation and sampling, if you've got server
+[00:12:48.720] initiated requests, mean that you need to maintain an open channel.
+[00:12:52.240] Okay.
+[00:12:52.480] So one of the things that we were quite keen on trying when we first
+[00:12:55.960] launched was to send what are called tool list change notifications.
+[00:13:00.640] So the MCP server, if it wants to offer different tools, will notify the client.
+[00:13:04.120] And the client can then offer them.
+[00:13:05.440] But actually in practice, that's a very, very difficult thing to do,
+[00:13:07.960] especially on a public server.
+[00:13:10.080] As I mentioned, session state and understanding
+[00:13:13.840] that is not quite precisely defined enough in the protocol.
+[00:13:18.120] So a standard IO server, you kind of just connect,
+[00:13:21.240] you've got a process and you talk to it a remote server,
+[00:13:24.640] you have an MCP session ID, it doesn't necessarily match up
+[00:13:29.360] an operationally having sticky sessions and load balancers,
+[00:13:33.440] which need to inspect the traffic
+[00:13:34.880] to send it to the right server, means that doing server upgrades, resilience,
+[00:13:38.960] or kind of standard scaling practice becomes very, very difficult.
+[00:13:44.360] The other challenge as well is SSE connection
+[00:13:48.080] and cut off times make a lot of that quite, quite difficult as well.
+[00:13:53.280] So those are some of the
+[00:13:54.840] challenges and kind of what we see in production. So.
+[00:14:00.760] It's been probably about over the last ten months
+[00:14:03.320] then been working with the MCP transports working group.
+[00:14:08.120] We've got people from Google and Microsoft and everybody
+[00:14:13.000] contributing to that kind of sharing the production data,
+[00:14:15.440] sharing our experience of how to actually deploy this.
+[00:14:18.560] And we now in the new release candidate specification, have some fairly
+[00:14:24.120] big changes to the protocol to actually make this easier and simpler to deploy.
+[00:14:30.080] And I think, you know, to get get a lot more, a lot more value out of.
+[00:14:34.760] So kind of the first thing to kind of think about then is this, that
+[00:14:38.840] this is actually the first time that we've had this type of change
+[00:14:41.840] to the protocol, where we now have the standard IO protocol changing
+[00:14:47.360] the JSON-RPC messages that you send backwards and forwards
+[00:14:49.760] across it are going to be different.
+[00:14:51.600] And then we also, of course, have a new a new way of connecting
+[00:14:56.080] to remote servers with with the stateless HTTP transport.
+[00:15:02.000] So let's kind of start to dive into some of those changes.
+[00:15:07.360] So actually the first the first
+[00:15:11.280] kind of most important one of those is just simply simplifying it.
+[00:15:15.640] So the first the first one there is taking away the ability
+[00:15:20.080] for service to communicate with clients without the client
+[00:15:23.440] having sent you a message first.
+[00:15:25.400] And the team at anthropic actually did some analysis
+[00:15:30.960] on all of the open source servers, all the open source servers that they
+[00:15:34.680] can find, and all of the other MCP servers they could find.
+[00:15:37.360] And it turns out that across 100 million tokens of searching,
+[00:15:41.080] the only person to use this feature is is on stage right now.
+[00:15:47.840] So I'm now going to
+[00:15:48.640] try a very ill advised demonstration because
+[00:15:52.640] let's see if we can
+[00:15:54.800] let's see if we can do this. So.
+[00:15:59.360] Yeah so so MCP webcam then
+[00:16:01.880] is is a very very useful, very, very useful application
+[00:16:07.360] which lets you do things like if I say look through the webcam, everyone's smile.
+[00:16:12.200] Let's see if this will actually work.
+[00:16:16.400] This is a good kind of test of network.
+[00:16:18.200] And there we go.
+[00:16:20.960] Yeah. Perfect. So yeah.
+[00:16:24.040] So so webcam then it's a fairly straightforward MCP server
+[00:16:27.960] which lets you kind of use a user webcam through MCP.
+[00:16:33.200] So obviously a very, very useful thing.
+[00:16:36.400] Now the feature the the feature
+[00:16:40.360] that we're going to be losing from MCP webcam as a result of this change.
+[00:16:43.480] And this is, as I say, the kind of one example of the world in the world is.
+[00:16:47.920] Let me just refresh that.
+[00:16:52.320] Actually, I think I need to
+[00:16:53.280] I will just quickly reconnect that because now I haven't gone to the.
+[00:16:58.240] Having gone to the risk
+[00:16:59.760] of trying to do a live demonstration, I may as well see it through. There we go.
+[00:17:02.640] Okay, so if I hit sample, what's actually happening now is the webcam.
+[00:17:07.840] MCP server is connecting to the client,
+[00:17:11.200] and now the client is giving a description of of border.
+[00:17:15.120] Sure. Yeah.
+[00:17:15.600] It's giving a description of what it's seen.
+[00:17:17.520] This is a good example of why context engineering matters
+[00:17:22.360] because you don't particularly don't necessarily want the
+[00:17:27.800] AI view of you.
+[00:17:33.000] So we're simplifying it.
+[00:17:33.960] We're taking away the ability
+[00:17:35.440] for clients, the ability for service to talk to clients without having
+[00:17:39.240] first had a message in from the, from the client.
+[00:17:44.080] And that means we can simplify
+[00:17:45.440] the network, the network aspects quite a lot as well.
+[00:17:49.000] So sampling routes going and logging as well.
+[00:17:51.400] If you're if you're a real protocol peeper
+[00:17:55.440] huge then
+[00:17:56.240] is we're taking away that initialization handshake.
+[00:18:00.080] Right.
+[00:18:00.320] So we're typically the MCP server standard IO or remote would send a
+[00:18:05.600] initialized request and go through that whole kind of handshaking
+[00:18:08.680] and save the capabilities on either side.
+[00:18:11.600] That's just going okay.
+[00:18:13.680] So if you still need to find out the server capabilities
+[00:18:16.880] before you're actually interacting with it, there's a discover endpoint
+[00:18:20.120] that you can call that will give you a probe to
+[00:18:23.640] to get that, particularly if you want to show it in your user
+[00:18:25.840] experience if prompts and resources are available.
+[00:18:27.720] So that's great.
+[00:18:29.240] And if you are using those list change notifications or resource subscriptions,
+[00:18:35.200] there is still an endpoint that you that your client can call
+[00:18:38.000] to get those notifications. Okay.
+[00:18:39.600] But again, it's a big a big improvement, a big simplification.
+[00:18:44.960] Another one
+[00:18:45.480] of my own actually this is one of my favorites is cache control.
+[00:18:49.360] So when an MCP server
+[00:18:53.040] gives you the list of tools,
+[00:18:55.640] we can now say that list of tools is probably not
+[00:18:58.640] going to change for the next hour or the next couple of days,
+[00:19:01.920] which means that clients can then cache it.
+[00:19:04.720] Even more importantly, it's where you have a fleet of clients.
+[00:19:08.960] The server can indicate that it's safe to share that tallest amongst
+[00:19:12.080] a whole load of clients,
+[00:19:13.280] which means that you'll be able to discover MCP server information
+[00:19:17.720] cache so you don't have to discover it on each connection.
+[00:19:20.680] And you can also then discover that
+[00:19:22.520] from other offline stores like the MCP server card.
+[00:19:26.600] So a kind of a manifest that tells you all about
+[00:19:30.680] that MCP server.
+[00:19:33.920] And again, that doesn't necessarily overwrite.
+[00:19:36.440] If you get to all this change notification,
+[00:19:38.360] all of those things still take precedence.
+[00:19:40.520] But that kind of caching behavior gives us huge scope to kind of,
+[00:19:46.440] you know, just improve the overall user experience for
+[00:19:49.520] for both agents and users and operations teams.
+[00:19:56.080] One of the
+[00:19:57.080] you'll have noticed on that client side, there were three features.
+[00:20:02.040] Their roots, sampling, elicitation, elicitation
+[00:20:06.080] are the ability for the NCP server when you make a request to it
+[00:20:11.840] to kind of pause and say, right, I need some user guidance,
+[00:20:15.640] you've sent me a message to drop the database.
+[00:20:17.440] I'm going to pop up a message or a window.
+[00:20:19.680] Is it okay to drop that database?
+[00:20:21.080] And the user can then say yes, no or or so on.
+[00:20:23.880] So you can you can supply extra information through
+[00:20:28.400] through the deterministic channel.
+[00:20:31.200] Now the challenge with the current elicitation design is again, it kind of assumes that
+[00:20:35.920] the server and the client managing state between them.
+[00:20:40.040] So it just kind of sends small messages.
+[00:20:42.280] So what we're actually going to do instead
+[00:20:45.560] is the client will send a request to the server.
+[00:20:48.920] The server will respond rather than having a direct result.
+[00:20:52.560] It will say, actually I need to stop and get some input.
+[00:20:55.760] The MCP client can then handle the user, the user facing input,
+[00:21:00.240] and then it can send both that original request and the response
+[00:21:03.400] to the request back to the server for processing the next turn.
+[00:21:07.200] So very, very similar to the way that a
+[00:21:10.640] API works works today.
+[00:21:15.320] And again, this is I think this is going to be
+[00:21:17.560] an absolutely huge feature with HTTP standardization.
+[00:21:20.880] And I think I'll, I'll tell you what it is first,
+[00:21:25.560] then we'll talk about why I think it's exciting.
+[00:21:27.320] So for standardization, what we're doing is first of all,
+[00:21:32.200] we're making sure that certain MCP information.
+[00:21:36.000] So if we think about MCP it uses JSON-RPC.
+[00:21:39.320] So you have these kind of JSON RPC packets that the server reads
+[00:21:44.680] and then process and then sensitive JSON RPC response.
+[00:21:49.080] And of course if you've got any kind of network infrastructure
+[00:21:52.200] that means it needs to inspect the JSON packet, unpack it,
+[00:21:56.160] which is a fairly expensive operation.
+[00:21:58.320] So firstly, we're guaranteeing that certain information in the request
+[00:22:03.960] is in the HTTP headers, which is going to make it very, very simple to route.
+[00:22:08.000] Super powerful is the in tool descriptions, you'll be able to say
+[00:22:12.440] I want this particular parameter copied into the headers okay.
+[00:22:16.240] So that means for example.
+[00:22:18.080] So I'll just put a spec on the on the screen.
+[00:22:21.720] So that means for example, if I've got an image generation space
+[00:22:25.760] I can actually find, find that out at network
+[00:22:30.600] routing time and divert it to the appropriate server to to handle it.
+[00:22:34.560] Okay.
+[00:22:34.840] So it opens up completely new deployment options for how you may want to.
+[00:22:40.480] I want to
+[00:22:41.280] supply this kind of stuff to agents.
+[00:22:44.520] So again that means as I say it's visible to network infrastructure.
+[00:22:50.000] It means that you can then route tools wherever you go.
+[00:22:52.320] So for for MCP gateway companies, MCP proxy companies, these
+[00:22:56.960] kind of features are going to be very, very important for for efficiency.
+[00:23:02.760] So once we've done all of those changes and we have the Usdc out,
+[00:23:07.120] that means that,
+[00:23:08.480] you know,
+[00:23:08.680] rather than that kind of failure, long and laborious handshake to get things done.
+[00:23:12.760] And you're kind of potentially looking at all of the excited
+[00:23:17.120] J star PC packets and so on, instead will be able to have much,
+[00:23:23.000] much higher performance in the protocol level itself.
+[00:23:27.560] But also if you kind of think about the utility of this for
+[00:23:31.120] from an agent's perspective, the ability that you can connect
+[00:23:35.160] to an authorized set of tools with a single URL is extremely important.
+[00:23:40.320] And the fact that things like the tallest description
+[00:23:44.080] and other metadata about the server will be available out of band mean
+[00:23:47.880] that all of a sudden, connecting to authorized endpoints to do
+[00:23:50.960] arbitrary agent workloads, dispatching jobs, doing other,
+[00:23:54.760] doing other inference becomes becomes far more compelling.
+[00:23:59.280] Okay, so these changes open up a whole
+[00:24:02.120] load of new use cases that just didn't exist before.
+[00:24:05.600] And because it's MCP, that single URL
+[00:24:08.840] to get to an authenticated ready resource is super important.
+[00:24:14.280] So where are we?
+[00:24:16.080] Migration path is face straightforward.
+[00:24:18.160] The release candidate specification is released I think it was last week.
+[00:24:23.400] So you can see all of the work we've been doing over over the last few months.
+[00:24:28.000] Some of the debates and discussions that have been had.
+[00:24:31.240] Aim is to have beta SDKs by the end of this month,
+[00:24:34.280] and then the planned protocol release date is the 28th of July.
+[00:24:40.920] Just one final thing before I stop.
+[00:24:45.040] I'm just going to go slightly over time now is we've
+[00:24:50.000] kind of quite keen on building the right agent infrastructure.
+[00:24:54.240] So we have a tool called Monte, which is a sandbox
+[00:24:58.440] for running agent generated Python code.
+[00:25:01.320] And we're co-sponsoring the bounty.
+[00:25:02.920] So so have a, have a look at that.
+[00:25:05.880] If you're particularly good at breaking rust sandboxes.
+[00:25:09.600] We definitely like to like to help get that infrastructure layer more secure.
+[00:25:14.320] So with that I think that's my time up.
+[00:25:18.480] Thank you very much.
+[00:25:19.560] Yeah.
+[00:25:22.320] We do actually have a few minutes for questions.
+[00:25:25.720] If there are any questions,
+[00:25:27.560] put your hand up and we'll get a microphone to you somehow.
+[00:25:30.880] First ones here if you.
+[00:25:38.560] Hello.
+[00:25:38.960] Thank you for your presentation.
+[00:25:40.480] In your opinion, what separates companies
+[00:25:43.720] that are generally building a genetic infrastructure from
+[00:25:47.760] those that are just wrapping LLM APIs with workflows?
+[00:25:53.720] So I didn't catch the first part of the question. Sorry.
+[00:25:56.040] The first one is, in your opinion, what separates companies that are
+[00:26:00.680] generally building a infrastructure from those that are just wrapping
+[00:26:05.960] LLM APIs with workflows?
+[00:26:09.800] Testing mostly
+[00:26:12.000] would be we'd be with you there.
+[00:26:14.240] I mean, I don't have.
+[00:26:17.880] The industry's, I think
+[00:26:19.760] very, very quick at deciding that one thing is very good or very, very bad.
+[00:26:23.800] I think that unless you've kind of got a good idea
+[00:26:27.840] as to what it is you're trying to do with inference
+[00:26:32.080] and how you're designing the context window, sometimes
+[00:26:35.800] actually directly wrapping an API is absolutely the right thing to do.
+[00:26:39.240] And other times, of course, it's absolutely not.
+[00:26:41.600] So I think the difference
+[00:26:42.840] is whether or not you've actually tested and evaluate those differences.
+[00:26:48.840] And slightly conceptual question.
+[00:26:51.480] When you are trying to decide whether it's best
+[00:26:54.720] to use a silly tool for that MCP server for that.
+[00:26:57.800] How would you tell the difference to make sure
+[00:27:00.920] the agent is working and performing better?
+[00:27:04.920] So so the question is.
+[00:27:06.400] So the the question is
+[00:27:07.760] if we can choose between CLI and an MCP, let's say playwright.
+[00:27:11.600] Oh yeah. Yeah. Right. MCP.
+[00:27:13.200] Oh. So I think probably with some of these changes
+[00:27:18.480] those things start to converge slightly as well.
+[00:27:21.680] MCP is very very good if you want to access
+[00:27:24.400] remote resources where.
+[00:27:27.440] So for example if I'm going to if I want to run a remote training job,
+[00:27:31.720] then dispatching a job through MCP is actually quite a nice, secure
+[00:27:35.040] way of doing it, rather than, say, bringing all of the data down.
+[00:27:37.680] But we,
+[00:27:39.680] you know, we provide access to our services through both
+[00:27:41.760] our hugging face CLI and provide them through both the
+[00:27:45.200] through the MCP server.
+[00:27:48.600] And I would say, I think
+[00:27:51.000] for when we kind of look at the client usage, it varies a lot.
+[00:27:55.240] MCC tend to be
+[00:27:57.640] preferred in enterprises because you can have much tighter
+[00:28:00.680] control over what's deployed on what machine and where.
+[00:28:03.280] So certainly a lot of the kind of coding tool traffic we see, I suspect,
+[00:28:06.600] is probably from those kind of scenarios where MCP really works very, very well.
+[00:28:12.520] And we kind of see this with the MCP apps extension is interactive applications.
+[00:28:17.440] So things like ChatGPT, because again, it's very,
+[00:28:21.600] very easy to connect those things up
+[00:28:23.520] and then you can have very rich interactive experiences.
+[00:28:26.120] So it's been kind of in my mind for quite a long time.
+[00:28:28.600] You know, to a certain extent we've kind of got those two audiences
+[00:28:31.520] and, you know,
+[00:28:32.200] we may want to start adapting how we how we deploy some of those tools as a result.
+[00:28:36.720] But yeah, it's a good, very good question.
+[00:28:39.720] Any more for any more final question.
+[00:28:43.200] Okay.
+[00:28:43.920] Final round. Applause. Thank you so much Sean Smith.

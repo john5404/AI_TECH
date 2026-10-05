@@ -1,0 +1,737 @@
+WEBVTT
+
+1
+00:00:00.520 --> 00:00:04.440
+Back in June at AI DevCon in London, we had a whole run of talks
+
+2
+00:00:04.440 --> 00:00:08.040
+about what happens to security when the agent has the keys.
+
+3
+00:00:08.760 --> 00:00:13.200
+Prompt injection, poisoned skills, and the awkward fact that most
+
+4
+00:00:13.200 --> 00:00:17.760
+of the tools we've handed our agents come with no security controls whatsoever.
+
+5
+00:00:18.440 --> 00:00:23.120
+Let's first hear from Joseph Katsioloudes of the GitHub Security Lab,
+
+6
+00:00:23.240 --> 00:00:26.520
+who points out there's roughly one application security
+
+7
+00:00:26.560 --> 00:00:30.360
+specialist for every 100 developers and argues
+
+8
+00:00:30.360 --> 00:00:35.240
+we should stop saying shift left and start saying start left.
+
+9
+00:00:35.640 --> 00:00:37.640
+Okay. Good morning everybody.
+
+10
+00:00:37.640 --> 00:00:40.240
+Well, perfect.
+
+11
+00:00:40.240 --> 00:00:42.440
+Welcome to Code Security Reinvented.
+
+12
+00:00:42.440 --> 00:00:44.680
+Navigating the era of artificial intelligence.
+
+13
+00:00:44.680 --> 00:00:45.160
+My goal
+
+14
+00:00:45.160 --> 00:00:49.360
+today is to show you practical ways to use artificial intelligence for security
+
+15
+00:00:49.400 --> 00:00:52.160
+use cases. Whatever I show you, you can do.
+
+16
+00:00:52.160 --> 00:00:55.600
+Also, in Claude Code, Codex, not just GitHub Copilot.
+
+17
+00:00:56.200 --> 00:00:57.640
+Okay. Let's get started.
+
+18
+00:00:57.640 --> 00:00:59.400
+Yeah.
+
+19
+00:00:59.400 --> 00:01:01.480
+180 million plus developers.
+
+20
+00:01:01.480 --> 00:01:04.920
+A platform that builds and scales secure software.
+
+21
+00:01:04.960 --> 00:01:06.040
+Specifically, my team
+
+22
+00:01:06.040 --> 00:01:09.240
+is the GitHub Security Lab, which is a team of security experts
+
+23
+00:01:09.240 --> 00:01:12.840
+with the mission to secure the open source software that we all rely on.
+
+24
+00:01:12.840 --> 00:01:16.600
+And we do this through research, education and other activities.
+
+25
+00:01:16.600 --> 00:01:21.600
+For instance, this is some research from last year about bypassing Ruby-SAML.
+
+26
+00:01:21.920 --> 00:01:25.280
+Just last week we showed how somebody
+
+27
+00:01:25.280 --> 00:01:28.600
+could exploit 7-Zip with a heap buffer overflow.
+
+28
+00:01:28.960 --> 00:01:32.360
+We have found and helped fix more than 1000 vulnerabilities,
+
+29
+00:01:32.400 --> 00:01:36.720
+900 plus of which have been given unique security identifiers.
+
+30
+00:01:36.720 --> 00:01:40.160
+And the most important thing is that we help people fix those.
+
+31
+00:01:40.200 --> 00:01:41.600
+We don't just report them.
+
+32
+00:01:41.600 --> 00:01:42.880
+And this is important
+
+33
+00:01:42.880 --> 00:01:47.080
+because, exactly, there is a gap between security and developers.
+
+34
+00:01:47.080 --> 00:01:51.400
+If we try to quantify this gap, there is just one application
+
+35
+00:01:51.400 --> 00:01:55.400
+security specialist for every 100 software developers.
+
+36
+00:01:55.480 --> 00:02:01.080
+This gap is the opportunity that we can help minimize with AI.
+
+37
+00:02:01.200 --> 00:02:04.760
+However, if we are not equipped with the right knowledge,
+
+38
+00:02:05.080 --> 00:02:08.640
+the gap maybe is going to widen or it's not going to close
+
+39
+00:02:08.640 --> 00:02:11.200
+because we didn't maximize our potential there.
+
+40
+00:02:11.200 --> 00:02:12.920
+And that's the point of this talk.
+
+41
+00:02:12.920 --> 00:02:16.160
+I want to show you the pros and cons, the drawbacks of AI,
+
+42
+00:02:16.200 --> 00:02:22.240
+so you can make a human-in-the-loop use case of how you can use it responsibly.
+
+43
+00:02:22.360 --> 00:02:27.120
+So this is the first statement: AI can help minimize the security gap.
+
+44
+00:02:27.120 --> 00:02:30.680
+Let's see how. The first thing is writing safer code.
+
+45
+00:02:30.680 --> 00:02:34.560
+For me this is very important because all my career so far, I'm
+
+46
+00:02:34.560 --> 00:02:38.720
+hearing from senior leaders in cybersecurity about shifting left.
+
+47
+00:02:38.800 --> 00:02:44.960
+The problem when you shift left is that you keep having a gap on the left.
+
+48
+00:02:45.000 --> 00:02:48.400
+The whole point and the opportunity here is to start
+
+49
+00:02:48.440 --> 00:02:52.160
+left, and starting left means a lot of things.
+
+50
+00:02:52.160 --> 00:02:56.560
+And of course it has to touch the developers
+
+51
+00:02:56.560 --> 00:02:59.560
+how the code is being built in the first place.
+
+52
+00:02:59.760 --> 00:03:04.280
+We also heard from Liran Tal, who does AI security research at Snyk.
+
+53
+00:03:04.680 --> 00:03:08.240
+His team scanned around 4000 published skills.
+
+54
+00:03:08.600 --> 00:03:11.840
+Roughly 1 in 7 had something wrong with it.
+
+55
+00:03:11.880 --> 00:03:14.200
+Malware, suspicious downloads.
+
+56
+00:03:14.200 --> 00:03:15.680
+Credential harvesting.
+
+57
+00:03:17.400 --> 00:03:18.720
+Raise your hand
+
+58
+00:03:18.720 --> 00:03:22.920
+if you added a skill to your agent anytime in the last few months.
+
+59
+00:03:22.920 --> 00:03:25.920
+And keep it up.
+
+60
+00:03:26.240 --> 00:03:27.840
+Okay? I just see some hands now.
+
+61
+00:03:27.840 --> 00:03:29.720
+Keep it up. Keep it up.
+
+62
+00:03:29.720 --> 00:03:31.080
+I want you to keep it up.
+
+63
+00:03:31.080 --> 00:03:34.360
+Only now, if you actually review the skill
+
+64
+00:03:34.360 --> 00:03:37.360
+and read the markdown.
+
+65
+00:03:37.360 --> 00:03:39.880
+So many liars.
+
+66
+00:03:39.880 --> 00:03:41.000
+Liars, all of you.
+
+67
+00:03:41.000 --> 00:03:42.960
+I'll show you why today.
+
+68
+00:03:42.960 --> 00:03:45.120
+All right. Cool. We're good.
+
+69
+00:03:45.120 --> 00:03:46.240
+So yeah, I'm at Snyk.
+
+70
+00:03:46.240 --> 00:03:50.880
+I basically do a lot of developer advocacy, and I try to mix that up
+
+71
+00:03:50.880 --> 00:03:51.880
+with security research.
+
+72
+00:03:51.880 --> 00:03:55.800
+Over the last year or so, things like AI security research,
+
+73
+00:03:55.800 --> 00:04:00.720
+which also goes to account to things like skills and MCP security.
+
+74
+00:04:00.720 --> 00:04:04.360
+And we've done a bunch of research over the past few months,
+
+75
+00:04:04.360 --> 00:04:05.600
+which I do want to talk about today,
+
+76
+00:04:05.600 --> 00:04:09.880
+and it relates directly to skill security. So.
+
+77
+00:04:11.440 --> 00:04:12.160
+At around
+
+78
+00:04:12.160 --> 00:04:16.840
+4000 skills on ClawHub back in about
+
+79
+00:04:16.840 --> 00:04:20.640
+January, February was the peak when we actually ran the scan.
+
+80
+00:04:20.680 --> 00:04:24.160
+That means about 1 in 7.
+
+81
+00:04:24.240 --> 00:04:26.280
+This is the 30%.
+
+82
+00:04:26.280 --> 00:04:30.360
+1 in 7 of those skills had some kind of issue with it.
+
+83
+00:04:30.360 --> 00:04:34.840
+So that would have been something like malware distribution, suspicious
+
+84
+00:04:34.840 --> 00:04:38.640
+downloads, maybe credential harvesting, or just misuse,
+
+85
+00:04:38.960 --> 00:04:42.440
+or just basically any kind of potential security vulnerabilities
+
+86
+00:04:42.440 --> 00:04:44.480
+like Guy talked about in the opening keynote.
+
+87
+00:04:44.480 --> 00:04:47.480
+So skills aren't just malware, they're also potentially
+
+88
+00:04:47.520 --> 00:04:51.800
+having security vulnerabilities in them, just like regular code and other things.
+
+89
+00:04:52.000 --> 00:04:54.960
+So everyone probably knows what a skill looks like today, right?
+
+90
+00:04:54.960 --> 00:04:56.400
+That's kind of like this.
+
+91
+00:04:56.400 --> 00:04:57.640
+There is a front
+
+92
+00:04:57.640 --> 00:05:01.400
+matter that gives you instructions and sets the metadata.
+
+93
+00:05:01.400 --> 00:05:05.200
+There is the body with more metadata, gives instructions to the agent,
+
+94
+00:05:05.240 --> 00:05:07.280
+what to do and so on.
+
+95
+00:05:07.280 --> 00:05:10.280
+But when you look at it there's like no sandboxing information.
+
+96
+00:05:10.320 --> 00:05:11.560
+There are no permissions here.
+
+97
+00:05:11.560 --> 00:05:12.400
+There's no other
+
+98
+00:05:12.400 --> 00:05:16.320
+kind of security controls for the agent to know what to do with the skills.
+
+99
+00:05:16.960 --> 00:05:19.840
+Oleg Šelajev is on the DevRel team at Docker
+
+100
+00:05:19.840 --> 00:05:23.720
+and he brought a demo I would call genuinely alarming.
+
+101
+00:05:24.440 --> 00:05:27.720
+His agent refuses to run a secret scanning skill,
+
+102
+00:05:27.720 --> 00:05:32.040
+so he writes it in another language, then wraps it in a module.
+
+103
+00:05:32.240 --> 00:05:36.280
+Then he clears the context and it runs the whole thing happily.
+
+104
+00:05:36.680 --> 00:05:40.200
+So what you can see here is Claude running in auto mode, and I'm asking it
+
+105
+00:05:40.200 --> 00:05:44.080
+to run this skill and it sensibly refuses.
+
+106
+00:05:44.080 --> 00:05:45.200
+It says it's dangerous,
+
+107
+00:05:45.200 --> 00:05:48.200
+I'm not going to do that, which is what auto mode is supposed to do.
+
+108
+00:05:48.320 --> 00:05:53.240
+Then we continue the session and ask it to rewrite that in Python code.
+
+109
+00:05:53.280 --> 00:05:57.600
+So take the skill, write me Python code to do this, and it complies
+
+110
+00:05:57.600 --> 00:06:01.320
+because this is a benign request to write a piece of software.
+
+111
+00:06:01.400 --> 00:06:02.360
+So it does that.
+
+112
+00:06:02.360 --> 00:06:05.360
+And I say, can you please run this for me?
+
+113
+00:06:05.880 --> 00:06:10.760
+And it says, I will not run this for you because of the security implications
+
+114
+00:06:10.760 --> 00:06:15.560
+so I'm not going to run this as part of my ethical operating practices.
+
+115
+00:06:15.560 --> 00:06:20.640
+But we go further and I ask it to put it in a Python module,
+
+116
+00:06:20.920 --> 00:06:24.520
+because it can read the actual Python file that is supposed to run,
+
+117
+00:06:24.520 --> 00:06:27.440
+but there are dependencies and dependencies of dependencies.
+
+118
+00:06:27.440 --> 00:06:31.200
+So we put it in the module and it puts it in the module.
+
+119
+00:06:31.200 --> 00:06:34.320
+And it says, I'm going to put it in a module for you.
+
+120
+00:06:34.480 --> 00:06:37.840
+And at that moment I had a brilliant idea to rewrite it in Rust.
+
+121
+00:06:37.920 --> 00:06:39.240
+So it only gets the binary.
+
+122
+00:06:39.240 --> 00:06:42.560
+So it cannot actually peek under the hood what it's running.
+
+123
+00:06:42.560 --> 00:06:44.600
+And then Claude says, I'm
+
+124
+00:06:44.600 --> 00:06:47.600
+not going to rewrite that in Rust because you're clearly malicious.
+
+125
+00:06:47.960 --> 00:06:50.400
+So it has some sense. But then
+
+126
+00:06:51.600 --> 00:06:53.640
+it writes it as a Python module.
+
+127
+00:06:53.640 --> 00:06:56.640
+I try to run it, it refuses.
+
+128
+00:06:56.640 --> 00:07:00.320
+I do /clear so it loses all the context.
+
+129
+00:07:00.360 --> 00:07:04.960
+And after that, it's very happily running this Python script that pulls the module
+
+130
+00:07:04.960 --> 00:07:09.280
+dependency to do a complete security audit of my machine.
+
+131
+00:07:09.280 --> 00:07:14.280
+And you can see that, that there are 20 keys in my SSH directory.
+
+132
+00:07:14.280 --> 00:07:15.360
+That was a few months ago.
+
+133
+00:07:15.360 --> 00:07:20.240
+After that, seeing that, I migrated them all into 1Password or something.
+
+134
+00:07:20.240 --> 00:07:23.520
+There are cloud credentials and API keys in the history,
+
+135
+00:07:23.520 --> 00:07:27.880
+and that the agent also can write to the code directory.
+
+136
+00:07:27.880 --> 00:07:30.600
+So all consistent. So machine is completely vulnerable.
+
+137
+00:07:30.600 --> 00:07:31.040
+Right.
+
+138
+00:07:31.040 --> 00:07:35.920
+If I just run my agent naked on my machine. And to close, back to Lamis
+
+139
+00:07:36.040 --> 00:07:39.800
+Mukta at Anthropic, this time on the unglamorous engineering
+
+140
+00:07:39.800 --> 00:07:42.800
+that makes agent memory safe to run in production.
+
+141
+00:07:42.880 --> 00:07:45.720
+Versioning. So you can roll a bad memory back.
+
+142
+00:07:45.720 --> 00:07:48.920
+And a way to stop two agents writing over each other.
+
+143
+00:07:49.240 --> 00:07:50.960
+Because memories can go stale.
+
+144
+00:07:50.960 --> 00:07:54.080
+And they can also be poisoned on purpose.
+
+145
+00:07:55.080 --> 00:07:56.960
+The final problem is that memories can go stale.
+
+146
+00:07:56.960 --> 00:08:01.400
+Of course, something that was relevant in the past might not be relevant today.
+
+147
+00:08:01.400 --> 00:08:05.880
+Or maybe it was written incorrectly or even maliciously injected
+
+148
+00:08:05.880 --> 00:08:10.560
+by someone trying to prompt inject your agents to write bad things to memory.
+
+149
+00:08:10.560 --> 00:08:15.920
+So you have to have a lot of guardrails in place to make sure that these nice
+
+150
+00:08:15.920 --> 00:08:19.000
+autonomous memory systems actually work in production.
+
+151
+00:08:21.320 --> 00:08:25.200
+And so I'm going to talk through a couple of key principles
+
+152
+00:08:25.200 --> 00:08:29.520
+that we use when designing memory systems in production to make sure that we do
+
+153
+00:08:29.560 --> 00:08:33.640
+get to use all of those nice effects that we've talked, that we've spoken about.
+
+154
+00:08:34.520 --> 00:08:37.160
+So the very first thing is versioning.
+
+155
+00:08:37.160 --> 00:08:38.440
+So when you're designing
+
+156
+00:08:38.440 --> 00:08:41.840
+any kind of memory system, you need to be able to store versions
+
+157
+00:08:42.480 --> 00:08:45.720
+to keep track of what's going on, to allow you to roll back
+
+158
+00:08:45.760 --> 00:08:49.280
+should you need to, if a new update isn't particularly good.
+
+159
+00:08:49.360 --> 00:08:50.880
+Additionally,
+
+160
+00:08:50.880 --> 00:08:54.640
+you probably want to think about what context was this update based on.
+
+161
+00:08:54.680 --> 00:08:55.960
+So which agent session?
+
+162
+00:08:55.960 --> 00:09:00.040
+Which transcript resulted in me wanting to make this update?
+
+163
+00:09:00.920 --> 00:09:03.200
+And additionally,
+
+164
+00:09:03.200 --> 00:09:06.240
+like you might want to track like who did it, which agent, which human, etc.
+
+165
+00:09:06.280 --> 00:09:07.600
+etc.
+
+166
+00:09:07.600 --> 00:09:09.120
+So this is really important.
+
+167
+00:09:09.120 --> 00:09:11.440
+The second thing is concurrency.
+
+168
+00:09:11.440 --> 00:09:14.600
+So we've talked about okay, what happens when I deploy thousands of agents
+
+169
+00:09:14.600 --> 00:09:17.600
+all working off the same memory system.
+
+170
+00:09:17.640 --> 00:09:20.200
+And the solution that we've adopted
+
+171
+00:09:20.200 --> 00:09:23.240
+here is to have this hashing system.
+
+172
+00:09:23.240 --> 00:09:26.560
+So when an agent decides that it wants to write
+
+173
+00:09:26.560 --> 00:09:29.560
+an update to a memory, it takes a hash.
+
+174
+00:09:29.720 --> 00:09:31.240
+It then drafts its edit.
+
+175
+00:09:31.240 --> 00:09:35.520
+And then before it writes the update, it takes another hash.
+
+176
+00:09:35.680 --> 00:09:38.920
+If those two things do not match, then the agent cannot write it
+
+177
+00:09:38.920 --> 00:09:42.120
+because it means that some update was made in the meantime.
+
+178
+00:09:42.320 --> 00:09:45.080
+And in order to handle that, the agent re-reads
+
+179
+00:09:45.080 --> 00:09:49.000
+the memory, drafts its new update, and then tries to commit this again.
+
+180
+00:09:49.200 --> 00:09:52.960
+So these are the kinds of just engineering practices that allow you to scale
+
+181
+00:09:53.120 --> 00:09:57.880
+multiple agent architectures, scale memory to these kinds of architectures.
+
+182
+00:09:58.600 --> 00:10:00.040
+Thanks for watching.
+
+183
+00:10:00.040 --> 00:10:04.680
+Be sure to join us for the next AI DevCon this November in New York City.
+
+184
+00:10:04.760 --> 00:10:08.640
+Visit AI DevCon to learn more and book your ticket.

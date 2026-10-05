@@ -1,0 +1,4093 @@
+WEBVTT
+
+1
+00:00:00.080 --> 00:00:04.280
+Ultimately, the identity question is how do I ensure that
+
+2
+00:00:04.320 --> 00:00:07.560
+when an agent does make a mistake, it doesn't do something catastrophic
+
+3
+00:00:07.560 --> 00:00:08.520
+I didn't intend.
+
+4
+00:00:08.520 --> 00:00:11.280
+This thing is built on like a probabilistic distribution.
+
+5
+00:00:11.280 --> 00:00:15.040
+The feature is that it can reason and it can guess over large amounts of data.
+
+6
+00:00:15.080 --> 00:00:15.520
+Right.
+
+7
+00:00:15.520 --> 00:00:17.680
+And that it is non-deterministic.
+
+8
+00:00:17.680 --> 00:00:18.800
+That's the feature.
+
+9
+00:00:18.800 --> 00:00:22.280
+The bug from a security perspective is that it's non-deterministic
+
+10
+00:00:22.280 --> 00:00:24.040
+and that is still the feature.
+
+11
+00:00:24.040 --> 00:00:25.440
+So the feature and the bug are the same.
+
+12
+00:00:25.440 --> 00:00:30.120
+And the final question is how do I know that an agent is performing
+
+13
+00:00:30.160 --> 00:00:33.520
+actions aligned with the intent of whoever set that agent to do something.
+
+14
+00:00:35.240 --> 00:00:38.520
+The AI Native Dev is a podcast for developers and engineering
+
+15
+00:00:38.520 --> 00:00:41.760
+leads at the cutting edge of AI and agentic coding.
+
+16
+00:00:41.840 --> 00:00:44.840
+Join your hosts, Guy Podjarny and me, Simon Maple.
+
+17
+00:00:44.840 --> 00:00:48.040
+Every week as we chat with the most exciting voices in
+
+18
+00:00:48.040 --> 00:00:51.600
+AI and tackle the biggest questions facing developers today.
+
+19
+00:00:52.440 --> 00:00:55.040
+This is the AI Native Dev.
+
+20
+00:00:57.680 --> 00:00:58.080
+We just
+
+21
+00:00:58.080 --> 00:01:01.280
+wrapped up two amazing days at AI Native DevCon in London.
+
+22
+00:01:01.280 --> 00:01:02.360
+But the great thing is that
+
+23
+00:01:02.360 --> 00:01:06.160
+we get to do it all over again in New York City this November.
+
+24
+00:01:06.200 --> 00:01:07.320
+You're absolutely right.
+
+25
+00:01:07.320 --> 00:01:11.200
+We're going to be back in the city that never sleeps on November 3rd and
+
+26
+00:01:11.200 --> 00:01:16.560
+4th for more amazing sessions, really engaging hands-on workshops and much more.
+
+27
+00:01:16.600 --> 00:01:19.640
+Yeah, all that great networking, partying, eating and
+
+28
+00:01:19.640 --> 00:01:22.640
+drinking that you've come to expect from AI Native DevCon.
+
+29
+00:01:22.640 --> 00:01:25.640
+We think we have one of the best hallway tracks in the business,
+
+30
+00:01:25.640 --> 00:01:30.040
+and it's the perfect complement to our incredible speakers and presenters.
+
+31
+00:01:30.120 --> 00:01:32.240
+We'll both be in person and virtual,
+
+32
+00:01:32.240 --> 00:01:35.840
+with live streamed access to all mainstage keynotes and talks.
+
+33
+00:01:36.080 --> 00:01:39.800
+Sign up right now for our Super Blind Bird ticket for just $100.
+
+34
+00:01:39.800 --> 00:01:41.960
+Only available for a limited time.
+
+35
+00:01:41.960 --> 00:01:45.640
+We're really excited to be headed back to the Big Apple, and we hope
+
+36
+00:01:45.640 --> 00:01:46.440
+to see you all there.
+
+37
+00:01:52.720 --> 00:01:53.360
+Hello, everyone.
+
+38
+00:01:53.360 --> 00:01:54.760
+Welcome back to the AI Native Dev.
+
+39
+00:01:54.760 --> 00:01:58.080
+We are in kind of an ad hoc office over here.
+
+40
+00:01:58.120 --> 00:02:01.160
+You know, actually sort of Ian's hometown, or like.
+
+41
+00:02:01.440 --> 00:02:02.600
+Current home.
+
+42
+00:02:02.600 --> 00:02:06.680
+Base at the moment here in San Francisco as part of the AI Engineer event
+
+43
+00:02:06.680 --> 00:02:10.440
+and really kind of enjoying a lot of AI conversations on it.
+
+44
+00:02:10.440 --> 00:02:13.640
+And today we're going to dive in to identity.
+
+45
+00:02:13.840 --> 00:02:14.320
+Identity.
+
+46
+00:02:14.320 --> 00:02:18.040
+If you've been sort of exploring the security realm of agents,
+
+47
+00:02:18.040 --> 00:02:23.000
+identity really has been the top topic of it.
+
+48
+00:02:23.400 --> 00:02:24.800
+Everybody appreciates that.
+
+49
+00:02:24.800 --> 00:02:27.880
+It is a foundational aspect of how do you get these agents
+
+50
+00:02:27.880 --> 00:02:31.280
+to actually be secure and kind of work and give them some autonomy.
+
+51
+00:02:31.280 --> 00:02:36.240
+And so to kind of demystify this whole domain and understand how to tackle that,
+
+52
+00:02:36.280 --> 00:02:40.080
+we've got Ian Livingstone, who is the co-founder of Keycard. Yep.
+
+53
+00:02:40.080 --> 00:02:46.000
+That is a sort of a really exciting company in the identity space.
+
+54
+00:02:46.040 --> 00:02:49.080
+But also really, Ian is really sharp
+
+55
+00:02:49.080 --> 00:02:52.840
+and deep around explaining things as a whole and specifically identity.
+
+56
+00:02:52.840 --> 00:02:56.080
+Known him from Snyk days, and his sort of past companies
+
+57
+00:02:56.080 --> 00:02:57.080
+that he's founded on it.
+
+58
+00:02:57.080 --> 00:03:01.360
+So we'll we'll learn about identity, learn about what you can do.
+
+59
+00:03:01.360 --> 00:03:03.920
+And we will hear a little bit about Keycard.
+
+60
+00:03:03.920 --> 00:03:05.800
+Super excited as well. Yeah.
+
+61
+00:03:05.800 --> 00:03:07.240
+For coming on. Thanks for having me.
+
+62
+00:03:07.240 --> 00:03:10.480
+I'm super excited to talk about identity and agents and security
+
+63
+00:03:10.520 --> 00:03:13.720
+and this whole bundle of things together today and really help
+
+64
+00:03:13.720 --> 00:03:16.720
+people understand sort of one is like, what's the problem?
+
+65
+00:03:16.760 --> 00:03:18.400
+Why this is a hot topic.
+
+66
+00:03:18.400 --> 00:03:21.560
+Like, why is it, like, identity is like kind of boring or a snoozefest?
+
+67
+00:03:21.560 --> 00:03:23.240
+It's been for years, you know.
+
+68
+00:03:23.240 --> 00:03:24.520
+But why is this hot again?
+
+69
+00:03:24.520 --> 00:03:28.400
+And why are people thinking about it and how that actually changes the way
+
+70
+00:03:28.400 --> 00:03:30.080
+that we actually think, by the way we build systems
+
+71
+00:03:30.080 --> 00:03:32.920
+and also how autonomous these systems can become. Yeah. Yeah.
+
+72
+00:03:32.920 --> 00:03:34.240
+Well, let's not back over here.
+
+73
+00:03:34.240 --> 00:03:35.800
+So let's, let's get started.
+
+74
+00:03:35.800 --> 00:03:40.280
+Just tell us a little bit about what are the, the problems or sort of the,
+
+75
+00:03:40.320 --> 00:03:43.760
+you know, give us a bit of a structure for thinking about identity and agents.
+
+76
+00:03:43.800 --> 00:03:44.240
+Absolutely.
+
+77
+00:03:44.240 --> 00:03:46.440
+So I think I think the first step we have to think about is like,
+
+78
+00:03:46.440 --> 00:03:48.400
+why is identity even a thing we talk about?
+
+79
+00:03:48.400 --> 00:03:50.720
+Like if we were to step back and like identity
+
+80
+00:03:50.720 --> 00:03:52.840
+has been a part of computing for as long as it's existed, right.
+
+81
+00:03:52.840 --> 00:03:55.720
+The minute you had a mainframe. And then I want to have multiple users.
+
+82
+00:03:55.720 --> 00:03:59.240
+Now you have a new problem, which is like, what files or programs on
+
+83
+00:03:59.240 --> 00:04:03.080
+the system are Guy's programs and files and what files and systems are Ian's,
+
+84
+00:04:03.080 --> 00:04:06.680
+and how does Guy get access to all of Ian's stuff, or does he have access?
+
+85
+00:04:06.960 --> 00:04:10.880
+Like, it's been like every wave of computing introduces this question of,
+
+86
+00:04:10.880 --> 00:04:12.920
+well, who can do what, when and where. And who.
+
+87
+00:04:12.920 --> 00:04:15.920
+Can access. Exactly. Like, in high school,
+
+88
+00:04:15.920 --> 00:04:18.120
+hacking, getting into all sorts of information systems
+
+89
+00:04:18.120 --> 00:04:20.400
+that I was not supposed to be in? Not exactly.
+
+90
+00:04:20.400 --> 00:04:21.840
+And, you know, in the rise of the internet
+
+91
+00:04:21.840 --> 00:04:25.840
+brought about, like, when we initially, it was like TLS brought about commerce.
+
+92
+00:04:25.840 --> 00:04:28.920
+And so every wave of computing comes with that net new security challenges
+
+93
+00:04:28.920 --> 00:04:32.720
+we have to solve because the like the interaction patterns change
+
+94
+00:04:32.720 --> 00:04:36.000
+when we introduce new paradigms, look the rise of the cloud and then etc.,
+
+95
+00:04:36.040 --> 00:04:41.040
+you know, with IAM and identity for cloud vendors and GCP and secret sprawl.
+
+96
+00:04:41.080 --> 00:04:42.600
+We've always had these problems.
+
+97
+00:04:42.600 --> 00:04:47.120
+And so agents like many things, as we introduce new functionality
+
+98
+00:04:47.120 --> 00:04:50.600
+and capability, like platform shift, we have to reassess our security model.
+
+99
+00:04:50.880 --> 00:04:55.080
+And the core crux of the identity problem when it comes to agents is
+
+100
+00:04:55.520 --> 00:04:58.280
+this thing is built on like a probabilistic distribution.
+
+101
+00:04:58.280 --> 00:05:00.280
+It's a statistical training, right?
+
+102
+00:05:00.280 --> 00:05:01.280
+It's beautiful.
+
+103
+00:05:01.280 --> 00:05:05.480
+The feature is that it can reason and it can guess over large amounts of data.
+
+104
+00:05:05.520 --> 00:05:05.960
+Right.
+
+105
+00:05:05.960 --> 00:05:08.120
+And that it is non-deterministic.
+
+106
+00:05:08.120 --> 00:05:09.240
+That's the feature.
+
+107
+00:05:09.240 --> 00:05:12.720
+The bug from a security perspective is that it's non-deterministic
+
+108
+00:05:12.720 --> 00:05:14.480
+and that is still the feature.
+
+109
+00:05:14.480 --> 00:05:15.880
+So the feature and the bug are the same.
+
+110
+00:05:15.880 --> 00:05:18.360
+And the final question is how do I
+
+111
+00:05:19.600 --> 00:05:21.480
+know that an agent is performing
+
+112
+00:05:21.480 --> 00:05:25.480
+actions aligned with the intent of whoever set that agent to do something, right,
+
+113
+00:05:25.480 --> 00:05:28.640
+which is like the foremost question of
+
+114
+00:05:28.680 --> 00:05:32.080
+this generation, and there's many different parts of that.
+
+115
+00:05:32.080 --> 00:05:34.400
+Right? You've got supply chain security as a part of it.
+
+116
+00:05:34.400 --> 00:05:36.040
+Data security is a part of it.
+
+117
+00:05:36.040 --> 00:05:38.240
+But identity is very foundational.
+
+118
+00:05:38.240 --> 00:05:41.680
+And thinking through how do I have a secure agent?
+
+119
+00:05:41.680 --> 00:05:44.800
+It's also foundational to think of through how do I enable an agent
+
+120
+00:05:44.800 --> 00:05:45.920
+to be autonomous.
+
+121
+00:05:45.920 --> 00:05:46.600
+Right.
+
+122
+00:05:46.600 --> 00:05:51.360
+And the more autonomous an agent becomes, or the more autonomous you want
+
+123
+00:05:51.400 --> 00:05:55.600
+agent to be, the security equation becomes much more difficult to solve.
+
+124
+00:05:55.600 --> 00:05:57.640
+And the systems that used to work
+
+125
+00:05:57.640 --> 00:06:01.440
+in the last, last era start to stop working as much in the new era.
+
+126
+00:06:01.480 --> 00:06:01.680
+Right.
+
+127
+00:06:01.680 --> 00:06:04.680
+And that's I think that's a fundamental sort of thing to understand.
+
+128
+00:06:04.720 --> 00:06:09.000
+And then ultimately, the identity question is how do I ensure
+
+129
+00:06:09.000 --> 00:06:12.920
+that when an agent does make a mistake, it doesn't do something catastrophic?
+
+130
+00:06:12.920 --> 00:06:14.360
+I didn't intend. Right.
+
+131
+00:06:14.360 --> 00:06:18.440
+And so today, if you have paid attention or have read, there's
+
+132
+00:06:18.440 --> 00:06:22.560
+lots of different problems associated with identity that people talk about.
+
+133
+00:06:22.560 --> 00:06:23.520
+One of them would be
+
+134
+00:06:23.520 --> 00:06:24.560
+you have supply chain attacks
+
+135
+00:06:24.560 --> 00:06:28.840
+that result in database passwords and keys being leaked, like the most recent LLM
+
+136
+00:06:28.880 --> 00:06:31.760
+and attacks where the actual attack vector was, how do I take long
+
+137
+00:06:31.760 --> 00:06:34.800
+lived API keys off of disk and use those to exfiltrate data?
+
+138
+00:06:34.840 --> 00:06:38.680
+But there's other problems of how do I,
+
+139
+00:06:39.120 --> 00:06:42.560
+you know, when I use an agent, if I ask an agent to do something?
+
+140
+00:06:42.560 --> 00:06:45.560
+This was very common six months ago.
+
+141
+00:06:45.640 --> 00:06:48.760
+Ask the agent to optimize a database.
+
+142
+00:06:48.840 --> 00:06:51.240
+A potential path to optimizing a database would actually.
+
+143
+00:06:51.240 --> 00:06:52.720
+Be, delete the data. Exactly, right.
+
+144
+00:06:52.720 --> 00:06:55.160
+And so that does make it snappy. But that.
+
+145
+00:06:55.160 --> 00:06:58.480
+Would be deeply unaligned with what the actual user wants that agent to do.
+
+146
+00:06:58.480 --> 00:07:03.520
+And so that's fundamentally a question of authorization and access.
+
+147
+00:07:03.720 --> 00:07:08.360
+And the difference between what we've had and what with agents is
+
+148
+00:07:08.440 --> 00:07:12.280
+I actually want to give agents access to different things depending upon the job
+
+149
+00:07:12.280 --> 00:07:14.440
+I've assigned them to do or the task of something to do.
+
+150
+00:07:14.440 --> 00:07:17.000
+And that's a very different model we've had previously. Yeah, yeah.
+
+151
+00:07:17.000 --> 00:07:20.000
+So I think there's there's basically a few aspects that you,
+
+152
+00:07:20.000 --> 00:07:20.920
+that you have on over there.
+
+153
+00:07:20.920 --> 00:07:26.160
+So one aspect of it is, is is the non-determinism.
+
+154
+00:07:26.200 --> 00:07:26.520
+Right.
+
+155
+00:07:26.520 --> 00:07:31.520
+The safety is like, how likely is the agent to sort of choose to do a thing
+
+156
+00:07:31.520 --> 00:07:34.720
+that is not a thing that would have otherwise kind of been
+
+157
+00:07:34.720 --> 00:07:36.120
+consented or allowed on it.
+
+158
+00:07:36.120 --> 00:07:38.040
+So I guess there's sort of a broader safety element.
+
+159
+00:07:38.040 --> 00:07:41.280
+And some of that comes down to, you know, harnesses and context
+
+160
+00:07:41.280 --> 00:07:44.480
+and all that of, of, of, of trying to sort of steer
+
+161
+00:07:44.480 --> 00:07:46.640
+the agents to understand where the lines are
+
+162
+00:07:46.640 --> 00:07:48.400
+and I guess that's that's not really identity.
+
+163
+00:07:48.400 --> 00:07:50.200
+Those are like agent workflows.
+
+164
+00:07:50.200 --> 00:07:51.120
+But then next to that,
+
+165
+00:07:51.120 --> 00:07:54.840
+I think we have sort of two aspects of identity that you touch on there.
+
+166
+00:07:54.880 --> 00:07:58.680
+One is, you know, who is the agent, you know,
+
+167
+00:07:58.760 --> 00:08:03.080
+what is the sort of entity, right, that I'm assigning it.
+
+168
+00:08:03.080 --> 00:08:05.920
+And the second is the the permissions.
+
+169
+00:08:05.920 --> 00:08:09.880
+You know, I guess we talk about authentication and authorization and identity.
+
+170
+00:08:09.880 --> 00:08:17.080
+So I guess how do you am I kind of dividing that correctly over here?
+
+171
+00:08:17.080 --> 00:08:21.160
+And maybe if we put safety as a massively interesting topic on its own,
+
+172
+00:08:21.400 --> 00:08:25.280
+but do you think they're intertwined or, and, or do you just need to worry
+
+173
+00:08:25.280 --> 00:08:26.800
+about all of them?
+
+174
+00:08:26.800 --> 00:08:32.280
+I think, I think if, when a business, when you step back and ask, is it safe?
+
+175
+00:08:32.480 --> 00:08:37.120
+Or another way to think is, do I trust an agent to be able to perform this action?
+
+176
+00:08:37.160 --> 00:08:37.840
+Yeah.
+
+177
+00:08:37.840 --> 00:08:41.160
+You know, identity and access, delegation, all these things
+
+178
+00:08:41.160 --> 00:08:44.400
+are vital components of that, as they are in every other era of computing.
+
+179
+00:08:44.640 --> 00:08:47.640
+And, you know, to a certain extent
+
+180
+00:08:47.720 --> 00:08:50.720
+when it comes to identity and access, there
+
+181
+00:08:50.880 --> 00:08:53.880
+you you'll have deterministic controls around what agents can do.
+
+182
+00:08:53.880 --> 00:08:55.240
+And you'll have non-deterministic controls.
+
+183
+00:08:55.240 --> 00:08:56.200
+And, like, a good example is
+
+184
+00:08:56.200 --> 00:09:01.680
+safety work often is about how do I bias a model into that
+
+185
+00:09:01.680 --> 00:09:05.120
+it is, it is not affected, or, you know, does what I want.
+
+186
+00:09:05.120 --> 00:09:08.480
+So it's not going to do the bad thing or has less probable to do the bad thing.
+
+187
+00:09:08.600 --> 00:09:11.120
+But for from a security equation you want to say,
+
+188
+00:09:11.120 --> 00:09:13.360
+well, there's a set of things that I just want to never happen.
+
+189
+00:09:13.360 --> 00:09:15.680
+I want to guard, like, I don't want a guardrail, I want
+
+190
+00:09:15.680 --> 00:09:18.000
+I want a hard boundary around what it can do.
+
+191
+00:09:18.000 --> 00:09:19.440
+And it's part of this is also the reason why
+
+192
+00:09:19.440 --> 00:09:21.360
+things like sandbox is very popular right now.
+
+193
+00:09:21.360 --> 00:09:24.360
+It's like, I can never 100%
+
+194
+00:09:24.360 --> 00:09:26.200
+know the model may not do this.
+
+195
+00:09:26.200 --> 00:09:27.760
+So, but I need, in order for me
+
+196
+00:09:27.760 --> 00:09:30.240
+to put this into production, for this type of workload or perform
+
+197
+00:09:30.240 --> 00:09:31.320
+this type of task,
+
+198
+00:09:31.320 --> 00:09:34.600
+I need to ensure that it has a hard boundary so it can never happen.
+
+199
+00:09:34.600 --> 00:09:37.000
+So I can say as a business, yes.
+
+200
+00:09:37.000 --> 00:09:39.360
+You know, the worst case scenarios that I worry about
+
+201
+00:09:39.360 --> 00:09:40.680
+have actually been removed from the equation.
+
+202
+00:09:40.680 --> 00:09:43.600
+And then the rest of the things that are left, it's like kind of okay,
+
+203
+00:09:43.600 --> 00:09:46.200
+if that happens, like it's not great if it does something weird,
+
+204
+00:09:46.200 --> 00:09:47.240
+but it's not going to
+
+205
+00:09:47.240 --> 00:09:51.120
+destroy the business or result in lost customer data or on and on and on it goes.
+
+206
+00:09:51.320 --> 00:09:54.400
+So there's one aspect of defining the sandbox,
+
+207
+00:09:54.520 --> 00:09:57.600
+and you're saying, I know that these things won't happen.
+
+208
+00:09:57.640 --> 00:09:58.160
+Exactly.
+
+209
+00:09:58.160 --> 00:10:00.560
+You know, if I want the agent to do useful things,
+
+210
+00:10:00.560 --> 00:10:03.520
+it might not delete all of my inbox, but I'm still getting it as an email.
+
+211
+00:10:03.520 --> 00:10:03.840
+Exactly.
+
+212
+00:10:03.840 --> 00:10:07.320
+It can still do unsafe things over there, but if it doesn't have access to my
+
+213
+00:10:07.560 --> 00:10:09.280
+records, it's not going to send.
+
+214
+00:10:09.280 --> 00:10:11.120
+Me outside. Okay.
+
+215
+00:10:11.120 --> 00:10:13.080
+So so there's we're we're talking now
+
+216
+00:10:13.080 --> 00:10:15.320
+a little bit more about that sort of boundary zone. Exactly.
+
+217
+00:10:15.320 --> 00:10:19.800
+So what are the types of agent identity conversation that we have.
+
+218
+00:10:19.840 --> 00:10:22.880
+Yeah I think I think there's one is sort of where we're coming from.
+
+219
+00:10:22.920 --> 00:10:23.160
+Right.
+
+220
+00:10:23.160 --> 00:10:26.000
+And if you look at sort of the identity systems of last generation,
+
+221
+00:10:26.000 --> 00:10:27.000
+like the way I would give
+
+222
+00:10:27.000 --> 00:10:31.080
+a piece of software access to something is I would give an API key, it would maybe
+
+223
+00:10:31.360 --> 00:10:33.560
+be a service account, or represent a service account, potentially
+
+224
+00:10:33.560 --> 00:10:35.680
+it would maybe represent a user because it was a user's
+
+225
+00:10:35.680 --> 00:10:37.440
+API key or personal access token.
+
+226
+00:10:37.440 --> 00:10:40.800
+It was like we built a world based on shared secrets
+
+227
+00:10:41.080 --> 00:10:45.680
+and the issue with shared secrets
+
+228
+00:10:45.680 --> 00:10:48.840
+is they're often bound strictly to a specific identity, and they're bound
+
+229
+00:10:48.840 --> 00:10:52.000
+strictly to a set of permissions associated with that long lived secret.
+
+230
+00:10:52.000 --> 00:10:55.400
+And the more important thing is, if that secret were leaked, anyone
+
+231
+00:10:55.400 --> 00:10:58.480
+who got access to that shared password also could do that thing.
+
+232
+00:10:58.480 --> 00:11:02.280
+And now the the fundamental challenge is okay
+
+233
+00:11:02.400 --> 00:11:04.400
+knowing that that's where we came from.
+
+234
+00:11:04.400 --> 00:11:07.400
+How do we move to a world where I want.
+
+235
+00:11:07.680 --> 00:11:08.720
+I'm Guy.
+
+236
+00:11:08.720 --> 00:11:12.120
+I really want this agent to operate over a very long period of time
+
+237
+00:11:12.240 --> 00:11:13.160
+on my behalf,
+
+238
+00:11:13.160 --> 00:11:16.400
+because it's going to have access to my Gmail or have access to my Google Drive.
+
+239
+00:11:16.440 --> 00:11:20.160
+But if at any point it needs to perform a write action.
+
+240
+00:11:20.160 --> 00:11:22.640
+So, send an email on my behalf, I should probably get to approve it, right.
+
+241
+00:11:22.640 --> 00:11:24.280
+And like fundamentally,
+
+242
+00:11:24.280 --> 00:11:27.000
+the process of going through is as we go up the autonomy curve.
+
+243
+00:11:27.000 --> 00:11:29.240
+So we go from, I'd love to use a self-driving car
+
+244
+00:11:29.240 --> 00:11:32.880
+analogy as we go from level zero, which is deterministic software,
+
+245
+00:11:33.240 --> 00:11:37.960
+GPT to Copilots, which is like level one to something
+
+246
+00:11:37.960 --> 00:11:41.000
+that's like slightly, or tab complete from Cursor, to sort of like
+
+247
+00:11:41.040 --> 00:11:44.360
+Cursor agents and Claude Code agents, which are like level two.
+
+248
+00:11:44.360 --> 00:11:45.920
+Is a human still involved?
+
+249
+00:11:45.920 --> 00:11:49.600
+How do we actually go from a world where, like as we go up that autonomy ladder,
+
+250
+00:11:49.640 --> 00:11:52.920
+I, I'm retaining security over what that thing is doing.
+
+251
+00:11:52.920 --> 00:11:57.040
+And if, you know, currently if you were to use Cursor or Claude
+
+252
+00:11:57.400 --> 00:12:01.480
+when it goes into a tool call, oftentimes they're saying, hey Guy.
+
+253
+00:12:01.520 --> 00:12:03.920
+Do you want to do that? Do you always want to do that?
+
+254
+00:12:03.920 --> 00:12:05.880
+No, you don't want to do it on everything.
+
+255
+00:12:05.880 --> 00:12:07.800
+And so the question is you can't have autonomy
+
+256
+00:12:07.800 --> 00:12:09.680
+when the human has to constantly be in the loop,
+
+257
+00:12:09.680 --> 00:12:13.760
+which is where these access systems come in, which is saying as I go
+
+258
+00:12:13.760 --> 00:12:14.680
+up the autonomy ladder.
+
+259
+00:12:14.680 --> 00:12:17.360
+So as we want to get to this sort of self-driving car analogy,
+
+260
+00:12:17.360 --> 00:12:20.560
+there's a trust and safety equation that is with that,
+
+261
+00:12:20.560 --> 00:12:22.680
+which is how do I keep this thing driving on the road
+
+262
+00:12:22.680 --> 00:12:25.800
+instead of driving off the road, off the cliff or whatever it may be?
+
+263
+00:12:26.000 --> 00:12:29.120
+And that's at the crux of it, what we're actually all talking about, right?
+
+264
+00:12:29.160 --> 00:12:29.520
+Yeah.
+
+265
+00:12:29.520 --> 00:12:33.720
+So I feel like the word identity is like can be a little bit confusing here
+
+266
+00:12:33.840 --> 00:12:35.320
+because there's like one question is
+
+267
+00:12:35.320 --> 00:12:37.680
+I've got this agent, it's running on my behalf.
+
+268
+00:12:37.680 --> 00:12:40.880
+Can I know that it is the agent.
+
+269
+00:12:40.960 --> 00:12:45.000
+So, like, I feel when I hear identity, I think primarily who is it that is acting
+
+270
+00:12:45.040 --> 00:12:49.320
+and that might be, you know, is it me talking or is it my agent talking?
+
+271
+00:12:49.320 --> 00:12:51.360
+So can the system separate the two of us?
+
+272
+00:12:51.360 --> 00:12:52.360
+It might be.
+
+273
+00:12:52.360 --> 00:12:53.440
+Is my agent talking
+
+274
+00:12:53.440 --> 00:12:57.400
+to another agent to perform actions on behalf of agents all the way down.
+
+275
+00:12:57.440 --> 00:12:57.680
+Right.
+
+276
+00:12:57.680 --> 00:12:59.280
+They they cascade down.
+
+277
+00:12:59.280 --> 00:13:00.680
+So that's one aspect.
+
+278
+00:13:00.680 --> 00:13:05.880
+But a lot of the attention you draw is actually to, to the kind of
+
+279
+00:13:06.000 --> 00:13:07.440
+to its decisions. Right.
+
+280
+00:13:07.440 --> 00:13:12.160
+Like, you know, as it comes along, it might be it's around
+
+281
+00:13:12.160 --> 00:13:15.160
+the communication of when I delegate a task. Yes.
+
+282
+00:13:15.160 --> 00:13:19.320
+What is not just the the knowledge that it is my agent,
+
+283
+00:13:19.320 --> 00:13:22.760
+but rather what is its scoped permissions right now within this one,
+
+284
+00:13:22.760 --> 00:13:27.000
+like you can compose the email, but you are not allowed to send the email.
+
+285
+00:13:27.040 --> 00:13:27.560
+Exactly.
+
+286
+00:13:27.560 --> 00:13:31.520
+So is that, I guess people, like, again, the word identity is used for the market
+
+287
+00:13:31.560 --> 00:13:31.880
+on it.
+
+288
+00:13:31.880 --> 00:13:35.800
+How do you separate this sort of authentication from authorization?
+
+289
+00:13:35.840 --> 00:13:36.400
+Yeah.
+
+290
+00:13:36.400 --> 00:13:39.000
+So this is interesting because if you look at in the identity
+
+291
+00:13:39.000 --> 00:13:43.960
+world, the cloud. When we were getting to the cloud, it was really about, can I verify
+
+292
+00:13:44.000 --> 00:13:47.120
+that Guy is in fact Guy Podjarny.
+
+293
+00:13:47.120 --> 00:13:49.040
+When Guy goes to Google Drive, like, that
+
+294
+00:13:49.040 --> 00:13:51.240
+the basis of cloud was really focused on that.
+
+295
+00:13:51.240 --> 00:13:54.600
+And authorization didn't really fall into the problem space.
+
+296
+00:13:54.600 --> 00:13:56.360
+And that's because at the time,
+
+297
+00:13:56.360 --> 00:13:56.800
+we didn't
+
+298
+00:13:56.800 --> 00:14:00.120
+really have to solve authorization, and we didn't have to solve authorization,
+
+299
+00:14:00.120 --> 00:14:03.680
+because if I could identify that it's Guy and I trust Guy,
+
+300
+00:14:03.880 --> 00:14:08.480
+then I can give Guy really broad based access, because implicitly
+
+301
+00:14:08.600 --> 00:14:12.000
+we've we've done the background check.
+
+302
+00:14:12.200 --> 00:14:13.880
+We called all the references.
+
+303
+00:14:13.880 --> 00:14:17.840
+He, you know, isn't isn't a sociopath, right.
+
+304
+00:14:17.880 --> 00:14:19.520
+Like it turns out.
+
+305
+00:14:19.520 --> 00:14:21.360
+Well yeah. You did hide it. Well.
+
+306
+00:14:21.360 --> 00:14:25.440
+It turns out that Guy really cares about how people think about him.
+
+307
+00:14:25.440 --> 00:14:26.440
+And he wants to do a good job.
+
+308
+00:14:26.440 --> 00:14:28.560
+And it turns out that if he got fired from the job, that'd be devastating.
+
+309
+00:14:28.560 --> 00:14:29.880
+So the implicitly, we can
+
+310
+00:14:29.880 --> 00:14:33.840
+we can trust that Guy is going to operate with high intent and not be malicious.
+
+311
+00:14:33.880 --> 00:14:34.080
+Right?
+
+312
+00:14:34.080 --> 00:14:37.080
+The part is because it's the same Guy that will sort of come in to the next task.
+
+313
+00:14:37.720 --> 00:14:38.200
+Exactly.
+
+314
+00:14:38.200 --> 00:14:38.920
+Yeah.
+
+315
+00:14:38.920 --> 00:14:41.480
+Well, the agents are basically a brand new creature.
+
+316
+00:14:41.480 --> 00:14:43.880
+Exactly. A brand new creature every time with different context.
+
+317
+00:14:43.880 --> 00:14:48.480
+And they don't have, they have no sense of is this good or wrong?
+
+318
+00:14:48.520 --> 00:14:50.720
+Like they're not malicious. Yeah, right.
+
+319
+00:14:50.720 --> 00:14:53.560
+They just don't know. And there isn't a way for them to say it.
+
+320
+00:14:53.560 --> 00:14:55.760
+Do I know or do I not know? Right.
+
+321
+00:14:55.760 --> 00:14:57.920
+That's authoritative in a way that a human can be.
+
+322
+00:14:57.920 --> 00:15:01.240
+And so from that perspective, agents
+
+323
+00:15:01.240 --> 00:15:04.520
+really change that equation where it used to be that, okay.
+
+324
+00:15:04.520 --> 00:15:05.560
+If I just know it's a human
+
+325
+00:15:05.560 --> 00:15:09.280
+and I trust that human, once it's all configured, it kind of works.
+
+326
+00:15:09.320 --> 00:15:13.480
+Now it's based on the thing that I've assigned them and the data
+
+327
+00:15:13.480 --> 00:15:15.240
+that they have about that thing.
+
+328
+00:15:15.240 --> 00:15:17.520
+I'm going to give them different levels of access based on
+
+329
+00:15:17.520 --> 00:15:21.200
+what's in that context window, and so much about this next generation.
+
+330
+00:15:21.280 --> 00:15:25.400
+It is about authorization, which is, what things can this do?
+
+331
+00:15:25.400 --> 00:15:28.920
+But it's also about what things has this agent seen or done.
+
+332
+00:15:28.920 --> 00:15:31.920
+So I know that it is in a well bounded box
+
+333
+00:15:31.920 --> 00:15:33.240
+on whether it should have access to that.
+
+334
+00:15:33.240 --> 00:15:36.040
+And if I can't call that judge, if I can't make a decision, like a system
+
+335
+00:15:36.040 --> 00:15:38.200
+can't make the decision, the system can also be like,
+
+336
+00:15:38.200 --> 00:15:38.720
+you know what, actually,
+
+337
+00:15:38.720 --> 00:15:40.120
+maybe I need to go talk to Guy and be like,
+
+338
+00:15:40.120 --> 00:15:43.240
+hey Guy, can you review this thing that the agent wants to do before it goes
+
+339
+00:15:43.240 --> 00:15:43.720
+and does it?
+
+340
+00:15:43.720 --> 00:15:47.280
+And so much of if if what we're trying to do is to basically
+
+341
+00:15:47.640 --> 00:15:50.880
+turn software into the Waymo experience, so much of it is like,
+
+342
+00:15:50.920 --> 00:15:53.920
+how do we, as the models improve, how do we, over time,
+
+343
+00:15:53.960 --> 00:15:56.680
+give them more autonomy but with the same substrate system?
+
+344
+00:15:56.680 --> 00:15:59.400
+Because there's going to be certain tasks that you assign an agent
+
+345
+00:15:59.400 --> 00:16:02.400
+you're going to say, you know what, it's totally summarization.
+
+346
+00:16:02.400 --> 00:16:05.560
+Where I'm pulling in a bunch of context, I'm summarizing a document for you.
+
+347
+00:16:05.720 --> 00:16:08.000
+You should have it's okay, read access to everything.
+
+348
+00:16:08.000 --> 00:16:08.520
+That's totally fine.
+
+349
+00:16:08.520 --> 00:16:10.440
+But the minute you want to go and do a high,
+
+350
+00:16:10.440 --> 00:16:14.240
+maybe a transaction that costs over $500, definitely.
+
+351
+00:16:14.240 --> 00:16:16.600
+That's maybe that's when a human has to say, you know what?
+
+352
+00:16:16.600 --> 00:16:18.600
+I don't trust agents to make decisions on my behalf.
+
+353
+00:16:18.600 --> 00:16:20.560
+Over $500. Or an organization
+
+354
+00:16:20.560 --> 00:16:24.800
+may say I don't trust agents to have access to customer data at all.
+
+355
+00:16:24.840 --> 00:16:28.760
+Like there are different trust equations, and every person and organization,
+
+356
+00:16:28.760 --> 00:16:30.360
+depending upon the context of what
+
+357
+00:16:30.360 --> 00:16:34.200
+the agent is, who's using it, and what things it's asking
+
+358
+00:16:34.840 --> 00:16:38.880
+will have a different trust equation about what they think is okay for them.
+
+359
+00:16:38.920 --> 00:16:39.680
+Yeah, yeah.
+
+360
+00:16:39.680 --> 00:16:40.280
+Interesting.
+
+361
+00:16:40.280 --> 00:16:43.880
+So really what you want is you want the the identity.
+
+362
+00:16:43.920 --> 00:16:47.840
+I really like this identity plus authorization bundle.
+
+363
+00:16:47.920 --> 00:16:49.440
+Exactly. Task based.
+
+364
+00:16:49.440 --> 00:16:50.960
+Yes. I'm performing a task.
+
+365
+00:16:50.960 --> 00:16:53.280
+This task should have a set of permissions. Exactly.
+
+366
+00:16:53.280 --> 00:16:57.000
+So I think within that world it feels there are two,
+
+367
+00:16:57.000 --> 00:17:00.520
+two, simplifying a little bit, two ways in which sort of agents work.
+
+368
+00:17:00.520 --> 00:17:01.160
+Right.
+
+369
+00:17:01.160 --> 00:17:04.400
+One is an agent as in an agent workflow.
+
+370
+00:17:04.560 --> 00:17:05.440
+And so I'm running it.
+
+371
+00:17:05.440 --> 00:17:06.440
+And so, you know I can choose
+
+372
+00:17:06.440 --> 00:17:09.440
+sometimes it's doing broad things, sometimes it's doing narrow things.
+
+373
+00:17:09.680 --> 00:17:14.800
+But I think within that world it feels quite kind of manageable to say
+
+374
+00:17:14.960 --> 00:17:16.320
+I'm giving it a delegation.
+
+375
+00:17:16.320 --> 00:17:19.160
+We'll come back a little bit to how do I define which permissions.
+
+376
+00:17:19.160 --> 00:17:20.080
+Yeah, that's a different
+
+377
+00:17:20.080 --> 00:17:23.760
+problem, that is sort of a hard problem, but, but at least I know
+
+378
+00:17:24.080 --> 00:17:27.920
+like this bundle, this sort of this sort of this process here that is executing.
+
+379
+00:17:27.920 --> 00:17:28.640
+It's, it's
+
+380
+00:17:28.640 --> 00:17:32.520
+kind of executing the same thing or like this assigned action again.
+
+381
+00:17:32.560 --> 00:17:33.280
+Again.
+
+382
+00:17:33.280 --> 00:17:36.720
+And then I've got, like, my kind of Claude Code or Codex or Gemini
+
+383
+00:17:37.240 --> 00:17:39.080
+running locally. Yes.
+
+384
+00:17:39.080 --> 00:17:41.920
+And I don't know, like, probably like my
+
+385
+00:17:41.920 --> 00:17:44.920
+in my IDE, or like Claude that I'm running on my stuff,
+
+386
+00:17:45.320 --> 00:17:48.520
+I don't, it doesn't do one thing. Like, I do one thing and then I come back.
+
+387
+00:17:48.520 --> 00:17:50.120
+This is like, yeah, I've got this other one.
+
+388
+00:17:50.120 --> 00:17:53.120
+And oftentimes just sort of run in like one long session
+
+389
+00:17:53.520 --> 00:17:58.000
+that I walk around and, you know, if I just approve of things like,
+
+390
+00:17:58.000 --> 00:17:59.480
+okay, I just performed an action and said,
+
+391
+00:17:59.480 --> 00:18:02.040
+can I delete this file and delete this file?
+
+392
+00:18:02.040 --> 00:18:05.720
+And this was like, final, and delete all, like, yes, always approve.
+
+393
+00:18:05.760 --> 00:18:07.280
+And then I come along and do something else
+
+394
+00:18:07.280 --> 00:18:09.200
+and you know, that goes away.
+
+395
+00:18:09.200 --> 00:18:10.640
+Is that a lost cause.
+
+396
+00:18:10.640 --> 00:18:14.880
+Like, is that, that it's like, hey Guy, just stop using the agent like that,
+
+397
+00:18:14.920 --> 00:18:18.400
+like use it in a more methodical fashion and to do that, or
+
+398
+00:18:19.760 --> 00:18:21.480
+is there a better model that have to.
+
+399
+00:18:21.480 --> 00:18:23.040
+There's definitely a better model,
+
+400
+00:18:23.040 --> 00:18:27.000
+like what we want to get to as a world where agents you can assign agent
+
+401
+00:18:27.000 --> 00:18:31.440
+a task, a task, maybe something, hey, do, like, survey the internet and every day
+
+402
+00:18:31.440 --> 00:18:33.680
+come back to me. Or survey all of my assets,
+
+403
+00:18:33.680 --> 00:18:36.960
+all of my inbox, and come back to me and tell me what happened, right?
+
+404
+00:18:37.000 --> 00:18:40.040
+And that's like, that's a long live process where you definitely don't
+
+405
+00:18:40.040 --> 00:18:43.120
+want every morning to wake up and have to click a consent screen, right.
+
+406
+00:18:43.160 --> 00:18:47.400
+You actually just like I've assigned you, I've given I've delegated authority
+
+407
+00:18:47.400 --> 00:18:48.360
+to you to perform things
+
+408
+00:18:48.360 --> 00:18:52.560
+on my behalf. And in order for me to delegate to this agent and that agent.
+
+409
+00:18:52.640 --> 00:18:54.000
+Actually, this is where identity comes in.
+
+410
+00:18:54.000 --> 00:18:55.680
+We have to be able to identify the agent, right?
+
+411
+00:18:55.680 --> 00:18:58.680
+So it's like, I've given Foobar agent
+
+412
+00:18:58.680 --> 00:19:01.440
+for the context, for this task, this authority.
+
+413
+00:19:01.440 --> 00:19:04.440
+And when I sent it a different task, I wanted to give it different authority.
+
+414
+00:19:04.440 --> 00:19:05.600
+But that's the first basis.
+
+415
+00:19:05.600 --> 00:19:08.040
+It's like this is why we talk about identity is okay.
+
+416
+00:19:08.040 --> 00:19:09.640
+Well, in order to give something
+
+417
+00:19:09.640 --> 00:19:11.320
+your authority to do something on your behalf,
+
+418
+00:19:11.320 --> 00:19:13.920
+you both have to be able to have to be able to identify that thing.
+
+419
+00:19:13.920 --> 00:19:17.040
+And then the thing that the downstream systems that are saying,
+
+420
+00:19:17.080 --> 00:19:20.080
+hey, is this random request that's coming into my system,
+
+421
+00:19:20.720 --> 00:19:22.400
+does it have the permissions?
+
+422
+00:19:22.400 --> 00:19:25.400
+Like, has it been given the authority to do the thing it's asking to do?
+
+423
+00:19:25.400 --> 00:19:26.680
+Well, I have to both know.
+
+424
+00:19:26.680 --> 00:19:31.280
+Well, oh, Guy did in fact give Foobar access to do this thing,
+
+425
+00:19:31.280 --> 00:19:34.360
+but I have to actually be able to identify both Foobar and Guy.
+
+426
+00:19:34.400 --> 00:19:38.280
+And certainly those systems want to treat an access request
+
+427
+00:19:38.280 --> 00:19:42.160
+or request based from Guy differently than they do from Foobar.
+
+428
+00:19:42.160 --> 00:19:47.800
+Because, when you think, I love to give the example of, like, credit card
+
+429
+00:19:47.800 --> 00:19:51.760
+chargebacks here, because if you ask your agent to perform
+
+430
+00:19:51.800 --> 00:19:55.720
+a transaction on your behalf and then you say, hold up a second,
+
+431
+00:19:56.480 --> 00:19:59.320
+I didn't give it access to do that. Yeah.
+
+432
+00:19:59.320 --> 00:20:01.480
+How does the intermediary be like?
+
+433
+00:20:01.480 --> 00:20:06.120
+Well, actually, no, we have a record, in fact, that you did tell Foobar
+
+434
+00:20:06.200 --> 00:20:09.920
+to go and do this thing and that you said it could spend up to $500
+
+435
+00:20:09.920 --> 00:20:10.640
+and it did do that thing.
+
+436
+00:20:10.640 --> 00:20:11.920
+So we're actually not going to process
+
+437
+00:20:11.920 --> 00:20:15.720
+that chargeback, because you did do it with today's identity systems.
+
+438
+00:20:15.800 --> 00:20:20.360
+What we built in the last generation, you can't differentiate between
+
+439
+00:20:20.400 --> 00:20:23.400
+what did Guy give Foobar that access for, this
+
+440
+00:20:23.400 --> 00:20:26.440
+specific task or a different task, or where's Foobar in the mix?
+
+441
+00:20:26.440 --> 00:20:26.920
+None of that.
+
+442
+00:20:26.920 --> 00:20:28.080
+None of that existed
+
+443
+00:20:28.080 --> 00:20:31.600
+because we actually didn't have to build that for last generation security posture.
+
+444
+00:20:31.600 --> 00:20:33.760
+And now we we do. Yeah.
+
+445
+00:20:33.760 --> 00:20:37.720
+So I guess I'm going back a little bit and we'll get a little bit to solutions.
+
+446
+00:20:37.720 --> 00:20:40.680
+I'm hearing three levels here.
+
+447
+00:20:40.680 --> 00:20:44.080
+One is separate me from my agent.
+
+448
+00:20:44.240 --> 00:20:46.320
+So use identities that are specific for.
+
+449
+00:20:46.320 --> 00:20:51.160
+Two, is have a set of authorizations that is,
+
+450
+00:20:51.160 --> 00:20:55.520
+that is aligned to the task that you've just given the agent.
+
+451
+00:20:55.640 --> 00:21:00.040
+And I guess three, which relates a little bit to the two, is
+
+452
+00:21:00.360 --> 00:21:04.960
+if you're within like the second one is easy when you've defined the task
+
+453
+00:21:05.000 --> 00:21:08.800
+upfront and it's not a long lived agent, but when it's a long lived agent.
+
+454
+00:21:08.800 --> 00:21:12.640
+Am I right in understanding that you're saying there's
+
+455
+00:21:12.640 --> 00:21:17.080
+another kind of bucket of, like, ephemeral entity, the sort of entity
+
+456
+00:21:17.080 --> 00:21:20.840
+that comes along, which is what is the current task being done?
+
+457
+00:21:20.880 --> 00:21:21.680
+Exactly?
+
+458
+00:21:21.680 --> 00:21:26.280
+That is like kind of like gathered out of the moment in time,
+
+459
+00:21:26.720 --> 00:21:28.240
+the last few messages,
+
+460
+00:21:28.240 --> 00:21:32.040
+whatever it is, you know, the last message that the user has provided where it is.
+
+461
+00:21:32.080 --> 00:21:32.440
+Yeah.
+
+462
+00:21:32.440 --> 00:21:35.680
+And I guess that type of activity,
+
+463
+00:21:36.560 --> 00:21:40.760
+you know, it really isn't a place in which the human will engage.
+
+464
+00:21:40.760 --> 00:21:45.400
+So that probably needs to itself be more kind of inferred or decided.
+
+465
+00:21:45.960 --> 00:21:46.560
+Is that right?
+
+466
+00:21:46.560 --> 00:21:47.360
+So that's right.
+
+467
+00:21:47.360 --> 00:21:51.120
+The first one and the second one are a scale problem
+
+468
+00:21:51.120 --> 00:21:53.240
+of a thing that we had before. We had a system.
+
+469
+00:21:53.240 --> 00:21:54.320
+We gave the system a task.
+
+470
+00:21:54.320 --> 00:21:55.920
+We had to give it a, we had to give. It.
+
+471
+00:21:55.920 --> 00:21:58.160
+A permission set.
+
+472
+00:21:58.160 --> 00:22:00.360
+But this third one, that's a new creature. Totally.
+
+473
+00:22:00.360 --> 00:22:04.560
+And if you were to go and read current literature, you will find that
+
+474
+00:22:04.600 --> 00:22:05.600
+what you and I are talking about,
+
+475
+00:22:05.600 --> 00:22:07.200
+like I think task was very understandable
+
+476
+00:22:07.200 --> 00:22:10.320
+for us to think about, is like, hell yeah, I assigned this thing a job or a task
+
+477
+00:22:10.360 --> 00:22:12.000
+to go do, and it went and did it on behalf.
+
+478
+00:22:12.000 --> 00:22:12.920
+And maybe that task
+
+479
+00:22:12.920 --> 00:22:16.480
+is repeated every 30 days, or it takes a long time to do that task.
+
+480
+00:22:16.520 --> 00:22:17.640
+In literature, it's called
+
+481
+00:22:17.640 --> 00:22:20.640
+a mission. It's like, often in standards that are starting to emerge.
+
+482
+00:22:20.640 --> 00:22:26.000
+This concept of a mission and a mission is over time, as users
+
+483
+00:22:26.000 --> 00:22:30.480
+or other people give assigned work for these things to do,
+
+484
+00:22:30.600 --> 00:22:32.320
+you're going to think about here are the missions
+
+485
+00:22:32.320 --> 00:22:36.240
+or the quests I've assigned to this thing, and I, as a user,
+
+486
+00:22:36.280 --> 00:22:39.480
+will update what that mission is as we learn things.
+
+487
+00:22:39.560 --> 00:22:42.160
+And really what that mission is, is about.
+
+488
+00:22:42.160 --> 00:22:46.560
+Describing the user's intent as a concrete thing.
+
+489
+00:22:46.560 --> 00:22:46.880
+It's like,
+
+490
+00:22:46.880 --> 00:22:50.920
+I intend for this agent to be able to, you know, complete this type of task.
+
+491
+00:22:50.920 --> 00:22:55.440
+And that allows another system like an authorization system
+
+492
+00:22:55.440 --> 00:23:00.600
+to understand, hey, this user or this company, right?
+
+493
+00:23:00.640 --> 00:23:03.560
+Somebody has assigned a mission to this agent.
+
+494
+00:23:03.560 --> 00:23:07.120
+That mission is something I can measure their access
+
+495
+00:23:07.120 --> 00:23:10.280
+requests against and say, is this aligned with human intent?
+
+496
+00:23:10.320 --> 00:23:15.280
+So that gives us a way to think about how the concept
+
+497
+00:23:15.280 --> 00:23:20.000
+of an agent's identity and the tasks they're working on travels across systems.
+
+498
+00:23:20.040 --> 00:23:20.400
+Right.
+
+499
+00:23:20.400 --> 00:23:24.320
+Which is the issue that doesn't exist at all today. Is, if you go to Uber
+
+500
+00:23:24.320 --> 00:23:27.400
+and you ask your agent to book on your behalf, Uber
+
+501
+00:23:27.400 --> 00:23:31.720
+has actually no way to know whether you, what the action
+
+502
+00:23:31.760 --> 00:23:35.400
+that the agent is performing was aligned with what your initial request was at.
+
+503
+00:23:35.400 --> 00:23:35.880
+All, right.
+
+504
+00:23:35.880 --> 00:23:42.400
+And so part of this is like, we have this new concept, as in delegation, is this
+
+505
+00:23:42.440 --> 00:23:45.440
+what is it that this thing has been assigned to do,
+
+506
+00:23:45.520 --> 00:23:48.640
+so that I can then judge whether the thing it's asking to
+
+507
+00:23:48.640 --> 00:23:51.720
+do is aligned with a thing it was assigned to do.
+
+508
+00:23:51.760 --> 00:23:52.080
+Right?
+
+509
+00:23:52.080 --> 00:23:54.840
+So this is like a so we have human identities.
+
+510
+00:23:54.840 --> 00:23:56.280
+We have non-human identities.
+
+511
+00:23:56.280 --> 00:23:59.120
+And is there now a mission identity there? There is.
+
+512
+00:23:59.120 --> 00:24:02.880
+And typically this is there's there's in
+
+513
+00:24:02.920 --> 00:24:05.360
+you can think of these concepts inside identity.
+
+514
+00:24:05.360 --> 00:24:07.480
+There's this concept of session for a long time. Right.
+
+515
+00:24:07.480 --> 00:24:13.160
+It's like, I log into a website, that creates a session, often from 1990 to 2000.
+
+516
+00:24:13.440 --> 00:24:16.520
+Web. It's a cookie in your browser, and that represents some session.
+
+517
+00:24:16.520 --> 00:24:18.400
+And that session helps identify who you are.
+
+518
+00:24:18.400 --> 00:24:24.080
+And now it's not just, a session isn't just who you are.
+
+519
+00:24:24.160 --> 00:24:26.480
+It's who are you acting on behalf of.
+
+520
+00:24:26.480 --> 00:24:29.920
+And it is also for what purpose?
+
+521
+00:24:29.960 --> 00:24:30.600
+Yeah, right.
+
+522
+00:24:30.600 --> 00:24:33.720
+And that's the three layers that we now have to think about.
+
+523
+00:24:33.720 --> 00:24:37.680
+And that purpose gives you access to do what things.
+
+524
+00:24:37.760 --> 00:24:39.800
+And that's those are the layers of complexity.
+
+525
+00:24:39.800 --> 00:24:41.560
+And if you if you think of it from that perspective,
+
+526
+00:24:41.560 --> 00:24:45.600
+that's how the layer of the complexity of identity systems have that,
+
+527
+00:24:45.640 --> 00:24:48.680
+that agents force, for us to be able to solve a lot of these safety
+
+528
+00:24:48.680 --> 00:24:49.840
+concerns across system.
+
+529
+00:24:49.840 --> 00:24:50.080
+Yeah.
+
+530
+00:24:50.080 --> 00:24:50.320
+Okay.
+
+531
+00:24:50.320 --> 00:24:53.760
+Cool, I love the session analogy because it's something you can kind of relate to.
+
+532
+00:24:54.200 --> 00:24:55.320
+And sessions are interesting.
+
+533
+00:24:55.320 --> 00:24:58.920
+Sessions are things that they might get invalidated and require a new.
+
+534
+00:24:59.080 --> 00:25:01.040
+A bunch of triggers.
+
+535
+00:25:01.040 --> 00:25:02.160
+Most common time,
+
+536
+00:25:02.160 --> 00:25:05.960
+you know, that's been idle for a while, or maybe just sitting there.
+
+537
+00:25:06.000 --> 00:25:08.480
+Sometimes it's an action that has been performed
+
+538
+00:25:08.480 --> 00:25:12.000
+that kind of requires a, a variety of those.
+
+539
+00:25:12.040 --> 00:25:15.280
+So maybe let's sort of go into indeed a little bit of the solution.
+
+540
+00:25:15.520 --> 00:25:16.080
+Absolutely.
+
+541
+00:25:16.080 --> 00:25:16.680
+So what are
+
+542
+00:25:16.680 --> 00:25:19.760
+what are the types of sort of tools or new capabilities that are out there?
+
+543
+00:25:20.040 --> 00:25:22.160
+I know Keycard is kind of one of those on it,
+
+544
+00:25:22.160 --> 00:25:22.960
+but give us a little
+
+545
+00:25:22.960 --> 00:25:26.960
+bit of the families of ways to tackle this sort of new challenge.
+
+546
+00:25:27.000 --> 00:25:27.200
+Yeah.
+
+547
+00:25:27.200 --> 00:25:30.960
+I think there's there are many different
+
+548
+00:25:31.160 --> 00:25:34.920
+sort of solutions on market that kind of message to, to this type of thing.
+
+549
+00:25:34.920 --> 00:25:36.560
+But I think like the step back and think about
+
+550
+00:25:36.560 --> 00:25:39.800
+what are the new technologies or protocols that are emerging to start solving this.
+
+551
+00:25:39.840 --> 00:25:42.560
+And then we can kind of discuss about different ways.
+
+552
+00:25:42.560 --> 00:25:47.280
+So I think there's really, if I'm sitting in the chair
+
+553
+00:25:47.280 --> 00:25:49.200
+as a security person, I'm thinking about two things.
+
+554
+00:25:49.200 --> 00:25:53.320
+One, I'm thinking about how do I find my shadow agents or my shadow AI.
+
+555
+00:25:53.360 --> 00:25:54.280
+It's always a conversation.
+
+556
+00:25:54.280 --> 00:25:57.760
+Security is what are the things that are happening that I don't know about, right.
+
+557
+00:25:57.800 --> 00:26:00.520
+So I can quantify. You're obsessed with shadows.
+
+558
+00:26:00.520 --> 00:26:02.800
+Shadows. It's like, yeah, can I see a shadow?
+
+559
+00:26:02.800 --> 00:26:05.960
+Is a user doing something I didn't intend or was a system misconfigured
+
+560
+00:26:05.960 --> 00:26:08.000
+or whatever? Right. This is this is governance.
+
+561
+00:26:08.000 --> 00:26:09.080
+And there's a lot of money
+
+562
+00:26:09.080 --> 00:26:13.000
+made in governance and security, which is quantifying effectively risk.
+
+563
+00:26:13.040 --> 00:26:15.320
+And then there's the golden path, right.
+
+564
+00:26:15.320 --> 00:26:19.640
+And in all security solutions, in all dynamics, you always have.
+
+565
+00:26:19.680 --> 00:26:22.800
+Hey, here is how we're going to find all the risk.
+
+566
+00:26:23.280 --> 00:26:25.840
+Well, once we've identified risk, because a lot of the risk
+
+567
+00:26:25.840 --> 00:26:28.640
+is not people doing the wrong thing, they don't have the wrong intention.
+
+568
+00:26:28.640 --> 00:26:30.160
+They just don't know how to do the right thing.
+
+569
+00:26:30.160 --> 00:26:31.680
+That is like the secure pathway.
+
+570
+00:26:31.680 --> 00:26:34.400
+And then you have your solutions that are, what are the secure pathway.
+
+571
+00:26:34.400 --> 00:26:35.000
+Exactly.
+
+572
+00:26:35.000 --> 00:26:38.040
+And so you always in most markets and in most problem spaces
+
+573
+00:26:38.040 --> 00:26:40.240
+you have, let's go find and quantify all the risk.
+
+574
+00:26:40.240 --> 00:26:43.680
+And then you have, okay, here's the place we, we go, and, you know, over time
+
+575
+00:26:43.720 --> 00:26:46.200
+as markets consolidate they often tend to be the same thing but.
+
+576
+00:26:46.200 --> 00:26:48.280
+Moved on from the shadow to the road. Exactly.
+
+577
+00:26:48.280 --> 00:26:51.040
+But and the road is typically the infrastructure part.
+
+578
+00:26:51.040 --> 00:26:51.240
+Right.
+
+579
+00:26:51.240 --> 00:26:54.240
+And we saw that with the rise of social on the web,
+
+580
+00:26:54.360 --> 00:26:57.080
+with the rise of OAuth, do things like Auth0 come along?
+
+581
+00:26:57.080 --> 00:27:01.160
+Made it really easy for developers to build social login on their website
+
+582
+00:27:01.160 --> 00:27:03.440
+and user management, which turned out to be a really hard problem.
+
+583
+00:27:03.440 --> 00:27:05.320
+And so a lot of people, that's why that market exists.
+
+584
+00:27:05.320 --> 00:27:05.640
+And then
+
+585
+00:27:05.640 --> 00:27:09.680
+of course, we had for internal workflow, we had, like, things like Okta that rose
+
+586
+00:27:09.720 --> 00:27:10.560
+and it made real easy,
+
+587
+00:27:10.560 --> 00:27:12.680
+have a golden pathway for me to log into stuff.
+
+588
+00:27:12.680 --> 00:27:13.960
+And then you, of course,
+
+589
+00:27:13.960 --> 00:27:15.960
+had all your governance functionality that came as well. Right?
+
+590
+00:27:15.960 --> 00:27:19.720
+These are all kind of examples of places where you would sort of centrally define.
+
+591
+00:27:19.800 --> 00:27:22.720
+Exactly or sort of identity Europe in the case of the system, but
+
+592
+00:27:22.720 --> 00:27:25.960
+then you'd be able to kind of plug that in places.
+
+593
+00:27:26.080 --> 00:27:29.920
+And even with the rise of cloud, we had things like HashiCorp Vault
+
+594
+00:27:29.960 --> 00:27:31.720
+in Terraform that allowed me to configure
+
+595
+00:27:31.720 --> 00:27:35.000
+IAM systems, or provide a place for me to store long lived secrets. And so much.
+
+596
+00:27:35.040 --> 00:27:39.640
+The last era was about, where do I, where's the golden path? Right now
+
+597
+00:27:39.680 --> 00:27:45.240
+with the change, with the rise of agents, agents
+
+598
+00:27:45.320 --> 00:27:48.400
+basically break a lot of assumptions of how all those things work together,
+
+599
+00:27:48.440 --> 00:27:50.720
+because they kind of work across different systems.
+
+600
+00:27:50.720 --> 00:27:52.960
+They can work on behalf of your customers.
+
+601
+00:27:52.960 --> 00:27:55.600
+They can work on behalf of yourself. They can work on.
+
+602
+00:27:55.600 --> 00:27:58.560
+They can just be pieces of code that are running in your stack,
+
+603
+00:27:58.560 --> 00:28:01.640
+maintaining your software factory, deploying, debugging things.
+
+604
+00:28:01.840 --> 00:28:05.200
+You have all these different interactions that are no longer human driven,
+
+605
+00:28:05.200 --> 00:28:07.920
+but they do exist. And how do you manage that?
+
+606
+00:28:07.920 --> 00:28:12.560
+But the fundamental issue is what are the new technologies
+
+607
+00:28:12.560 --> 00:28:17.360
+or techniques that are coming out to help do the session mission attestation.
+
+608
+00:28:17.360 --> 00:28:19.240
+And so in OAuth
+
+609
+00:28:19.240 --> 00:28:23.240
+you have some movement there that's trying to, trying to take over OAuth.
+
+610
+00:28:23.280 --> 00:28:25.800
+Some of the stuff that Okta came up with is called Cross App Access.
+
+611
+00:28:25.800 --> 00:28:29.320
+It solves some of the problems with it, but it doesn't solve all things.
+
+612
+00:28:29.320 --> 00:28:31.640
+So that's ID-JAG for those that are watching.
+
+613
+00:28:31.640 --> 00:28:34.440
+And then on there's a.
+
+614
+00:28:34.440 --> 00:28:37.600
+Net new protocol called Agent Auth, written by Dick Hardt,
+
+615
+00:28:37.640 --> 00:28:42.200
+who has a net new approach on a protocol to try and solve these,
+
+616
+00:28:42.400 --> 00:28:46.040
+these mission session orientation, and move away from long lived secrets.
+
+617
+00:28:46.040 --> 00:28:48.440
+So those are some of the protocols that are emerging.
+
+618
+00:28:48.440 --> 00:28:52.280
+And then the different approaches today are, you're going to, is how do I find
+
+619
+00:28:52.280 --> 00:28:53.440
+and quantify
+
+620
+00:28:53.440 --> 00:28:55.200
+what risk I have, whether it's on my endpoint
+
+621
+00:28:55.200 --> 00:28:57.040
+and my production stack or my cloud accounts.
+
+622
+00:28:57.040 --> 00:28:59.080
+And then you sort of have your golden path things
+
+623
+00:28:59.080 --> 00:29:03.960
+of how do I actually enable my developers or my customers or my employees
+
+624
+00:29:03.960 --> 00:29:08.680
+to be able to find, build and use agents successfully in sort of the golden path?
+
+625
+00:29:08.720 --> 00:29:09.400
+Yeah. Okay.
+
+626
+00:29:09.400 --> 00:29:12.840
+So let me kind of echo back some, a little bit of that.
+
+627
+00:29:12.840 --> 00:29:15.760
+So like the old so you have the sort of broader challenges.
+
+628
+00:29:15.760 --> 00:29:19.840
+One of the projects around OAuth, it's about sort of allowing agents
+
+629
+00:29:19.840 --> 00:29:24.360
+identifying as agents, not masquerading as humans, to use today.
+
+630
+00:29:24.640 --> 00:29:26.320
+I guess we would have all seen hey,
+
+631
+00:29:26.320 --> 00:29:28.240
+ran the login and sort of opened up your browser.
+
+632
+00:29:28.240 --> 00:29:29.320
+You're making a film on it.
+
+633
+00:29:29.320 --> 00:29:34.280
+This is you authenticating as a human, then giving that key now to the agent instead.
+
+634
+00:29:34.320 --> 00:29:38.120
+Can we sort of create a protocol that allow the agent, allows the agents
+
+635
+00:29:38.120 --> 00:29:42.120
+to sort of authenticate as an agent and sort of have the appropriate. Yes.
+
+636
+00:29:42.160 --> 00:29:43.000
+Okay. So that makes sense.
+
+637
+00:29:43.000 --> 00:29:47.240
+And that's like a bit more of a sort of like a technical path
+
+638
+00:29:47.240 --> 00:29:50.560
+with some of the price identity, but it doesn't solve the sort of the, the,
+
+639
+00:29:50.680 --> 00:29:52.760
+the mission. Exactly problem.
+
+640
+00:29:52.760 --> 00:29:53.400
+Exactly.
+
+641
+00:29:53.400 --> 00:29:55.160
+Before, I guess the sort of the second bucket
+
+642
+00:29:55.160 --> 00:29:57.480
+is more around that sort of mission identity. Exactly.
+
+643
+00:29:57.480 --> 00:30:02.360
+And for the mission identity, like, where is the point in time in which
+
+644
+00:30:02.640 --> 00:30:07.800
+and who is involved in saying, fine, there's a mission, you've done it.
+
+645
+00:30:07.800 --> 00:30:12.280
+But like, what are the permissions that are allowed over here?
+
+646
+00:30:12.280 --> 00:30:14.800
+It seems untenable that that would be a human
+
+647
+00:30:14.800 --> 00:30:17.840
+that will come along every time and say, okay, fine.
+
+648
+00:30:17.840 --> 00:30:20.320
+I figure it out that what you're trying to do is compose an email.
+
+649
+00:30:20.320 --> 00:30:24.000
+You'll have these permissions versus, you know, you're optimizing a database.
+
+650
+00:30:24.000 --> 00:30:26.520
+So maybe you are allowed to modify an index. Exactly.
+
+651
+00:30:26.520 --> 00:30:29.400
+I think there's there's two parts to to this.
+
+652
+00:30:29.400 --> 00:30:33.520
+One is everybody individuals and companies,
+
+653
+00:30:33.560 --> 00:30:36.240
+more companies and individuals are going to have things that just say,
+
+654
+00:30:36.240 --> 00:30:39.280
+you know, no agent can do this without me being involved, right?
+
+655
+00:30:39.320 --> 00:30:42.320
+For me personally, it's probably spending over a certain amount of money
+
+656
+00:30:42.320 --> 00:30:43.600
+or deleting data, right?
+
+657
+00:30:43.600 --> 00:30:46.320
+Those are like if you're deleting I want to I want to make that decision.
+
+658
+00:30:46.320 --> 00:30:47.120
+Right. Because I care.
+
+659
+00:30:47.120 --> 00:30:50.200
+Or if you're sending an email, I actually do care deeply or.
+
+660
+00:30:50.240 --> 00:30:50.880
+Those are reasonable.
+
+661
+00:30:50.880 --> 00:30:52.840
+Those are not mission decisions though.
+
+662
+00:30:52.840 --> 00:30:54.560
+Like just ground rules.
+
+663
+00:30:54.560 --> 00:30:55.920
+Yeah, they're just ground rules.
+
+664
+00:30:55.920 --> 00:31:00.600
+Now when it comes to mission decisions, this is really where patterns like LLM
+
+665
+00:31:00.640 --> 00:31:03.400
+as a judge start to, start to emerge because you're, you're using,
+
+666
+00:31:03.400 --> 00:31:06.600
+you know, a reasoning engine to reason about whether something is reasonable.
+
+667
+00:31:06.600 --> 00:31:09.600
+And then ostensibly you basically based on this,
+
+668
+00:31:09.680 --> 00:31:11.600
+does the system think this is reasonable? Okay.
+
+669
+00:31:11.600 --> 00:31:15.600
+If it's not reasonable, now who decides what we do as a result? Is that
+
+670
+00:31:15.640 --> 00:31:18.320
+no, absolutely not, because it's hit some deterministic guardrail.
+
+671
+00:31:18.320 --> 00:31:19.880
+We say no, we'd never let delete.
+
+672
+00:31:19.880 --> 00:31:21.880
+Oh, it's trying to do X, right.
+
+673
+00:31:21.880 --> 00:31:23.480
+Should this go to the security team?
+
+674
+00:31:23.480 --> 00:31:24.400
+The security team
+
+675
+00:31:24.400 --> 00:31:28.240
+then has like a system that reviews it or should actually go back to the person
+
+676
+00:31:28.240 --> 00:31:32.360
+that's operating on behalf of and says, hey, this agent tried to do this thing.
+
+677
+00:31:32.440 --> 00:31:32.760
+Yeah.
+
+678
+00:31:32.760 --> 00:31:35.560
+Is this aligned with your what you were trying to get done right?
+
+679
+00:31:35.560 --> 00:31:38.800
+And the biggest challenge we have today when it comes to agent
+
+680
+00:31:38.880 --> 00:31:41.840
+security is how do we actually not end up with consent fatigue, right.
+
+681
+00:31:41.840 --> 00:31:45.400
+Like, the worst part about the yes, no, allow always dialog
+
+682
+00:31:45.400 --> 00:31:49.280
+is you just click yes because I'm not going to read it.
+
+683
+00:31:49.560 --> 00:31:49.840
+Right.
+
+684
+00:31:49.840 --> 00:31:51.360
+And that's always been one of the biggest challenges
+
+685
+00:31:51.360 --> 00:31:53.720
+in security is how do I have a security system
+
+686
+00:31:53.720 --> 00:31:57.840
+that only sounds the alarm when appropriate, relevant?
+
+687
+00:31:57.880 --> 00:32:00.000
+Exactly. Otherwise you lose all the signals.
+
+688
+00:32:00.000 --> 00:32:05.320
+So the mission componentry, one part of it is getting all the protocols
+
+689
+00:32:05.320 --> 00:32:08.920
+and the functionality in place so that you can sort of federate out.
+
+690
+00:32:08.960 --> 00:32:11.960
+What is it that this person said this thing's supposed to be doing?
+
+691
+00:32:11.960 --> 00:32:13.680
+And then the second component
+
+692
+00:32:13.680 --> 00:32:16.680
+is the system around that that can actually make judgment calls.
+
+693
+00:32:16.800 --> 00:32:20.680
+And the better the system around it is that making judgment calls,
+
+694
+00:32:20.720 --> 00:32:25.320
+the more, like, the less interrupts the users will have, right?
+
+695
+00:32:25.360 --> 00:32:27.800
+And a lower risk profile decision we made.
+
+696
+00:32:27.800 --> 00:32:30.320
+And that's more trust and a pathway to higher autonomy.
+
+697
+00:32:30.320 --> 00:32:31.800
+Yeah, yeah. Makes sense. Okay.
+
+698
+00:32:31.800 --> 00:32:32.640
+So you have to do that.
+
+699
+00:32:32.640 --> 00:32:35.440
+So, again, agents all the way down, something into it.
+
+700
+00:32:35.440 --> 00:32:36.800
+So you need the infrastructure.
+
+701
+00:32:36.800 --> 00:32:40.120
+We have these two open protocols that I guess are forming, right.
+
+702
+00:32:40.160 --> 00:32:42.000
+Like standards. Take a moment. Yes.
+
+703
+00:32:42.000 --> 00:32:46.960
+And, and then you have, I guess, kind of two new concepts,
+
+704
+00:32:46.960 --> 00:32:49.680
+which is you have these missions, you have to give them an identity
+
+705
+00:32:50.640 --> 00:32:53.400
+which is already like a little bit hard to sort of.
+
+706
+00:32:53.400 --> 00:32:54.680
+Wrap your head around. Yeah.
+
+707
+00:32:54.680 --> 00:32:57.160
+But then also you need to figure out what is the authorization,
+
+708
+00:32:57.160 --> 00:33:01.040
+what are the permissions, which will be a subset of the overall agent identity.
+
+709
+00:33:01.360 --> 00:33:02.680
+Exactly. So what are the.
+
+710
+00:33:02.680 --> 00:33:06.240
+Let's sort of get down then to the tools themselves that are available.
+
+711
+00:33:06.280 --> 00:33:06.480
+Right.
+
+712
+00:33:06.480 --> 00:33:08.400
+If I am
+
+713
+00:33:08.400 --> 00:33:12.040
+building agents and I'm sold, you know, like this is a problem.
+
+714
+00:33:12.040 --> 00:33:14.600
+This is a concern. Yes, I have this.
+
+715
+00:33:14.600 --> 00:33:16.120
+What are the tools available to me?
+
+716
+00:33:16.120 --> 00:33:16.520
+Yeah.
+
+717
+00:33:16.520 --> 00:33:18.440
+You know, today
+
+718
+00:33:18.440 --> 00:33:21.440
+there's this big battle in the ecosystem that I'm sure Guy has talked to
+
+719
+00:33:21.480 --> 00:33:22.000
+about with somebody.
+
+720
+00:33:22.000 --> 00:33:25.000
+There's this battle between CLI versus MCP, right?
+
+721
+00:33:25.000 --> 00:33:28.720
+And so we kind of have, you know, you have CLI tools
+
+722
+00:33:28.720 --> 00:33:32.360
+which very much have not, don't have any really auth system built into them.
+
+723
+00:33:32.360 --> 00:33:33.240
+And then you have MCP,
+
+724
+00:33:33.240 --> 00:33:36.200
+which, the nice thing about MCP is it comes out of the box with, like, OAuth support.
+
+725
+00:33:36.200 --> 00:33:39.040
+So in order to be an MCP you have to have OAuth support.
+
+726
+00:33:39.040 --> 00:33:42.840
+And that OAuth support gives a pathway for saying
+
+727
+00:33:43.800 --> 00:33:46.520
+is does this thing actually support some of the concepts that I talked about.
+
+728
+00:33:46.520 --> 00:33:46.960
+Right.
+
+729
+00:33:46.960 --> 00:33:50.880
+And there's there's two broad ecosystems where there are solutions
+
+730
+00:33:50.880 --> 00:33:52.240
+that only work for MCP.
+
+731
+00:33:52.240 --> 00:33:54.920
+And then there's some solutions that only work for CLIs.
+
+732
+00:33:54.920 --> 00:33:58.000
+And the question really is is that sufficient?
+
+733
+00:33:58.000 --> 00:34:01.600
+Because what we know is there's a set of agents, computers,
+
+734
+00:34:01.600 --> 00:34:05.040
+agents, specifically coding agents, that CLI tools are their bread and butter.
+
+735
+00:34:05.080 --> 00:34:06.800
+Right. They're just really good at it.
+
+736
+00:34:06.800 --> 00:34:07.840
+And that makes them fast.
+
+737
+00:34:07.840 --> 00:34:12.920
+And it's one of the reasons that, like, Opus and GPT-5
+
+738
+00:34:12.960 --> 00:34:15.200
+really were the breakthrough models on these computer
+
+739
+00:34:15.200 --> 00:34:17.400
+use things and led us to new level of autonomy.
+
+740
+00:34:17.400 --> 00:34:19.400
+And then you have sort of MCP only.
+
+741
+00:34:19.400 --> 00:34:24.080
+And the question is to think about what is the agent,
+
+742
+00:34:24.120 --> 00:34:28.120
+what type of tools is the agent need to have access to,
+
+743
+00:34:28.120 --> 00:34:31.840
+and what type of agent should have running in my ecosystem to do that?
+
+744
+00:34:31.840 --> 00:34:35.920
+And how do I integrate that if if it's an agent that is operating inside
+
+745
+00:34:35.920 --> 00:34:39.200
+my company, I probably want that to integrate with my IDP
+
+746
+00:34:39.600 --> 00:34:43.520
+and I want but I want to think of the IDP slightly
+
+747
+00:34:43.520 --> 00:34:46.440
+differently for agents and for users, because they're actually slightly
+
+748
+00:34:46.440 --> 00:34:49.240
+different problem statements, broadly speaking.
+
+749
+00:34:49.240 --> 00:34:54.600
+And then the tools on the market tend to be like an IDP solution.
+
+750
+00:34:54.840 --> 00:34:57.040
+There's some tools in the market that look like an MCP gateway,
+
+751
+00:34:57.040 --> 00:35:00.240
+which is a common topic, very much designed for MCP.
+
+752
+00:35:00.600 --> 00:35:02.080
+It's a giant proxy.
+
+753
+00:35:02.080 --> 00:35:04.000
+And there's other things that are designed
+
+754
+00:35:04.000 --> 00:35:05.960
+specifically for solving this sort of agent
+
+755
+00:35:05.960 --> 00:35:08.040
+agent communication in a federated manner.
+
+756
+00:35:08.040 --> 00:35:10.560
+And those are the two like landscape solutions at the moment.
+
+757
+00:35:10.560 --> 00:35:14.080
+And then, of course, you have your traditional last generation
+
+758
+00:35:14.120 --> 00:35:17.160
+sort of vendors like your Privileged Access Management.
+
+759
+00:35:17.160 --> 00:35:18.680
+That was very, very hot topic.
+
+760
+00:35:18.680 --> 00:35:24.040
+So how do I give a human access to like a Postgres running in my Amazon or my GCP?
+
+761
+00:35:24.320 --> 00:35:25.880
+Very big important problem.
+
+762
+00:35:25.880 --> 00:35:30.120
+Things like a CyberArk, that was bought by Palo Alto, was a good example of that.
+
+763
+00:35:30.120 --> 00:35:31.880
+And those are sort of the buckets.
+
+764
+00:35:31.880 --> 00:35:36.240
+And then of course you have your I'm building an agent that someone uses.
+
+765
+00:35:36.280 --> 00:35:39.240
+And how does my agent or my MCP or whatever
+
+766
+00:35:39.240 --> 00:35:42.480
+allow users to authenticate so it can carry down identity and access.
+
+767
+00:35:42.480 --> 00:35:44.520
+And those are the broad buckets of problems.
+
+768
+00:35:44.520 --> 00:35:44.800
+So like
+
+769
+00:35:44.800 --> 00:35:48.480
+everything that you described right now is very like enterprise solutions for it.
+
+770
+00:35:48.640 --> 00:35:50.640
+So in the organization you figure out
+
+771
+00:35:50.640 --> 00:35:54.080
+how do I represent agent identities in my IDP? Yes.
+
+772
+00:35:54.080 --> 00:36:00.080
+How do I sort of systematically control access to my systems by routing.
+
+773
+00:36:00.280 --> 00:36:03.160
+Kind of, or blessing, some sort of access granter.
+
+774
+00:36:03.160 --> 00:36:05.440
+Yeah, exactly.
+
+775
+00:36:05.440 --> 00:36:06.080
+Exactly.
+
+776
+00:36:06.080 --> 00:36:10.480
+Having it be accessed via CLI or SDK and run along.
+
+777
+00:36:10.680 --> 00:36:13.400
+So those are very like enterprise wide.
+
+778
+00:36:13.400 --> 00:36:16.360
+Are the solutions all, like, some of the problems that you've described
+
+779
+00:36:16.360 --> 00:36:20.280
+are things that I might as an individual or as a team also say, well,
+
+780
+00:36:20.280 --> 00:36:23.400
+within, within my sort of processes that I'm running here,
+
+781
+00:36:23.400 --> 00:36:27.560
+I want some sort of mission identity, mission permissions, definitions on it.
+
+782
+00:36:27.560 --> 00:36:31.800
+Are there solutions that also work within, within that resolution?
+
+783
+00:36:31.840 --> 00:36:33.600
+I mean, certainly that's something we're trying to do with
+
+784
+00:36:33.600 --> 00:36:36.520
+Keycard, is trying to empower teams to be able to just quickly and easily
+
+785
+00:36:36.520 --> 00:36:38.920
+pick up agents, but also quickly and easily build their own agents
+
+786
+00:36:38.920 --> 00:36:42.920
+where they're not constrained, whether it's MCP or CLI or a specific scale.
+
+787
+00:36:42.920 --> 00:36:44.680
+We're trying to build it across.
+
+788
+00:36:44.680 --> 00:36:49.000
+And so we sort of look at it's it's actually not
+
+789
+00:36:49.040 --> 00:36:53.240
+MCP or CLI, it's both, but it's also not PAM.
+
+790
+00:36:53.240 --> 00:36:54.440
+It's all three combined.
+
+791
+00:36:54.440 --> 00:36:55.480
+And how
+
+792
+00:36:55.480 --> 00:36:57.160
+you bring these different identities
+
+793
+00:36:57.160 --> 00:36:59.480
+and these different postures into one system
+
+794
+00:36:59.480 --> 00:37:02.680
+that's really easy to adopt and build with is how we think about the problem.
+
+795
+00:37:02.680 --> 00:37:04.080
+And that's where we're coming from.
+
+796
+00:37:04.080 --> 00:37:05.800
+And, you know, I think the challenge.
+
+797
+00:37:05.800 --> 00:37:08.040
+Tell us a little bit more about that, which is how would you.
+
+798
+00:37:08.040 --> 00:37:10.120
+So if you were to use Keycard. Yeah.
+
+799
+00:37:10.120 --> 00:37:11.400
+What does that entail.
+
+800
+00:37:11.400 --> 00:37:14.920
+You know, if I'm and if you well I guess you sort of choose
+
+801
+00:37:15.080 --> 00:37:18.080
+whether that sort of like if I'm a, you know, the big boss kind of
+
+802
+00:37:18.880 --> 00:37:20.920
+kind of system or if I'm a developer. Developer.
+
+803
+00:37:20.920 --> 00:37:21.080
+Yeah.
+
+804
+00:37:21.080 --> 00:37:24.960
+But what does it sort of feel like, you know, like, what am I doing?
+
+805
+00:37:25.000 --> 00:37:25.640
+Yeah, absolutely.
+
+806
+00:37:25.640 --> 00:37:29.000
+So, the way we've architected our solution is
+
+807
+00:37:29.040 --> 00:37:32.280
+if I'm, you know, using Claude Code, I want to give access to some things.
+
+808
+00:37:32.280 --> 00:37:38.160
+I download the Keycard CLI, I can now run Claude or Cursor
+
+809
+00:37:38.160 --> 00:37:42.320
+or Pi or insert your, your harness of choice, with Keycard.
+
+810
+00:37:42.360 --> 00:37:44.000
+We integrate with the hook system.
+
+811
+00:37:44.000 --> 00:37:48.560
+We then, you basically tell Keycard, hey, this agent can access these things
+
+812
+00:37:48.560 --> 00:37:50.000
+and it could be a set of MCPs,
+
+813
+00:37:50.000 --> 00:37:54.320
+or it could be a set of CLI tools or tool calls on my behalf.
+
+814
+00:37:54.320 --> 00:37:59.120
+And then we make, from that point on, no longer do you actually have to. Yes.
+
+815
+00:37:59.120 --> 00:38:02.520
+No, allow always consent dialog. Keycard makes those determinations for you.
+
+816
+00:38:02.520 --> 00:38:04.880
+And then you get to say you know what?
+
+817
+00:38:04.880 --> 00:38:07.040
+If it's a delete, I should probably review.
+
+818
+00:38:07.040 --> 00:38:08.240
+And that thing, whether that thing
+
+819
+00:38:08.240 --> 00:38:12.160
+is running on my local device or if it's running in a sandbox
+
+820
+00:38:12.160 --> 00:38:15.120
+someplace or it's cloud, it works the same way across all.
+
+821
+00:38:15.120 --> 00:38:19.160
+So one insertion point to allow your to allow your agent to evolve
+
+822
+00:38:19.160 --> 00:38:21.200
+into a software factory and have autonomy.
+
+823
+00:38:21.200 --> 00:38:23.040
+And then if you're on the flip side, I'm
+
+824
+00:38:23.040 --> 00:38:26.080
+trying to build a service, I'm trying to build an agent or a tool
+
+825
+00:38:26.320 --> 00:38:27.520
+that agents can talk to
+
+826
+00:38:27.520 --> 00:38:30.000
+with the latest, greatest protocols without having to be an auth expert.
+
+827
+00:38:30.000 --> 00:38:34.240
+You can use our SDKs, which then allow you to build those types of things
+
+828
+00:38:34.240 --> 00:38:35.280
+that your agents can.
+
+829
+00:38:35.280 --> 00:38:35.640
+With this.
+
+830
+00:38:35.640 --> 00:38:40.160
+Well, and so in that context, you are providing a means of some sort
+
+831
+00:38:40.160 --> 00:38:45.680
+of central definition of logic, I guess, or sort of like the decision making.
+
+832
+00:38:45.720 --> 00:38:49.120
+Yeah. And then you are connecting that.
+
+833
+00:38:49.200 --> 00:38:52.960
+Exactly like the two, the two value propositions are one.
+
+834
+00:38:53.000 --> 00:38:55.640
+Hey, here's like a smart engine that can make good decisions
+
+835
+00:38:55.640 --> 00:38:58.560
+about who should approve what, and is able to take your input.
+
+836
+00:38:58.560 --> 00:39:01.920
+The second is, hey, I kind of handle the proliferation of agents.
+
+837
+00:39:01.920 --> 00:39:02.840
+You have many, many agents.
+
+838
+00:39:02.840 --> 00:39:06.640
+You have the same kind of logic applied at various places.
+
+839
+00:39:06.680 --> 00:39:07.400
+Exactly.
+
+840
+00:39:08.480 --> 00:39:11.080
+And from there, connect that up to like some
+
+841
+00:39:11.080 --> 00:39:16.480
+the parent system of, you know, how does a, how does sort of a central platform team
+
+842
+00:39:17.040 --> 00:39:20.720
+convey down some of those decisions into different desktops?
+
+843
+00:39:20.760 --> 00:39:21.280
+Exactly.
+
+844
+00:39:21.280 --> 00:39:24.960
+So, how does, we really are focused on how do we enable that individual developer
+
+845
+00:39:24.960 --> 00:39:28.400
+to find lots of success, then how we let them graduate from that
+
+846
+00:39:28.400 --> 00:39:32.040
+to a team of people going together across, independent of the harness.
+
+847
+00:39:32.080 --> 00:39:33.920
+Right? Yeah. Access.
+
+848
+00:39:33.920 --> 00:39:35.400
+What resources and what circumstance.
+
+849
+00:39:35.400 --> 00:39:37.440
+And over time, how does that give sort of that
+
+850
+00:39:37.440 --> 00:39:39.960
+centralized security team, the platform team, both the enablement
+
+851
+00:39:39.960 --> 00:39:42.240
+function of how do I roll this out across the entire organization,
+
+852
+00:39:42.240 --> 00:39:45.440
+but also has a security team get the confidence to say, you know what,
+
+853
+00:39:45.480 --> 00:39:49.080
+we can say yes to this high, high degree of autonomy
+
+854
+00:39:49.200 --> 00:39:53.040
+because we feel like we have the security in place that we require to do it.
+
+855
+00:39:53.120 --> 00:39:54.920
+Yeah. Hey everyone!
+
+856
+00:39:54.920 --> 00:39:57.200
+Hope you're enjoying the episode so far.
+
+857
+00:39:57.200 --> 00:40:01.080
+Our team is working really hard behind the scenes to bring you the best guests,
+
+858
+00:40:01.080 --> 00:40:05.360
+so we can have the most informative conversations about agentic development,
+
+859
+00:40:05.400 --> 00:40:07.040
+whether that's talking about the latest
+
+860
+00:40:07.040 --> 00:40:10.840
+tools, the most efficient workflows, or defining best practices.
+
+861
+00:40:10.840 --> 00:40:14.720
+But for whatever reason, many of you have yet to subscribe to the channel.
+
+862
+00:40:14.760 --> 00:40:17.800
+If you're enjoying the podcast and want us to continue to bring you
+
+863
+00:40:17.800 --> 00:40:19.080
+the very best content,
+
+864
+00:40:19.080 --> 00:40:21.560
+please do us a favor and hit that subscribe button.
+
+865
+00:40:21.560 --> 00:40:24.920
+It really does make a difference and lets us continue to improve
+
+866
+00:40:24.920 --> 00:40:29.200
+the quality of our guests and build an even better product for you.
+
+867
+00:40:29.360 --> 00:40:31.400
+All right, back to the episode.
+
+868
+00:40:31.400 --> 00:40:32.560
+Yeah. And so, cool.
+
+869
+00:40:32.560 --> 00:40:34.440
+So I love that. And I love the sort of the dev
+
+870
+00:40:34.440 --> 00:40:36.920
+taste of sort of, sort of the Keycard stuff on it.
+
+871
+00:40:36.920 --> 00:40:37.360
+And it is,
+
+872
+00:40:37.360 --> 00:40:37.520
+you know,
+
+873
+00:40:37.520 --> 00:40:40.040
+like I'm a believer in the bottom up, although with the it's not necessarily
+
+874
+00:40:40.040 --> 00:40:42.440
+bottom up, but that sort of developer experience clearly.
+
+875
+00:40:42.440 --> 00:40:46.360
+Also the world has a lot of sort of a passion for,
+
+876
+00:40:46.400 --> 00:40:48.920
+for central control systems to come along.
+
+877
+00:40:48.920 --> 00:40:51.040
+And I guess that's the tension that sort of plays out.
+
+878
+00:40:51.040 --> 00:40:52.640
+Neither is like right or wrong.
+
+879
+00:40:52.640 --> 00:40:55.040
+It's just about what is the emphasis at a different time?
+
+880
+00:40:55.040 --> 00:40:59.400
+How much do you indeed kind of define the guardrails in a broad, broad sense.
+
+881
+00:40:59.400 --> 00:41:02.280
+But I think a key, a key takeaway,
+
+882
+00:41:02.280 --> 00:41:04.840
+you know, the many, many, many kind of interesting things
+
+883
+00:41:04.840 --> 00:41:07.160
+and kind of all this description and things for outlining that.
+
+884
+00:41:07.160 --> 00:41:10.440
+But this notion of these mission identities
+
+885
+00:41:10.440 --> 00:41:16.560
+and agentically decided permission set for that.
+
+886
+00:41:16.920 --> 00:41:20.280
+From there, the ability to define those, enforce them properly,
+
+887
+00:41:20.320 --> 00:41:24.360
+observe them, improve them over time, reason around them, and enforce them.
+
+888
+00:41:24.400 --> 00:41:27.440
+All of those are probably evolutions of the system.
+
+889
+00:41:27.440 --> 00:41:31.960
+Over time, that core new mission identity and permissions are sort of a new entity.
+
+890
+00:41:32.200 --> 00:41:32.640
+Exactly.
+
+891
+00:41:32.640 --> 00:41:35.040
+That's the final thing that we're focused on at Key
+
+892
+00:41:35.040 --> 00:41:38.240
+card is, how do you understand what agents are doing?
+
+893
+00:41:38.280 --> 00:41:38.520
+Yeah.
+
+894
+00:41:38.520 --> 00:41:42.440
+How do you allow agents to do things without having to artificially define
+
+895
+00:41:42.440 --> 00:41:44.360
+all the strict, long lived policy?
+
+896
+00:41:44.360 --> 00:41:46.360
+And that's what we do.
+
+897
+00:41:46.360 --> 00:41:49.880
+You get there by being able to describe high level, like, you know what,
+
+898
+00:41:49.920 --> 00:41:53.160
+these are the situations where I'm really not okay with an agent doing something.
+
+899
+00:41:53.160 --> 00:41:54.640
+For me, it's a lot about deletion.
+
+900
+00:41:54.640 --> 00:41:58.400
+And in all other circumstances, I'm okay with a system
+
+901
+00:41:58.400 --> 00:42:00.200
+making the judgment call on my behalf.
+
+902
+00:42:00.200 --> 00:42:01.000
+But whether it's allowed.
+
+903
+00:42:01.000 --> 00:42:04.440
+And that's how we can have this sort of high degree of how we can move towards
+
+904
+00:42:04.440 --> 00:42:08.240
+high degree, higher degree of autonomy without bad downstream things happening.
+
+905
+00:42:08.280 --> 00:42:12.840
+And one of the biggest challenges with that, talking to a lot of,
+
+906
+00:42:12.880 --> 00:42:16.560
+in the enterprise, we're using individual devs, is this is great.
+
+907
+00:42:16.880 --> 00:42:18.920
+Like conceptually it's great, but how do I roll this out?
+
+908
+00:42:18.920 --> 00:42:20.840
+And that's where like high level
+
+909
+00:42:20.840 --> 00:42:24.840
+policy combined with, like, the LLM as a judge feature helps people see.
+
+910
+00:42:24.880 --> 00:42:28.160
+Oh, okay. So I'm not sitting there. Yeah.
+
+911
+00:42:28.200 --> 00:42:30.000
+Artificially defining hundreds and hundreds
+
+912
+00:42:30.000 --> 00:42:33.560
+and hundreds of lines of policy files, which was what we learned.
+
+913
+00:42:33.600 --> 00:42:34.920
+I think there are a lot of security tools.
+
+914
+00:42:34.920 --> 00:42:37.960
+And last generation is that that's where deployment went wrong and failed.
+
+915
+00:42:38.000 --> 00:42:39.040
+Yeah. Yeah, yeah.
+
+916
+00:42:39.040 --> 00:42:42.200
+Because it's not like when it came to humans, we were good.
+
+917
+00:42:42.240 --> 00:42:43.720
+Exactly.
+
+918
+00:42:43.720 --> 00:42:45.280
+Like. No, we were bad. Yeah.
+
+919
+00:42:45.280 --> 00:42:47.280
+It's like a bad problem. Yeah.
+
+920
+00:42:47.280 --> 00:42:51.200
+And I think the reality of of, of kind of many,
+
+921
+00:42:51.200 --> 00:42:54.760
+many aspects of technology is the problems that were a nuisance.
+
+922
+00:42:54.760 --> 00:42:58.720
+But we can kind of kind of get by with in the pre agent era.
+
+923
+00:42:58.720 --> 00:43:01.360
+But they were not great. The best teams handled them.
+
+924
+00:43:01.360 --> 00:43:04.000
+You know, those are now intolerable. Exactly.
+
+925
+00:43:04.000 --> 00:43:04.720
+The agent.
+
+926
+00:43:04.720 --> 00:43:08.000
+I often I often say to people that the best practices of cloud
+
+927
+00:43:08.000 --> 00:43:11.040
+are now base requirements for, for agents.
+
+928
+00:43:11.040 --> 00:43:13.880
+And we certainly seen those sandboxes and cloud environments and everything
+
+929
+00:43:13.880 --> 00:43:15.080
+and still true about.
+
+930
+00:43:15.080 --> 00:43:18.560
+All we're good before, but, and the same was true for like waterfall to, to cloud.
+
+931
+00:43:18.600 --> 00:43:20.080
+That's true as well.
+
+932
+00:43:20.080 --> 00:43:21.080
+Yeah. Yes.
+
+933
+00:43:21.080 --> 00:43:22.040
+So I guess
+
+934
+00:43:22.040 --> 00:43:26.040
+kind of before we close off here, I'll ask one foolish thing, which is the future.
+
+935
+00:43:26.160 --> 00:43:26.640
+I love it.
+
+936
+00:43:26.640 --> 00:43:29.280
+I love to predict the future. I do this all the time. Yeah.
+
+937
+00:43:29.280 --> 00:43:33.320
+So I mean, one aspect of it is with all this identity and evolutions of it,
+
+938
+00:43:33.360 --> 00:43:35.360
+you know, what is the transition period to it
+
+939
+00:43:35.360 --> 00:43:37.080
+and what is immediately caring and all that.
+
+940
+00:43:37.080 --> 00:43:40.440
+But if we if we leapfrog all of that and we say like three years from now,
+
+941
+00:43:40.480 --> 00:43:42.680
+yeah, feels like a lifetime. Away.
+
+942
+00:43:42.680 --> 00:43:46.120
+What do you think will be the sort of the state
+
+943
+00:43:46.120 --> 00:43:50.400
+of, of the ecosystem when it comes to how do we define these identities.
+
+944
+00:43:50.440 --> 00:43:51.880
+Yeah, I think I think there's a couple of things.
+
+945
+00:43:51.880 --> 00:43:57.280
+One is, first and foremost, new protocols will actually have been deployed.
+
+946
+00:43:57.320 --> 00:43:57.560
+Right.
+
+947
+00:43:57.560 --> 00:43:59.760
+And so right now we're really sitting on last generations
+
+948
+00:43:59.760 --> 00:44:01.400
+like OAuth-like implementations.
+
+949
+00:44:01.400 --> 00:44:02.840
+And it turns out most of them are not very good.
+
+950
+00:44:02.840 --> 00:44:05.840
+And we're seeing a lot of that when, you know, you go using MCP
+
+951
+00:44:06.040 --> 00:44:09.080
+from some of your favorite providers, you're like, well, why does this not work
+
+952
+00:44:09.120 --> 00:44:10.640
+the way that I actually thought it would work?
+
+953
+00:44:10.640 --> 00:44:11.720
+Why does this require all this?
+
+954
+00:44:11.720 --> 00:44:16.240
+I think, I think the future of the internet and such, agents will make everything
+
+955
+00:44:16.280 --> 00:44:19.200
+feel pluggable, and interoperability will be incredibly important.
+
+956
+00:44:19.200 --> 00:44:22.320
+And you'll see lots of companies really want
+
+957
+00:44:22.360 --> 00:44:25.240
+because they want to have an agent forward experience.
+
+958
+00:44:25.240 --> 00:44:29.000
+They'll really make interoperability across agent clients a high priority,
+
+959
+00:44:29.000 --> 00:44:30.400
+which means that, like most people
+
+960
+00:44:30.400 --> 00:44:34.520
+will be focused on actually building up net new auth components to support this.
+
+961
+00:44:34.520 --> 00:44:37.680
+And that will then, from an end user perspective, make actually pulling
+
+962
+00:44:37.680 --> 00:44:40.920
+a bunch of tools together so much easier and so much better.
+
+963
+00:44:40.960 --> 00:44:44.880
+I think that on the flip side, what we'll see is specifically in the
+
+964
+00:44:44.880 --> 00:44:49.040
+enterprise, we're going to see people move where there used to be a lot of silos,
+
+965
+00:44:49.040 --> 00:44:53.000
+and those silos are driven by how hard it was to write policy to less silos
+
+966
+00:44:53.000 --> 00:44:56.200
+and higher degrees of productivity and higher degrees of context sharing,
+
+967
+00:44:56.400 --> 00:45:00.400
+both because there's huge promise, but also because the identity and access
+
+968
+00:45:00.400 --> 00:45:03.000
+systems will upgrade to the point where allows that interoperability
+
+969
+00:45:03.000 --> 00:45:05.480
+and the enterprise will allow these things to communicate to each other,
+
+970
+00:45:05.480 --> 00:45:08.480
+while the security team will have the things that they need to say
+
+971
+00:45:08.520 --> 00:45:11.560
+to keep the company secure, which is often been part of the reason
+
+972
+00:45:11.560 --> 00:45:13.240
+that those systems didn't connect, because they didn't
+
+973
+00:45:13.240 --> 00:45:15.480
+have a good way to actually manage information sharing.
+
+974
+00:45:15.480 --> 00:45:18.000
+Yeah. That's like a very optimistic view of the future.
+
+975
+00:45:18.000 --> 00:45:20.720
+I know the protocols will be like it's not a given that standards
+
+976
+00:45:20.720 --> 00:45:24.160
+will be defined in three years on it, and the sort of the system will do it.
+
+977
+00:45:24.240 --> 00:45:25.800
+So that is definitely the sort of the aspiration
+
+978
+00:45:25.800 --> 00:45:30.160
+which is these systems will, will, and I guess I guess kind of the, the, the,
+
+979
+00:45:30.480 --> 00:45:34.000
+the driver is the belief that just like agents are making sufficiently
+
+980
+00:45:34.040 --> 00:45:36.880
+forcing function, that we have no option but to. Exactly.
+
+981
+00:45:36.880 --> 00:45:40.000
+And that's certainly been the history of identity and access for the last
+
+982
+00:45:40.000 --> 00:45:45.000
+30 years is like, it's not the consumer that is really forced the evolution.
+
+983
+00:45:45.000 --> 00:45:49.600
+It's excluding online shopping with TLS, it really has been the enterprise
+
+984
+00:45:49.840 --> 00:45:51.560
+that has driven the requirement because what they want
+
+985
+00:45:51.560 --> 00:45:53.920
+is a productivity gains, or they have the security requirements
+
+986
+00:45:53.920 --> 00:45:57.280
+and they go out and say to all their vendors, yeah, you really need
+
+987
+00:45:57.320 --> 00:46:02.560
+you have to implement this, like for me to keep spending my $25 million with you.
+
+988
+00:46:02.720 --> 00:46:05.520
+And of course, the vendors say, well, we're not turning that money away.
+
+989
+00:46:05.520 --> 00:46:08.040
+We really need that revenue. So we're going to go implement it.
+
+990
+00:46:08.040 --> 00:46:10.080
+And also because all over enterprise folks are asking for it.
+
+991
+00:46:10.080 --> 00:46:14.280
+And I think what's unique about this era of of agents
+
+992
+00:46:14.280 --> 00:46:17.760
+specifically is we're seeing agents at work
+
+993
+00:46:17.840 --> 00:46:23.040
+be adopted much faster, with much higher degrees of ROI than agents at home.
+
+994
+00:46:23.040 --> 00:46:25.880
+And, you know, that's an inversion of some things
+
+995
+00:46:25.880 --> 00:46:28.880
+we've seen previously, but it's certainly true now.
+
+996
+00:46:28.880 --> 00:46:30.600
+And so I think as a result of that,
+
+997
+00:46:30.600 --> 00:46:34.400
+that will force like the the security stack, the next generation
+
+998
+00:46:34.400 --> 00:46:38.520
+security stack to evolve much faster than I would have typically suggested.
+
+999
+00:46:38.520 --> 00:46:40.240
+Yeah. I think that's a good look.
+
+1000
+00:46:40.240 --> 00:46:41.560
+I think I relate to that.
+
+1001
+00:46:41.560 --> 00:46:44.800
+Maybe it's like a little bit optimistic on it, but I think nothing is better.
+
+1002
+00:46:44.840 --> 00:46:46.480
+Like, it's a strong forcing function,
+
+1003
+00:46:46.480 --> 00:46:49.440
+that it is definitely well fueled from a VC.
+
+1004
+00:46:49.440 --> 00:46:52.120
+The main of it in terms of funding the transition,
+
+1005
+00:46:52.120 --> 00:46:54.120
+probably because of this sort of urgency. Exactly.
+
+1006
+00:46:54.120 --> 00:46:55.080
+Yeah, yeah.
+
+1007
+00:46:55.080 --> 00:46:57.720
+Thanks a lot for coming in and demystifying,
+
+1008
+00:46:57.720 --> 00:47:01.000
+kind of helping us understand identity on it.
+
+1009
+00:47:01.000 --> 00:47:02.280
+Looking forward to seeing,
+
+1010
+00:47:02.280 --> 00:47:06.400
+you know, Keycard, and in general kind of just rolled out, mature for it.
+
+1011
+00:47:06.440 --> 00:47:08.520
+Absolutely. So thanks a lot for coming in. Thanks for having me.
+
+1012
+00:47:08.520 --> 00:47:11.520
+And if you're interested in Keycard, you can find us at keycard.ai.
+
+1013
+00:47:11.520 --> 00:47:13.120
+And we'd happy to show you a demo and help
+
+1014
+00:47:13.120 --> 00:47:16.440
+you see how you can adopt coding agents and build your own agents at scale.
+
+1015
+00:47:16.480 --> 00:47:17.320
+Very cool.
+
+1016
+00:47:17.320 --> 00:47:20.760
+And thanks everybody for tuning in and I hope you join us for the next one.
+
+1017
+00:47:21.960 --> 00:47:23.640
+The AI Native Dev is brought to you
+
+1018
+00:47:23.640 --> 00:47:26.640
+by Tessl, the package manager for skills and context.
+
+1019
+00:47:26.680 --> 00:47:29.800
+Your hosts are Guy Podjarny and me, Simon Maple.
+
+1020
+00:47:29.840 --> 00:47:31.640
+Our producer is Tom Dowler.
+
+1021
+00:47:31.640 --> 00:47:34.960
+The AI Native Dev is not just a podcast, it's a community.
+
+1022
+00:47:35.000 --> 00:47:38.640
+And we host monthly meetups at the Tessl offices in central London.
+
+1023
+00:47:38.680 --> 00:47:43.640
+Visit tessl.io/community to learn more and I hope to see you there.

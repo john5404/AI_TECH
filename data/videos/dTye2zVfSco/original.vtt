@@ -1,0 +1,2213 @@
+WEBVTT
+
+1
+00:00:00.760 --> 00:00:02.320
+I'm bored to do the same stuff.
+
+2
+00:00:02.320 --> 00:00:06.800
+And we are living in the AI era, so why not to try to use
+
+3
+00:00:06.800 --> 00:00:09.840
+all these tools that we have available?
+
+4
+00:00:09.840 --> 00:00:12.080
+And this is literally what happens.
+
+5
+00:00:12.080 --> 00:00:17.040
+So this is like one of your merge requests from our like production GitLab
+
+6
+00:00:17.320 --> 00:00:22.880
+that from the beginning till the end one developer and a bot.
+
+7
+00:00:22.880 --> 00:00:26.440
+And it was like merge without human interaction
+
+8
+00:00:26.440 --> 00:00:29.600
+what we're going to talk today is about like
+
+9
+00:00:29.640 --> 00:00:32.640
+six things that you can do
+
+10
+00:00:32.920 --> 00:00:36.840
+maybe like in a week and do something similar in your company.
+
+11
+00:00:43.120 --> 00:00:44.120
+Oh, no. Oh!
+
+12
+00:00:45.560 --> 00:00:46.560
+Welcome today.
+
+13
+00:00:46.560 --> 00:00:47.480
+So my name is Serhii.
+
+14
+00:00:47.480 --> 00:00:50.640
+I'm currently an engineer manager at Marks &amp; Spencer.
+
+15
+00:00:50.640 --> 00:00:54.160
+But for the next 30 minutes I will be talking a bit about different
+
+16
+00:00:54.200 --> 00:01:00.120
+topic in my previous company that we were doing AI powered code review.
+
+17
+00:01:00.560 --> 00:01:02.840
+So it was a legal tech SaaS.
+
+18
+00:01:02.840 --> 00:01:06.320
+And we're going to talk about three different things, like how we decided
+
+19
+00:01:06.320 --> 00:01:10.920
+with the tools, how we build circuit, and how we work with the bronze.
+
+20
+00:01:10.920 --> 00:01:15.280
+And of course, like a lot about context, how we work with the context, what models
+
+21
+00:01:15.280 --> 00:01:20.800
+we choose, how we choose the models and actually talk about the price.
+
+22
+00:01:21.160 --> 00:01:25.920
+So where it actually all started and it started with just a message.
+
+23
+00:01:26.160 --> 00:01:30.840
+I think that week I was doing the same code
+
+24
+00:01:30.840 --> 00:01:34.840
+review message like for the fourth time in a row in the week.
+
+25
+00:01:34.840 --> 00:01:37.320
+So I was like, I'm bored to do the same stuff.
+
+26
+00:01:37.320 --> 00:01:41.800
+And we are living in the AI era, so why not to try to use
+
+27
+00:01:41.800 --> 00:01:44.840
+all these tools that we have available?
+
+28
+00:01:44.840 --> 00:01:47.920
+And I think at that point of time, Code Rabbit
+
+29
+00:01:48.000 --> 00:01:51.320
+was quite popular on X or X Twitter.
+
+30
+00:01:51.360 --> 00:01:54.600
+And I was like, do you want to give it a try?
+
+31
+00:01:55.240 --> 00:01:59.280
+One of the important things that was considered is
+
+32
+00:01:59.320 --> 00:02:03.600
+we need to have self-managed instance, because we have a lot
+
+33
+00:02:03.640 --> 00:02:08.000
+of different compliances and some different stuff. So
+
+34
+00:02:09.240 --> 00:02:11.640
+in the months we actually shipped something
+
+35
+00:02:11.640 --> 00:02:14.640
+and I'm going to talk a bit more.
+
+36
+00:02:15.160 --> 00:02:19.280
+So I usually try to stick everything with the data that we have.
+
+37
+00:02:19.320 --> 00:02:23.320
+And I was thinking like, is it only me who have the same issue
+
+38
+00:02:23.320 --> 00:02:24.680
+again and again and again?
+
+39
+00:02:24.680 --> 00:02:27.800
+So I just get the data for the last
+
+40
+00:02:27.840 --> 00:02:31.880
+like a quarter, and there was a lot around like 2000 merge requests.
+
+41
+00:02:31.880 --> 00:02:34.880
+And I was trying to find do we have like
+
+42
+00:02:34.920 --> 00:02:38.120
+a lot of repeated stuff what our like engineers.
+
+43
+00:02:38.200 --> 00:02:39.520
+Right. Again and again.
+
+44
+00:02:39.520 --> 00:02:45.240
+And actually it was so I just put like this five, five
+
+45
+00:02:46.320 --> 00:02:47.520
+top categories.
+
+46
+00:02:47.520 --> 00:02:53.640
+So it was about null safety test gaps or crossing concerns and all the things.
+
+47
+00:02:53.640 --> 00:02:58.280
+So I was like, all right, so where are we gonna go from there?
+
+48
+00:02:58.280 --> 00:03:01.280
+And how we actually can say
+
+49
+00:03:01.760 --> 00:03:04.880
+how much money and time we waste.
+
+50
+00:03:04.920 --> 00:03:08.480
+So we have 200 developers.
+
+51
+00:03:08.480 --> 00:03:12.320
+We have hundreds of merge requests per week, and we have all these patterns.
+
+52
+00:03:12.480 --> 00:03:14.960
+I don't know the final number, but it's painful.
+
+53
+00:03:14.960 --> 00:03:17.960
+So this is the reason why we just thinking
+
+54
+00:03:18.200 --> 00:03:23.000
+we need to try something that will save money and time.
+
+55
+00:03:23.000 --> 00:03:27.040
+And at that point of time, and it was about a year ago
+
+56
+00:03:27.080 --> 00:03:29.200
+maybe when it all started.
+
+57
+00:03:29.200 --> 00:03:31.920
+Claude Code was just starting.
+
+58
+00:03:31.920 --> 00:03:33.840
+It's really good right now.
+
+59
+00:03:33.840 --> 00:03:39.560
+And mostly we had Cursor or just Copilot in VS code
+
+60
+00:03:39.560 --> 00:03:42.880
+and it was like really good for autocomplete but not really good
+
+61
+00:03:42.880 --> 00:03:46.240
+for all this like complicated things. So
+
+62
+00:03:47.280 --> 00:03:48.680
+where
+
+63
+00:03:48.680 --> 00:03:51.840
+what we're going to talk today is about like
+
+64
+00:03:51.880 --> 00:03:54.880
+six things that you can do
+
+65
+00:03:55.160 --> 00:03:59.080
+maybe like in a week and do something similar in your company.
+
+66
+00:03:59.200 --> 00:04:02.600
+So I will talk about how we evaluated tools,
+
+67
+00:04:03.120 --> 00:04:06.880
+how we build the architecture, how we worked with prompts,
+
+68
+00:04:07.000 --> 00:04:11.720
+how we work with the context, how we choose the models, and about the cost.
+
+69
+00:04:12.640 --> 00:04:17.120
+So it's just part of the table that I spent some time doing the evaluation.
+
+70
+00:04:17.120 --> 00:04:20.560
+And at that point of time, it was like
+
+71
+00:04:20.600 --> 00:04:23.760
+four tools that get most of the attention.
+
+72
+00:04:23.760 --> 00:04:29.360
+So CodeRabbit, the most popular. GitLab is here only because we were using GitLab Enterprise.
+
+73
+00:04:29.360 --> 00:04:33.000
+So it's something that they try to build and try to get working.
+
+74
+00:04:33.000 --> 00:04:38.800
+So Greptile is something that was recommended by our VP of engineering.
+
+75
+00:04:39.000 --> 00:04:43.880
+And something we tried is like to find the best open source
+
+76
+00:04:43.880 --> 00:04:49.840
+model, open source applications that actually doing the same stuff.
+
+77
+00:04:49.880 --> 00:04:53.840
+And at that point of time I was told money is not a problem we are paying.
+
+78
+00:04:53.840 --> 00:04:59.720
+So the decision was done to choose Greptile because it's actually
+
+79
+00:04:59.760 --> 00:05:04.560
+like just having a checkbox of all our important things.
+
+80
+00:05:04.560 --> 00:05:07.560
+So it's check and security.
+
+81
+00:05:07.680 --> 00:05:11.680
+It checks and quality because it's like just the tools
+
+82
+00:05:11.680 --> 00:05:15.600
+that we are paying a lot of money for and a lot of operation stuff.
+
+83
+00:05:15.600 --> 00:05:19.280
+We should not worry about updates, model scaling.
+
+84
+00:05:19.280 --> 00:05:21.560
+So we just consuming the stuff.
+
+85
+00:05:21.560 --> 00:05:26.640
+But in the end of the day we were like, all right, we need to change some.
+
+86
+00:05:26.680 --> 00:05:29.120
+We need to try something new and something interesting.
+
+87
+00:05:29.120 --> 00:05:32.360
+I was here one month ago on the City of Craft event,
+
+88
+00:05:32.360 --> 00:05:37.640
+and the guy who is the CEO of Tessl was speaking, and I was asking him,
+
+89
+00:05:37.720 --> 00:05:42.120
+what are the best companies that get the most of AI?
+
+90
+00:05:42.360 --> 00:05:46.720
+And like he told quite interesting things that I remember is
+
+91
+00:05:46.720 --> 00:05:51.640
+like is not a startup companies, whereas they have just few engineers
+
+92
+00:05:51.640 --> 00:05:55.280
+and not an enterprise company because there is too much bureaucracy.
+
+93
+00:05:55.360 --> 00:05:57.200
+It's something like in the middle.
+
+94
+00:05:57.200 --> 00:06:00.800
+And this actually worked because I was told,
+
+95
+00:06:01.520 --> 00:06:05.280
+you have time, just try it like we give you like two sprints.
+
+96
+00:06:05.280 --> 00:06:08.480
+So try this open source tool and
+
+97
+00:06:09.840 --> 00:06:11.000
+we'll see how it will go.
+
+98
+00:06:11.000 --> 00:06:12.120
+So few things.
+
+99
+00:06:12.120 --> 00:06:16.640
+Why we decided to go with open source is because we will own the code.
+
+100
+00:06:16.800 --> 00:06:20.800
+I mean like of course we will fork it so we will own the prompts,
+
+101
+00:06:21.360 --> 00:06:26.120
+we will choose the models and we can we can pretty much implement
+
+102
+00:06:26.160 --> 00:06:27.160
+whatever we want.
+
+103
+00:06:27.160 --> 00:06:30.320
+An important part if the company will scale,
+
+104
+00:06:30.920 --> 00:06:35.120
+it doesn't matter how many seats we will need. So.
+
+105
+00:06:37.640 --> 00:06:38.400
+This slide is
+
+106
+00:06:38.400 --> 00:06:41.720
+more is more like to show you how easy it is
+
+107
+00:06:41.720 --> 00:06:46.040
+to actually run it in production as the first version.
+
+108
+00:06:46.040 --> 00:06:49.320
+So around six weeks
+
+109
+00:06:49.320 --> 00:06:53.280
+and it's literally set up that we had in our GitLab.
+
+110
+00:06:53.320 --> 00:06:54.000
+Sorry.
+
+111
+00:06:54.000 --> 00:07:00.160
+In GitLab CI, we had a job just to run an image
+
+112
+00:07:00.360 --> 00:07:03.920
+with some comments that will add two different comments
+
+113
+00:07:03.920 --> 00:07:07.040
+like first command is review that will provide pull request
+
+114
+00:07:07.040 --> 00:07:11.120
+review as a senior engineer and improve is a comment where
+
+115
+00:07:12.040 --> 00:07:16.800
+there will be recommendation in the code itself.
+
+116
+00:07:16.960 --> 00:07:20.000
+And for six weeks we have it like this.
+
+117
+00:07:20.040 --> 00:07:24.560
+And it was not really scalable because we don't
+
+118
+00:07:24.680 --> 00:07:28.680
+have a lot of control over it, and we need to change configuration every time.
+
+119
+00:07:29.040 --> 00:07:31.160
+Push, push.
+
+120
+00:07:31.160 --> 00:07:33.280
+Another change gets the review.
+
+121
+00:07:33.280 --> 00:07:35.680
+So we're thinking like all right.
+
+122
+00:07:35.680 --> 00:07:41.160
+So we see it works and we have some positive signals what we can do next.
+
+123
+00:07:41.520 --> 00:07:46.520
+What we did is like we set up a dedicated service.
+
+124
+00:07:46.560 --> 00:07:51.280
+And instead of just running it on demand as a job in GitLab,
+
+125
+00:07:51.640 --> 00:07:56.040
+we added a Kubernetes pod that was like running
+
+126
+00:07:56.080 --> 00:08:00.880
+24 over seven and was working as a listener. So
+
+127
+00:08:02.200 --> 00:08:02.880
+in this
+
+128
+00:08:02.880 --> 00:08:06.920
+scenario, we actually give everything under our infrastructure,
+
+129
+00:08:07.000 --> 00:08:10.800
+all the helm charts, all the other DevOps shenanigans that's happening.
+
+130
+00:08:10.840 --> 00:08:13.840
+Everything was in our control as well.
+
+131
+00:08:14.200 --> 00:08:17.600
+So how does it work?
+
+132
+00:08:18.000 --> 00:08:21.760
+So at first when developer create
+
+133
+00:08:21.800 --> 00:08:27.000
+a merge request in the GitLab, we are listening for the event.
+
+134
+00:08:27.040 --> 00:08:31.040
+So we say they're open up date or comment or like
+
+135
+00:08:31.040 --> 00:08:34.800
+when the event like when the request is going from draft to ready.
+
+136
+00:08:34.880 --> 00:08:37.880
+So we're having a listener
+
+137
+00:08:37.920 --> 00:08:41.320
+that is like always listen for these events from the GitLab.
+
+138
+00:08:41.680 --> 00:08:45.120
+Then we're going for the event router for the slash
+
+139
+00:08:45.160 --> 00:08:48.280
+commands or like after triggers.
+
+140
+00:08:49.040 --> 00:08:51.920
+Next step is pretty much like
+
+141
+00:08:51.920 --> 00:08:55.640
+the heart of this review is the context retrieval.
+
+142
+00:08:55.680 --> 00:08:59.200
+And we're going to talk about each step a little bit more afterwards.
+
+143
+00:08:59.360 --> 00:09:01.400
+Then we go into the model chain.
+
+144
+00:09:01.400 --> 00:09:04.840
+So we are choosing which model need to make the review.
+
+145
+00:09:04.840 --> 00:09:08.840
+And we started with a smart first because we really want to have good reviews.
+
+146
+00:09:08.840 --> 00:09:14.240
+And then afterwards like the bot just sends a comment in the merge request.
+
+147
+00:09:14.240 --> 00:09:16.120
+And also it's an important part
+
+148
+00:09:16.120 --> 00:09:19.560
+of all of this architecture is having a feedback loop from day one.
+
+149
+00:09:19.560 --> 00:09:25.000
+So we ask our developers just to mark their
+
+150
+00:09:25.240 --> 00:09:29.480
+the comments from the bot with like green, yellow, or red., yellow or red.
+
+151
+00:09:29.840 --> 00:09:34.560
+And then we use the GitLab emoji API.
+
+152
+00:09:34.680 --> 00:09:37.720
+We can pull all of this data and like have a build
+
+153
+00:09:37.720 --> 00:09:41.320
+everything in Grafana to have it visible.
+
+154
+00:09:41.960 --> 00:09:45.360
+So we have two entry points.
+
+155
+00:09:45.360 --> 00:09:50.040
+So first one is mostly for power users who really want to have like
+
+156
+00:09:50.080 --> 00:09:54.080
+most of the control, most of the features, every time they create a merge requests,
+
+157
+00:09:54.080 --> 00:09:56.440
+they can manually write down slash command.
+
+158
+00:09:56.440 --> 00:09:59.240
+So we had like review improve describe.
+
+159
+00:09:59.240 --> 00:10:01.400
+That is literally going to create
+
+160
+00:10:01.400 --> 00:10:05.480
+pull request description for you when you have it by yourself.
+
+161
+00:10:05.480 --> 00:10:08.720
+And also ask when you just want to ask a question
+
+162
+00:10:08.720 --> 00:10:11.720
+to to the code base or like to the pull request.
+
+163
+00:10:11.720 --> 00:10:15.440
+And you can actually do on someone else pull request if you're not sure
+
+164
+00:10:15.440 --> 00:10:18.720
+about some specific thing and after triggers.
+
+165
+00:10:18.720 --> 00:10:21.720
+So when merge request is opened
+
+166
+00:10:21.720 --> 00:10:26.480
+and is going directly to non draft state, we will run a review
+
+167
+00:10:27.240 --> 00:10:29.800
+and the second condition is like
+
+168
+00:10:29.800 --> 00:10:33.880
+if the merge request was in draft and then was moved to ready state,
+
+169
+00:10:34.040 --> 00:10:39.400
+we just like triggers the review again for everyone else.
+
+170
+00:10:39.400 --> 00:10:45.360
+So in this case we have like two categories of people who should be happy.
+
+171
+00:10:45.360 --> 00:10:49.320
+So usual users that don't really care much,
+
+172
+00:10:49.320 --> 00:10:54.880
+but really nice to see pull request review and someone who rely on it a lot.
+
+173
+00:10:57.200 --> 00:10:57.640
+Right.
+
+174
+00:10:57.640 --> 00:11:03.200
+So how we work with prompts and I think this is something
+
+175
+00:11:03.200 --> 00:11:07.000
+that was like started like really, really well but
+
+176
+00:11:07.120 --> 00:11:11.040
+quickly started to become really, really hard because you cannot like
+
+177
+00:11:11.080 --> 00:11:15.280
+when we have only like five rules or ten rules specific to our companies.
+
+178
+00:11:15.320 --> 00:11:16.520
+It was fine.
+
+179
+00:11:16.520 --> 00:11:21.440
+Like we just sent the just one single prompt and it's working as expected.
+
+180
+00:11:21.920 --> 00:11:22.960
+Good results.
+
+181
+00:11:22.960 --> 00:11:26.880
+But when we start to scale all these rules, all this documentation,
+
+182
+00:11:26.880 --> 00:11:33.240
+all the things, so it easily started to appear that we have real problem.
+
+183
+00:11:33.240 --> 00:11:36.920
+We have like context, but we have so many things in one prompt
+
+184
+00:11:36.920 --> 00:11:39.640
+and the results getting worse and worse and worse.
+
+185
+00:11:39.640 --> 00:11:44.560
+So then we went to the second version of like what we implemented. So
+
+186
+00:11:45.680 --> 00:11:47.120
+what if we will
+
+187
+00:11:47.120 --> 00:11:52.520
+start to run rules only to specific like pass,
+
+188
+00:11:52.560 --> 00:11:57.360
+maybe like something related to the DB will go only data data rules.
+
+189
+00:11:57.400 --> 00:12:00.400
+What if something like with TypeScript
+
+190
+00:12:00.960 --> 00:12:03.960
+will go to the TypeScript rules?
+
+191
+00:12:03.960 --> 00:12:05.200
+Right? Makes sense.
+
+192
+00:12:05.200 --> 00:12:07.400
+But what will happen if there is like some files
+
+193
+00:12:07.400 --> 00:12:11.080
+that is like services DB and it's TypeScript.
+
+194
+00:12:11.080 --> 00:12:15.800
+So every single file explodes, and then the
+
+195
+00:12:16.440 --> 00:12:19.560
+the most important part that was chosen
+
+196
+00:12:19.560 --> 00:12:23.440
+is like how we can use the best of AI
+
+197
+00:12:24.920 --> 00:12:27.640
+to choose the context for AI.
+
+198
+00:12:27.640 --> 00:12:30.640
+So what we did.
+
+199
+00:12:34.160 --> 00:12:36.920
+So we have few different inputs.
+
+200
+00:12:36.920 --> 00:12:37.280
+Right.
+
+201
+00:12:37.280 --> 00:12:41.680
+So first of all it's like pull request metadata title description diff.
+
+202
+00:12:41.840 --> 00:12:43.440
+We have a huge library.
+
+203
+00:12:43.440 --> 00:12:47.040
+There is like different rules documents markdown files.
+
+204
+00:12:47.040 --> 00:12:52.960
+And we actually pull in the JIRA context ticket description all this stuff.
+
+205
+00:12:52.960 --> 00:12:56.480
+So first and first we cannot just take all this
+
+206
+00:12:56.480 --> 00:13:00.640
+like library and pull into prompt as we talked before.
+
+207
+00:13:00.640 --> 00:13:01.920
+So what we are doing.
+
+208
+00:13:01.920 --> 00:13:05.520
+So first we are doing heuristic pre filter.
+
+209
+00:13:05.520 --> 00:13:10.560
+So out of all the documentation we build a ranking
+
+210
+00:13:10.880 --> 00:13:13.840
+according to the keywords in the pull request.
+
+211
+00:13:13.840 --> 00:13:19.720
+And even without AI trying to build the top
+
+212
+00:13:19.760 --> 00:13:24.320
+30 to 50 documents that actually related to the pull request.
+
+213
+00:13:24.320 --> 00:13:28.360
+So we filter out even like on like pretty quickly.
+
+214
+00:13:28.360 --> 00:13:32.040
+And then we actually can stop here. Right?
+
+215
+00:13:32.080 --> 00:13:35.400
+We, we know the documents that we're going to use and we,
+
+216
+00:13:35.920 --> 00:13:37.560
+we already have everything ready.
+
+217
+00:13:37.560 --> 00:13:41.440
+But what we've like all these documents have 5000 tokens.
+
+218
+00:13:41.440 --> 00:13:44.200
+10,000 tokens. So which is already like crazy.
+
+219
+00:13:44.200 --> 00:13:45.360
+So what we did.
+
+220
+00:13:45.360 --> 00:13:49.160
+Next we're using cheaper model.
+
+221
+00:13:49.200 --> 00:13:52.560
+So Gemini flash with temperature zero just to hold.
+
+222
+00:13:52.560 --> 00:13:55.400
+We have the same results. And asking
+
+223
+00:13:56.480 --> 00:14:00.400
+AI according to the changes in the diff.
+
+224
+00:14:00.440 --> 00:14:03.480
+According to the context, what actually
+
+225
+00:14:03.520 --> 00:14:06.520
+the documents feed the most for this pull request.
+
+226
+00:14:07.080 --> 00:14:12.440
+And then in every document we had an agreement to always have headers
+
+227
+00:14:12.440 --> 00:14:16.840
+and always have like everything split into sections.
+
+228
+00:14:17.280 --> 00:14:21.200
+So then we actually have all these like documents, all the sections,
+
+229
+00:14:21.200 --> 00:14:25.880
+and we are doing second call just to focus on specific sections
+
+230
+00:14:25.880 --> 00:14:31.520
+that we want to have for for this pull request, we also have some kind of
+
+231
+00:14:31.560 --> 00:14:36.320
+like fallback chain just to make sure everything is like working as expected.
+
+232
+00:14:36.320 --> 00:14:43.160
+And in the end, what we have after all of this happens, we have 20 to 40 sections.
+
+233
+00:14:43.160 --> 00:14:46.400
+Everyone, every each of them is like up to 300
+
+234
+00:14:47.560 --> 00:14:48.840
+or maybe less.
+
+235
+00:14:48.840 --> 00:14:51.840
+And just sending it to the
+
+236
+00:14:52.280 --> 00:14:55.280
+LLM.
+
+237
+00:14:55.480 --> 00:14:58.840
+So this is like a real example how it works.
+
+238
+00:14:58.840 --> 00:15:04.120
+So if we will take a look here, we have most likely you don't see it.
+
+239
+00:15:04.120 --> 00:15:05.400
+So I will just say it.
+
+240
+00:15:05.400 --> 00:15:08.400
+So we have like keywords like services
+
+241
+00:15:08.480 --> 00:15:12.160
+getting paid payments invoices stripe.
+
+242
+00:15:12.240 --> 00:15:17.000
+And in the end we have a line where we already see what documents were used.
+
+243
+00:15:17.000 --> 00:15:20.840
+And we see that like we use the documents regarding getting paid,
+
+244
+00:15:20.920 --> 00:15:23.640
+we use service stuff, we use stripe.
+
+245
+00:15:23.640 --> 00:15:26.640
+So we only use documents that do matter.
+
+246
+00:15:28.440 --> 00:15:32.280
+And how it looks like in the end, because in the end,
+
+247
+00:15:32.320 --> 00:15:35.800
+like it's a huge, huge problem that they send to LM
+
+248
+00:15:36.040 --> 00:15:40.440
+with all the rules, with all the files changes, with all the gifts, and
+
+249
+00:15:41.400 --> 00:15:42.840
+we want it to
+
+250
+00:15:42.840 --> 00:15:47.520
+be as concise as possible and to include all the critical information as possible.
+
+251
+00:15:47.520 --> 00:15:51.240
+So as a part of the prompt, we will just have
+
+252
+00:15:51.560 --> 00:15:55.120
+project documentation, context, what files were used,
+
+253
+00:15:55.160 --> 00:15:58.520
+what sections were used, and what what
+
+254
+00:15:58.520 --> 00:16:01.560
+the what was inside the sections.
+
+255
+00:16:01.880 --> 00:16:05.800
+So we're also thinking about how we can make sure
+
+256
+00:16:05.800 --> 00:16:09.800
+we are not doing too many requests when we don't need it.
+
+257
+00:16:09.800 --> 00:16:12.800
+So we actually implemented like five minute cache per
+
+258
+00:16:13.080 --> 00:16:17.800
+so per merge request where we can just return the same context.
+
+259
+00:16:17.840 --> 00:16:22.440
+If let's say we use two different comments like we use review and improve
+
+260
+00:16:23.000 --> 00:16:26.320
+it, it's like given two different results, but the context is the same, right.
+
+261
+00:16:26.360 --> 00:16:28.320
+So why we need to build it twice
+
+262
+00:16:29.840 --> 00:16:30.320
+right.
+
+263
+00:16:30.320 --> 00:16:36.240
+So also what we added is like how we can include JIRA
+
+264
+00:16:36.280 --> 00:16:41.600
+into the context for the merge request and into the PR review.
+
+265
+00:16:41.600 --> 00:16:44.600
+And actually what we noticed this was like
+
+266
+00:16:44.640 --> 00:16:47.760
+87% of child tickets were empty.
+
+267
+00:16:47.760 --> 00:16:48.520
+Description.
+
+268
+00:16:48.520 --> 00:16:51.880
+So if you will just include the empty description doesn't matter.
+
+269
+00:16:51.880 --> 00:16:57.960
+So we also added the epics and we actually added function
+
+270
+00:16:58.000 --> 00:17:01.200
+to check if ticket.
+
+271
+00:17:01.840 --> 00:17:05.080
+Sorry if merge request is actually compliant with the ticket,
+
+272
+00:17:05.080 --> 00:17:08.760
+because are we actually writing the code that we should write?
+
+273
+00:17:08.840 --> 00:17:09.800
+Is it right?
+
+274
+00:17:09.800 --> 00:17:12.800
+Is it something that we were expecting?
+
+275
+00:17:13.120 --> 00:17:16.400
+So at first because
+
+276
+00:17:16.640 --> 00:17:19.440
+we were experimenting with another choice, it's going to work or not.
+
+277
+00:17:19.440 --> 00:17:23.320
+We use OpenRouter as a main model provider.
+
+278
+00:17:23.320 --> 00:17:26.560
+And there was like a lot of reasons why to do so.
+
+279
+00:17:26.680 --> 00:17:29.360
+It's like one API surface.
+
+280
+00:17:29.360 --> 00:17:31.840
+Many models, we can choose whatever we want.
+
+281
+00:17:31.840 --> 00:17:33.880
+It was fast to implement.
+
+282
+00:17:33.880 --> 00:17:38.360
+The prices are the same as from the vendor, so why not?
+
+283
+00:17:38.360 --> 00:17:44.640
+But few things that started to appear as the problems is like
+
+284
+00:17:44.680 --> 00:17:48.280
+not all the models were fitting for our security.
+
+285
+00:17:48.480 --> 00:17:51.960
+Security like policies.
+
+286
+00:17:51.960 --> 00:17:56.720
+And we need to switch to something that vendor provided.
+
+287
+00:17:56.720 --> 00:18:00.560
+And at that point of time in the company, we already had vertex AI,
+
+288
+00:18:00.560 --> 00:18:05.880
+and it was pretty obvious why we chose Gemini as a main model provider. And
+
+289
+00:18:06.840 --> 00:18:09.000
+we we have much more control over it.
+
+290
+00:18:09.000 --> 00:18:14.520
+And we have like clear monitoring logs, budget security stuff.
+
+291
+00:18:14.520 --> 00:18:17.520
+So it was an easy choice for us.
+
+292
+00:18:18.040 --> 00:18:23.360
+So it's important to understand that AI
+
+293
+00:18:24.560 --> 00:18:29.360
+review is more like a suggestions, and it's more like an advisory thing to do
+
+294
+00:18:29.400 --> 00:18:34.880
+because like, I still can hallucinate, I can give bad results.
+
+295
+00:18:34.880 --> 00:18:38.640
+And I think something that Simon mentioned before is like, what will happen
+
+296
+00:18:38.640 --> 00:18:44.920
+if the there is like prompt injection or something like really bad happened.
+
+297
+00:18:44.920 --> 00:18:49.720
+So we still having this as a separate line as in the merge gate.
+
+298
+00:18:49.760 --> 00:18:50.040
+Right.
+
+299
+00:18:50.040 --> 00:18:53.720
+So we still make sure that CI/CD is working as expected.
+
+300
+00:18:53.720 --> 00:18:57.600
+All the linters, all the tests, all the stuff is running there as well
+
+301
+00:18:57.600 --> 00:18:58.480
+as Snyk.
+
+302
+00:18:58.480 --> 00:19:02.800
+So and AI is going there more like as an advisor.
+
+303
+00:19:03.920 --> 00:19:07.560
+So this is like few real examples.
+
+304
+00:19:07.560 --> 00:19:10.440
+What we what we had in the end.
+
+305
+00:19:10.440 --> 00:19:15.360
+So the bot itself just like write down in line comments.
+
+306
+00:19:15.360 --> 00:19:20.200
+So developer can just apply suggestions or you can literally chat
+
+307
+00:19:20.320 --> 00:19:22.400
+with proposed changes.
+
+308
+00:19:22.400 --> 00:19:23.680
+You can agree. You can disagree.
+
+309
+00:19:23.680 --> 00:19:27.400
+I don't know, you can just ask to do some random things.
+
+310
+00:19:27.400 --> 00:19:31.400
+And also what we built in the in the later stages is
+
+311
+00:19:31.840 --> 00:19:37.720
+if support request is pretty much simple and there is no much of improvements
+
+312
+00:19:37.720 --> 00:19:42.120
+that needs to be done, we implemented new commands that called self review done.
+
+313
+00:19:42.120 --> 00:19:47.000
+So we as developers take responsibility for the work we did.
+
+314
+00:19:47.040 --> 00:19:51.320
+And we said, yeah, we applied all the changes that was proposed.
+
+315
+00:19:51.320 --> 00:19:55.680
+And then PR agent is actually approving your pull requests,
+
+316
+00:19:56.400 --> 00:19:59.720
+and it's actually up to you to decide
+
+317
+00:19:59.760 --> 00:20:03.200
+if you would like to add project to your code owners.
+
+318
+00:20:03.200 --> 00:20:07.880
+So if if you edit it there and it approves your pull request,
+
+319
+00:20:07.880 --> 00:20:11.120
+you can actually merge your code without like human interaction.
+
+320
+00:20:11.120 --> 00:20:13.360
+And this is literally what happens.
+
+321
+00:20:13.360 --> 00:20:18.320
+So this is like one of your merge requests from our like production GitLab
+
+322
+00:20:18.600 --> 00:20:24.160
+that from the beginning till the end one developer and a bot.
+
+323
+00:20:24.160 --> 00:20:28.480
+And it was like merge without human interaction because it's
+
+324
+00:20:28.480 --> 00:20:32.840
+literally just I think it was pretty simple just removing some JSON file.
+
+325
+00:20:32.960 --> 00:20:37.080
+So why developers need to spend a lot of time
+
+326
+00:20:37.120 --> 00:20:40.840
+reviewing something that is pretty simple. So
+
+327
+00:20:42.240 --> 00:20:45.040
+yeah, what else?
+
+328
+00:20:45.040 --> 00:20:49.560
+I think like few things that we build on top, and I shared them before,
+
+329
+00:20:49.640 --> 00:20:53.880
+was how we can have to approve all the work on zero findings,
+
+330
+00:20:54.320 --> 00:20:59.040
+how we can chat with the code base and important part when we ask questions.
+
+331
+00:20:59.080 --> 00:21:03.160
+The context trigger again related to the question
+
+332
+00:21:03.160 --> 00:21:06.360
+itself, and not only to the changes in the pull request.
+
+333
+00:21:06.360 --> 00:21:10.680
+And also we build some kind of like stability thing
+
+334
+00:21:10.680 --> 00:21:14.200
+inside of the inside of the bot, just to make sure
+
+335
+00:21:14.480 --> 00:21:18.240
+we're not missing all the commands that are going from merge requests.
+
+336
+00:21:18.240 --> 00:21:22.360
+Because sometimes, let's say in the same time there was like 510
+
+337
+00:21:22.400 --> 00:21:25.880
+merge requests created and we don't want to miss any request.
+
+338
+00:21:27.240 --> 00:21:31.320
+So why I mentioned that feedback loop is really important
+
+339
+00:21:31.560 --> 00:21:34.360
+and it's important to build it from day one.
+
+340
+00:21:34.360 --> 00:21:36.440
+So first of all we are trying to understand
+
+341
+00:21:36.440 --> 00:21:41.480
+if it's even like useful if it's even like given some value.
+
+342
+00:21:42.040 --> 00:21:47.200
+And in one day as a part of my routine, I was like looking at the graphs
+
+343
+00:21:47.280 --> 00:21:52.480
+and saw that actually our satisfaction rate is going down.
+
+344
+00:21:52.560 --> 00:21:56.560
+And at first thing of course, I was went to the code base trying to understand
+
+345
+00:21:56.560 --> 00:21:57.880
+what was shipped wrong.
+
+346
+00:21:57.880 --> 00:22:02.360
+Is there like a production incident or what's going on?
+
+347
+00:22:02.520 --> 00:22:07.000
+And finally enough, it was already like after we were working in vertex,
+
+348
+00:22:07.040 --> 00:22:10.920
+AI and Gemini, they updated the model.
+
+349
+00:22:11.760 --> 00:22:14.680
+We were using the latest version and the model
+
+350
+00:22:14.680 --> 00:22:18.320
+they shipped was actually given worse results.
+
+351
+00:22:18.960 --> 00:22:22.320
+And then when we understand
+
+352
+00:22:22.360 --> 00:22:25.760
+that this is the issue, we quickly rolled back to the previous model.
+
+353
+00:22:25.760 --> 00:22:28.560
+And like satisfaction rate goes up,
+
+354
+00:22:30.000 --> 00:22:30.440
+right.
+
+355
+00:22:30.440 --> 00:22:34.920
+So as a result, after all this like adventure, I would say
+
+356
+00:22:34.960 --> 00:22:38.760
+what we had in the end in like a few months
+
+357
+00:22:39.000 --> 00:22:41.920
+is every week we have around like 300
+
+358
+00:22:41.920 --> 00:22:44.920
+reviews, comments, even at MVP scale.
+
+359
+00:22:45.000 --> 00:22:49.720
+We have people from different teams coming to us and saying, can we get it?
+
+360
+00:22:49.760 --> 00:22:53.000
+Like how much it will cost your time to
+
+361
+00:22:53.040 --> 00:22:56.040
+to do the same for us and cool stuff.
+
+362
+00:22:56.040 --> 00:22:59.520
+It's like maybe our maybe two.
+
+363
+00:22:59.880 --> 00:23:01.960
+And of course,
+
+364
+00:23:01.960 --> 00:23:05.320
+it was just a pleasant thing to do to receive a city grant for advancing.
+
+365
+00:23:05.400 --> 00:23:08.400
+I write so
+
+366
+00:23:09.000 --> 00:23:12.680
+the playbook in five lines that you can, I think, do.
+
+367
+00:23:13.160 --> 00:23:16.200
+So today is Tuesday, maybe like next week on Monday.
+
+368
+00:23:16.920 --> 00:23:18.120
+Evaluate different tools.
+
+369
+00:23:18.120 --> 00:23:23.440
+I think like right now AI is changing so quickly and like
+
+370
+00:23:23.480 --> 00:23:27.400
+there is so many tools appearing every day that is really hard to keep up.
+
+371
+00:23:27.600 --> 00:23:30.920
+But still, as a developers, we are responsible
+
+372
+00:23:30.920 --> 00:23:35.480
+for proper investigation in the tools that we would like to use.
+
+373
+00:23:35.480 --> 00:23:38.560
+So please spend as much time as possible
+
+374
+00:23:38.600 --> 00:23:42.960
+in order to choose the right tool in the beginning.
+
+375
+00:23:43.520 --> 00:23:47.040
+Second point I think is like on your own prompts,
+
+376
+00:23:47.040 --> 00:23:51.160
+because if you don't know how it works under the hood, you
+
+377
+00:23:51.200 --> 00:23:53.000
+you don't know what to expect.
+
+378
+00:23:54.280 --> 00:23:56.440
+Builds a feedback loop from day one.
+
+379
+00:23:56.440 --> 00:23:59.680
+It's pretty much what I mentioned before.
+
+380
+00:23:59.680 --> 00:24:03.320
+We need to understand if it was useful, if our developer is happy,
+
+381
+00:24:03.320 --> 00:24:06.840
+and if Google again silently update is a model
+
+382
+00:24:07.240 --> 00:24:09.880
+in for CI/CD, not in the prompt.
+
+383
+00:24:09.880 --> 00:24:13.920
+Still, don't forget that CI/CD is important part of our journey.
+
+384
+00:24:13.920 --> 00:24:19.040
+And this is where most of the hours like
+
+385
+00:24:19.480 --> 00:24:22.480
+trust should go. And.
+
+386
+00:24:23.520 --> 00:24:27.240
+Important part that we choose is like road
+
+387
+00:24:27.280 --> 00:24:31.040
+by complexity, fullback by failure is two struggle model.
+
+388
+00:24:31.040 --> 00:24:34.920
+First, just start with like a pro model or like Opus model.
+
+389
+00:24:34.960 --> 00:24:38.520
+And then if it's for some reason, just don't give in the good result.
+
+390
+00:24:38.560 --> 00:24:42.160
+Just like fall back to the something like that, this next one in the line.
+
+391
+00:24:42.160 --> 00:24:46.120
+So if we're talking about Gemini it was like pro and then flash
+
+392
+00:24:47.280 --> 00:24:48.520
+right?
+
+393
+00:24:48.520 --> 00:24:49.480
+Thank you.
+
+394
+00:24:49.480 --> 00:24:50.400
+Thank you everyone.
+
+395
+00:24:50.400 --> 00:24:53.960
+I think we have like a few minutes for live Q&amp;A.
+
+396
+00:24:54.200 --> 00:24:58.120
+But also feel free to catch me after the talk.
+
+397
+00:24:58.640 --> 00:25:00.040
+Yeah.
+
+398
+00:25:00.040 --> 00:25:03.040
+Thank you.
+
+399
+00:25:07.000 --> 00:25:10.000
+Any questions?
+
+400
+00:25:11.480 --> 00:25:11.800
+Yeah.
+
+401
+00:25:11.800 --> 00:25:14.800
+Sorry.
+
+402
+00:25:17.600 --> 00:25:18.760
+Thanks for the talk.
+
+403
+00:25:18.760 --> 00:25:23.600
+I was curious if you could tell us a little bit more about why you chose the,
+
+404
+00:25:24.160 --> 00:25:28.600
+the, the kind of nine step pipeline that you did for retrieval, augmented
+
+405
+00:25:28.600 --> 00:25:34.080
+generation instead of a vector database instead of something that.
+
+406
+00:25:34.360 --> 00:25:38.160
+Yeah, I think this was like one of the things
+
+407
+00:25:38.320 --> 00:25:43.040
+that was like just screaming at us like make, make vector databases.
+
+408
+00:25:43.080 --> 00:25:48.360
+But we decided to go with an easy way because vector databases
+
+409
+00:25:48.360 --> 00:25:52.160
+will include additional infrastructure, additional complexity.
+
+410
+00:25:52.160 --> 00:25:56.120
+And at that point of time, we just don't want it to to
+
+411
+00:25:56.160 --> 00:25:58.120
+to have all this conditional complexity.
+
+412
+00:25:58.120 --> 00:26:02.080
+And we kind of see that it was pretty much working.
+
+413
+00:26:02.080 --> 00:26:07.680
+And, yeah, we I'm no longer working as a company where we done this stuff.
+
+414
+00:26:07.680 --> 00:26:11.240
+So maybe like stuff is changing right now, but at the moment when I was like
+
+415
+00:26:11.280 --> 00:26:15.720
+doing all these things, I was like, no, it's just too complicated.
+
+416
+00:26:16.800 --> 00:26:17.240
+Thank you.
+
+417
+00:26:17.240 --> 00:26:18.400
+Thanks.
+
+418
+00:26:18.400 --> 00:26:20.320
+Yeah, I have two questions.
+
+419
+00:26:20.320 --> 00:26:24.840
+One would be the PR size, right?
+
+420
+00:26:25.040 --> 00:26:27.960
+Yeah. To set some limits or. Yeah.
+
+421
+00:26:27.960 --> 00:26:31.240
+So it's pretty obvious if you will have like pull requests
+
+422
+00:26:31.240 --> 00:26:35.600
+with like 100 files and 200,000 of changes, it will not work.
+
+423
+00:26:35.600 --> 00:26:39.480
+Well, this is the reason why actual development
+
+424
+00:26:39.480 --> 00:26:43.160
+roles in the company was playing well because we had an internal agreement
+
+425
+00:26:43.160 --> 00:26:47.040
+and kind of like hard rules that all the merge requests should be small, right?
+
+426
+00:26:47.080 --> 00:26:49.880
+So something that you can ship in one day.
+
+427
+00:26:49.880 --> 00:26:52.880
+So most of the times
+
+428
+00:26:53.120 --> 00:26:56.840
+it was like a few files up to a few hundred lines.
+
+429
+00:26:56.840 --> 00:26:58.840
+So it was like pretty fine.
+
+430
+00:26:58.840 --> 00:27:02.920
+But of course sometimes when you need to just refactor huge thing
+
+431
+00:27:02.920 --> 00:27:06.800
+with like just renaming, it was not working really well.
+
+432
+00:27:06.840 --> 00:27:07.120
+Yeah.
+
+433
+00:27:07.120 --> 00:27:12.080
+So there was a limit of 150,000 tokens per
+
+434
+00:27:13.040 --> 00:27:13.840
+person review.
+
+435
+00:27:13.840 --> 00:27:19.000
+So if it was going more, the boat will just send the message, hey, it's too much.
+
+436
+00:27:19.000 --> 00:27:20.720
+I don't want to to handle it.
+
+437
+00:27:20.720 --> 00:27:22.400
+So it's either split
+
+438
+00:27:22.400 --> 00:27:26.280
+or just make sure that as a developer review your pull request okay.
+
+439
+00:27:26.320 --> 00:27:27.240
+Makes sense.
+
+440
+00:27:27.240 --> 00:27:30.880
+And the second question did you look into like trunk based development
+
+441
+00:27:31.160 --> 00:27:34.680
+sorry trunk based development where you don't do burrs basically.
+
+442
+00:27:35.000 --> 00:27:38.000
+It's like option around that or.
+
+443
+00:27:38.920 --> 00:27:41.920
+Yeah, I, we
+
+444
+00:27:42.120 --> 00:27:44.000
+don't invest it too much time into this.
+
+445
+00:27:44.000 --> 00:27:49.560
+It was like just usual flow how you like just no create pull requests.
+
+446
+00:27:49.600 --> 00:27:51.200
+Just run through all of this stuff.
+
+447
+00:27:51.200 --> 00:27:55.040
+And I know that right now that company is trying to implement
+
+448
+00:27:55.040 --> 00:27:58.040
+more like spec-driven development in a way that like,
+
+449
+00:27:58.080 --> 00:28:01.240
+all right, we just run the specs and we delegate all this
+
+450
+00:28:01.280 --> 00:28:07.080
+like review to the boats and then see like where the developers actually needed.
+
+451
+00:28:07.240 --> 00:28:10.400
+But yeah okay. No worries. Thank you.
+
+452
+00:28:12.800 --> 00:28:13.840
+Anyone else?
+
+453
+00:28:13.840 --> 00:28:14.760
+Yeah.
+
+454
+00:28:14.760 --> 00:28:16.080
+Silly question.
+
+455
+00:28:16.080 --> 00:28:16.760
+I'm quite loud.
+
+456
+00:28:16.760 --> 00:28:17.560
+Is that okay?
+
+457
+00:28:17.560 --> 00:28:19.080
+Yeah, it's actually okay.
+
+458
+00:28:19.080 --> 00:28:19.800
+I lose this.
+
+459
+00:28:19.800 --> 00:28:20.720
+It's fine.
+
+460
+00:28:20.720 --> 00:28:23.600
+It is silly because it's a really good talk.
+
+461
+00:28:23.600 --> 00:28:26.760
+87% of subtasks
+
+462
+00:28:26.760 --> 00:28:29.760
+had no description what was in them.
+
+463
+00:28:30.480 --> 00:28:35.120
+So I don't know why, but a lot of people was creating stories
+
+464
+00:28:35.160 --> 00:28:38.720
+and creating like sub tickets in every like.
+
+465
+00:28:39.080 --> 00:28:42.040
+Yeah, like this is something because I mentioned
+
+466
+00:28:42.040 --> 00:28:45.760
+like we are trying to get like change done in one day.
+
+467
+00:28:45.760 --> 00:28:47.200
+So this is the reason why, let's say
+
+468
+00:28:47.200 --> 00:28:50.400
+story can be like describing all of the stuff that needs to be done.
+
+469
+00:28:50.400 --> 00:28:53.320
+And then sub tickets can be just like implement this.
+
+470
+00:28:53.320 --> 00:28:56.600
+Yeah, just title because it it will kind of make sense.
+
+471
+00:28:56.720 --> 00:29:00.360
+But then we just like yeah, if you just pull this information
+
+472
+00:29:00.360 --> 00:29:04.480
+from empty description like will not give you any, any value.
+
+473
+00:29:04.480 --> 00:29:07.400
+So let's try to go level up and then maybe like if,
+
+474
+00:29:07.400 --> 00:29:10.880
+if the story is empty, which usually I seem not not the case,
+
+475
+00:29:10.920 --> 00:29:15.160
+then we just like making sure that we pull at least something to to validate.
+
+476
+00:29:15.200 --> 00:29:20.200
+If the merge request align what with what needs to be done.
+
+477
+00:29:20.240 --> 00:29:21.800
+Yeah. I think
+
+478
+00:29:22.880 --> 00:29:25.240
+I think it's it's quite interesting
+
+479
+00:29:25.240 --> 00:29:28.840
+going through all of this and like having to explain it to a robot
+
+480
+00:29:28.840 --> 00:29:32.000
+or let, let's say, you know, and you realize
+
+481
+00:29:32.000 --> 00:29:36.040
+just how bad our processes are dealing with humans
+
+482
+00:29:36.040 --> 00:29:39.960
+and how much we infer and just make stuff up and go wrong.
+
+483
+00:29:40.000 --> 00:29:43.480
+And when we're having to go with all of this, just go, oh, this is not very good.
+
+484
+00:29:43.800 --> 00:29:46.400
+Do you find the same? Yeah. Yeah.
+
+485
+00:29:46.400 --> 00:29:49.400
+I, I think this is something that was need to be changed
+
+486
+00:29:49.400 --> 00:29:50.720
+when we started to adopt it.
+
+487
+00:29:50.720 --> 00:29:54.480
+More and more is like the good practices, the like,
+
+488
+00:29:54.520 --> 00:29:57.720
+all these processes in place is like showing the people
+
+489
+00:29:57.720 --> 00:30:02.000
+how good looks like and what we do expect to get better results.
+
+490
+00:30:02.040 --> 00:30:07.000
+Unfortunately, I was not part of the company when there was a conversation
+
+491
+00:30:07.000 --> 00:30:12.160
+about like evaluating this, how good the skills are, how good the rules are.
+
+492
+00:30:12.200 --> 00:30:15.800
+But I think it's like pretty interesting topic to think about.
+
+493
+00:30:15.840 --> 00:30:20.440
+And yeah, I really like, the talk from Simon about it,
+
+494
+00:30:20.440 --> 00:30:24.240
+and it's actually just forced you to think
+
+495
+00:30:24.520 --> 00:30:27.520
+how good your rules are, how good your skills are,
+
+496
+00:30:27.560 --> 00:30:30.840
+how you can make sure that all this information
+
+497
+00:30:30.880 --> 00:30:35.160
+is actually useful, and not just creating a more
+
+498
+00:30:35.320 --> 00:30:39.320
+noise and bloat and just like, trying to contradict with each other.
+
+499
+00:30:41.480 --> 00:30:44.480
+Yeah.
+
+500
+00:30:44.800 --> 00:30:45.120
+Yeah.
+
+501
+00:30:45.120 --> 00:30:47.800
+I'm not gonna throw.
+
+502
+00:30:47.800 --> 00:30:52.840
+So when you're doing the reviews, what were you asking the agent to review
+
+503
+00:30:52.880 --> 00:30:56.760
+and kind of saying review my code, tell me if it's good or not.
+
+504
+00:30:56.760 --> 00:30:58.760
+I'm assuming there was probably a set of, like,
+
+505
+00:30:58.760 --> 00:31:01.400
+specific things you wanted to get from that. Yeah.
+
+506
+00:31:01.400 --> 00:31:04.080
+So if you will take a look at the PR
+
+507
+00:31:04.080 --> 00:31:07.080
+agent afterwards, this is like open source software.
+
+508
+00:31:07.080 --> 00:31:10.040
+So you will see exactly what the final prompt is.
+
+509
+00:31:10.040 --> 00:31:12.720
+So it's like predefined prompt
+
+510
+00:31:12.720 --> 00:31:16.640
+like you are like AI reviewer, you're doing this this and this and that.
+
+511
+00:31:16.680 --> 00:31:22.320
+So what we did differently is like we injected our personal instructions
+
+512
+00:31:22.320 --> 00:31:27.760
+and our personal rules to align with what is expected from the company
+
+513
+00:31:27.760 --> 00:31:30.760
+because like, the company is like just doing some legal stuff.
+
+514
+00:31:30.760 --> 00:31:33.320
+So we need to make sure like all these like
+
+515
+00:31:33.320 --> 00:31:37.040
+requirements are matching, there is no security concerns.
+
+516
+00:31:37.040 --> 00:31:41.680
+And like different I, I can go back to, maybe, the slide.
+
+517
+00:31:46.960 --> 00:31:47.360
+Yeah.
+
+518
+00:31:47.360 --> 00:31:50.600
+So this is what most of the things
+
+519
+00:31:50.600 --> 00:31:53.800
+that was covered by, by all this like political stereo.
+
+520
+00:31:53.840 --> 00:31:56.840
+I would like to mention that
+
+521
+00:31:57.040 --> 00:32:00.280
+you, you should not, like, rely on it too much.
+
+522
+00:32:00.320 --> 00:32:03.680
+If we're talking about, like, really complicated work in the pull requests.
+
+523
+00:32:03.720 --> 00:32:04.320
+Right.
+
+524
+00:32:04.320 --> 00:32:05.880
+We still need to have all these,
+
+525
+00:32:05.880 --> 00:32:10.200
+like senior developers with the knowledge of like how what, what good looks like,
+
+526
+00:32:10.200 --> 00:32:12.200
+how it should work, what is the best solution.
+
+527
+00:32:12.200 --> 00:32:15.280
+So I look at this
+
+528
+00:32:15.640 --> 00:32:20.360
+as more like a helper to avoid spending time on this, right?
+
+529
+00:32:20.400 --> 00:32:23.120
+I don't want to write down, hey, it's missing tests.
+
+530
+00:32:23.120 --> 00:32:27.840
+It should be obvious and like it's pretty simple for the even.
+
+531
+00:32:27.840 --> 00:32:31.080
+Like the simple like just usual them to say, oh yes,
+
+532
+00:32:31.080 --> 00:32:35.200
+there is a function, but there is no test, so just write it down.
+
+533
+00:32:36.000 --> 00:32:39.000
+Do you think it's do you think it's possible for an agent to
+
+534
+00:32:39.440 --> 00:32:40.960
+recognize that it's
+
+535
+00:32:40.960 --> 00:32:42.440
+there is something that it doesn't know
+
+536
+00:32:42.440 --> 00:32:45.640
+how to do, in the sense that if it's something more complicated,
+
+537
+00:32:45.720 --> 00:32:47.920
+do you think you'd be possible to get an agent to say,
+
+538
+00:32:47.920 --> 00:32:51.360
+I think there's something more complicated here, but I don't know what.
+
+539
+00:32:52.600 --> 00:32:55.880
+So. Yeah.
+
+540
+00:32:56.120 --> 00:32:59.760
+I mean, like, we can inject more additional like, again,
+
+541
+00:32:59.800 --> 00:33:04.480
+rules or like specific things saying like, if you're not sure, just let us know.
+
+542
+00:33:04.600 --> 00:33:07.840
+But also part of the functionality of this agent
+
+543
+00:33:07.840 --> 00:33:11.640
+is defining how complicated the request
+
+544
+00:33:11.640 --> 00:33:15.040
+and scope of like, how much effort you will need to spend on the review.
+
+545
+00:33:15.040 --> 00:33:18.320
+And in the end, after the review, it's just like add the label.
+
+546
+00:33:18.320 --> 00:33:21.320
+So like the,
+
+547
+00:33:21.880 --> 00:33:26.720
+the pull request is like one out of five in complexity.
+
+548
+00:33:26.720 --> 00:33:28.480
+So should be pretty much simple.
+
+549
+00:33:28.480 --> 00:33:33.920
+But if you see it's a even a like as a 4 or 5 out of five, then it means
+
+550
+00:33:33.920 --> 00:33:37.520
+there is like some additional complexity you need to be careful about.
+
+551
+00:33:38.320 --> 00:33:39.520
+Makes sense. Thanks.
+
+552
+00:33:40.960 --> 00:33:42.120
+All right.
+
+553
+00:33:42.120 --> 00:33:43.800
+Cool. Thank you very much.

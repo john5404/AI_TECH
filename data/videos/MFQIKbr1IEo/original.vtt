@@ -1,0 +1,3989 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:05.000
+We wanted Codex to be able to connect to our Electron app.
+
+2
+00:00:05.040 --> 00:00:06.560
+Chrome DevTools protocol.
+
+3
+00:00:06.560 --> 00:00:08.120
+The MCP was how we started out.
+
+4
+00:00:08.120 --> 00:00:11.200
+Eventually, I kind of took a peek at the code and it was entirely different.
+
+5
+00:00:11.320 --> 00:00:15.200
+Still, Codex was connecting to the Electron app over Chrome Dev Tools
+
+6
+00:00:15.200 --> 00:00:18.880
+protocol, but it was actually a local TypeScript daemon that was being spun up
+
+7
+00:00:18.920 --> 00:00:22.440
+that was providing a little CLI interface instead of the MCP,
+
+8
+00:00:22.440 --> 00:00:26.680
+because we found that there were only 2 or 3 tool calls that we actually needed.
+
+9
+00:00:26.880 --> 00:00:30.440
+So more context efficient was faster, and this had happened
+
+10
+00:00:30.480 --> 00:00:33.120
+underneath me, without me knowing.
+
+11
+00:00:33.120 --> 00:00:34.680
+My workflow was not interrupted.
+
+12
+00:00:34.680 --> 00:00:38.960
+That same dependency edge and entity relationship existed,
+
+13
+00:00:38.960 --> 00:00:42.120
+but I almost didn't have to know how it was implemented.
+
+14
+00:00:42.120 --> 00:00:43.760
+Did you find that cool or worrying?
+
+15
+00:00:43.760 --> 00:00:45.400
+I found it shocking.
+
+16
+00:00:47.040 --> 00:00:50.320
+The AI Native Dev is a podcast for developers and engineering
+
+17
+00:00:50.320 --> 00:00:53.560
+leads at the cutting edge of AI and agentic coding.
+
+18
+00:00:53.640 --> 00:00:56.640
+Join your hosts, Guy Podjarny and me, Simon Maple,
+
+19
+00:00:56.640 --> 00:00:59.840
+every week as we chat with the most exciting voices in
+
+20
+00:00:59.840 --> 00:01:03.400
+AI and tackle the biggest questions facing developers today.
+
+21
+00:01:04.240 --> 00:01:07.240
+This is the AI Native Dev. ﻿
+
+22
+00:01:09.680 --> 00:01:10.480
+Hey everyone!
+
+23
+00:01:10.480 --> 00:01:12.760
+Hope you're enjoying the episode so far.
+
+24
+00:01:12.760 --> 00:01:16.640
+Our team is working really hard behind the scenes to bring you the best guests,
+
+25
+00:01:16.640 --> 00:01:20.920
+so we can have the most informative conversations about agentic development,
+
+26
+00:01:20.960 --> 00:01:22.600
+whether that's talking about the latest
+
+27
+00:01:22.600 --> 00:01:26.400
+tools, the most efficient workflows, or defining best practices.
+
+28
+00:01:26.400 --> 00:01:30.280
+But for whatever reason, many of you have yet to subscribe to the channel.
+
+29
+00:01:30.320 --> 00:01:33.360
+If you're enjoying the podcast and want us to continue to bring you
+
+30
+00:01:33.360 --> 00:01:34.640
+the very best content, please do us a favor
+
+31
+00:01:34.640 --> 00:01:37.120
+and hit that subscribe button.
+
+32
+00:01:37.120 --> 00:01:40.480
+It really does make a difference and lets us continue to improve
+
+33
+00:01:40.480 --> 00:01:44.760
+the quality of our guests and build an even better product for you.
+
+34
+00:01:44.920 --> 00:01:46.640
+All right, back to the episode. ﻿
+
+35
+00:01:46.640 --> 00:01:51.080
+Hello and welcome to another episode of the AI Native Dev.
+
+36
+00:01:51.080 --> 00:01:56.800
+And we're here live at AI Native Dev Con 2026 in London.
+
+37
+00:01:56.800 --> 00:02:02.320
+And joining me is Ryan Lopopolo, who is a member of technical staff at OpenAI.
+
+38
+00:02:02.400 --> 00:02:04.960
+So hey folks, Ryan, how are you doing?
+
+39
+00:02:04.960 --> 00:02:07.440
+Great. Excited to be here with Cliff is popping.
+
+40
+00:02:07.440 --> 00:02:10.440
+It's really fun. I go on stage later today.
+
+41
+00:02:10.480 --> 00:02:12.280
+I'm just excited to get after it.
+
+42
+00:02:12.280 --> 00:02:12.720
+Absolutely.
+
+43
+00:02:12.720 --> 00:02:14.320
+Looking forward and tell us a little bit about the session
+
+44
+00:02:14.320 --> 00:02:15.440
+that you're giving later.
+
+45
+00:02:15.440 --> 00:02:15.800
+Yeah.
+
+46
+00:02:15.800 --> 00:02:17.720
+So I'm going to be talking about
+
+47
+00:02:17.720 --> 00:02:19.880
+all things harness engineering, which is sort of,
+
+48
+00:02:19.880 --> 00:02:20.800
+I guess, kind of like
+
+49
+00:02:20.800 --> 00:02:23.360
+some of the discourse that I helped define earlier in the year
+
+50
+00:02:23.360 --> 00:02:27.520
+here, where talk about what it means to kind of set up
+
+51
+00:02:27.560 --> 00:02:31.280
+agents to do highly complex, autonomous software engineering,
+
+52
+00:02:31.280 --> 00:02:32.680
+like work in your code bases
+
+53
+00:02:32.680 --> 00:02:36.760
+with high confidence and almost headless nature if you can get to it.
+
+54
+00:02:36.800 --> 00:02:41.000
+Yeah, a lot of fancy context management techniques in order to get these agents
+
+55
+00:02:41.000 --> 00:02:44.640
+to learn from their own mistakes, produce high quality code,
+
+56
+00:02:44.640 --> 00:02:47.000
+and go for a very long time without human intervention.
+
+57
+00:02:47.000 --> 00:02:47.360
+Absolutely.
+
+58
+00:02:47.360 --> 00:02:48.200
+And we're going to talk about
+
+59
+00:02:48.200 --> 00:02:49.080
+harness engineering,
+
+60
+00:02:49.080 --> 00:02:50.360
+and we'll talk about some of the
+
+61
+00:02:50.360 --> 00:02:55.120
+methodologies that you've used internally at OpenAI and talk through maybe some
+
+62
+00:02:55.200 --> 00:02:57.920
+some of the bits that have been enjoyable, some of the bits that have been scary.
+
+63
+00:02:57.920 --> 00:02:59.000
+And it's going to be great fun.
+
+64
+00:02:59.000 --> 00:03:04.800
+So so, Ryan, why don't we kick off with harness engineering for for the layman.
+
+65
+00:03:04.840 --> 00:03:06.560
+What is Harness engineering?
+
+66
+00:03:06.560 --> 00:03:06.960
+Yeah.
+
+67
+00:03:06.960 --> 00:03:11.600
+So we have these wonderful technology in these coding agents
+
+68
+00:03:11.600 --> 00:03:16.160
+and these fantastic models that are very smart and able to produce
+
+69
+00:03:16.160 --> 00:03:21.600
+a ton of code and harness engineering is this idea that to produce code
+
+70
+00:03:21.600 --> 00:03:25.360
+that is acceptable, to produce code that we trust, that we can build
+
+71
+00:03:25.360 --> 00:03:27.280
+confidence and business systems around?
+
+72
+00:03:27.280 --> 00:03:31.560
+There are a bunch of little decisions that go into the process of producing
+
+73
+00:03:31.600 --> 00:03:36.680
+PRS, producing systems that we have to make along the way, and in order
+
+74
+00:03:36.680 --> 00:03:39.840
+to get the agent to know and understand those, we have to write it down.
+
+75
+00:03:39.840 --> 00:03:44.040
+We have to make sure that, like the content of those choices,
+
+76
+00:03:44.040 --> 00:03:47.840
+all those nonfunctional requirements that go into making good code, get surface
+
+77
+00:03:47.880 --> 00:03:49.200
+to the agent at the right time.
+
+78
+00:03:49.200 --> 00:03:54.440
+So it's a combination of getting context into the repository in a place
+
+79
+00:03:54.440 --> 00:03:58.360
+where these coding agents can see it, surfacing it to the agent
+
+80
+00:03:58.360 --> 00:04:02.200
+at the right time, and making sure that all the code that we produce kind of like
+
+81
+00:04:02.440 --> 00:04:06.560
+follows the golden thread of what it means for us to produce high quality software.
+
+82
+00:04:06.600 --> 00:04:09.600
+Reviewer agents, tests, lints,
+
+83
+00:04:09.720 --> 00:04:14.240
+big refactoring loops, all sorts of ways to get the agent to close the loop
+
+84
+00:04:14.240 --> 00:04:17.600
+and make sure that it proves to me and the rest of the team
+
+85
+00:04:17.600 --> 00:04:21.080
+that the code it has produced is acceptable and can be merged.
+
+86
+00:04:21.520 --> 00:04:24.960
+So we've had prompt engineering, context engineering, and harness engineering.
+
+87
+00:04:24.960 --> 00:04:25.680
+Now, what would you say?
+
+88
+00:04:25.680 --> 00:04:26.040
+The kind of
+
+89
+00:04:26.040 --> 00:04:26.960
+like the main differences
+
+90
+00:04:26.960 --> 00:04:30.240
+or overlap between context engineering and harness engineering?
+
+91
+00:04:30.280 --> 00:04:31.680
+I think really
+
+92
+00:04:32.840 --> 00:04:34.320
+the two
+
+93
+00:04:34.320 --> 00:04:37.520
+only levers you have when interacting with agents
+
+94
+00:04:37.560 --> 00:04:40.920
+is which context you provide and which tools you provide.
+
+95
+00:04:41.120 --> 00:04:42.840
+And harness engineering is kind of
+
+96
+00:04:42.840 --> 00:04:46.920
+a combination of both, with the goal of making sure the context that we give
+
+97
+00:04:46.920 --> 00:04:51.680
+the agent is correct so that it can work its reasoning magic to produce good code.
+
+98
+00:04:51.840 --> 00:04:56.120
+And one thing that I think is unique about harness engineering is we're actually
+
+99
+00:04:56.120 --> 00:05:01.240
+using the tool calls to prompt inject the agent to manage its context window.
+
+100
+00:05:01.760 --> 00:05:04.640
+One thing that's pretty neat here is the way
+
+101
+00:05:04.640 --> 00:05:07.760
+that we structure tests and lints and well-formed
+
+102
+00:05:08.440 --> 00:05:11.400
+tests in the code base is actually very different
+
+103
+00:05:11.400 --> 00:05:14.680
+than how I would structure those messages for a human right.
+
+104
+00:05:14.800 --> 00:05:18.400
+I would have an exhaustive list of failures that I give the human,
+
+105
+00:05:18.400 --> 00:05:21.560
+and have them wade through the logs in order to figure out what's wrong.
+
+106
+00:05:21.600 --> 00:05:24.560
+Whereas with agents, you know, due to the nature
+
+107
+00:05:24.560 --> 00:05:26.760
+of how they invoke tools, we want those messages
+
+108
+00:05:26.760 --> 00:05:30.720
+to be somewhat compressed, but also semantically meaningful, right?
+
+109
+00:05:30.760 --> 00:05:34.040
+Rather than giving sort of a mechanical eslint
+
+110
+00:05:34.040 --> 00:05:38.000
+failure, for example, I can give a prose error message
+
+111
+00:05:38.000 --> 00:05:41.680
+that says, you screwed it up in this way, in this file, you know,
+
+112
+00:05:41.760 --> 00:05:46.520
+please open it and follow the run book in file X, y, z to go fix it.
+
+113
+00:05:46.520 --> 00:05:48.360
+Because we've seen you make this mistake before,
+
+114
+00:05:48.360 --> 00:05:51.120
+and we know that we can trust you to do the right thing.
+
+115
+00:05:51.120 --> 00:05:51.480
+Yeah.
+
+116
+00:05:51.480 --> 00:05:54.920
+And that that level of integration, that deeper integration really unlocks
+
+117
+00:05:54.920 --> 00:05:57.360
+that next step right now. Interesting.
+
+118
+00:05:57.360 --> 00:06:00.240
+I'm like looking at some of the some of your background here.
+
+119
+00:06:00.240 --> 00:06:01.080
+You built stripes
+
+120
+00:06:01.080 --> 00:06:05.440
+efficiency engineering team led developer productivity at Brex for 350 engineers.
+
+121
+00:06:05.480 --> 00:06:09.080
+There's a bunch of kind of like infrastructure and background there.
+
+122
+00:06:09.120 --> 00:06:11.080
+Would you say that helped you or hindered
+
+123
+00:06:11.080 --> 00:06:13.600
+you from the point of view of harness engineering?
+
+124
+00:06:13.600 --> 00:06:14.600
+I definitely helped.
+
+125
+00:06:14.600 --> 00:06:20.000
+It kind of got me used to this idea of working through others.
+
+126
+00:06:20.000 --> 00:06:23.160
+You know, when I'm trying to improve productivity
+
+127
+00:06:23.200 --> 00:06:26.640
+for an engineering organization of 350 engineers,
+
+128
+00:06:26.640 --> 00:06:30.720
+I can't be hands on in the weeds of every PR that's being produced,
+
+129
+00:06:30.720 --> 00:06:34.840
+and I can't work directly on the underlying systems.
+
+130
+00:06:34.840 --> 00:06:37.160
+I kind of have to steer from the background,
+
+131
+00:06:37.160 --> 00:06:39.640
+make sure that the right things are happening.
+
+132
+00:06:39.640 --> 00:06:40.360
+By default,
+
+133
+00:06:40.360 --> 00:06:42.960
+the right systems are in place in order to have high trust
+
+134
+00:06:42.960 --> 00:06:44.640
+in the organization to do good work.
+
+135
+00:06:44.640 --> 00:06:48.680
+And that's exactly what it means in order to be high functioning with these agents,
+
+136
+00:06:48.880 --> 00:06:52.880
+in order to move beyond sort of coding agents as pair
+
+137
+00:06:52.920 --> 00:06:57.360
+programing assistance to go massively parallel where I've got the 15 team
+
+138
+00:06:57.680 --> 00:07:02.000
+windows open, I need to be able to take my hands off the wheel to a certain extent.
+
+139
+00:07:02.040 --> 00:07:06.000
+So this way of operating this sort of systems thinking mentality
+
+140
+00:07:06.040 --> 00:07:09.440
+kind of comes naturally to me, because that's kind of the expertise
+
+141
+00:07:09.440 --> 00:07:11.280
+I've had to build up over the course of my career.
+
+142
+00:07:11.280 --> 00:07:12.800
+Yeah, yeah. Interesting.
+
+143
+00:07:12.800 --> 00:07:16.760
+Would actually touch a little bit about, I guess, the part of that which is, well,
+
+144
+00:07:16.760 --> 00:07:19.560
+how much is how much trust do you need then to have those 15 open.
+
+145
+00:07:19.560 --> 00:07:22.400
+But we'll cover that in just a second. I'd love to.
+
+146
+00:07:22.400 --> 00:07:24.360
+You know, when you have those 15 open, there's
+
+147
+00:07:24.360 --> 00:07:26.440
+obviously a huge amount of age in written code
+
+148
+00:07:26.440 --> 00:07:30.600
+and various different roles in the in the workflow and the pipeline.
+
+149
+00:07:30.600 --> 00:07:34.240
+Now, a really interesting constraint that you imposed on yourself
+
+150
+00:07:34.240 --> 00:07:37.640
+and the team was no human written code.
+
+151
+00:07:37.680 --> 00:07:41.120
+That's right. And I guess, first of all,
+
+152
+00:07:42.080 --> 00:07:44.680
+how how fearful were you at the time
+
+153
+00:07:44.680 --> 00:07:47.920
+when you said, look, no one's to write any code here in this project?
+
+154
+00:07:48.120 --> 00:07:51.160
+How confident were you that that was the right course?
+
+155
+00:07:51.200 --> 00:07:54.560
+It was definitely a bit of a radical idea at the time.
+
+156
+00:07:54.560 --> 00:07:58.040
+Kind of when I started out building in this way
+
+157
+00:07:58.040 --> 00:08:01.800
+was even before we had proper reasoning models.
+
+158
+00:08:01.840 --> 00:08:05.480
+GPT five came out in August of 2025,
+
+159
+00:08:05.480 --> 00:08:09.200
+and I started working in this hands off way in June.
+
+160
+00:08:09.200 --> 00:08:13.120
+So this is, you know, oh three era Codex Mini
+
+161
+00:08:13.160 --> 00:08:16.840
+had just came out the very first versions of Codex CLI.
+
+162
+00:08:16.960 --> 00:08:21.080
+And to be honest, back then the models were way less capable.
+
+163
+00:08:21.080 --> 00:08:24.600
+It was very painful in order to operate hands off like this,
+
+164
+00:08:24.840 --> 00:08:28.360
+and sort of by necessity,
+
+165
+00:08:28.520 --> 00:08:31.720
+working with the model, working with the coding agent,
+
+166
+00:08:31.720 --> 00:08:36.520
+I kind of had to stick myself in as a very chunky tool for the model
+
+167
+00:08:36.560 --> 00:08:40.120
+to delegate to if it got stuck, or if it needed to do something.
+
+168
+00:08:40.360 --> 00:08:44.280
+The only thing it could do at the beginning was ask Ryan to do something
+
+169
+00:08:44.280 --> 00:08:48.360
+for it, and eventually I get tired of being asked the same thing all the time.
+
+170
+00:08:48.400 --> 00:08:52.720
+Initially, back then it was installing dependencies with cargo.
+
+171
+00:08:52.760 --> 00:08:56.680
+This is just not something that that Codex was able to do reliably back then.
+
+172
+00:08:56.680 --> 00:08:58.880
+So I would type the commands in my terminal and,
+
+173
+00:08:58.880 --> 00:09:03.120
+you know, give the agent some dependencies to work with and sort of automating.
+
+174
+00:09:03.120 --> 00:09:06.960
+That was the first step, and it kind of got me in this mode
+
+175
+00:09:06.960 --> 00:09:12.000
+of paying very close attention to where I'm spending my time figuring out ways
+
+176
+00:09:12.000 --> 00:09:16.320
+to build up a tool call that removes the need for me to spend that time.
+
+177
+00:09:16.360 --> 00:09:20.040
+So then I can kind of figure out the other ways that I can help the agent
+
+178
+00:09:20.040 --> 00:09:23.040
+get more and more chunky tools, to give it more capability.
+
+179
+00:09:23.040 --> 00:09:27.600
+And to start with zero like that, you kind of.
+
+180
+00:09:30.000 --> 00:09:30.800
+Viscerally
+
+181
+00:09:30.800 --> 00:09:33.840
+experience the failure of the agent,
+
+182
+00:09:34.400 --> 00:09:38.400
+I think, to kind of have a good sense of
+
+183
+00:09:39.600 --> 00:09:42.760
+the tool calls as they are making the mistakes the agent is making.
+
+184
+00:09:42.800 --> 00:09:44.360
+Sort of in the process of writing
+
+185
+00:09:44.360 --> 00:09:47.360
+the code is really, really important in order to build confidence in it,
+
+186
+00:09:47.600 --> 00:09:51.640
+because to see what mistakes it's making, I'm also able to see
+
+187
+00:09:51.640 --> 00:09:54.840
+the parts that it does really good at, and it can start to retool.
+
+188
+00:09:54.840 --> 00:09:59.400
+The way I go about my week to lean into the stuff Codex is really good at.
+
+189
+00:09:59.400 --> 00:10:02.320
+It's really good at following instructions.
+
+190
+00:10:02.320 --> 00:10:05.400
+It's really good at writing tests and calling them.
+
+191
+00:10:05.400 --> 00:10:10.080
+So collapsing a lot of the engineering process into these, like
+
+192
+00:10:10.240 --> 00:10:14.400
+very well paved roads for the agent helps me build confidence in it.
+
+193
+00:10:14.480 --> 00:10:15.720
+It's funny how you say it's
+
+194
+00:10:15.720 --> 00:10:18.880
+really good at following instructions and and really good at writing tests.
+
+195
+00:10:18.880 --> 00:10:22.200
+And I'm thinking, wow, the complete opposite of most developers grid is that
+
+196
+00:10:22.240 --> 00:10:23.760
+is that maybe that's wrong to say.
+
+197
+00:10:23.760 --> 00:10:25.520
+But so that's really interesting.
+
+198
+00:10:25.520 --> 00:10:29.600
+And I guess when you think about your team like this is a decision that you made,
+
+199
+00:10:29.600 --> 00:10:33.600
+but when you think about your team, how how comfortable was
+
+200
+00:10:33.880 --> 00:10:37.240
+how on board was everyone in joining this?
+
+201
+00:10:37.480 --> 00:10:42.240
+I got very lucky that as we grew the team, we grew it all
+
+202
+00:10:42.240 --> 00:10:46.400
+with new hires to the company, so they can't get dropped into this insane
+
+203
+00:10:46.400 --> 00:10:49.520
+environment and being like, oh, I guess this is just the way we do things now.
+
+204
+00:10:49.560 --> 00:10:51.880
+Let me just go whole hog at it.
+
+205
+00:10:51.880 --> 00:10:56.000
+It usually took about two weeks for folks to ramp up to this way
+
+206
+00:10:56.000 --> 00:11:00.320
+of operating some growing pains very early on in growing the team.
+
+207
+00:11:00.880 --> 00:11:03.120
+Probably a good amount of dog feeding as well. Yeah.
+
+208
+00:11:03.120 --> 00:11:04.200
+Of course, back to the team.
+
+209
+00:11:04.200 --> 00:11:07.160
+I mean, the the product we were building to also helped a bunch.
+
+210
+00:11:07.160 --> 00:11:10.360
+We were building sort of a data analyst agent,
+
+211
+00:11:10.360 --> 00:11:14.400
+a data analyst agent using Codex inside in order
+
+212
+00:11:14.400 --> 00:11:18.480
+to write SQL and cold Databricks and all these sort of things
+
+213
+00:11:19.480 --> 00:11:21.920
+means a lot of the techniques that we were using to write
+
+214
+00:11:21.920 --> 00:11:24.640
+the code were techniques we needed to deploy into this agent,
+
+215
+00:11:24.640 --> 00:11:26.880
+to have it be effective of a very cool, virtuous cycle.
+
+216
+00:11:26.880 --> 00:11:31.800
+There took about two weeks for folks to onboard, initially very painful
+
+217
+00:11:31.800 --> 00:11:36.440
+in terms of figuring out how to coach folks to not produce slop.
+
+218
+00:11:36.440 --> 00:11:40.720
+A big part of maintaining a high velocity with these tools is just not permitting
+
+219
+00:11:40.720 --> 00:11:42.320
+slop to enter the code base.
+
+220
+00:11:42.320 --> 00:11:46.080
+But once we sort of had figured it out, by the time we got our fifth,
+
+221
+00:11:46.080 --> 00:11:49.680
+sixth, or seventh hire onto the team, within those two weeks,
+
+222
+00:11:49.680 --> 00:11:54.440
+we were actually seeing like velocity and PR throughput go up five,
+
+223
+00:11:54.480 --> 00:11:58.440
+ten, 15%, which is again, not the common path.
+
+224
+00:11:58.440 --> 00:12:02.760
+When you onboard quickly to a team like the the precinct time.
+
+225
+00:12:02.800 --> 00:12:03.240
+Right.
+
+226
+00:12:03.240 --> 00:12:08.760
+And the reason for that is because as we accrued more
+
+227
+00:12:08.760 --> 00:12:13.600
+and more context, more and more capability into the code base, sort of everyone
+
+228
+00:12:13.600 --> 00:12:17.520
+invoking Codex as the sole entry point to the code base was getting the best parts
+
+229
+00:12:17.520 --> 00:12:21.360
+of everybody by default, rather than having to spend
+
+230
+00:12:21.880 --> 00:12:25.440
+one, two, three months absorbing the best practices of the team,
+
+231
+00:12:26.640 --> 00:12:29.800
+they're already there, which means new hires to the team
+
+232
+00:12:29.800 --> 00:12:34.360
+were able to very quickly supply their best judgment and context,
+
+233
+00:12:34.360 --> 00:12:38.120
+which means now everybody is being more effective very, very quickly.
+
+234
+00:12:38.160 --> 00:12:41.280
+You're effectively onboarding the new hire through the agent already.
+
+235
+00:12:41.400 --> 00:12:43.240
+That's right. Yeah. That's right. Brilliant.
+
+236
+00:12:43.240 --> 00:12:46.200
+So there's a really nice phrase. I'm sure you've heard.
+
+237
+00:12:46.200 --> 00:12:47.920
+I've said it a million times as well.
+
+238
+00:12:47.920 --> 00:12:49.680
+You can go fast.
+
+239
+00:12:49.680 --> 00:12:51.800
+You can only go fast when you have breaks.
+
+240
+00:12:51.800 --> 00:12:57.120
+Right now going in this scenario going fast is using,
+
+241
+00:12:57.360 --> 00:13:02.080
+you know, Codex and AI agents to to generate that code for us
+
+242
+00:13:02.120 --> 00:13:05.920
+at a faster velocity, that then, then we would be able to manually
+
+243
+00:13:05.920 --> 00:13:07.720
+write the breaks. Of course.
+
+244
+00:13:07.720 --> 00:13:11.800
+Are those tests, those reviews that that, you know, validate
+
+245
+00:13:11.800 --> 00:13:15.280
+the code that show and highlight where we need to actually spend time
+
+246
+00:13:15.280 --> 00:13:18.280
+and fix and adjust before we go live.
+
+247
+00:13:18.760 --> 00:13:23.240
+Another interesting thing that is the Zero Human review.
+
+248
+00:13:23.240 --> 00:13:26.480
+Now, this is almost you're putting AI to be
+
+249
+00:13:26.480 --> 00:13:29.760
+the brakes now, which is which is a little bit more worrying.
+
+250
+00:13:30.720 --> 00:13:34.360
+In terms of, I guess,
+
+251
+00:13:35.040 --> 00:13:38.280
+you know, an alarming and an alarming proposal.
+
+252
+00:13:38.320 --> 00:13:41.560
+How comfortable were the engineers when you said, right,
+
+253
+00:13:41.600 --> 00:13:44.680
+we're now going to do zero human review on this code.
+
+254
+00:13:44.680 --> 00:13:48.560
+We're going to we want, you know, agents to be able to do that review.
+
+255
+00:13:48.720 --> 00:13:49.040
+Yeah.
+
+256
+00:13:49.040 --> 00:13:53.080
+So sort of like the idea of post merge code review if at all
+
+257
+00:13:53.080 --> 00:13:57.240
+sort of thing is, you know, kind of like not not a new thing.
+
+258
+00:13:57.280 --> 00:13:57.520
+Right?
+
+259
+00:13:57.520 --> 00:14:01.000
+When I started my career back in the early 20 tens, like this was
+
+260
+00:14:01.040 --> 00:14:03.200
+this was a normal part of what it meant to write.
+
+261
+00:14:03.200 --> 00:14:06.560
+Software is kind of have a high trust environment with your team,
+
+262
+00:14:06.560 --> 00:14:09.640
+bias to action, bias to throughput, and,
+
+263
+00:14:09.680 --> 00:14:12.840
+you know, have some representative sample of the code that you are looking at,
+
+264
+00:14:12.840 --> 00:14:15.840
+but you know, otherwise have lots of synchronous communication
+
+265
+00:14:15.840 --> 00:14:19.320
+on it as a team to make sure that everyone has the same mental model of the system.
+
+266
+00:14:19.600 --> 00:14:23.480
+And it's very cool to kind of like have this come back into vogue
+
+267
+00:14:23.480 --> 00:14:27.760
+with agents, because if the entry point to the code
+
+268
+00:14:27.800 --> 00:14:32.720
+base is always the agent, it's really not required for every engineer
+
+269
+00:14:32.720 --> 00:14:35.960
+on the team to have a full and complete mental model of the system,
+
+270
+00:14:36.200 --> 00:14:40.320
+so long as that they are able to trust that everyone else on the team
+
+271
+00:14:40.360 --> 00:14:43.960
+is enabling Codex to have that level of expertise.
+
+272
+00:14:43.960 --> 00:14:49.160
+Which is not to say that like there is no review at all in the system, right?
+
+273
+00:14:49.200 --> 00:14:52.360
+Like to kind of provide a little bit more nuance here.
+
+274
+00:14:52.360 --> 00:14:56.200
+We do have some cases where we require like
+
+275
+00:14:56.240 --> 00:15:00.920
+two party traditional review pre-merger, and most of the time that is centered
+
+276
+00:15:00.920 --> 00:15:07.000
+around things like highly complex plans, sort of phase milestones
+
+277
+00:15:07.000 --> 00:15:10.480
+that would take place over the course of an actual week, these sorts of things.
+
+278
+00:15:10.560 --> 00:15:14.400
+And the reason for that is these plans, these milestones,
+
+279
+00:15:14.400 --> 00:15:18.840
+these exec plans function as the prompt you're going to give the agents.
+
+280
+00:15:18.840 --> 00:15:24.640
+And if you are relying on a text document to drive implementation,
+
+281
+00:15:24.680 --> 00:15:28.240
+being crisp around what words are in there and whether or not
+
+282
+00:15:28.240 --> 00:15:32.000
+they fully under or specify the task is quite important
+
+283
+00:15:32.000 --> 00:15:35.640
+because if you specify the task upfront, you are going to get garbage.
+
+284
+00:15:35.920 --> 00:15:38.960
+So that's kind of where we focus the the bulk of the human review.
+
+285
+00:15:39.000 --> 00:15:40.280
+And so the review here
+
+286
+00:15:40.280 --> 00:15:42.680
+like it's different to how we would normally think of a code.
+
+287
+00:15:42.680 --> 00:15:43.840
+Yeah. It's up front right. Yeah.
+
+288
+00:15:43.840 --> 00:15:46.120
+It's like first of all a code review.
+
+289
+00:15:46.120 --> 00:15:49.640
+You know we will argue about details and naming and things like, you know,
+
+290
+00:15:50.000 --> 00:15:53.400
+almost more style guide style comments
+
+291
+00:15:53.400 --> 00:15:56.800
+or rather that's what sometimes happens, unfortunately.
+
+292
+00:15:57.200 --> 00:15:59.680
+Whereas now what we're looking at is actually a much more
+
+293
+00:15:59.680 --> 00:16:01.080
+I guess there's probably a couple of reasons.
+
+294
+00:16:01.080 --> 00:16:03.400
+One, because it's actually more interesting to actually,
+
+295
+00:16:03.400 --> 00:16:06.880
+you know, review at that higher level anyway, because they're more meaningful
+
+296
+00:16:06.920 --> 00:16:11.280
+input from, from our, our point of view, where we need to kind of like much more,
+
+297
+00:16:11.320 --> 00:16:13.480
+think about what's the greatest value I can provide here.
+
+298
+00:16:13.480 --> 00:16:16.320
+And it is that more meaningful decision making at the top.
+
+299
+00:16:16.320 --> 00:16:20.000
+But also, I guess we're probably more abstracted away from the code.
+
+300
+00:16:20.040 --> 00:16:22.200
+So there is an amount that we just have to trust.
+
+301
+00:16:22.200 --> 00:16:22.720
+Or actually
+
+302
+00:16:22.720 --> 00:16:24.840
+it'll it's almost a waste of our time to go too
+
+303
+00:16:24.840 --> 00:16:28.720
+deep into the implementation because we need that to be abstracted away.
+
+304
+00:16:28.720 --> 00:16:32.520
+And we need mechanisms of where testing just occurs to make sure that
+
+305
+00:16:32.560 --> 00:16:34.320
+that succeeds. That's right.
+
+306
+00:16:34.320 --> 00:16:38.360
+This is sort of again, that sort of like group tech lead sort of mentality.
+
+307
+00:16:38.400 --> 00:16:38.680
+Right.
+
+308
+00:16:38.680 --> 00:16:42.320
+Like when when I lead developer productivity at Brex.
+
+309
+00:16:42.320 --> 00:16:42.560
+Right.
+
+310
+00:16:42.560 --> 00:16:47.040
+Like I don't have my hands in the weeds of every bit of Terraform.
+
+311
+00:16:47.040 --> 00:16:48.160
+Every team is writing.
+
+312
+00:16:48.160 --> 00:16:51.560
+But I do care at a high level about like guiding principles.
+
+313
+00:16:51.600 --> 00:16:54.160
+Right? I want the infrastructure to be reproducible.
+
+314
+00:16:54.160 --> 00:16:56.160
+I want it to provision quickly.
+
+315
+00:16:56.160 --> 00:17:00.760
+I want us to have modules in place that solve common developer workflows.
+
+316
+00:17:00.920 --> 00:17:02.880
+But like how you structure
+
+317
+00:17:02.880 --> 00:17:06.680
+your underlying modules, whether you're using for each in an idiomatic way.
+
+318
+00:17:06.680 --> 00:17:09.960
+I don't really care too much about that, as long as the code is like,
+
+319
+00:17:10.000 --> 00:17:13.480
+locally coherent and actually solves the business problems that I'm hoping.
+
+320
+00:17:13.520 --> 00:17:13.800
+To do.
+
+321
+00:17:13.800 --> 00:17:16.800
+And ideally that's a decision that maybe even change over time
+
+322
+00:17:16.960 --> 00:17:18.480
+of how something should be structured.
+
+323
+00:17:18.480 --> 00:17:22.960
+So it's not something we should always be so connected to, at all times.
+
+324
+00:17:22.960 --> 00:17:26.600
+Anyway, I think we mentioned kind of like trust a little bit,
+
+325
+00:17:26.600 --> 00:17:29.720
+I can't remember what the, the magic ratio of trust is, where it doesn't matter
+
+326
+00:17:29.720 --> 00:17:31.880
+how many times something works, it's it's how frequently
+
+327
+00:17:31.880 --> 00:17:35.120
+something doesn't work is the key which which breaks the trust.
+
+328
+00:17:35.440 --> 00:17:39.120
+But I guess at what stage were you and the team like,
+
+329
+00:17:39.160 --> 00:17:40.880
+truly thinking, oh, actually, do you know what?
+
+330
+00:17:40.880 --> 00:17:42.480
+I completely trust this.
+
+331
+00:17:42.480 --> 00:17:45.120
+Not not, you know, I guess from my point of view.
+
+332
+00:17:45.120 --> 00:17:47.240
+And I'll talk about myself here when I say laziness.
+
+333
+00:17:47.240 --> 00:17:47.720
+But there is a
+
+334
+00:17:47.720 --> 00:17:48.480
+there is a time
+
+335
+00:17:48.480 --> 00:17:51.760
+when I'm using agentic development where I'm just kind of like assuming
+
+336
+00:17:51.800 --> 00:17:53.960
+and just being lazy about not not, you know,
+
+337
+00:17:53.960 --> 00:17:57.720
+reviewing things in enough depth, but in terms of like, true trust is in.
+
+338
+00:17:57.760 --> 00:17:59.560
+Yeah, I'm going to I'm going to hand this off to the agent
+
+339
+00:17:59.560 --> 00:18:02.560
+and believe that this is going to be high quality, that I can actually,
+
+340
+00:18:03.600 --> 00:18:05.440
+you know, push to production.
+
+341
+00:18:05.440 --> 00:18:08.520
+At what moment would you say in the, in the during the process,
+
+342
+00:18:08.520 --> 00:18:12.760
+would you say you were truly trusting of what was being delivered?
+
+343
+00:18:12.760 --> 00:18:14.800
+I think there were two sort of phases here.
+
+344
+00:18:14.800 --> 00:18:19.600
+One was, do I trust the agent to be able to produce code?
+
+345
+00:18:19.600 --> 00:18:24.720
+Well, in the magic moment, for that was sort of working on
+
+346
+00:18:24.720 --> 00:18:28.800
+what was essentially a very early version of what the Codex app
+
+347
+00:18:28.800 --> 00:18:33.440
+is today, talking with a teammate around.
+
+348
+00:18:33.440 --> 00:18:35.520
+Man, I wish I had voice input here,
+
+349
+00:18:35.520 --> 00:18:39.960
+and then being able to just give a prompt and half an hour later
+
+350
+00:18:40.040 --> 00:18:43.800
+see that in the real world in the app was fantastic.
+
+351
+00:18:43.840 --> 00:18:49.160
+You kind of got this feeling of confidence that it really is down to
+
+352
+00:18:49.160 --> 00:18:52.920
+my capacity for scheduling prompts to go into this magic machine to
+
+353
+00:18:52.960 --> 00:18:54.880
+see my ideas come to life.
+
+354
+00:18:54.880 --> 00:19:00.680
+So that was sort of like the first phase of getting into this mindset of our role
+
+355
+00:19:00.680 --> 00:19:05.120
+as engineers should be to figure out ways to feed the machine, to schedule
+
+356
+00:19:05.120 --> 00:19:08.920
+work, in order to kind of have our vision come to fruition.
+
+357
+00:19:09.120 --> 00:19:11.360
+The next sort of phase was,
+
+358
+00:19:12.600 --> 00:19:14.400
+is this code trustworthy?
+
+359
+00:19:14.400 --> 00:19:15.640
+Is it high quality?
+
+360
+00:19:15.640 --> 00:19:19.960
+And this sort of came to us as a team, sort of out of necessity
+
+361
+00:19:19.960 --> 00:19:24.200
+when we onboarded our third engineer to the team,
+
+362
+00:19:25.400 --> 00:19:28.120
+we significantly increased our PR
+
+363
+00:19:28.120 --> 00:19:31.680
+throughput, but at the same time, we're unable
+
+364
+00:19:31.680 --> 00:19:36.160
+to keep pace with reviews and making sure that slop didn't enter the code base.
+
+365
+00:19:36.400 --> 00:19:40.680
+We kind of started to kind of pump the brakes a bit like you mentioned,
+
+366
+00:19:40.680 --> 00:19:44.840
+and take one day a week, Fridays to do garbage collection, where
+
+367
+00:19:45.680 --> 00:19:48.600
+a lot of long, synchronous stand ups in this way of working.
+
+368
+00:19:48.600 --> 00:19:50.680
+Right, in order to socialize that mental model.
+
+369
+00:19:50.680 --> 00:19:54.560
+So we would kind of compile a list over the course of the week of things
+
+370
+00:19:54.560 --> 00:19:55.800
+that we didn't quite like. Right?
+
+371
+00:19:55.800 --> 00:19:58.160
+We want to bias toward throughput, bias toward merging,
+
+372
+00:19:58.160 --> 00:20:01.160
+but still we want to make sure we maintain our quality board.
+
+373
+00:20:01.160 --> 00:20:04.160
+So every Friday was trying to eliminate that slop,
+
+374
+00:20:04.160 --> 00:20:07.440
+but also finding ways to systematically eliminate it going forward.
+
+375
+00:20:07.480 --> 00:20:08.000
+Right.
+
+376
+00:20:08.000 --> 00:20:12.280
+We never wanted to give the same feedback twice in the same way that you want,
+
+377
+00:20:12.320 --> 00:20:14.960
+you know, a new engineer you're onboarding to the team
+
+378
+00:20:14.960 --> 00:20:17.880
+to actually internalize what it means to do a good job.
+
+379
+00:20:17.880 --> 00:20:23.040
+So that kind of stacked into sort of these programmatic guardrails
+
+380
+00:20:23.040 --> 00:20:29.160
+and then a very long outer loop of sort of these automated CI jobs
+
+381
+00:20:29.160 --> 00:20:34.680
+that are looking for slop, identifying slop, kind of compiling a list
+
+382
+00:20:34.680 --> 00:20:37.680
+of golden principles for what it means for us to write good code,
+
+383
+00:20:38.040 --> 00:20:41.680
+finding divergences from it in the code base, proposing PRS.
+
+384
+00:20:41.680 --> 00:20:45.200
+And at that point, we were able to see, oh,
+
+385
+00:20:45.840 --> 00:20:48.640
+the agents are able to write code the way we expect.
+
+386
+00:20:48.640 --> 00:20:52.800
+We just kind of need to put the right loops and systems in place
+
+387
+00:20:52.800 --> 00:20:56.880
+for it to kind of close that feedback cycle for itself.
+
+388
+00:20:56.920 --> 00:21:00.880
+And presumably that was given to it by context or skills or something like that.
+
+389
+00:21:00.880 --> 00:21:02.840
+Before skills. Were asking.
+
+390
+00:21:02.840 --> 00:21:04.960
+So we did a time.
+
+391
+00:21:04.960 --> 00:21:07.960
+Before, yeah, I know, I know only only what,
+
+392
+00:21:07.960 --> 00:21:12.600
+eight months ago at this point. We.
+
+393
+00:21:12.720 --> 00:21:15.600
+We kind of did a very cheap hack.
+
+394
+00:21:15.600 --> 00:21:21.680
+We kind of had just a GitHub issue where engineers and agents would
+
+395
+00:21:21.680 --> 00:21:26.440
+leave comments around sort of underlying principles of good software development.
+
+396
+00:21:26.480 --> 00:21:26.840
+Right.
+
+397
+00:21:26.840 --> 00:21:32.080
+How to properly make a react snapshot, test what it means
+
+398
+00:21:32.080 --> 00:21:35.960
+to write reliable network code,
+
+399
+00:21:35.960 --> 00:21:39.000
+how to think about structuring a lint.
+
+400
+00:21:39.000 --> 00:21:43.760
+And, you know, you end up with this big issue with 100 150 comments on it.
+
+401
+00:21:43.760 --> 00:21:47.680
+And that was sort of the seed for what it meant for the agent to go
+
+402
+00:21:47.800 --> 00:21:52.400
+sort of spider through the code base stack, rank a set of violations,
+
+403
+00:21:52.520 --> 00:21:53.440
+proposed PRS.
+
+404
+00:21:53.440 --> 00:21:57.120
+And then one interesting thing there is we had like an on call
+
+405
+00:21:57.160 --> 00:22:01.120
+whose job it was to supervise all the agent produced stuff,
+
+406
+00:22:01.120 --> 00:22:04.360
+all the headless stuff, because we we didn't quite trust it yet.
+
+407
+00:22:04.360 --> 00:22:07.960
+We needed eyes on it in order to build that confidence.
+
+408
+00:22:08.920 --> 00:22:10.120
+Human with thumbs up, thumbs
+
+409
+00:22:10.120 --> 00:22:13.160
+down, merge or not, leave review feedback.
+
+410
+00:22:13.160 --> 00:22:16.680
+Which means the next time that anti-SLAPP ification
+
+411
+00:22:16.680 --> 00:22:20.240
+loop spins up, it looks at all the PR it had produced.
+
+412
+00:22:20.520 --> 00:22:24.560
+It ingests that human feedback, compares it with the session
+
+413
+00:22:24.560 --> 00:22:26.560
+logs from the last time it ran.
+
+414
+00:22:26.560 --> 00:22:28.480
+Says which mistakes did I make?
+
+415
+00:22:28.480 --> 00:22:30.520
+Which priorities did I miss?
+
+416
+00:22:30.520 --> 00:22:33.080
+Did I produce misaligned code and why?
+
+417
+00:22:33.080 --> 00:22:35.920
+Let me figure out how not to do that going forward.
+
+418
+00:22:35.920 --> 00:22:37.400
+Produce some markdown.
+
+419
+00:22:37.400 --> 00:22:39.720
+Save it as an artifact in the GitHub run.
+
+420
+00:22:39.720 --> 00:22:41.360
+So the next time I run,
+
+421
+00:22:41.360 --> 00:22:42.600
+I have this extra context
+
+422
+00:22:42.600 --> 00:22:45.600
+that I have learned from the actual human feedback in the system.
+
+423
+00:22:45.880 --> 00:22:47.400
+And is that the correct way?
+
+424
+00:22:47.400 --> 00:22:51.000
+Is that the way you would recommend others set up their agents to,
+
+425
+00:22:51.040 --> 00:22:52.520
+to almost like iterate through?
+
+426
+00:22:52.520 --> 00:22:56.800
+So it's almost like build the code and then do these almost like audits
+
+427
+00:22:56.800 --> 00:23:00.640
+or reviews in post, and then raise PR where you're almost,
+
+428
+00:23:00.760 --> 00:23:02.400
+you know, you're outside of the guardrails.
+
+429
+00:23:02.400 --> 00:23:07.200
+Or would you today look at adding that into
+
+430
+00:23:07.200 --> 00:23:11.840
+the agent at code creation time to make some of it's a mix of both.
+
+431
+00:23:11.880 --> 00:23:12.880
+Yeah. We
+
+432
+00:23:14.280 --> 00:23:15.480
+we do think sort of these
+
+433
+00:23:15.480 --> 00:23:19.240
+asynchronous loops are a big part of what it means to be effective.
+
+434
+00:23:19.240 --> 00:23:23.000
+Early versions of Codex Security via Aardvark also worked in the same way,
+
+435
+00:23:23.040 --> 00:23:27.360
+right where I'm getting a security review of my code after his ended up in main.
+
+436
+00:23:27.520 --> 00:23:31.000
+It is maybe finding a way in which it is vulnerable.
+
+437
+00:23:31.040 --> 00:23:32.080
+Producing a patch.
+
+438
+00:23:32.080 --> 00:23:34.560
+We put up a PR, we review it and it merges.
+
+439
+00:23:34.560 --> 00:23:37.840
+And I think this sort of flow is really, really nice
+
+440
+00:23:37.840 --> 00:23:43.000
+because it allows mistakes to actually make it to main,
+
+441
+00:23:43.000 --> 00:23:46.120
+which means that it can be learned from anytime we are able to
+
+442
+00:23:46.160 --> 00:23:48.920
+come up with a correction, one, we want to fix it,
+
+443
+00:23:48.920 --> 00:23:53.320
+but also repeating patterns sort of thing, which we identify
+
+444
+00:23:53.320 --> 00:23:56.920
+with agents and loops and distillation and all of that.
+
+445
+00:23:56.960 --> 00:23:59.800
+That's the stuff we want to pull forward earlier into the pipeline.
+
+446
+00:23:59.800 --> 00:24:01.240
+Yeah. And when you
+
+447
+00:24:01.240 --> 00:24:05.440
+when you do push with mistakes or things that you want to correct,
+
+448
+00:24:06.520 --> 00:24:07.240
+are you less
+
+449
+00:24:07.240 --> 00:24:11.040
+fearful of pushing those mistakes to production these days
+
+450
+00:24:11.040 --> 00:24:16.000
+because you know how fast those can be reviewed and fixed by an agent?
+
+451
+00:24:16.400 --> 00:24:18.280
+It's definitely a spectrum, right?
+
+452
+00:24:18.280 --> 00:24:22.320
+I will say that for this project, we didn't have continuous deployment, right?
+
+453
+00:24:22.320 --> 00:24:23.440
+We're building a native app.
+
+454
+00:24:23.440 --> 00:24:26.880
+We are manually cutting a release branch and doing smoke testing.
+
+455
+00:24:26.960 --> 00:24:30.640
+That smoke testing is initially all by humans, where we look
+
+456
+00:24:30.680 --> 00:24:33.800
+at where we're spending the time and try and get agents to do some of it right.
+
+457
+00:24:33.800 --> 00:24:38.440
+But it is important, I think, to have some level
+
+458
+00:24:38.440 --> 00:24:41.440
+of human supervision over the release process in this world.
+
+459
+00:24:41.720 --> 00:24:45.520
+But if I were to kind of like put my group tech lead hat on again, right?
+
+460
+00:24:45.520 --> 00:24:45.800
+Yeah.
+
+461
+00:24:45.800 --> 00:24:50.280
+Some mistakes are are able to be made like the consequences of them are low.
+
+462
+00:24:50.280 --> 00:24:55.240
+And much like I want engineers who are becoming more senior to learn
+
+463
+00:24:55.240 --> 00:24:58.840
+from their own mistakes, I also kind of want to see mistakes that the agents make
+
+464
+00:24:58.840 --> 00:25:02.640
+so that we, as their supervisors, can figure out how to get them to learn.
+
+465
+00:25:02.840 --> 00:25:03.240
+As well.
+
+466
+00:25:03.240 --> 00:25:07.040
+Because if it feels like in this kind of scenario, debt
+
+467
+00:25:07.040 --> 00:25:11.200
+and fix is cheap because it's about, well, we'll run an audit.
+
+468
+00:25:11.200 --> 00:25:13.000
+And as long as you have those guardrails
+
+469
+00:25:13.000 --> 00:25:16.320
+and rules in place to say these are these are some of our best practices,
+
+470
+00:25:16.840 --> 00:25:19.960
+I can put, you know, something in which isn't ideal.
+
+471
+00:25:19.960 --> 00:25:24.760
+And no, it's not going to take six months for a human to come and review this code.
+
+472
+00:25:24.760 --> 00:25:28.840
+It can be done in a more regular time frame.
+
+473
+00:25:28.880 --> 00:25:29.400
+Yeah.
+
+474
+00:25:29.400 --> 00:25:35.480
+Like with this sort of like new world where the production of code is so cheap.
+
+475
+00:25:35.480 --> 00:25:40.840
+I actually think that you can at least working with agents flip
+
+476
+00:25:40.880 --> 00:25:44.640
+sort of like the DevOps shift left thing onto its head a bit,
+
+477
+00:25:44.680 --> 00:25:48.760
+where the cheapest thing I can do is literally produce
+
+478
+00:25:48.760 --> 00:25:52.760
+a change to my prompt, whether that is like one of those golden principles
+
+479
+00:25:52.760 --> 00:25:55.760
+that I'm eating into that GitHub issue, or,
+
+480
+00:25:55.800 --> 00:25:58.640
+you know, a prompt that I socialize with my teammates.
+
+481
+00:25:58.640 --> 00:25:58.800
+Right.
+
+482
+00:25:58.800 --> 00:26:02.240
+That's the cheapest thing I can do in order to fix the code that is produced.
+
+483
+00:26:02.240 --> 00:26:05.360
+And, you know, if we find that, like
+
+484
+00:26:05.400 --> 00:26:08.840
+the mistakes are a bit more systematic,
+
+485
+00:26:08.920 --> 00:26:12.760
+I can kind of think about pulling that further left.
+
+486
+00:26:12.800 --> 00:26:16.360
+I can add some docs, or I can operationalize
+
+487
+00:26:16.360 --> 00:26:20.080
+a review agent that is going to judge every PR according to those docs.
+
+488
+00:26:20.240 --> 00:26:24.080
+Or I can do more shifting left by making deterministic tests
+
+489
+00:26:24.080 --> 00:26:27.080
+that suss out this behavior and on and on earlier in the process.
+
+490
+00:26:27.080 --> 00:26:31.280
+But the cheapest amount of effort I can spend to shake out that misbehavior
+
+491
+00:26:31.280 --> 00:26:35.120
+is kind of where I want to start, because these things are magic
+
+492
+00:26:35.120 --> 00:26:39.200
+reasoners that most of the time they do pretty well with very little effort on my.
+
+493
+00:26:39.200 --> 00:26:40.120
+Part is.
+
+494
+00:26:40.120 --> 00:26:43.840
+Super interesting, and I'd I'd almost love to jump ahead a couple of questions,
+
+495
+00:26:44.520 --> 00:26:48.480
+because I kind of want to ask the question when the the way you talk about that,
+
+496
+00:26:48.520 --> 00:26:52.560
+whereby, you know, you make minor changes over here to a prompt and then,
+
+497
+00:26:52.600 --> 00:26:55.680
+you know, implementations and things can just change.
+
+498
+00:26:55.720 --> 00:26:59.840
+And it kind of makes me feel that when we talk about the thing
+
+499
+00:26:59.840 --> 00:27:03.680
+that persists, it's less about the code and it's more about our prompt
+
+500
+00:27:03.680 --> 00:27:06.920
+and our context and our functional requirements.
+
+501
+00:27:06.920 --> 00:27:10.920
+And it brings me to something called Symphony,
+
+502
+00:27:10.920 --> 00:27:13.920
+which is a ghost library because it's spec.
+
+503
+00:27:13.920 --> 00:27:18.800
+It's all about specs and context versus versus implementation or code.
+
+504
+00:27:18.880 --> 00:27:22.680
+And I guess when we think about when we think about that,
+
+505
+00:27:22.720 --> 00:27:25.480
+the code just becomes a throwaway artifact.
+
+506
+00:27:25.480 --> 00:27:27.720
+The implementation is just it's there today.
+
+507
+00:27:27.720 --> 00:27:29.000
+It might change tomorrow.
+
+508
+00:27:29.000 --> 00:27:30.320
+But the thing that persists,
+
+509
+00:27:30.320 --> 00:27:32.800
+the thing that we care about and we should put most time in,
+
+510
+00:27:32.800 --> 00:27:36.640
+like you say, lifting up those reviews more to the functional requirements
+
+511
+00:27:36.640 --> 00:27:39.880
+and things like that is the specification and the prompts.
+
+512
+00:27:40.800 --> 00:27:43.280
+Is this a is this a future?
+
+513
+00:27:43.280 --> 00:27:45.960
+Is this a is this like when we when we think about the relationship
+
+514
+00:27:45.960 --> 00:27:50.240
+between the specs and the code, how much is that changing today?
+
+515
+00:27:51.120 --> 00:27:52.120
+Yeah. So
+
+516
+00:27:53.960 --> 00:27:55.080
+it's kind of funny.
+
+517
+00:27:55.080 --> 00:27:59.320
+Where you think traditionally inspec driven development.
+
+518
+00:27:59.360 --> 00:27:59.600
+Right.
+
+519
+00:27:59.600 --> 00:28:03.920
+You start with a spec and then you kind of refine it as the code is produced
+
+520
+00:28:03.960 --> 00:28:07.280
+sort of thing, to make it more concrete to suss out those hidden decisions
+
+521
+00:28:07.280 --> 00:28:11.200
+and ambiguity in the spec, and for things like Symphony,
+
+522
+00:28:11.240 --> 00:28:15.840
+for all these lists that we're producing, for things like
+
+523
+00:28:16.920 --> 00:28:21.600
+documentation on critical user journeys or product features or click flows
+
+524
+00:28:21.600 --> 00:28:26.160
+and screens, I've actually found it is much easier to produce the code
+
+525
+00:28:26.160 --> 00:28:31.120
+first to have that code sort of like present a straw man
+
+526
+00:28:31.120 --> 00:28:35.840
+for what the world could look like, engage with that as a team to refine it,
+
+527
+00:28:35.840 --> 00:28:41.880
+and then distill the spec out of that, because sort of produced artifacts,
+
+528
+00:28:41.920 --> 00:28:47.000
+whether they are code, a spreadsheet, a Google doc, right.
+
+529
+00:28:47.080 --> 00:28:50.560
+These things are very information dense in terms of the decisions
+
+530
+00:28:50.560 --> 00:28:54.560
+that were made to go into producing something that we have accepted as good.
+
+531
+00:28:54.600 --> 00:28:58.440
+So for Symphony, the thing that we shipped is very much a spec,
+
+532
+00:28:58.440 --> 00:29:00.760
+but the thing that we started with was kind of
+
+533
+00:29:00.760 --> 00:29:04.800
+a vibed implementation of Symphony in TypeScript in our mono repo,
+
+534
+00:29:04.840 --> 00:29:06.840
+where when we thought it was good
+
+535
+00:29:06.840 --> 00:29:09.840
+and it was solving the problems that we wanted it to,
+
+536
+00:29:09.920 --> 00:29:14.120
+we worked on producing a spec out of that to share with the world,
+
+537
+00:29:14.160 --> 00:29:17.760
+and it was this very, very cool process where we had this three phase pipeline.
+
+538
+00:29:17.760 --> 00:29:20.960
+We started with Symphony as it was, and
+
+539
+00:29:20.960 --> 00:29:24.720
+we gave it to Codex to say, produce a spec
+
+540
+00:29:24.960 --> 00:29:28.040
+markdown file that is able to reproduce this system.
+
+541
+00:29:28.680 --> 00:29:32.240
+We end up with a spec, give that to a new agent
+
+542
+00:29:32.280 --> 00:29:36.240
+that says without access to the original, that says you have a spec, please
+
+543
+00:29:36.240 --> 00:29:37.680
+implement this system.
+
+544
+00:29:37.680 --> 00:29:41.680
+You know, it goes for a while with goal in order to produce this thing.
+
+545
+00:29:41.800 --> 00:29:45.920
+When it says it's done, we give that system the spec and
+
+546
+00:29:45.920 --> 00:29:50.080
+the original implementation to a third agent is going to act as the judge to say,
+
+547
+00:29:51.720 --> 00:29:55.080
+we are attempting to replicate the original version of Symphony.
+
+548
+00:29:55.120 --> 00:29:57.680
+This was the spec that was given to an agent to produce it.
+
+549
+00:29:57.680 --> 00:29:59.640
+And this is what they came up with.
+
+550
+00:29:59.640 --> 00:30:02.400
+Where are there misalignments in the derived artifact
+
+551
+00:30:02.400 --> 00:30:03.800
+versus the original system,
+
+552
+00:30:03.800 --> 00:30:08.120
+and proposed changes to the spec in order to make the next attempt better?
+
+553
+00:30:08.280 --> 00:30:10.320
+That's like a very token intensive process.
+
+554
+00:30:10.320 --> 00:30:10.600
+But, you.
+
+555
+00:30:10.600 --> 00:30:13.600
+Know, working at the token. Factory three.
+
+556
+00:30:14.320 --> 00:30:17.040
+But I suspect you get a discount.
+
+557
+00:30:17.040 --> 00:30:17.640
+But what you.
+
+558
+00:30:17.640 --> 00:30:22.000
+End up with is this really refined spec that is reliably able
+
+559
+00:30:22.000 --> 00:30:25.680
+to produce the system as it is written,
+
+560
+00:30:25.680 --> 00:30:31.080
+while still providing space and ambiguity for consumers of this ghost library
+
+561
+00:30:31.080 --> 00:30:32.960
+to adapt it to their actual business
+
+562
+00:30:32.960 --> 00:30:37.280
+context, their actual repository and toolchain and issue tracker
+
+563
+00:30:37.280 --> 00:30:40.400
+and all these other sorts of things, which I think is pretty cool
+
+564
+00:30:40.440 --> 00:30:43.440
+because it means that we end up
+
+565
+00:30:43.440 --> 00:30:48.440
+specifying in very tight, high detail the parts that actually matter, the
+
+566
+00:30:48.520 --> 00:30:52.320
+the business logic, critical parts, while still leaving the flexibility
+
+567
+00:30:52.360 --> 00:30:55.160
+for folks to evolve and change it as they see fit. Yeah.
+
+568
+00:30:55.160 --> 00:30:58.160
+And what I love about that is the process that you just described.
+
+569
+00:30:58.480 --> 00:31:02.400
+And I think we need to learn from everything that we've done in software
+
+570
+00:31:02.400 --> 00:31:05.520
+engineering for many, many years, going into a development.
+
+571
+00:31:05.520 --> 00:31:09.440
+But the process that you just described is a very pure prototype.
+
+572
+00:31:09.440 --> 00:31:10.800
+It's us rapidly
+
+573
+00:31:12.080 --> 00:31:13.520
+developing our application.
+
+574
+00:31:13.520 --> 00:31:16.680
+So we make the learnings we need to be able to say, oh, this work
+
+575
+00:31:16.680 --> 00:31:18.560
+that didn't actually I'd prefer it to be like this,
+
+576
+00:31:18.560 --> 00:31:22.760
+or let's change the UI, which ultimately, you know, breaks a number of flows.
+
+577
+00:31:22.760 --> 00:31:24.400
+So we make those learnings.
+
+578
+00:31:24.400 --> 00:31:27.760
+But the difference is because development is cheap, now
+
+579
+00:31:27.920 --> 00:31:30.880
+we are able to say, I can just throw this away.
+
+580
+00:31:30.880 --> 00:31:34.360
+I'm not tempted to to use that, but I'm going to try and distill
+
+581
+00:31:34.600 --> 00:31:38.520
+everything that I have learned and the the functional requirements, etc.
+
+582
+00:31:38.520 --> 00:31:39.480
+into that spec.
+
+583
+00:31:39.480 --> 00:31:44.200
+And I love that it's iterable kind of iterations through to make to,
+
+584
+00:31:44.240 --> 00:31:45.240
+to really,
+
+585
+00:31:45.240 --> 00:31:45.800
+you know,
+
+586
+00:31:45.800 --> 00:31:47.840
+I've seen implementations of spec gaps and this is,
+
+587
+00:31:47.840 --> 00:31:49.800
+this is really good to be able to really fill that in
+
+588
+00:31:49.800 --> 00:31:52.640
+to make sure that the spec captures everything that we need.
+
+589
+00:31:52.640 --> 00:31:54.680
+Yeah. It's not like this process is new, right?
+
+590
+00:31:54.680 --> 00:31:58.720
+Like if I think about other areas in my career where I've seen this, right,
+
+591
+00:31:58.760 --> 00:32:02.360
+like partnering with data science, they want to cobble together
+
+592
+00:32:02.360 --> 00:32:06.720
+a model in a Jupyter notebook to prove out the idea first.
+
+593
+00:32:06.720 --> 00:32:08.960
+And once they get something that they are confident in,
+
+594
+00:32:08.960 --> 00:32:09.720
+then it sort of
+
+595
+00:32:09.720 --> 00:32:13.520
+gets handed off to engineering in order to production it, to actually deploy it
+
+596
+00:32:13.520 --> 00:32:17.440
+into the MapReduce pipeline, to operate at scale sort of thing.
+
+597
+00:32:17.520 --> 00:32:22.480
+If we're thinking about doing rapid prototype
+
+598
+00:32:22.520 --> 00:32:26.800
+of a design like in Figma, and then handing it off
+
+599
+00:32:26.800 --> 00:32:29.560
+in order to be production is also the same sort of context. Right?
+
+600
+00:32:29.560 --> 00:32:32.880
+But now, because like you said, production of code is cheap,
+
+601
+00:32:32.880 --> 00:32:35.880
+we can actually do that in our production systems.
+
+602
+00:32:36.080 --> 00:32:39.720
+One neat way that we made that idea
+
+603
+00:32:39.760 --> 00:32:44.440
+real in this app we are building is in Dev Electron app.
+
+604
+00:32:44.520 --> 00:32:49.320
+We had a window, a screen that the agent could launch,
+
+605
+00:32:49.320 --> 00:32:53.920
+which would basically give it the native rendering canvas that we're shipping,
+
+606
+00:32:53.960 --> 00:32:57.840
+as well as our full design system and component library,
+
+607
+00:32:57.840 --> 00:33:01.440
+which means it's actually able to prototype new screens directly
+
+608
+00:33:01.440 --> 00:33:04.760
+in the surface that we're deploying, produce screenshots of them,
+
+609
+00:33:04.760 --> 00:33:07.880
+give them to our designer, and now it's a super, super tight
+
+610
+00:33:07.920 --> 00:33:11.520
+loop on does our vision match the reality?
+
+611
+00:33:11.560 --> 00:33:14.600
+Are we able to produce this experience
+
+612
+00:33:14.600 --> 00:33:18.560
+in the surface that we're going to ship, which is just wild and super, super cool?
+
+613
+00:33:18.600 --> 00:33:19.320
+Yeah.
+
+614
+00:33:19.320 --> 00:33:24.040
+I'd love to talk about capabilities, and I'll take a slight deviation here.
+
+615
+00:33:24.080 --> 00:33:27.840
+And I'd love to talk about Codex and,
+
+616
+00:33:27.840 --> 00:33:31.640
+the industry perception of, of of Codex
+
+617
+00:33:32.560 --> 00:33:36.200
+on socials, in community discussions and all kinds of things,
+
+618
+00:33:36.200 --> 00:33:41.080
+particularly over the last month, I'm hearing people rave about Codex
+
+619
+00:33:41.080 --> 00:33:45.200
+and moving from, you know, other well-known
+
+620
+00:33:45.200 --> 00:33:48.200
+agents, Claude, and things like that, over to over to Codex.
+
+621
+00:33:48.200 --> 00:33:51.400
+And they are they're stating all of a sudden I'm
+
+622
+00:33:51.440 --> 00:33:54.400
+more productive, more productive on Codex or I'm actually it's
+
+623
+00:33:54.400 --> 00:33:57.840
+actually more accurate in terms of doing these various things internally.
+
+624
+00:33:57.840 --> 00:34:02.160
+I guess you're probably maybe seeing this and like, you know, has there been a
+
+625
+00:34:02.360 --> 00:34:06.840
+has there been a moment or has there been a feature or something
+
+626
+00:34:06.840 --> 00:34:12.000
+whereby, you know, Codex leveled up for it because of a number of things,
+
+627
+00:34:12.000 --> 00:34:18.040
+or is it just, you know, the gradual hard work of a of of a group of, of of teams?
+
+628
+00:34:18.080 --> 00:34:18.440
+Yeah.
+
+629
+00:34:18.440 --> 00:34:23.400
+So the, the, the product velocity on Codex is fantastically quick.
+
+630
+00:34:23.400 --> 00:34:27.200
+And we just recently celebrated a milestone of having 5 million
+
+631
+00:34:27.200 --> 00:34:28.320
+weekly active users.
+
+632
+00:34:28.320 --> 00:34:29.880
+Congratulations.
+
+633
+00:34:29.880 --> 00:34:32.240
+Teboe just did weekly resets.
+
+634
+00:34:32.240 --> 00:34:35.280
+You know, go fast go go burn those limits down.
+
+635
+00:34:35.280 --> 00:34:40.560
+I will say that there is a very tight and virtuous cycle
+
+636
+00:34:40.600 --> 00:34:44.440
+between the development of the codex itself and our research team,
+
+637
+00:34:44.440 --> 00:34:48.280
+which means there is this fantastic flywheel on every point.
+
+638
+00:34:48.280 --> 00:34:50.320
+Revision of the GPT
+
+639
+00:34:50.320 --> 00:34:54.400
+five series, where the capability just improves in leaps and bounds.
+
+640
+00:34:54.600 --> 00:35:00.000
+I would say big lifts from five 2 to 5 three.
+
+641
+00:35:00.000 --> 00:35:01.360
+Background tool calling.
+
+642
+00:35:01.360 --> 00:35:06.440
+Parallel tool calling means that Codex was able to do more work all the time
+
+643
+00:35:06.440 --> 00:35:10.600
+in order to make more progress more quickly on more complex changes.
+
+644
+00:35:10.600 --> 00:35:14.560
+The unification of
+
+645
+00:35:14.560 --> 00:35:19.360
+the normal GPT five model and the Codex model in 5.4
+
+646
+00:35:19.400 --> 00:35:23.480
+means that you were not only getting a super powered code producing agent,
+
+647
+00:35:23.480 --> 00:35:27.400
+but one that is also incredibly, generally intelligent a good writer,
+
+648
+00:35:27.400 --> 00:35:30.800
+which means I'm able to start using Codex for all other parts of the software
+
+649
+00:35:30.800 --> 00:35:33.240
+development loop other than producing code.
+
+650
+00:35:33.240 --> 00:35:36.840
+The slide deck that I'm going to be presenting later today is 100%
+
+651
+00:35:36.840 --> 00:35:40.000
+written by Codex using the the app connectors
+
+652
+00:35:40.000 --> 00:35:43.840
+in Google Sheets, which is not something I would have imagined to be possible
+
+653
+00:35:43.880 --> 00:35:47.680
+last year, and some super powered stuff
+
+654
+00:35:47.680 --> 00:35:53.800
+that came out in 55 with computer use the browser embedded in the app.
+
+655
+00:35:53.840 --> 00:35:57.560
+These things make it so much easier in order to close the loop
+
+656
+00:35:57.560 --> 00:35:58.760
+where a ton of the jank
+
+657
+00:35:58.760 --> 00:36:02.880
+that we had to put in place in the 5152 era just doesn't need to exist
+
+658
+00:36:03.000 --> 00:36:07.720
+because we are giving more, more chunky, powerful tools.
+
+659
+00:36:07.720 --> 00:36:12.200
+Because there is this virtuous loop between the harness and the app
+
+660
+00:36:12.200 --> 00:36:15.440
+that we are deploying, and sort of our research environment,
+
+661
+00:36:15.440 --> 00:36:18.360
+and what it means to get the model to be effective at using these things.
+
+662
+00:36:18.360 --> 00:36:20.960
+It's just a constant march of capability improving.
+
+663
+00:36:20.960 --> 00:36:24.280
+And one thing that I love about Codex
+
+664
+00:36:24.280 --> 00:36:27.560
+is it'll just do the full job.
+
+665
+00:36:27.560 --> 00:36:29.720
+It won't give me much nonsense about it.
+
+666
+00:36:29.720 --> 00:36:33.440
+I can treat it like I would another member of the team, right?
+
+667
+00:36:33.480 --> 00:36:35.000
+I'm not shoulder surfing
+
+668
+00:36:35.000 --> 00:36:38.160
+all seven of my teammates in order to bop them on the head.
+
+669
+00:36:38.160 --> 00:36:40.320
+If they do a bad thing, I give them a task.
+
+670
+00:36:40.320 --> 00:36:43.560
+I check in maybe occasionally at stand up, and I trust
+
+671
+00:36:43.560 --> 00:36:46.880
+that I will get a produced PR or several that does the job.
+
+672
+00:36:46.880 --> 00:36:48.760
+And I have the same level of trust
+
+673
+00:36:48.760 --> 00:36:52.160
+in Codex and its ability to be autonomous and complete.
+
+674
+00:36:52.200 --> 00:36:55.480
+And you mentioned Codex, and then you mentioned models and model versions.
+
+675
+00:36:55.480 --> 00:36:56.680
+What what would you say
+
+676
+00:36:56.680 --> 00:37:00.680
+moves the needle most as it updates to the agent or updates to the model?
+
+677
+00:37:00.920 --> 00:37:04.040
+It's a mix of both, but I have to say the
+
+678
+00:37:04.480 --> 00:37:08.000
+the new model releases I think are the most exciting bit to me.
+
+679
+00:37:08.000 --> 00:37:12.240
+The, the most sort of powerful levers we have in terms of increasing
+
+680
+00:37:12.240 --> 00:37:15.920
+capability are continuing to train the model.
+
+681
+00:37:16.080 --> 00:37:20.760
+And this is a thing that goes faster and faster over time.
+
+682
+00:37:20.760 --> 00:37:24.240
+We're super excited every time a new model comes out.
+
+683
+00:37:24.360 --> 00:37:26.480
+Getting to test them internally is also fun.
+
+684
+00:37:26.480 --> 00:37:27.640
+To be able to kind of see
+
+685
+00:37:27.640 --> 00:37:30.880
+the leaps and bounds of new progress we are able to make.
+
+686
+00:37:33.400 --> 00:37:37.760
+Each revision of the five series from five two onward.
+
+687
+00:37:37.760 --> 00:37:40.080
+I think five two, I think is singularity era.
+
+688
+00:37:40.080 --> 00:37:44.040
+Here with these coding agents has seen increases in
+
+689
+00:37:44.040 --> 00:37:47.040
+PR throughput time and time again.
+
+690
+00:37:47.080 --> 00:37:51.920
+You know, whereas at the beginning of sort of the five two era, we were looking at
+
+691
+00:37:51.960 --> 00:37:56.560
+maybe three and a half PRS per engineer per week on my team.
+
+692
+00:37:56.640 --> 00:38:03.320
+Now with five five, we're looking at 70, which is just fantastic.
+
+693
+00:38:03.360 --> 00:38:06.040
+Like that's more than than linear scaling sort of thing.
+
+694
+00:38:06.040 --> 00:38:07.560
+It's it's truly amazing.
+
+695
+00:38:07.560 --> 00:38:11.480
+And is that people changing or is that capabilities
+
+696
+00:38:12.120 --> 00:38:15.120
+a better job a bit or a mix of both?
+
+697
+00:38:15.760 --> 00:38:16.280
+Mix of both.
+
+698
+00:38:16.280 --> 00:38:20.840
+I would say there, as the model capability improves and leaps and bounds like this,
+
+699
+00:38:20.840 --> 00:38:25.000
+there are certainly less effort that needs to go into the enablement step.
+
+700
+00:38:25.040 --> 00:38:27.320
+Yeah, the harness engineering gets easier.
+
+701
+00:38:27.320 --> 00:38:32.120
+The same techniques we would use, but the need to build
+
+702
+00:38:32.120 --> 00:38:35.280
+chunky tools in order to attach the agent to the outside
+
+703
+00:38:35.280 --> 00:38:37.720
+world is just things that we need to do less and less.
+
+704
+00:38:37.720 --> 00:38:38.360
+Yeah.
+
+705
+00:38:38.360 --> 00:38:43.560
+To give you an example, in order to get Codex to drive our electron app
+
+706
+00:38:43.920 --> 00:38:49.480
+before computer use was a thing, we needed to boot up a graphical Ubuntu
+
+707
+00:38:49.480 --> 00:38:53.240
+in a Docker container with a virtual display driver and X server
+
+708
+00:38:53.280 --> 00:38:56.400
+have engineers install XQuartz on their Mac
+
+709
+00:38:56.440 --> 00:39:01.880
+in order to proxy over to that headless host and like wire up
+
+710
+00:39:01.920 --> 00:39:05.000
+FFmpeg to this gross contraption in order to record
+
+711
+00:39:05.000 --> 00:39:09.120
+videos of what the app was doing, how the agent had changed it.
+
+712
+00:39:09.120 --> 00:39:13.320
+And this is like entirely obsoleted and like a single toggle in the app
+
+713
+00:39:13.320 --> 00:39:14.480
+to turn on computer use.
+
+714
+00:39:14.480 --> 00:39:16.360
+Like so, so much easier.
+
+715
+00:39:16.360 --> 00:39:19.360
+And I expect this to only get better and better over time.
+
+716
+00:39:19.360 --> 00:39:22.320
+Yeah, it kind of reminds me of thinking back to,
+
+717
+00:39:22.320 --> 00:39:24.560
+you know, when I, when I've been in in the industry
+
+718
+00:39:24.560 --> 00:39:26.960
+25 years now, but when I, when I think back to wow,
+
+719
+00:39:26.960 --> 00:39:27.280
+people
+
+720
+00:39:27.280 --> 00:39:31.440
+actually used to write like bytecode or machine code or binary and it's like,
+
+721
+00:39:31.480 --> 00:39:32.920
+this is the same thing, right?
+
+722
+00:39:32.920 --> 00:39:35.800
+It's like, wow, people used to actually do that and connect.
+
+723
+00:39:35.800 --> 00:39:39.400
+I don't need to write TCL in order to test my use UI's anymore.
+
+724
+00:39:39.440 --> 00:39:41.840
+That is definitely an improvement.
+
+725
+00:39:41.840 --> 00:39:44.840
+So let's jump back into into harness engineering then.
+
+726
+00:39:44.840 --> 00:39:50.120
+And let's specifically look at a good use case, the Frontier Project.
+
+727
+00:39:50.400 --> 00:39:54.080
+Tell us a little bit or walk me through what the harness actually looks like
+
+728
+00:39:54.080 --> 00:39:58.480
+for that, including like how I guess, what gets updated,
+
+729
+00:39:58.480 --> 00:40:02.880
+what's in it, but also ownership, who owns that and who changes them.
+
+730
+00:40:03.000 --> 00:40:05.080
+Yeah. So a little bit of context.
+
+731
+00:40:05.080 --> 00:40:08.520
+OpenAI frontier is sort of our enterprise platform for agents,
+
+732
+00:40:08.520 --> 00:40:12.640
+and it covers everything from how to build agents with the API
+
+733
+00:40:12.680 --> 00:40:16.920
+agents SDK, the Codex harness, to how you would sort of observe
+
+734
+00:40:16.920 --> 00:40:20.720
+and govern agents running around your enterprise. And
+
+735
+00:40:21.960 --> 00:40:22.680
+it's very,
+
+736
+00:40:22.680 --> 00:40:27.080
+very cool to kind of see all of the harness aligning on Codex
+
+737
+00:40:27.080 --> 00:40:30.120
+for all the things that we do, which means there's a single,
+
+738
+00:40:30.120 --> 00:40:33.440
+highly leveraged interface between the product
+
+739
+00:40:33.440 --> 00:40:37.520
+we are building and research, which means sort of all the post
+
+740
+00:40:37.520 --> 00:40:39.880
+training improvements that we do on the model accrue
+
+741
+00:40:39.880 --> 00:40:41.640
+leverage to every product that we build.
+
+742
+00:40:41.640 --> 00:40:46.040
+And right now there's very, very clear interface in order to inject
+
+743
+00:40:46.080 --> 00:40:50.040
+new capability into Codex via plugins.
+
+744
+00:40:50.040 --> 00:40:54.000
+These things are skills and scripts.
+
+745
+00:40:54.080 --> 00:40:56.760
+Same thing as always. I'm talking about context and tools.
+
+746
+00:40:56.760 --> 00:41:00.920
+Yeah, very, very cool that we have ended up sort of in this like
+
+747
+00:41:00.960 --> 00:41:06.800
+IO, CTL sort of extensibility where really the biggest levers
+
+748
+00:41:06.800 --> 00:41:10.320
+we as agent builders, as product builders can give
+
+749
+00:41:10.760 --> 00:41:15.320
+the model give Codex is to give it chunkier and chunkier tools that connect
+
+750
+00:41:15.320 --> 00:41:17.440
+to the actual business problems that we're trying to solve
+
+751
+00:41:17.440 --> 00:41:21.240
+and to do context shaping and management for it.
+
+752
+00:41:21.360 --> 00:41:25.480
+Another exciting part of frontier that me and my team have been working on
+
+753
+00:41:25.480 --> 00:41:29.720
+is sort of like the organizational context management pieces to be able to
+
+754
+00:41:29.720 --> 00:41:31.640
+figure out what work is actually done
+
+755
+00:41:31.640 --> 00:41:35.520
+in your enterprise, or what the data ontology is of your data
+
+756
+00:41:35.520 --> 00:41:39.400
+warehouse, and how that is actually used in order to answer metrics questions.
+
+757
+00:41:39.400 --> 00:41:42.160
+And these things have been doing some really,
+
+758
+00:41:42.160 --> 00:41:46.800
+really interesting experimentation on what it means to potentially give
+
+759
+00:41:47.280 --> 00:41:49.000
+each agent in your enterprise
+
+760
+00:41:49.000 --> 00:41:52.880
+sort of a sidecar that is continuously managing context for it,
+
+761
+00:41:52.880 --> 00:41:55.840
+this idea that all agents are coding agents,
+
+762
+00:41:55.840 --> 00:41:57.640
+so we should give them things that are native to
+
+763
+00:41:57.640 --> 00:42:01.360
+that little git repositories that they can grep and search over.
+
+764
+00:42:01.480 --> 00:42:06.360
+And all of that is to say, the techniques that we're using to write
+
+765
+00:42:06.360 --> 00:42:10.560
+the code are things that are going to translate really naturally
+
+766
+00:42:10.560 --> 00:42:12.200
+to building agents in the enterprise.
+
+767
+00:42:12.200 --> 00:42:15.400
+And all of that comes from using that base codex harness
+
+768
+00:42:15.440 --> 00:42:18.160
+in order to build these agents. Yeah, yeah.
+
+769
+00:42:18.160 --> 00:42:21.920
+And I guess when we think about, you know, a minute ago,
+
+770
+00:42:21.920 --> 00:42:26.840
+we were just talking about bytecode and machine code and things like that.
+
+771
+00:42:26.880 --> 00:42:31.360
+The code that gets created or let's, let's go back then the code that we used
+
+772
+00:42:31.360 --> 00:42:34.640
+to write years and years ago when we did assembly and so forth,
+
+773
+00:42:34.760 --> 00:42:38.560
+that it's really machine readable, less than, less than human readable.
+
+774
+00:42:38.600 --> 00:42:42.200
+Then we kind of moved into the next, next generation of programing languages.
+
+775
+00:42:42.200 --> 00:42:46.000
+And actually we were writing more for, for us as humans,
+
+776
+00:42:46.000 --> 00:42:50.440
+sometimes we actually took the decision to make to write more maintainable,
+
+777
+00:42:50.440 --> 00:42:54.440
+human maintainable code versus most performant code because it mattered.
+
+778
+00:42:54.480 --> 00:42:55.560
+It was, you know,
+
+779
+00:42:55.560 --> 00:42:59.560
+less likely that we would add bugs and things like that when we make changes
+
+780
+00:43:00.760 --> 00:43:01.880
+today.
+
+781
+00:43:01.880 --> 00:43:06.360
+And I'll ask two questions today and in maybe a couple of years time.
+
+782
+00:43:06.360 --> 00:43:09.360
+I hate asking questions for a couple of years time when we can
+
+783
+00:43:09.400 --> 00:43:11.160
+barely, barely think about this week.
+
+784
+00:43:11.160 --> 00:43:14.360
+But today, in a couple of years time, is it more important
+
+785
+00:43:14.360 --> 00:43:17.800
+that code is legible to agents or humans?
+
+786
+00:43:19.800 --> 00:43:20.960
+I would say
+
+787
+00:43:20.960 --> 00:43:25.680
+if I had to pick only one thing that was legible to me,
+
+788
+00:43:25.720 --> 00:43:29.760
+it would be the reference documentation of the system, the interfaces,
+
+789
+00:43:29.760 --> 00:43:33.400
+and the rendering of all of that into mermaid entity
+
+790
+00:43:33.400 --> 00:43:37.480
+relationship diagrams, system diagrams and sequence diagrams.
+
+791
+00:43:37.480 --> 00:43:40.440
+And that's today. That's today. If I could only pick one right?
+
+792
+00:43:40.440 --> 00:43:45.760
+Still, of course, like I am peering down into the machine code, right?
+
+793
+00:43:45.800 --> 00:43:49.280
+I am looking at the diffs as the agent is producing them, but I am able to do that
+
+794
+00:43:49.280 --> 00:43:53.360
+less and less as I gain trust in it, and I am able to do that.
+
+795
+00:43:53.360 --> 00:43:56.720
+I'm able to ignore the code as it is produced
+
+796
+00:43:56.720 --> 00:43:59.720
+for more and more complex tasks.
+
+797
+00:43:59.720 --> 00:44:03.440
+Not all of them, but for increasingly many of them,
+
+798
+00:44:03.720 --> 00:44:08.040
+the things where I find that me and the team provide
+
+799
+00:44:08.040 --> 00:44:11.920
+the most outsized value are on defining the interfaces,
+
+800
+00:44:11.960 --> 00:44:16.200
+defining what the components of the system are, how each component
+
+801
+00:44:16.240 --> 00:44:19.800
+should be structured, and how the code relates to each other.
+
+802
+00:44:20.000 --> 00:44:21.640
+Things like
+
+803
+00:44:22.920 --> 00:44:25.680
+wiring up all the system dependencies together
+
+804
+00:44:25.680 --> 00:44:30.760
+and using like Scala cake pattern style like dependency wiring.
+
+805
+00:44:30.760 --> 00:44:33.320
+I find to be very useful to pay attention to,
+
+806
+00:44:33.320 --> 00:44:37.520
+because it actually means that I am able to like draw the lines on
+
+807
+00:44:37.520 --> 00:44:41.680
+that system diagram in my own head and in the reference documentation.
+
+808
+00:44:41.720 --> 00:44:45.760
+Now, you know, sort of the concrete implementation of those things.
+
+809
+00:44:45.800 --> 00:44:49.640
+Like, to be honest, I might not even know what language they are in.
+
+810
+00:44:50.160 --> 00:44:54.800
+Very, very funny story to think about those system diagrams of lines.
+
+811
+00:44:54.800 --> 00:44:56.680
+Looking at the local development process,
+
+812
+00:44:56.680 --> 00:45:01.680
+We wanted Codex to be able to connect to our Electron app.
+
+813
+00:45:01.720 --> 00:45:03.240
+Chrome DevTools protocol.
+
+814
+00:45:03.240 --> 00:45:06.240
+The MCP was how we started out.
+
+815
+00:45:06.280 --> 00:45:09.760
+Eventually, I kind of took a peek at the code and it was entirely different.
+
+816
+00:45:09.760 --> 00:45:14.600
+Still, Codex was connecting to the Electron app over Chrome Dev Tools
+
+817
+00:45:14.600 --> 00:45:18.280
+protocol, but it was actually a local TypeScript daemon that was being spun up
+
+818
+00:45:18.320 --> 00:45:21.840
+that was providing a little CLI interface instead of the MCP,
+
+819
+00:45:21.840 --> 00:45:26.080
+because we found that there were only 2 or 3 tool calls that we actually needed.
+
+820
+00:45:26.280 --> 00:45:29.840
+So more context efficient was faster, and this had happened
+
+821
+00:45:29.880 --> 00:45:32.520
+underneath me, without me knowing.
+
+822
+00:45:32.520 --> 00:45:34.080
+My workflow was not interrupted.
+
+823
+00:45:34.080 --> 00:45:38.360
+That same dependency edge and entity relationship existed,
+
+824
+00:45:38.360 --> 00:45:41.800
+but I almost didn't have to know how it was implemented.
+
+825
+00:45:42.160 --> 00:45:44.080
+Did you find that cool or worrying?
+
+826
+00:45:44.080 --> 00:45:46.560
+I found it shocking. I'd find it cool.
+
+827
+00:45:46.560 --> 00:45:47.560
+I found it shocking.
+
+828
+00:45:47.560 --> 00:45:48.280
+But also.
+
+829
+00:45:48.280 --> 00:45:51.360
+I found it great, right? It basically means
+
+830
+00:45:52.800 --> 00:45:53.520
+I lived
+
+831
+00:45:53.520 --> 00:45:56.520
+that high trust relationship in a very, very real way.
+
+832
+00:45:56.560 --> 00:46:01.320
+Someone on my team imagined a way the world could be better, went after it,
+
+833
+00:46:01.320 --> 00:46:05.760
+and did it in such a way that disrupted literally no one on the team.
+
+834
+00:46:05.760 --> 00:46:08.600
+And because it's the agents that are writing code,
+
+835
+00:46:08.600 --> 00:46:11.560
+they have no opinions around the tools or their structure.
+
+836
+00:46:11.560 --> 00:46:14.560
+As long as we give them things that work and permit them to do their job.
+
+837
+00:46:15.800 --> 00:46:17.720
+Yeah. Super interesting.
+
+838
+00:46:17.720 --> 00:46:21.800
+And I think it's, it's definitely a,
+
+839
+00:46:22.560 --> 00:46:25.560
+it feels to me like humans are going to be the slowest,
+
+840
+00:46:25.600 --> 00:46:29.920
+the slowest here in this in adapting to this kind of level of level of trust.
+
+841
+00:46:29.960 --> 00:46:31.880
+Yeah. It's a consistent challenge.
+
+842
+00:46:31.880 --> 00:46:35.400
+My attention my ability to focus across all these threads.
+
+843
+00:46:35.440 --> 00:46:38.120
+Yeah it's it's still something we are contending with.
+
+844
+00:46:38.120 --> 00:46:40.280
+So when do you feel like,
+
+845
+00:46:40.280 --> 00:46:44.040
+you know, in your usage with these product projects, when do you
+
+846
+00:46:44.080 --> 00:46:48.080
+what are the circumstances that you see today where you actually want to
+
+847
+00:46:48.120 --> 00:46:49.640
+go in and look at the code?
+
+848
+00:46:51.920 --> 00:46:54.720
+Sort of if we were to kind of put a sort of
+
+849
+00:46:54.720 --> 00:47:01.440
+like two axis graph together here of sort of low and high ambiguity
+
+850
+00:47:01.440 --> 00:47:07.360
+and low and high complexity in this sort of high, high bucket here.
+
+851
+00:47:07.360 --> 00:47:11.440
+I think that's largely two shapes of projects
+
+852
+00:47:11.440 --> 00:47:14.800
+or tickets or epics, whatever you want to call them.
+
+853
+00:47:15.000 --> 00:47:17.200
+Things where I am literally starting from zero
+
+854
+00:47:17.200 --> 00:47:21.160
+to do a net new thing, where maybe the shape of the interfaces,
+
+855
+00:47:21.200 --> 00:47:24.680
+where it lives, what the experience is, I don't know yet,
+
+856
+00:47:24.960 --> 00:47:29.960
+or sort of the most difficult refractors that I want to do, where I either need
+
+857
+00:47:29.960 --> 00:47:34.240
+to break interfaces or redefine them, maybe go backwards and delete code
+
+858
+00:47:34.240 --> 00:47:35.360
+in order to achieve this thing.
+
+859
+00:47:35.360 --> 00:47:38.080
+But I don't know what the end shape that I want is.
+
+860
+00:47:38.080 --> 00:47:42.000
+These are the places where I pay the most attention,
+
+861
+00:47:42.040 --> 00:47:44.120
+and this is honestly where I want to be, right?
+
+862
+00:47:44.120 --> 00:47:45.560
+Because this is what it means
+
+863
+00:47:45.560 --> 00:47:49.280
+to kind of like peer six months into the future to unblock my team.
+
+864
+00:47:49.440 --> 00:47:54.960
+It's also, you know, you know, code is cheap to produce here, right?
+
+865
+00:47:55.000 --> 00:47:57.360
+Like, I find myself operating in this space differently
+
+866
+00:47:57.360 --> 00:48:01.400
+than I did a year ago, where I am willing to vibe out a 50,000
+
+867
+00:48:01.440 --> 00:48:05.160
+line of diff PR and throw it away, only to learn
+
+868
+00:48:05.680 --> 00:48:08.400
+the areas where the agent is likely to fail,
+
+869
+00:48:08.400 --> 00:48:12.120
+where it is going to struggle, putting those interfaces into place that I like.
+
+870
+00:48:12.160 --> 00:48:16.960
+And usually I'll actually push up those press, trash them immediately,
+
+871
+00:48:16.960 --> 00:48:21.200
+and then crank out 15 PRS out of that to kind of like do the prep work
+
+872
+00:48:21.200 --> 00:48:22.400
+or do the staging
+
+873
+00:48:22.400 --> 00:48:25.560
+in order to prepare myself for the actual cut over that I want to do.
+
+874
+00:48:25.600 --> 00:48:26.640
+Yeah, yeah.
+
+875
+00:48:26.640 --> 00:48:31.400
+Let's, let's, let's jump to a quote that you, that you made a while back,
+
+876
+00:48:31.400 --> 00:48:34.800
+which is, you call it borderline negligent
+
+877
+00:48:35.040 --> 00:48:38.320
+not to use a billion tokens a day.
+
+878
+00:48:38.480 --> 00:48:41.480
+It's a strong claim.
+
+879
+00:48:41.680 --> 00:48:44.920
+Who are you aiming to to shake the ladder of the.
+
+880
+00:48:47.360 --> 00:48:50.200
+This idea that
+
+881
+00:48:50.200 --> 00:48:53.480
+the amount of intelligence we are able to extract from the models
+
+882
+00:48:53.480 --> 00:48:57.160
+is in a way, linear with token consumption, I think at
+
+883
+00:48:57.160 --> 00:49:00.920
+the time was quite controversial, but we see it being increasingly true.
+
+884
+00:49:00.960 --> 00:49:01.600
+Right.
+
+885
+00:49:01.600 --> 00:49:05.680
+This is ultimately why test time compute exists, right?
+
+886
+00:49:05.720 --> 00:49:11.040
+In order to get the models to be smarter and have more and more rich side effects
+
+887
+00:49:11.040 --> 00:49:15.720
+into the world, we want to move workflows to high token consumption use cases.
+
+888
+00:49:15.880 --> 00:49:20.120
+And I think in order to get to a billion tokens a day,
+
+889
+00:49:20.120 --> 00:49:24.320
+you must be thinking in a grander world
+
+890
+00:49:24.320 --> 00:49:28.680
+than pair programing with the model, you must find ways to be in parallel.
+
+891
+00:49:28.720 --> 00:49:31.960
+You must find ways to put these asynchronous loops into place.
+
+892
+00:49:31.960 --> 00:49:35.680
+You must find ways to build agents that are able to side effect
+
+893
+00:49:35.680 --> 00:49:38.960
+onto organizations and teams, rather than just yourself.
+
+894
+00:49:38.960 --> 00:49:40.480
+And in order to do that,
+
+895
+00:49:40.480 --> 00:49:44.240
+we have kind of had to invent a bunch of patterns on what it means to do
+
+896
+00:49:44.240 --> 00:49:49.280
+that, to have automations that are seated from the repository context
+
+897
+00:49:49.280 --> 00:49:50.240
+that everyone in the team
+
+898
+00:49:50.240 --> 00:49:54.040
+can use, rather than sort of single player mode sort of things. And
+
+899
+00:49:55.440 --> 00:49:58.320
+it's definitely not the case that everyone today
+
+900
+00:49:58.320 --> 00:50:01.800
+can say, I'm going to consume a billion tokens a day and poof, magic.
+
+901
+00:50:01.840 --> 00:50:02.440
+It happens.
+
+902
+00:50:02.440 --> 00:50:07.040
+There is work that has to be done in order to make that safe, in order
+
+903
+00:50:07.040 --> 00:50:11.280
+to make the output aligned, to make sure those tokens are burned
+
+904
+00:50:11.280 --> 00:50:14.720
+in ways that are productive, that make it to main and improve
+
+905
+00:50:14.720 --> 00:50:18.840
+the end experience that I am shipping to users these sorts of things.
+
+906
+00:50:18.840 --> 00:50:23.120
+And I think at this point in the industry
+
+907
+00:50:23.120 --> 00:50:26.920
+with this technology, we don't really have a
+
+908
+00:50:27.960 --> 00:50:32.120
+durable, scalable, locked in sense of what those patterns are.
+
+909
+00:50:32.200 --> 00:50:36.960
+So, you know, to kind of poke aggressively like that,
+
+910
+00:50:36.960 --> 00:50:39.560
+I get to a billion tokens a day is really to kind of
+
+911
+00:50:39.560 --> 00:50:44.240
+challenge people to figure out what it is that's going to work, sort of
+
+912
+00:50:44.440 --> 00:50:49.840
+feels like we have just invented the concept of CI CD, right?
+
+913
+00:50:49.880 --> 00:50:53.480
+And like people are kind of scrambling to figure out what that means.
+
+914
+00:50:53.480 --> 00:50:57.960
+And only 15 years later did this become a thing that's like fairly standardized.
+
+915
+00:50:57.960 --> 00:50:59.120
+That is table stakes.
+
+916
+00:50:59.120 --> 00:51:00.200
+And that's,
+
+917
+00:51:00.200 --> 00:51:05.040
+I think, what needs to happen right now with agents and producing software.
+
+918
+00:51:05.040 --> 00:51:06.320
+We need to figure out those patterns.
+
+919
+00:51:06.320 --> 00:51:09.360
+So let's continue this flow then harness engineering.
+
+920
+00:51:09.480 --> 00:51:13.400
+If we if we follow that to its logical conclusion,
+
+921
+00:51:14.800 --> 00:51:15.640
+engineers and
+
+922
+00:51:15.640 --> 00:51:18.600
+harness engineering is part of every project.
+
+923
+00:51:18.600 --> 00:51:24.200
+Every team developers on that team are using a billion tokens every day.
+
+924
+00:51:24.200 --> 00:51:25.520
+Yeah.
+
+925
+00:51:25.520 --> 00:51:28.440
+Open AI very happy with that.
+
+926
+00:51:28.440 --> 00:51:32.400
+What is an engineering team look like in that scenario?
+
+927
+00:51:32.800 --> 00:51:37.080
+I have found it very valuable to have a diverse team
+
+928
+00:51:37.080 --> 00:51:40.400
+in terms of perspective, experience and expertise.
+
+929
+00:51:40.640 --> 00:51:43.600
+I know myself
+
+930
+00:51:43.600 --> 00:51:48.920
+I probably bias more toward back end and infrastructure sort of work
+
+931
+00:51:48.960 --> 00:51:53.880
+you probably see in my sort of profile here, which means that when it was
+
+932
+00:51:53.880 --> 00:51:57.640
+just me on the team, I was producing quite terrible reaction code.
+
+933
+00:51:57.680 --> 00:51:58.240
+Right?
+
+934
+00:51:58.240 --> 00:52:01.360
+We had we had some components that were 6000
+
+935
+00:52:01.400 --> 00:52:05.600
+lines long, a ton of really bad renderings.
+
+936
+00:52:05.600 --> 00:52:10.720
+These use effect hooks that were like four overlapping closures,
+
+937
+00:52:10.720 --> 00:52:13.880
+like very hard to reason about and to bring folks onto the team
+
+938
+00:52:13.880 --> 00:52:18.800
+that actually were able to say, Ryan, this is garbage really helped.
+
+939
+00:52:18.800 --> 00:52:20.640
+And to be able to kind of like
+
+940
+00:52:20.640 --> 00:52:24.720
+have these these full stack teams I find really, really useful.
+
+941
+00:52:24.880 --> 00:52:28.640
+The other sort of thing is I think
+
+942
+00:52:29.640 --> 00:52:31.080
+we no longer need to
+
+943
+00:52:31.080 --> 00:52:35.760
+focus so much as software engineers on developing code production as a skill.
+
+944
+00:52:35.760 --> 00:52:40.760
+Really, what I want to see engineers sort of nurture in their own careers is
+
+945
+00:52:40.760 --> 00:52:46.080
+this sort of systems thinking mentality, what it means to set up teams for success?
+
+946
+00:52:46.080 --> 00:52:50.080
+How far can I peer into the future to solve problems,
+
+947
+00:52:50.080 --> 00:52:51.440
+to increase the throughput
+
+948
+00:52:51.440 --> 00:52:54.760
+at which we are producing code and shipping to customers?
+
+949
+00:52:56.120 --> 00:52:58.000
+Probably for me,
+
+950
+00:52:58.000 --> 00:53:01.600
+my time has been split 30, 30, 30 between
+
+951
+00:53:01.960 --> 00:53:06.960
+sort of the hardest refactor and 0 to 1 product ideation,
+
+952
+00:53:07.200 --> 00:53:12.640
+talking to customers and prioritizing scheduling and staffing work.
+
+953
+00:53:12.640 --> 00:53:15.720
+Whereas before I was probably spending
+
+954
+00:53:15.720 --> 00:53:19.000
+closer to 50 or 70% of my time producing code.
+
+955
+00:53:19.040 --> 00:53:24.280
+So I am able to step back a bit and focus on these other
+
+956
+00:53:24.960 --> 00:53:28.800
+highly cross-functional, high priority work streams in order to unblock
+
+957
+00:53:28.840 --> 00:53:32.080
+teams of agents from going and doing the code production pieces.
+
+958
+00:53:32.080 --> 00:53:34.600
+And the most important piece, they're talking to users
+
+959
+00:53:34.600 --> 00:53:37.640
+and understanding the requirements and actually mapping those
+
+960
+00:53:37.640 --> 00:53:41.560
+back to the functional requirements of the app, versus thinking too deeply
+
+961
+00:53:41.560 --> 00:53:44.360
+about how an app should be built and the implementation
+
+962
+00:53:44.360 --> 00:53:47.520
+and not thinking enough about, okay, what does the actual user want?
+
+963
+00:53:47.560 --> 00:53:50.800
+Rather than building this, this, this back end
+
+964
+00:53:50.840 --> 00:53:53.800
+to be absolutely perfect in its design and so forth?
+
+965
+00:53:53.800 --> 00:53:54.040
+Yeah.
+
+966
+00:53:54.040 --> 00:53:57.120
+And one of the things that's part of that is deciding what not to build.
+
+967
+00:53:57.160 --> 00:54:02.680
+Yes, very, very common trap I see people falling into these days with agents.
+
+968
+00:54:02.720 --> 00:54:04.760
+And particularly because, yeah, coding's cheap.
+
+969
+00:54:04.760 --> 00:54:05.880
+We can build everything.
+
+970
+00:54:05.880 --> 00:54:08.960
+But we need to kind of like stop and ask ourselves, should we build this?
+
+971
+00:54:08.960 --> 00:54:12.960
+Because I guess it's still us as humans that are consuming in the majority
+
+972
+00:54:12.960 --> 00:54:13.600
+in the most part.
+
+973
+00:54:14.760 --> 00:54:16.400
+Well, I suppose that there will be
+
+974
+00:54:16.400 --> 00:54:20.320
+these middleware things where I guess other agents and other apps can consume.
+
+975
+00:54:20.320 --> 00:54:24.080
+But when we think about humans and users actually using this,
+
+976
+00:54:24.120 --> 00:54:27.960
+we need to develop at the pace that they're comfortable consuming as well.
+
+977
+00:54:27.960 --> 00:54:31.080
+So it's super interesting, super interesting balance.
+
+978
+00:54:31.520 --> 00:54:34.960
+Ryan, this has been absolutely fascinating and really enlightening
+
+979
+00:54:35.000 --> 00:54:35.560
+to chat with you.
+
+980
+00:54:35.560 --> 00:54:38.840
+So a massive thank you for spending the time to to chat
+
+981
+00:54:38.840 --> 00:54:43.600
+with us today and really looking forward to your session later today,
+
+982
+00:54:43.600 --> 00:54:48.640
+which is going to be live on the main stage and also recorded for,
+
+983
+00:54:48.760 --> 00:54:53.000
+for our listeners to to watch back in their own time as well.
+
+984
+00:54:53.000 --> 00:54:55.400
+So Ryan massive thank you. Appreciate it. Amazing.
+
+985
+00:54:55.400 --> 00:54:56.160
+Thank you for having me.
+
+986
+00:54:56.160 --> 00:54:57.360
+This is such a fun conversation.
+
+987
+00:54:57.360 --> 00:55:00.080
+And I will catch you later at the conference and on the live stream.
+
+988
+00:55:00.080 --> 00:55:00.640
+Amazing.
+
+989
+00:55:00.640 --> 00:55:03.760
+Thanks very much for tuning in and hope to catch you on the next episode by
+
+990
+00:55:03.760 --> 00:55:05.080
+For Now. Bye, folks.
+
+991
+00:55:06.120 --> 00:55:06.840
+The AI Native Dev is brought to
+
+992
+00:55:06.840 --> 00:55:09.960
+you by Tessl, the package manager for skills and context.
+
+993
+00:55:10.000 --> 00:55:13.120
+Your hosts are Guy Podjarny and me, Simon Maple.
+
+994
+00:55:13.160 --> 00:55:14.960
+Our producer is Tom Dowler.
+
+995
+00:55:14.960 --> 00:55:18.280
+The AI Native Dev is not just a podcast, it's a community.
+
+996
+00:55:18.320 --> 00:55:21.960
+And we host monthly meetups at the Tessl offices in central London.
+
+997
+00:55:22.000 --> 00:55:26.960
+Visit tessl.io/community to learn more and I hope to see you there.

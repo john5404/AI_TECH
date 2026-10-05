@@ -1,0 +1,584 @@
+[00:00:01.240] we have effectively had
+[00:00:03.120] general purpose agent development machines for 50 years.
+[00:00:07.120] We just called them software engineers.
+[00:00:08.760] you never just wrote somebody
+[00:00:10.080] a Slack message and expected them to go build an entire system
+[00:00:13.520] and just, like, make all the best decisions., right?
+[00:00:25.720] Well, nice to meet everybody.
+[00:00:27.240] My name is Dru Knox.
+[00:00:28.320] I'm the head of product and design here at Tessl.
+[00:00:32.120] I'm going to talk today about, using skills as,
+[00:00:37.160] like, in a more professional, rigorous, like, software engineering mindset.
+[00:00:41.280] Right.
+[00:00:41.960] So before I get into this, why should you trust me?
+[00:00:44.440] Well, one maybe don't maybe, be sceptical, but,
+[00:00:48.440] in my past life before leading product and design here at Tessl,
+[00:00:52.480] I was a research scientist leading the language modelling teams
+[00:00:56.040] at Grammarly and at a startup
+[00:00:59.040] that sadly has not found success yet, called Cantina.
+[00:01:02.080] It's a social network, AI first.
+[00:01:04.800] And I've done a lot of work on developer tools
+[00:01:08.040] and so I do a lot of moonlighting actually writing code,
+[00:01:10.840] probably none of it as good as the actual people on Tessl's teams.
+[00:01:14.280] So I've thought a lot about this.
+[00:01:16.800] I've done a lot of work on this.
+[00:01:17.880] I'd like to share some insights.
+[00:01:20.040] We'd love questions.
+[00:01:20.800] Would love to hear folks like your experience.
+[00:01:23.080] What's worked for you.
+[00:01:24.120] So I'll try to save lots of time for questions at the end.
+[00:01:26.680] But without further ado, you want to work on skills.
+[00:01:30.320] Maybe more broadly, you want to work on context for your agents.
+[00:01:33.800] So I'm sure folks have heard about context engineering.
+[00:01:37.000] It feels like every year we're told that this is the year of something.
+[00:01:40.360] I've heard people say that this is the year of context engineering.
+[00:01:43.560] Maybe it is, maybe it isn't.
+[00:01:44.800] you want to get into context engineering?
+[00:01:46.600] Some of you may have already gotten into context engineering.
+[00:01:49.720] As you start to work on this, you'll probably go through the same
+[00:01:52.280] sort of stages of denial, acceptance, etc.
+[00:01:55.560] of this is amazing.
+[00:01:56.720] I'm getting good results to suddenly God.
+[00:02:00.200] How does any of this work?
+[00:02:01.360] Is any of this impactful?
+[00:02:03.400] I thought I was an engineer and now I feel like I'm an artist or a librarian.
+[00:02:07.880] How do I turn this thing?
+[00:02:10.840] Agents context engineering back into the kind of
+[00:02:14.160] reliable, predictable engineering that I that I know and love.
+[00:02:17.800] So how do we go about doing that?
+[00:02:20.640] I think the first thing to realise, just in case anyone has not
+[00:02:24.840] sort of conceptualise this, the reason we're all doing context engineering
+[00:02:28.680] now is because we've all effectively become tech leads instead of ICs, right?
+[00:02:33.640] Like the job in some sense is no longer writing good code.
+[00:02:37.000] It's ensuring that good code can be written,
+[00:02:40.040] which is things that tech leads know and love or hate already around.
+[00:02:45.640] You want to be maintaining good standards, making good decisions,
+[00:02:49.320] documenting it, providing the context to the rest of your team,
+[00:02:53.040] setting a good quality bar for other engineers to contribute.
+[00:02:56.800] We're doing that.
+[00:02:57.360] We're just doing that for agents now.
+[00:02:59.440] And so what that means is that context is in some sense our new code.
+[00:03:04.880] Some people might hate that I say that.
+[00:03:06.520] So please take it with a grain of salt. It's a metaphor.
+[00:03:09.080] If context is our new code, though, there's things that we expect of our code.
+[00:03:14.800] Right? We want a way to know.
+[00:03:16.840] Are my programs correct?
+[00:03:18.520] Are they performant?
+[00:03:20.160] How do I reuse programs?
+[00:03:22.240] How do I automate repetitive tasks that are annoying?
+[00:03:25.640] And so we've come to expect a lot of answers
+[00:03:29.200] here for code like actual code that we write.
+[00:03:33.760] I won't belabour the point, but we have all these things, right?
+[00:03:36.520] Unit tests, integration tasks, we have analytics and observability.
+[00:03:41.240] All these things that give us really good insight into how our programs function.
+[00:03:45.960] And the core thing that I want to argue today
+[00:03:48.440] is that all of these have an analogue in the world of context engineering.
+[00:03:52.360] And if you are sort of diligent about, finding a toolset that does this,
+[00:03:57.120] I'm going to show you all Tessl just to illustrate the concepts for you.
+[00:04:00.360] Don't have to use Tessl to do any of this.
+[00:04:02.240] These are general concepts and patterns.
+[00:04:04.680] You can reclaim a lot of that predictability, a lot of that,
+[00:04:09.600] sort of rigour that you've come to expect with, with code.
+[00:04:12.640] So how can we take all these concepts and apply them to context?
+[00:04:15.880] That's the sort of tldr
+[00:04:19.000] before we get started,
+[00:04:20.040] there's three challenges that make it not a direct comparison, right?
+[00:04:25.480] I'm also, as I look at this, just realising the image
+[00:04:28.480] that was generated here made a fuzzy correct symbol.
+[00:04:31.560] I was looking at it through a fuzzy, display.
+[00:04:35.440] So I'm now appreciating my own, my own side of it.
+[00:04:37.840] Better. So we have three problems.
+[00:04:40.720] The first is that LMS are non-deterministic, right?
+[00:04:43.560] You can't just run them once and say, oh, it worked, or oh, it didn't work.
+[00:04:47.840] For I now know my context is good, right?
+[00:04:50.280] If you tell an agent to do a thing, sometimes it will, sometimes it won't.
+[00:04:54.280] I'm sure if I felt this pain many times.
+[00:04:57.400] The second is that a lot of times when you create context,
+[00:05:02.640] there's not one right or wrong answer, right?
+[00:05:05.080] If you write a style guide or if you write a, documentation for a library,
+[00:05:10.760] how do you determine that an agent solution did it correctly, right?
+[00:05:14.760] You can't just write a unit test and say, we're done. Like it?
+[00:05:17.520] You know, it worked. So grading output can be a little challenging.
+[00:05:21.880] And finally, there is this new problem
+[00:05:24.480] that your programs are now actually things that describe other things.
+[00:05:28.760] So you have things in sync.
+[00:05:31.840] So you might update your app.
+[00:05:34.360] You need to update communication to match it, or you might change a company
+[00:05:40.000] flow in one place to make sure that it gets distributed out,
+[00:05:43.880] across your organisation.
+[00:05:45.680] So sort of a new problem, falls into a lot
+[00:05:48.880] of similar automation goals that you might, might have.
+[00:05:53.360] So this is like a quick overview slide.
+[00:05:55.720] I'm going to dive into each of these.
+[00:05:57.800] What is the analogy.
+[00:06:00.240] And maybe I'm trying to get a little too cute with this.
+[00:06:02.840] But I actually do think there is a direct analogy for all of the,
+[00:06:07.240] tools that you've come to expect for development lifecycle.
+[00:06:10.720] So I'll quickly run through them.
+[00:06:11.800] The first is that, we have things like static analysis and encode land
+[00:06:17.160] that is going to look a little bit more like an LM judge, but the same idea of
+[00:06:22.080] you want to have a fixed set of best practices, of rules,
+[00:06:26.640] of validation, of compiling all those things.
+[00:06:30.480] You should be able to run against your context.
+[00:06:33.120] To give an example of something we saw recently from a customer using Tessl,
+[00:06:37.920] they had added an app sign into one of their files
+[00:06:41.480] and didn't realise that that was suddenly triggering the import
+[00:06:44.240] mechanisms for most, like agents at MDE.
+[00:06:47.360] And it was breaking a whole host of their contexts
+[00:06:50.320] without even realising it.
+[00:06:51.520] So it seemed silly.
+[00:06:53.440] But static validation still important with your context, right?
+[00:06:57.840] So you want to have that set up.
+[00:06:58.960] You want to have linting, you want to have CI/CD for it.
+[00:07:01.880] Unit tests are going to look probably the most different.
+[00:07:06.200] Now, instead of defining a unit test that runs, you're going to want to think
+[00:07:11.040] through scenarios that sort of stress test the agent.
+[00:07:14.120] Does it do what you want
+[00:07:15.960] and then run it many times in parallel,
+[00:07:18.400] and you're going to take statistical averages.
+[00:07:20.200] And so you want to see when I add context, does it actually
+[00:07:23.600] improve the sort of average performance of something.
+[00:07:27.160] We'll get into that.
+[00:07:28.720] That's probably the hardest one.
+[00:07:29.920] That's the one where it feels a little different.
+[00:07:32.200] It's not going to be quite the same, but you can still get pretty reliable.
+[00:07:35.920] Like what I did has improved.
+[00:07:39.040] Integration tests, same thing, but testing lots of context at once.
+[00:07:42.320] So you're designing scenarios that map to,
+[00:07:45.240] using different kinds of context together.
+[00:07:48.160] And then we'll get into some of the more esoteric things that Tessl doesn't
+[00:07:52.360] even fully support yet,
+[00:07:53.320] but we sort of see on our roadmap,
+[00:07:54.720] and we think everybody should be thinking about it.
+[00:07:57.080] Analytics.
+[00:07:57.760] So how can you start actually measuring,
+[00:08:00.800] agent sessions in the wild to see what's happening?
+[00:08:04.680] Or do we have missing context?
+[00:08:05.920] Are things being used correctly, etc..
+[00:08:08.640] And then also getting into, automation
+[00:08:12.400] like build scripts, how do you make it so that your context is not this static
+[00:08:16.760] thing that grows out of date and dies, but as you update
+[00:08:20.000] things, you're getting follow up, parse that, auto update your context.
+[00:08:24.360] And then package manager reuse
+[00:08:26.640] this is actually kind of in the last 2 or 3 weeks, sort of blown up everywhere.
+[00:08:30.200] Things like scales say things like Tessl’s context registry.
+[00:08:35.800] The idea of like reusable units of context is sort of come onto the scene.
+[00:08:39.760] So I'll talk a little bit about unique problems with how you pick
+[00:08:43.200] what sort of context manager you're going to use or package manager.
+[00:08:46.560] I guess both work.
+[00:08:47.520] Okay.
+[00:08:49.560] So review formatting and best practices.
+[00:08:52.120] Like I said, I'm going to use Tessl as an example here,
+[00:08:54.440] but I'll try to explain all of this in a very basic
+[00:08:56.480] like you could build all this yourself if you wanted.
+[00:08:58.720] There's other tools that do a lot of this.
+[00:09:01.240] Not as well as Tessl, though, obviously.
+[00:09:04.680] So this is
+[00:09:05.800] pretty easy if you look at things like, the skills standard.
+[00:09:09.600] So I'm going to use skills as an example here.
+[00:09:11.920] If you look at the skills standard there, first of all is a bunch of just static
+[00:09:15.720] formatting you can do.
+[00:09:17.120] I believe they have a reference CLI implementation that will just
+[00:09:20.280] verify your skill compiles.
+[00:09:23.560] I, I think everybody who's writing skills should have that in CI/CD
+[00:09:27.400] checking that all of your skills are kept up to date.
+[00:09:30.480] Like anytime a skill file changes, you should be checking validation.
+[00:09:33.960] You would be stunned how many people like
+[00:09:37.520] none of their context is loading and they don't even realise that.
+[00:09:40.280] So that's a big one.
+[00:09:41.360] But also, if you look at anthropic, they have a best practices guide,
+[00:09:46.000] and it's basically a list of things like, so here
+[00:09:49.200] I have validation tests will tell you if your things compile.
+[00:09:52.640] We also will take just anthropic best practices,
+[00:09:56.480] and we just run that through LM as judge.
+[00:09:59.640] There's a little bit more you can do to tune the prompt to get better results,
+[00:10:02.880] but honestly, just put a prompt that has anthropic best practices in it.
+[00:10:08.000] It's a great starting point.
+[00:10:09.880] And get, information on how specific is your code or your context,
+[00:10:14.640] how like, does it have a good concrete case for when it should be used?
+[00:10:19.160] I'm sure folks have heard about skills and how they don't activate very often.
+[00:10:23.680] There are concrete things you can do without even running the skill to know
+[00:10:27.200] how likely is it to trigger?
+[00:10:28.960] So these things are cheap.
+[00:10:31.600] They're quick. You can put them in CI/CD,
+[00:10:34.360] and it's a really
+[00:10:35.360] it's a surprisingly large lift to actually making your context useful to you.
+[00:10:39.560] Recommend.
+[00:10:41.240] Like, this is just kind of like table stakes.
+[00:10:42.640] Everybody should have this, just like everybody should have a format or a linter
+[00:10:46.000] or things like that.
+[00:10:49.240] Bonus points.
+[00:10:50.040] You can feed the output of this back into an agent and ask it to fix it.
+[00:10:53.480] It's a pretty nice quick loop.
+[00:10:56.600] Okay.
+[00:10:57.280] Now slightly more complicated, slightly more of like a net new concept.
+[00:11:01.440] Right.
+[00:11:01.680] So how do you write evals for your context?
+[00:11:05.200] So depending on if you're coming from more of a software
+[00:11:07.320] background or more of like an ML deep learning background,
+[00:11:10.440] this might either be obvious or not so obvious.
+[00:11:13.720] But the simple thing that you can do is Or.
+[00:11:16.960] Sorry, actually, before I go into this, the thing you're trying to answer is,
+[00:11:21.160] is my context actually helping, and how well is the agent
+[00:11:25.680] doing at the task that I am trying to achieve?
+[00:11:27.480] So if I use this as an example, right.
+[00:11:29.960] We have some library that we want the agent to use
+[00:11:33.640] and we can see how does it perform without any context.
+[00:11:36.560] Right.
+[00:11:36.760] We see things like it is not good at using the list function, right.
+[00:11:40.880] Maybe it implements it itself, maybe it uses a different,
+[00:11:44.320] library or something like that.
+[00:11:46.360] It's also bad at async handling, but it's pretty good
+[00:11:49.680] at correct stream combination.
+[00:11:51.320] It's pretty good at doing zip files.
+[00:11:53.840] I'll explain how we measure this in a minute.
+[00:11:56.400] You want to understand this so that you can
+[00:11:58.480] then understand where do I need to apply context to fix the problem.
+[00:12:02.800] So there's a couple things you might get from a view like this.
+[00:12:05.760] The first is you might have
+[00:12:06.880] written a bunch of context only to realise agent did fine without it.
+[00:12:10.680] Like why are you wasting tokens on it?
+[00:12:13.200] Or you might actually write something and realise it made performance worse
+[00:12:16.640] because something's gone out of date, or it's just added tokens for no reason.
+[00:12:21.800] In an ideal world, you see like, it works better with it.
+[00:12:25.440] And I've only applied tokens where it matters.
+[00:12:28.960] So you want to answer questions like that?
+[00:12:30.920] I have here on the right side,
+[00:12:34.200] you'll notice that we have like a file viewer here.
+[00:12:37.920] All you have to
+[00:12:38.480] do to get this set up is write some prompts, right?
+[00:12:41.560] Like write some realistic tasks that you want the agent to do that
+[00:12:45.640] requires usage of the context that you've created,
+[00:12:49.600] and then write a little scoring rubric for what a good solution to that problem
+[00:12:53.800] looks like.
+[00:12:54.760] The reason I say write a good scoring rubric
+[00:12:56.600] and not something like write a bunch of unit tests, is twofold.
+[00:13:00.760] The first is that, unit tests are
+[00:13:04.560] really obnoxious to write, and they take a long time
+[00:13:07.120] and you will quickly find that you just don't do it.
+[00:13:09.200] If you have to create example projects and test suites
+[00:13:12.480] for every single piece of context that you want to verify.
+[00:13:16.760] More importantly, though, I'm sure many of you have seen that agents
+[00:13:20.280] do unspeakable things to get unit tests to pass.
+[00:13:24.280] And so functional correctness is not the only thing that you're measuring,
+[00:13:27.040] especially for context.
+[00:13:28.560] A lot of times you want to know, was idiomatic code written or did it use
+[00:13:33.040] the library actually wanted it to use instead of implementing its own solution.
+[00:13:38.160] And there's really no way to measure this with unit tests.
+[00:13:41.200] It's much better to do more energetic review or less judge.
+[00:13:46.600] So what you're going to want to do, I see somebody taking photos,
+[00:13:49.160] so I'll let them take the photo.
+[00:13:50.640] What you want to do is define we put them in markdown file.
+[00:13:55.480] So Tessl will generate these and give them to you.
+[00:13:58.000] You could write them yourself.
+[00:13:59.480] You want to have a prompt that runs through like build this thing.
+[00:14:03.560] Here are the requirements.
+[00:14:05.400] It should require using the context or at least should require
+[00:14:09.680] doing what the context says. Right.
+[00:14:11.440] Because you actually want to measure it with them
+[00:14:12.600] without context to see if the agent is just smart enough to do it on its own.
+[00:14:17.680] And then
+[00:14:18.000] importantly, you want to define some kind of grading rubric.
+[00:14:21.600] So here this is.
+[00:14:22.560] If you were to specify it for Tessl, you'll say
+[00:14:25.120] what does a good solution look like.
+[00:14:26.480] And you want to be pretty specific here so that you get reliable results
+[00:14:29.680] from an LLM.
+[00:14:30.400] So you'll say things like the solution should use this exact
+[00:14:33.960] API call somewhere in the in the method,
+[00:14:37.120] or it should implement or initialise this before it initialises that right.
+[00:14:40.880] Like very granular things that can then be checked at the end of the solution
+[00:14:44.480] to see what's good code written.
+[00:14:47.560] And an important thing to note is that once you have these in place,
+[00:14:50.720] like this can take a bit of upfront work.
+[00:14:52.480] It's sort of like the new source files that you have to care about
+[00:14:56.320] as an agent developer.
+[00:14:57.520] But say you get about five of these per piece of context.
+[00:15:00.600] That's what we found is like a pretty reliable measure.
+[00:15:03.600] Once you have some of these, then you can kind of reap the benefits of it forever,
+[00:15:06.880] just like unit tests, right?
+[00:15:08.080] You can just every time you make a change, you rerun these.
+[00:15:10.800] You see if it helped, if it hurt,
+[00:15:12.880] one thing that's different is oftentimes you'll rerun these
+[00:15:15.240] without changing the context because there is something else
+[00:15:18.280] that's changing, which is the agent in the model.
+[00:15:20.400] And so a lot of times you'll rerun what we have found is oftentimes
+[00:15:24.520] you can start stripping out your context as agents get better.
+[00:15:27.160] Right.
+[00:15:27.360] Like we had style guides for Python Calude Opus 4.6 writes pretty damn good Python.
+[00:15:33.480] It doesn't need a style guide anymore.
+[00:15:35.440] Your evals can tell you that and help you delete context that you don't
+[00:15:39.240] no longer need. Save money. Don't pay the tokens.
+[00:15:42.000] Every once in a while there will be a regression. There was.
+[00:15:44.320] I think it was Gemini.
+[00:15:47.360] A recent Gemini was like kind of a smart ass
+[00:15:49.480] and thought it didn't need to use tools and read context.
+[00:15:53.080] And then we realised, oh, we've had a regression,
+[00:15:54.800] we need to go beef up how much we tell the agent to use the context.
+[00:16:00.360] Okay,
+[00:16:01.000] so repo evals, I talked about integration tests.
+[00:16:04.160] I won't go too deep into this because it's basically the same thing.
+[00:16:07.120] But you don't want to just test your context in isolation
+[00:16:10.880] that can help you like debug.
+[00:16:12.400] Are you saying the right things?
+[00:16:13.760] Have you has your context grown out of date?
+[00:16:16.360] You also want to measure realistic scenarios
+[00:16:19.720] in your full coding environment, all your contexts installed.
+[00:16:25.240] I was just watching a talk earlier today that described the dumb zone,
+[00:16:28.960] which is where you've gotten too much context in your context window.
+[00:16:32.280] Because of tools, because of context,
+[00:16:34.560] because of all these things where agents just like persistently bad.
+[00:16:38.320] So you want to have a few coding scenarios again, like five for
+[00:16:41.600] your repo is a fine place to start that just represent an average development
+[00:16:46.520] task.
+[00:16:47.080] And again, same like, a rubric to grade the output
+[00:16:50.880] and just run it every once in a while, see if your tech debt has gotten to a point
+[00:16:53.760] where agents
+[00:16:54.520] don't understand how to work in your code, have you installed too much context?
+[00:16:58.440] Have you installed too many tools? All of that?
+[00:17:02.440] This is something that Tessl is building as well.
+[00:17:04.720] One thing we found that works pretty well is like scan your previous commits
+[00:17:08.440] and turn some of those into tasks, and you can even have
+[00:17:11.680] like on a regular cadence, pick like five random commits over the last month.
+[00:17:16.000] And this refresh your eval suite.
+[00:17:17.760] For folks who are in the ML environment, you have things like input drift
+[00:17:21.280] where you want to update your tasks every once in a while.
+[00:17:25.240] Don't worry about it.
+[00:17:25.960] If that is like seems like too much effort,
+[00:17:27.680] just start with something and you can improve it over time.
+[00:17:30.320] But yeah, that's a you same idea of task scenarios.
+[00:17:34.320] Grading rubrics.
+[00:17:35.680] Run them every once in a while.
+[00:17:36.880] Make sure you have integrated things.
+[00:17:40.480] Okay.
+[00:17:40.760] So this one I think is pretty cool but is also kind of scary,
+[00:17:45.080] which is you want something like analytics and observability, right.
+[00:17:49.240] You've written this context.
+[00:17:50.440] You validated the change before you've pushed it out to the repo for everyone.
+[00:17:54.760] We do that in software, but then we also still have crash logs.
+[00:17:59.080] We have metrics, we have usability funnels, things like that.
+[00:18:04.480] This actually does exist for agents.
+[00:18:07.040] Just a lot of people aren't paying attention to it.
+[00:18:09.400] All of the agents store all of their chat logs in files
+[00:18:13.280] in accessible places, and so you can write your own scripts if you'd like.
+[00:18:18.520] Tessl has capability to gather these, opt in, of course, because obviously it's
+[00:18:23.320] very sensitive information.
+[00:18:24.800] You can review those transcripts to see things like were tools called
+[00:18:29.040] or how often was this piece of context used?
+[00:18:32.080] How often does this pattern get actually meant like actually manifest in the code?
+[00:18:37.600] Like how often does it import a library right in the middle of a function
+[00:18:41.520] and so there's like
+[00:18:42.440] a lot of rich information here that you could just write a quick script,
+[00:18:46.600] ask everyone in your team to run it once and just aggregate a bunch of logs
+[00:18:50.040] and just review like common problems that you, might want to make new context for.
+[00:18:55.280] Great.
+[00:18:55.600] One is anytime the agent apologises so you just look for the word sorry,
+[00:18:59.040] look for the words. You're absolutely right.
+[00:19:01.000] All of these things are good.
+[00:19:02.320] Like, oh, maybe we should write something to fix that.
+[00:19:04.560] There's a wealth of information, and I guarantee
+[00:19:06.640] you've got like 3 or 4 months of cursor logs sitting on all your devs
+[00:19:10.480] team, devs machines that you could mine for.
+[00:19:12.920] Like, what should we be doing different?
+[00:19:16.080] This is my warning.
+[00:19:17.320] I've shifted the colour because the next screen is in light mode.
+[00:19:19.680] It's a GitHub page, so please prepare your eyes.
+[00:19:22.800] How do you keep your context up to date?
+[00:19:25.680] Yeah. See, I tried my best.
+[00:19:28.200] I really tried to hit the midpoint between black and white.
+[00:19:31.560] Sorry.
+[00:19:32.680] There is again, you can do something pretty simple here
+[00:19:36.800] where you can just set up, there's all kinds of code review tools.
+[00:19:41.000] There's cloud code, web.
+[00:19:42.480] But I think a general thing to set up in your CI/CD,
+[00:19:45.640] if you have created context, is anytime a PR comes up,
+[00:19:50.280] have something, scan that PR and then look and say,
+[00:19:53.920] is there any markdown file here that should be updated?
+[00:19:56.280] Right. So it's not that hard.
+[00:19:58.560] Like it really works better than you'd think.
+[00:20:00.040] It seems like a really complicated task, but because PR tend to be so focussed,
+[00:20:05.000] agents are pretty good at finding out where they should update.
+[00:20:08.320] If your powers are too big, maybe it's a good sign to make your PR smaller.
+[00:20:12.360] Again, very simple.
+[00:20:14.120] So, like, Tessl can automate a lot of this where it says, oh, you added a new case
+[00:20:17.680] to your logging levels here, update your documentation as well.
+[00:20:20.840] This one is probably the most important
+[00:20:23.920] because as your context gets out of date, it just destroys agent performance.
+[00:20:27.960] So if you're going
+[00:20:28.640] write context, you have to have a solution for keeping it up to date.
+[00:20:32.200] Agents are pretty good at doing this, so you don't have to do it by hand.
+[00:20:34.880] Don't do it by hand because you won't do it.
+[00:20:37.720] Okay.
+[00:20:38.360] Last thing, package managers, I mentioned that this one's kind of normal.
+[00:20:43.280] You need a package manager if you want to reuse context.
+[00:20:46.360] Right?
+[00:20:46.600] Like, code review skill, a,
+[00:20:49.800] documentation on how to use react, best practices, etc..
+[00:20:53.520] So I won't belabour this point.
+[00:20:55.200] There's lots of good options out there.
+[00:20:56.960] Skills.sh is probably the most popular, though it pains me to say that
+[00:21:00.400] Tessl has a package manager as well.
+[00:21:02.080] It's not the most popular. I think it's the best.
+[00:21:04.640] I won't pitch you on why?
+[00:21:07.480] It's the best, but it's the best.
+[00:21:08.880] The important thing, though, I'm showing here Tessl's package manager.
+[00:21:12.880] Ooh, look, we give you evals, we give you all this useful information.
+[00:21:16.680] Two things that are different that you should just think
+[00:21:19.360] about when figuring out how to use context.
+[00:21:22.720] The first is that, unlike other package managers, a lot of context
+[00:21:28.000] you're going to install is going to be describing other package managers.
+[00:21:32.520] Right. So I have an example here.
+[00:21:34.240] I have documentation on a library that's part of PyPi.
+[00:21:38.640] And it describes a particular package at a particular version.
+[00:21:42.840] And these are sort of like a net new,
+[00:21:45.520] maybe not entirely new, but a it's a weird concept.
+[00:21:48.640] And so you just want to think about what is your strategy for matching.
+[00:21:52.120] If you have documentation on a library, how do you make sure that as you update
+[00:21:56.640] your library, you keep documentation keyed to the same version?
+[00:22:01.960] Right? You don't want to say
+[00:22:04.000] I'm using context seven on the latest of react,
+[00:22:06.960] but actually you're pinned to like react 17 or something for some reason.
+[00:22:10.000] So there's lots you can do here.
+[00:22:12.160] You can just write again something yourself.
+[00:22:13.800] Like a lot of this is not necessarily hard to do, it's
+[00:22:15.880] just fiddly to keep updated and keep sort of pace with the
+[00:22:19.040] the rate of agent change.
+[00:22:20.080] But think about how do you keep your context in sync
+[00:22:24.280] with dependencies, in sync with tools or APIs that you're using?
+[00:22:28.440] Because it's a new source of drift that you might have to care about?
+[00:22:32.320] So that's it.
+[00:22:32.800] That's my my walk through.
+[00:22:34.520] I'm happy to answer questions now or afterwards.
+[00:22:36.480] I think I have a few minutes so I will turn it to questions out.
+[00:22:39.000] I should have had a question slide.
+[00:22:40.480] But inside you're going to look at this.
+[00:22:42.040] That's all right. Thank you very much.
+[00:22:45.400] Yeah, we have a few minutes for for questions.
+[00:22:48.560] Please wait for the mic if you have a question.
+[00:22:50.680] If you do have an excellent question,
+[00:22:52.760] then we have some merch that, Sam is modelling over there.
+[00:22:56.760] A bag or a fidget spinner or a hat.
+[00:22:59.440] Drew takes questions on Tessl but also The Fast
+[00:23:02.200] and the Furious and improv comedy.
+[00:23:04.520] First.
+[00:23:05.920] First, this is true. First question.
+[00:23:08.920] Thanks. Hi.
+[00:23:09.520] Great presentation.
+[00:23:11.600] So what do you see as the in state, like in 12 months or even six months,
+[00:23:16.560] if, you know, like Claude 4.6 is just really good and Codex, you know, 5.3
+[00:23:23.000] and then when you know, Codex 6 comes out and Claude 5 comes in Gemini.
+[00:23:27.240] I mean, do we need a lot of the
+[00:23:30.080] scaffolidng or does it go away?
+[00:23:31.920] Fantastic question.
+[00:23:33.080] I would say
+[00:23:34.520] first it's going to split a lot by whether or not you're a greenfield
+[00:23:37.200] or brownfield,
+[00:23:37.960] like if you've built an app
+[00:23:38.960] from the ground up for agents, it's going to be a lot easier
+[00:23:41.880] than if you're doing like an enterprise Java app.
+[00:23:45.800] So that's one I think the number of things you need context for will go down.
+[00:23:50.520] So the example I gave a Python style guide was like all the rage six months ago.
+[00:23:56.240] Nobody needs it now.
+[00:23:57.640] But describing your custom internal logging solution,
+[00:24:02.320] you're always going to have to document
+[00:24:03.720] that because like an agent doesn't have access to it, right?
+[00:24:05.560] It's not in its training weights.
+[00:24:06.760] So there's some amount of knowledge that will always need to be told to the agent.
+[00:24:12.360] My expectation is that eventually
+[00:24:15.400] you won't be proactively jamming almost any context into an agent's window.
+[00:24:20.600] You'll have some kind of signposting like progressive disclosure.
+[00:24:23.320] The agent will get to look at it
+[00:24:25.000] if it deems it necessary, like a normal developer will,
+[00:24:28.760] and then a lot of your usage of context will be applied at review time.
+[00:24:32.160] So you will create a review agent that looks for things like did it
+[00:24:36.040] break our style guide?
+[00:24:37.040] Did it re-implement something?
+[00:24:39.160] And it'll just be there for control.
+[00:24:40.600] It won't be there to sort of like educate the agent upfront.
+[00:24:43.960] I think evals are going to play a big part
+[00:24:45.400] in helping you navigate that change, right?
+[00:24:47.440] Knowing when it's time to move things out of the context window
+[00:24:50.760] into a review or just delete it?
+[00:24:53.800] Yes. Thank you.
+[00:24:55.000] Next question here.
+[00:24:57.160] I wanted to ask about people's depend on us or
+[00:25:00.400] so think of like speed and stuff like that.
+[00:25:04.240] You know, I would love one pagers.
+[00:25:07.880] I think that's right.
+[00:25:09.400] I think binary is pretty much the only like we give granularity in Tessl.
+[00:25:15.080] If you want to do more.
+[00:25:16.280] But if you look agents pretty much always score zero or max score.
+[00:25:20.920] So I would say no, you could get away with 0 or 1 and
+[00:25:23.120] it would be about the same.
+[00:25:26.120] So, I'm an engineer, so
+[00:25:28.120] a lot of built solutions really fast.
+[00:25:31.240] Would you recommend just using 4.6 to get all the people said very quickly
+[00:25:36.560] and then just use that as a baseline, which is not perfect, but just that as
+[00:25:40.000] a starting point or would you recommend don't do a full, thorough analysis.
+[00:25:44.240] Get a baseline that
+[00:25:46.880] so let me make sure I got that right.
+[00:25:49.400] But like should you try really hard to optimise what agent you're using and the.
+[00:25:53.840] Exactly. Yeah.
+[00:25:55.000] Personally I'm busy.
+[00:25:57.760] I have a lot to do.
+[00:25:59.560] Just start with the best agent.
+[00:26:01.040] And then I think what I'd say more is, once you have
+[00:26:04.240] some really repetitive tasks, it can be worth it to say, okay,
+[00:26:08.360] what is like the best, the cheapest I can get away with.
+[00:26:11.440] A lot of times, context will help you use smaller models to do that.
+[00:26:16.360] But no, I would say for a day to day like your general driver,
+[00:26:19.880] just always crank it to the max unless you have some reason you can't do that.
+[00:26:24.960] Things might actually function because you have to talk.
+[00:26:29.440] Yeah.
+[00:26:30.600] My question is more tools for me.
+[00:26:32.800] Like a little technical,
+[00:26:35.120] to to,
+[00:26:38.000] what would want me to go,
+[00:26:40.080] what barrier to if you can use to measure,
+[00:26:43.080] point in time.
+[00:26:43.640] Well, I will teach you how to input into what the agents do.
+[00:26:49.360] You what that is for something like,
+[00:26:53.320] that's how it wants to compare.
+[00:26:54.400] Desired.
+[00:26:58.200] Not too much.
+[00:26:59.400] I'm going to throw out maybe spicy take which is that.
+[00:27:09.560] Definitely we're not there and I don't think we'll ever be them.
+[00:27:13.240] What I mean by that is we have effectively had
+[00:27:17.000] general purpose agent development machines for 50 years.
+[00:27:21.000] We just called them software engineers.
+[00:27:23.040] And in that case, you never just wrote somebody
+[00:27:25.800] a Slack message and expected them to go build an entire system
+[00:27:29.320] completely unsupervised and just, like, make all the best decisions., right?
+[00:27:33.880] Another way of putting this, my wife, who is like a very senior staff engineer
+[00:27:37.360] at meta, is like, if you cloned me, I would still code review my code, right?
+[00:27:41.320] Like I would never accept anyone to submit things without looking at it.
+[00:27:46.360] So personally, I think there will always be a place for a technical
+[00:27:51.520] architect, a steward,
+[00:27:52.880] somebody who's guiding the sort of quality of the code base.
+[00:27:56.440] I think what that role is will change over time.
+[00:27:59.880] So right now it's a lot of like in the weeds, very specific decisions.
+[00:28:04.360] It's a lot of like reviewing code.
+[00:28:06.000] It's mentoring and coaching people up.
+[00:28:08.880] And you tend to have like 1 p.m.
+[00:28:11.320] to 5 to 10 engineers. Right?
+[00:28:14.480] I imagine we'll get to a place where you invert that ratio
+[00:28:17.680] and you have one sort of like technical steward whose job is to think
+[00:28:22.840] about the overall system design, to be constantly reviewing
+[00:28:27.760] agent code, to be reviewing things that people
+[00:28:30.240] are building and understanding, like, oh, this is a consistent failure point.
+[00:28:33.480] If we abstract this part out, if we build a component that agents can use,
+[00:28:36.960] they'll more reliably get better, like one shot success.
+[00:28:40.080] And then you have like 5 to 10 more like product design, product
+[00:28:44.040] engineering, people who are out sort of exploring the frontier of your
+[00:28:48.160] product space and then have this one technical steward
+[00:28:51.520] helping them land their code and keep things maintainable and improve,
+[00:28:55.560] like improving them over time.
+[00:28:58.280] When will we get to that point?
+[00:29:00.520] That part I'm less certain of.
+[00:29:02.080] Like it could be in two weeks. It could be in two years.
+[00:29:05.080] I think it's probably in the order of like single digit years.
+[00:29:09.400] Certainly.
+[00:29:10.400] I wouldn't be surprised if it was like a completely I native
+[00:29:14.800] greenfield project starting within the next year could work in that model.
+[00:29:20.080] But certainly for brownfield, I think it'll be harder.
+[00:29:22.960] Sweet. Thank you so much. All right.

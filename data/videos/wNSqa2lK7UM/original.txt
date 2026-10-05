@@ -1,0 +1,2453 @@
+[00:00:09.280] Okay, this is the spec driven
+[00:00:10.880] development workshop. Um, if you're not
+[00:00:14.160] here for spec driven, you're probably
+[00:00:15.599] here for one of two other sessions which
+[00:00:17.440] is the landing. Um, just very very
+[00:00:20.720] briefly before we jump in, you know, I'm
+[00:00:23.119] going to talk about the survey again. Uh
+[00:00:25.359] please if you haven't already uh given
+[00:00:28.560] ratings for other sessions and so forth
+[00:00:30.880] uh please do go to aonativedev.co/servey
+[00:00:34.480] uh and you can fill in uh the details
+[00:00:36.719] there. Um and that QR code goes straight
+[00:00:39.600] to it as well. Uh a little bit about
+[00:00:42.640] what we're going to be talking about
+[00:00:44.079] today. My name is Simon Maple. I I head
+[00:00:46.719] up Devril here at Tessle. Uh my
+[00:00:50.079] colleague here, Mr. Alan Pope.
+[00:00:51.840] >> Hello. That's me.
+[00:00:52.879] >> Do you want to introduce yourself, Alan?
+[00:00:54.160] Uh yeah, I'm Alan. I work with Simon at
+[00:00:56.320] Tesla.
+[00:00:57.920] >> Awesome. And and yeah, today we're going
+[00:00:59.600] to be talking a little bit about spec
+[00:01:01.680] driven. Why spec driven? First of all,
+[00:01:03.440] what are the some of the challenges uh
+[00:01:05.119] it can it can help us with in and around
+[00:01:08.159] uh AI development uh through various
+[00:01:11.119] agents and other tools that we use. Um
+[00:01:13.760] so when we think about how you know we
+[00:01:16.320] talk about AI agents, we probably should
+[00:01:18.240] really classify that a little bit. First
+[00:01:19.920] of all, I guess for for many their first
+[00:01:22.080] experiences in around AI coding or
+[00:01:24.720] assistance for AI coding was was
+[00:01:27.040] probably something like chat GPT. I'm
+[00:01:29.040] sure we're all here. How many years ago?
+[00:01:30.880] Three years ago now.
+[00:01:32.159] >> Something crazy.
+[00:01:33.600] >> When was 35? Was that three years ago?
+[00:01:36.960] >> It's bizarre, isn't it? Three years ago.
+[00:01:39.200] So yeah, we probably typed in, can you
+[00:01:42.479] write some code that does this? We copy
+[00:01:44.000] pasted it to our IDE. It broke. So we
+[00:01:46.479] grabbed the exception, we threw it back
+[00:01:48.240] into chat GPT, it worked out. Typically
+[00:01:50.560] we would get to a solution, but the UI,
+[00:01:52.640] the UX is is is pretty awful because
+[00:01:54.399] we're copyping the twin. So then
+[00:01:56.079] something like Copilot came out and this
+[00:01:57.680] was really my my first experience at
+[00:02:00.240] real uh AI assisted development in in my
+[00:02:04.479] place, my home, my my IDE. So
+[00:02:06.960] essentially, yeah, whether it's tab
+[00:02:08.160] completion, whether you're asking it to
+[00:02:09.679] do more complex things, uh it would go
+[00:02:11.599] ahead and do that. And of course uh
+[00:02:12.959] there are more agentic style things that
+[00:02:15.840] uh that copilot will do these days but
+[00:02:17.920] it's the more assisted part of copilot
+[00:02:20.319] which I started uh I started building
+[00:02:22.560] out and then we kind of fell into the
+[00:02:24.400] world of AI agents and I guess one of
+[00:02:26.319] the big questions is what's the
+[00:02:27.280] difference between an AI agent and an AI
+[00:02:28.720] assistant. Well an AI assistant is
+[00:02:30.879] typically something that that that that
+[00:02:32.640] does these smaller tasks. It's much more
+[00:02:34.560] conversational. We we think about it in
+[00:02:36.560] a more chatbased uh environment. I ask
+[00:02:39.599] it something gives me a response. I
+[00:02:41.440] think about it. I validate it. I give it
+[00:02:43.200] another question. You're not actually
+[00:02:45.040] just sending something off to an agent
+[00:02:46.560] that goes away and builds this whole
+[00:02:48.560] thing, makes decisions for itself, maybe
+[00:02:50.640] uses other agents or sub agents, goes
+[00:02:52.959] and uses third party services. It's the
+[00:02:55.120] longer running, more complex uh
+[00:02:57.280] definition of a of what an agent is. Um,
+[00:03:00.720] but agents do have pitfalls. Uh, no
+[00:03:03.280] agent is perfect. And these are some of
+[00:03:04.879] the pitfalls when we're not using
+[00:03:06.560] specifications in our agentic
+[00:03:08.879] development. Um, I did ask ChatGpt to
+[00:03:12.640] create these uh these images. It was a
+[00:03:15.360] very self-reflective moment for ChatGpt.
+[00:03:18.879] One of them, the first issue that chat
+[00:03:21.280] GPT thought it had was something called
+[00:03:23.360] collateral damage. And and essentially
+[00:03:25.120] this is when, and I'm sure everyone's
+[00:03:26.879] experienced this when Vive coding, I've
+[00:03:29.360] been sending loads of prompts to
+[00:03:31.120] whatever I want to work with, whether
+[00:03:33.120] it's Claude or whether it's um, you
+[00:03:35.200] know, codeex or whatever. and my 100th
+[00:03:38.000] on my 100th prompt, uh, it goes ahead
+[00:03:40.480] and actually then says, "Yes, I'll fix
+[00:03:42.720] this for you." But it actually breaks
+[00:03:44.400] something else. Uh, and it's the
+[00:03:46.319] classic, well, I've I've made this work
+[00:03:48.000] and that's what you asked for, but I've
+[00:03:49.760] broken something else. This is what we
+[00:03:51.200] call a collateral damage where it
+[00:03:52.799] doesn't have to be an exception or it
+[00:03:54.239] doesn't have to be an error. It could be
+[00:03:55.680] a behavioral thing, but it but it
+[00:03:57.439] affects another piece. Another piece is
+[00:04:00.319] when I'll get to that 100th prompt,
+[00:04:02.640] actually, the first 10, is that still in
+[00:04:04.560] its context? has that been has that been
+[00:04:06.959] you know removed when it actually
+[00:04:08.239] compacted its uh its backlog of all my
+[00:04:11.200] of all my prompts sometimes it forgets
+[00:04:13.519] some of the instructions and that's
+[00:04:14.959] because when we prompt prompts are
+[00:04:16.799] throwaway artifacts they're throwaway
+[00:04:18.639] messages it's just chat um and so as a
+[00:04:21.280] result it's AI will agents will find it
+[00:04:24.080] hard to to to keep track to to hold all
+[00:04:27.199] of these uh this string of requests
+[00:04:29.600] through
+[00:04:31.360] uh another example of how agents can
+[00:04:33.120] sometimes fail is hallucinations and we
+[00:04:34.720] all what hallucinations are. Um, and
+[00:04:37.199] very often when we think about coding,
+[00:04:39.280] it it very frequently manifests itself
+[00:04:41.919] as a hallucination to a to an API that
+[00:04:45.440] we thought existed, but actually it
+[00:04:47.120] doesn't exist. Um, sometimes it's a real
+[00:04:49.759] hallucination. Sometimes it's actually
+[00:04:51.840] version blur where the training data is
+[00:04:54.479] actually training across a huge number
+[00:04:56.000] of different versions and it's the agent
+[00:04:57.919] isn't necessarily fully understanding
+[00:04:59.840] what version I am actually coding
+[00:05:01.360] against and it's actually trying to hit
+[00:05:03.520] a different version of that correct
+[00:05:05.600] library uh the API on that and of course
+[00:05:08.560] maybe something's been deprecated or
+[00:05:10.320] removed maybe something just hasn't
+[00:05:12.000] reached the version that I'm using yet
+[00:05:13.680] and it's trying to invoke that. So, this
+[00:05:15.120] is kind of like a version blur where the
+[00:05:17.120] agent's training isn't taking into
+[00:05:19.280] account the actual version. Uh, I'm
+[00:05:21.120] using
+[00:05:22.720] uh stale training data. I'm I'm really
+[00:05:24.479] sad about this. This poor little guy.
+[00:05:26.160] He's uh he's had his hand removed. Chat
+[00:05:27.919] GPT wasn't wasn't having it with
+[00:05:30.320] training data. But, uh, Spring version
+[00:05:32.320] 7, our wonderful friends at Spring. In
+[00:05:34.160] fact, one of them is Josh Long. If you
+[00:05:35.440] don't know Josh Long, um, incredible uh,
+[00:05:38.560] Java advocate and and Spring advocate.
+[00:05:41.840] He's actually in the other room, but
+[00:05:43.120] don't go. He's he's his his wonderful
+[00:05:45.840] talk will also be on uh recorded but
+[00:05:48.560] let's say spring version 7 comes out
+[00:05:50.240] this month which it is there's nothing
+[00:05:52.479] in the training data of course for
+[00:05:54.000] spring version 7 because the trading
+[00:05:56.160] data was actually if you look at claude
+[00:05:58.880] uh created in January of this year so
+[00:06:01.919] there's no way other than the LLM
+[00:06:04.479] looking at the either trying to find
+[00:06:06.240] some docs or looking at uh the actual
+[00:06:08.720] code uh in the in the repository in its
+[00:06:11.440] uh in its dependency that it's
+[00:06:13.039] downloaded to actually try and code
+[00:06:14.560] against that. So, how does it how does
+[00:06:16.160] it, you know, work with either massive
+[00:06:18.240] legacy or very new things that are just
+[00:06:20.880] outside of its training data.
+[00:06:23.360] Um, yeah, lack of persistent knowledge.
+[00:06:25.520] So, very often if I'm in a session, if I
+[00:06:27.199] create a session and I get it just
+[00:06:28.560] right, I'm I'm giving it the the right
+[00:06:31.039] detail about how I want it to code for
+[00:06:33.280] me, my best practices, I want you to
+[00:06:35.680] write these tests when I do this, etc.,
+[00:06:37.919] etc. As soon as that session goes and
+[00:06:39.840] dies, I have to recreate that every
+[00:06:42.720] single time because it doesn't exist.
+[00:06:46.080] And finally,
+[00:06:48.080] everyone's got the t-shirts. Yeah, if
+[00:06:49.600] you haven't got one of our uh t-shirts,
+[00:06:51.600] it just says you're absolutely right on
+[00:06:53.280] it. When it does error, you get this
+[00:06:56.240] wonderful message. You're absolutely
+[00:06:58.000] right. And this is actually I was
+[00:06:59.840] thinking the other day we should
+[00:07:01.199] probably write a little bot that goes
+[00:07:02.880] through your clawed history and works
+[00:07:04.400] out how many what's the your absolutely
+[00:07:06.240] rights per minute or per per hour you're
+[00:07:08.400] getting just the the sheer frustration
+[00:07:10.000] oral loops that we get. Um and it of
+[00:07:12.319] course does that once and then gets the
+[00:07:14.319] answer perfectly right. Right. Or does
+[00:07:17.280] it go again and again and again and we
+[00:07:19.840] hit this spiral of you're absolutely
+[00:07:22.000] right until we get very very frustrated
+[00:07:24.240] and then we realize well actually we're
+[00:07:25.919] not giving it any more information.
+[00:07:28.319] It's got the same amount of information
+[00:07:29.759] unless it tries to do a web search or
+[00:07:31.840] something. So, it's very hard for it
+[00:07:33.440] with the same amount of information to
+[00:07:35.199] try and try and get a correct answer.
+[00:07:37.280] We're actually relying on the
+[00:07:38.080] nondeterminism to hope it finds finds is
+[00:07:41.120] lucky to find some other answer. So, how
+[00:07:43.199] do we avoid that? How do we make agents
+[00:07:45.199] more accurate? Um, more predictable,
+[00:07:48.080] more using more current data with
+[00:07:50.720] validation, but also less frustrating so
+[00:07:52.479] that it's, you know, we're not
+[00:07:53.599] constantly going through these spirals
+[00:07:55.440] or these loops trying to get it to to do
+[00:07:57.280] the right thing. And at Tesla certainly
+[00:08:00.160] and of course at AI Native Dev, we
+[00:08:02.240] believe the answer to that is
+[00:08:03.599] specifications. And all those issues
+[00:08:05.840] that I just mentioned before,
+[00:08:08.240] specifications are actually a great way
+[00:08:10.160] to be able to think about a solution to
+[00:08:12.240] that. Whether it's just huge numbers of
+[00:08:14.080] prompts, well, put them in a
+[00:08:15.360] specification. If it's version blur,
+[00:08:18.400] well, you know, create a specification
+[00:08:20.400] that describes my stack or describes
+[00:08:22.720] what I am downloading and and how I can
+[00:08:24.879] use that and so forth. And there's a
+[00:08:27.280] couple of ways that at Tesla we've
+[00:08:29.680] thought about this and I'll I'll I'll
+[00:08:31.120] cover those. And it really leads into
+[00:08:33.279] our kind of like longer term vision as
+[00:08:34.800] to how specifications can change the way
+[00:08:37.839] we as software developers uh build
+[00:08:39.839] software. and and the longer term vision
+[00:08:42.240] is um where we write specifications as a
+[00:08:45.839] definition for an application. So if you
+[00:08:48.160] imagine an app spec where that spec
+[00:08:50.720] defines the capabilities of the
+[00:08:53.200] application and capabilities are really
+[00:08:55.279] just another way of describing tests. If
+[00:08:57.120] I say I want you to do this, it's
+[00:08:59.279] equivalent of essentially saying I'm
+[00:09:00.800] going to write a bunch of test cases
+[00:09:02.000] that prove you do that. So a set of a
+[00:09:05.279] set of uh
+[00:09:08.080] um capabilities or tests also a
+[00:09:12.160] directive or a direction of how an API
+[00:09:14.560] should be built and so forth. These
+[00:09:16.800] these things it's just a markdown file.
+[00:09:18.320] We could kind of like describe it as we
+[00:09:19.839] wish. The other way of course is
+[00:09:23.200] building specifications that help guide
+[00:09:25.360] an agent to build code. So my first one
+[00:09:27.680] was very specentric. In other words, I'm
+[00:09:30.240] building a spec that's the center of my
+[00:09:31.920] universe. build me an app from it. When
+[00:09:34.399] we think about specs as guidance, we're
+[00:09:37.040] talking about can I build a set of
+[00:09:38.800] specifications that when I use my agent,
+[00:09:41.920] it can use those specifications as
+[00:09:43.600] context to guide the agent to build in a
+[00:09:47.600] specific way. That could be anything
+[00:09:49.760] from what we're calling kind of like
+[00:09:51.839] these usage tiles within Tessle whereby
+[00:09:54.720] in this case maybe I'm using React
+[00:09:57.040] version, I don't know, 191 or something
+[00:09:59.040] like that, a fairly new one. This would
+[00:10:01.279] contain usage information about how my
+[00:10:03.600] LLM should use this library. And this
+[00:10:07.040] can continue into maybe it's guidance
+[00:10:08.959] around how my organization sets out its
+[00:10:11.680] security policy or ways in which I want
+[00:10:14.240] you to use TypeScript and ways in which
+[00:10:15.920] I don't want you to use TypeScript, my
+[00:10:17.920] your coding best practices and so forth.
+[00:10:19.760] So, there's a bunch of specifications
+[00:10:20.959] that provide guidance or steering uh to
+[00:10:24.320] uh applications. And during this
+[00:10:26.560] hands-on workshop, we're going to go
+[00:10:28.240] through a bunch of that and and I I'll
+[00:10:30.880] give you a very very brief demo of of uh
+[00:10:33.839] of Tessle, which will actually show you
+[00:10:36.320] the the the power in which using these
+[00:10:38.880] specifications we can guide those agents
+[00:10:41.600] and then I'll pass over to Alan. Um, oh
+[00:10:44.880] actually let me jump through that and
+[00:10:47.120] then I'll pass over to Alan who will uh
+[00:10:50.160] talk you through what we're going to do
+[00:10:52.560] in this workshop to actually collaborate
+[00:10:55.200] with specification writing and then
+[00:10:56.880] building [clears throat] an application
+[00:10:57.600] that then uses that specification. And
+[00:10:59.519] one of the core things is we're going to
+[00:11:00.959] do uh a we're going to do collaboration
+[00:11:03.120] because we're going to be uploading a
+[00:11:05.040] lot of these specifications into a
+[00:11:06.959] repository that we can then share from.
+[00:11:09.519] So if this gentleman writes a
+[00:11:11.279] specification and that lady over there
+[00:11:13.519] wants to use that, we don't want to
+[00:11:15.839] build their own specifications, use it
+[00:11:17.519] in isolation and never share because if
+[00:11:19.440] you're part of the same organization,
+[00:11:20.959] you'll have a lot of the same policies.
+[00:11:22.640] So we want one person to upload, another
+[00:11:24.880] person to use or a platform team to
+[00:11:27.279] suggest and propose a number of uh a
+[00:11:30.399] number of specifications that an entire
+[00:11:32.320] organization or team can pull down and
+[00:11:34.480] use so that we're guiding agents uh very
+[00:11:37.600] predictably.
+[00:11:39.760] Okay. So, um, a couple of things I'm
+[00:11:43.920] going to show you. First of all, um,
+[00:11:46.160] I've already downloaded Tessle. Um, some
+[00:11:48.720] of this will be in the workshop. If you
+[00:11:50.000] wanted to follow along a little bit,
+[00:11:51.279] you're absolutely welcome to. Um, what I
+[00:11:53.360] have already done is an npm install
+[00:11:55.600] minusg at tessle/ cli. What this is
+[00:11:59.040] going to do is it's going to globally
+[00:12:00.560] install the Tesla CLI onto my local
+[00:12:03.279] environment so that wherever I am, I can
+[00:12:05.440] just run Tessle and life is good. If you
+[00:12:08.560] run that uh I will run Tessle version,
+[00:12:13.279] you should get something along the lines
+[00:12:14.959] of a 050 version. Now I have that I
+[00:12:20.079] actually have
+[00:12:22.639] a nice little CLI where I can do certain
+[00:12:25.200] things. I think I'm uh I think I'm
+[00:12:27.360] logged in. So let me quickly Tessle log
+[00:12:31.440] out
+[00:12:32.959] and Tessle log. If I do tessle who am I
+[00:12:37.519] right now, you'll see that I'm not
+[00:12:39.120] logged in. This is probably a little bit
+[00:12:40.639] low. Sorry. Uh you can see I'm not
+[00:12:43.519] currently logged in. So I'm going to run
+[00:12:45.760] Tesla login. That's going to send me to
+[00:12:48.320] a new window. Uh if you don't have an
+[00:12:50.959] account, you'll need to go through a
+[00:12:52.240] number of steps. You can create a free
+[00:12:53.760] account just by either using your your
+[00:12:56.399] Gmail or your uh or your Google account
+[00:12:58.560] rather or or your GitHub account. Um,
+[00:13:01.360] I'm just going to confirm that that is
+[00:13:03.440] indeed
+[00:13:05.200] the code over here. It logs me in. There
+[00:13:09.279] we go. And from this point on, I can
+[00:13:11.680] actually do a bunch of workspace,
+[00:13:13.760] private workspace creation, of course.
+[00:13:16.959] Uh, within where are we? Within Tessle,
+[00:13:21.600] I thought
+[00:13:24.399] uh uh maybe it's in here. uh within uh
+[00:13:30.800] there we go at Tesla we have a public
+[00:13:33.360] registry and this is a registry in which
+[00:13:35.839] we at Tesla can publish a whole bunch of
+[00:13:37.920] tiles and these tiles can be used by
+[00:13:41.120] everyone in their general development.
+[00:13:43.440] So far what we have uh published are
+[00:13:45.839] these usage tiles and they are
+[00:13:48.000] descriptions of open- source code and
+[00:13:50.240] what that means is if you were to pull
+[00:13:52.160] those descriptions down of open source
+[00:13:54.079] code uh those descriptions will allow
+[00:13:56.959] they will be provided to an agent so
+[00:13:58.800] that agent knows how to use that open
+[00:14:00.480] source at that version correctly. I'm
+[00:14:02.639] going to give you a very brief demo of
+[00:14:04.320] that. Uh but first if I was just to
+[00:14:06.880] search this registry and search it for I
+[00:14:10.160] don't know I mentioned spring right? If
+[00:14:11.839] I was to search here for spring, you'll
+[00:14:13.120] see a number of different kind of like
+[00:14:14.639] Maven Spring uh um uh kind of usage
+[00:14:20.079] tiles. And each of these has a huge
+[00:14:23.199] amount of information about how an agent
+[00:14:25.600] with examples with coding examples how
+[00:14:27.760] an agent should use uh this library. Um
+[00:14:31.760] so what I'm going to do is if I go uh if
+[00:14:34.320] I run Tesla in it, what this is going to
+[00:14:36.639] do is it's going to try and it's going
+[00:14:37.839] to it's going to set up my environment.
+[00:14:39.120] It's going to try and download uh any
+[00:14:41.199] usage tiles that I require. Um and it's
+[00:14:44.800] going to in this case uh it's created
+[00:14:46.800] two oh it's saying two agents need setup
+[00:14:49.920] and it's created an MCP client for both
+[00:14:52.399] claude code and cursor because it
+[00:14:54.240] recognizes I have that on my local
+[00:14:55.760] environment. Now when I run claude the
+[00:14:58.480] MCP server is there. So I shall say use
+[00:15:01.839] that. And if I run MCP here, you'll see
+[00:15:03.600] that Tesla exists and I have a bunch of
+[00:15:06.000] tools such as install and search. And
+[00:15:08.880] these are looking for these usage specs
+[00:15:11.199] and trying to install them. And what
+[00:15:12.959] installation means is is once it's found
+[00:15:15.199] a usage spec, one of these uh markdown
+[00:15:18.000] descriptors, it's going to pull that
+[00:15:19.600] down so that I have context local in my
+[00:15:22.320] file system that I can then have my
+[00:15:24.880] agents use. Uh it's not something I
+[00:15:27.360] check in. I would check in a like a
+[00:15:29.760] similar to a package JSON but it will be
+[00:15:31.440] a tessle JSON and that Tessle JSON file
+[00:15:33.680] will describe which usage tiles I need
+[00:15:37.199] to download when I simply do a Tessle
+[00:15:39.199] install. So at this stage what I could
+[00:15:41.680] do is um maybe I'll say something along
+[00:15:44.320] the lines of create an application
+[00:15:48.639] uh that sums a set of dice or die
+[00:15:54.345] [snorts] uh use uh use dice notation
+[00:16:00.079] notation as input
+[00:16:03.199] uh code uh or create typescript
+[00:16:09.199] and use the Tessle MCP server to get
+[00:16:14.880] usage
+[00:16:16.480] tiles. Um, I could also say something
+[00:16:19.360] like use the commander if I was really
+[00:16:22.320] interested. It might do this anyway. Use
+[00:16:24.480] the commander uh CLI uh dependency.
+[00:16:32.079] Um, so now you can see straight away
+[00:16:34.720] it's it's trying to do a search. It's
+[00:16:36.320] it's trying to pull down some some
+[00:16:37.759] TypeScript. um usage tiles. Um it's now
+[00:16:41.360] looking for a CLI. It's probably not
+[00:16:43.279] going to find much there. Uh but it
+[00:16:45.519] should do a search for commander. So now
+[00:16:47.360] it's going to pull down the commander um
+[00:16:49.920] the commander tile and so forth. And
+[00:16:52.320] once it has that, it's going to do a
+[00:16:54.720] really important step when it tries to
+[00:16:56.480] create uh it's trying to do an install
+[00:16:58.399] of that. That uh will probably work. Um
+[00:17:02.240] actually, I'll just say yes to all. Uh,
+[00:17:04.640] and once it does that installation,
+[00:17:05.839] there's a really important step which is
+[00:17:07.199] when it tries to next build something,
+[00:17:09.520] it's going to it's going to essentially
+[00:17:12.640] try and identify what the context is
+[00:17:15.280] from all of these usage tiles because if
+[00:17:17.199] you think about the sheer amount of
+[00:17:19.199] usage tiles and data that we're going to
+[00:17:20.799] have, we don't want to flood the uh we
+[00:17:24.079] don't want to flood the environment with
+[00:17:25.439] those usage tiles. We only want to use a
+[00:17:27.760] certain amount of them. So what it tends
+[00:17:29.919] to do is it tends to try and identify
+[00:17:32.080] based on the request which parts in a
+[00:17:34.480] sub agent this is which parts of the
+[00:17:36.480] usage data it or the context it it needs
+[00:17:40.400] to to satisfy that request. It will pull
+[00:17:43.200] them take that pass that back to the
+[00:17:45.200] main agent and it will use that as part
+[00:17:46.960] of that that creation.
+[00:17:49.280] So that's I'll I'll I'll leave that just
+[00:17:50.720] for a second u in the in the interest of
+[00:17:52.559] time. But what I also want to show you
+[00:17:54.960] is something which uh I kind of like
+[00:17:57.760] mentioned these steering tiles. What
+[00:17:59.120] I've shown here is how we use how we use
+[00:18:01.520] these these um uh markdown usage tiles
+[00:18:05.840] to essentially describe how an agent
+[00:18:07.600] should use open source uh code. But if I
+[00:18:11.360] want if I had private code, if I had
+[00:18:13.200] private libraries, so nothing open
+[00:18:14.799] source, or if I just wanted to tell an
+[00:18:17.760] agent, this is how I want you to work. I
+[00:18:20.559] want to steer it in a way that my
+[00:18:22.480] organization works. I want to be able to
+[00:18:24.400] create my own usage tiles, my own
+[00:18:26.559] context, upload that and allow agents to
+[00:18:28.880] use that. So I want to show you that
+[00:18:30.160] here as well. If I run something like uh
+[00:18:33.600] Tessle uh work
+[00:18:37.679] spaces, no workspace
+[00:18:40.480] um here a workspace, I can create my own
+[00:18:42.799] private workspaces. Uh I have a number
+[00:18:44.960] of things I can do. I can create some
+[00:18:46.480] list etc. So I'm going to say list my
+[00:18:49.039] workspaces. Uh this is the one that
+[00:18:51.039] we're going to use in this workshop, the
+[00:18:52.400] AIND workshop. So if I say um Tessle
+[00:18:56.960] workspace uh actually no what I will
+[00:19:00.320] rather than that do is I'm going to just
+[00:19:02.880] quickly show you what I have in this uh
+[00:19:06.400] in this directory. I have something
+[00:19:08.160] called an index MD. And let me actually
+[00:19:10.400] take you to
+[00:19:13.039] VS Code somewhere. Where's VS Code?
+[00:19:17.679] there. Thank you. This is my index MD.
+[00:19:21.360] Uh this is the core root of where my uh
+[00:19:26.640] of where Tessle and the agent will look
+[00:19:29.440] for uh information for a specific tile.
+[00:19:33.120] In this case, this is my TypeScript
+[00:19:34.880] style guide. So I want to provide the
+[00:19:37.440] agent information about how I want it to
+[00:19:39.679] write TypeScript based on my
+[00:19:41.200] organization's best practices. In here,
+[00:19:43.520] I can link to other files. So I can say
+[00:19:45.760] this is how I want you to do um testing.
+[00:19:48.640] And in here I can say what good looks
+[00:19:50.400] like, what bad looks like, etc. And so
+[00:19:52.559] as my agent build tests, it grabs the
+[00:19:56.880] necessary context, pulls it into the
+[00:19:58.880] main agent and builds the tests as I
+[00:20:01.120] want. Perhaps I want to do a code
+[00:20:02.480] review. If I do a code review, it will
+[00:20:04.240] look at my style guide and give me input
+[00:20:06.400] or give me uh a set of suggestions based
+[00:20:10.240] on my style guide. I don't want a
+[00:20:11.840] generic output. I want something
+[00:20:14.720] specific to my organization. So, how do
+[00:20:17.600] I actually how do I actually use this as
+[00:20:20.160] uh gosh, where am I? How do I use this
+[00:20:22.080] as part of my environment? Well, what I
+[00:20:24.480] would do is um if I do a quick uh vi of
+[00:20:28.480] my tile.json,
+[00:20:32.480] this is an example of what I would need
+[00:20:34.480] to actually publish to a workspace. And
+[00:20:36.720] here I can say, what was the name of it?
+[00:20:38.880] It was a d workshop.
+[00:20:42.080] Thank you.
+[00:20:44.480] uh dear workshop. I'm going to create a
+[00:20:47.280] tile which is called /typescript. I'll
+[00:20:50.000] make this version uh 0.0.1.
+[00:20:54.000] Whoops.
+[00:20:55.840] There we go. Typescript style guides
+[00:20:58.000] blah blah blah. There's a bunch of
+[00:20:59.200] steering tiles there. I'll save that.
+[00:21:01.440] Oops.
+[00:21:03.360] I'll save that. Now, what I need to do
+[00:21:05.440] is I just need to publish this. So I
+[00:21:06.799] will just go tessle tile publish and
+[00:21:10.159] then I will just put space dot dot is
+[00:21:12.400] just the path to where my tesla to where
+[00:21:14.480] my uh tile.json is. Soon as I do that it
+[00:21:18.480] publishes it directly to that ad
+[00:21:20.960] workshop. And if I was to now go back to
+[00:21:25.760] uh my
+[00:21:27.840] here, if I was to come back here and go
+[00:21:30.080] to the registry, I can have a look at my
+[00:21:33.280] account and I'll say go to my aimed
+[00:21:35.120] workshop and I now have a tile. And this
+[00:21:38.000] is a tile that I can use simply by going
+[00:21:40.640] to somewhere like um Claude
+[00:21:43.760] and saying
+[00:21:46.720] uh let's say no
+[00:21:49.039] uh actually let's just do an npm
+[00:21:50.880] install. I can say something like um
+[00:21:54.159] install the tessle yes whatever install
+[00:21:57.919] the tessle tile uh what do we call it a
+[00:22:03.200] workshop slash type
+[00:22:08.480] right I'm just going to say yes to all
+[00:22:09.919] stop bothering me uh type they're like
+[00:22:12.159] children aren't they agents uh type
+[00:22:14.159] script okay uh now when it installs this
+[00:22:17.200] it's going to pull that locally to my
+[00:22:18.799] project it's going to add it to my
+[00:22:20.640] tesslej JSON which is a description of
+[00:22:22.640] all the tiles and steering I I I want to
+[00:22:25.440] I want to add uh that's where it's doing
+[00:22:27.440] the install now and then as soon as I
+[00:22:30.480] say something like now you know uh
+[00:22:33.919] perform a code review
+[00:22:37.600] review if I do something like that it's
+[00:22:40.000] now going to use that as part of my best
+[00:22:41.840] practices and so I'm using context I'm
+[00:22:44.320] using knowledge based on my organization
+[00:22:46.559] or based on the the way I want something
+[00:22:48.240] to be built uh in order in order to um
+[00:22:52.400] to do what I want to do.
+[00:22:55.120] So, um I think I'll pause there. I've
+[00:22:59.120] only been like six hours right in this
+[00:23:01.200] 2-hour workshop. I'll pause there and
+[00:23:03.760] I'll um and actually no, I won't pause
+[00:23:06.480] there. What it's doing is you can see
+[00:23:09.280] it's reading a whole bunch of now from
+[00:23:11.919] the uh from my usage tiles as part of
+[00:23:14.960] that code review. And if I was to just
+[00:23:16.960] hit control O, you'll see it's actually
+[00:23:20.400] looking at various issues to fix. And a
+[00:23:22.880] lot of these, or in fact, pretty much
+[00:23:24.559] all of these are going to be direct um
+[00:23:27.360] directly from what I what my steering
+[00:23:30.559] pile, my steering a my steering
+[00:23:32.400] information knowledge, uh will describe
+[00:23:34.559] what I want and what I don't want. Um
+[00:23:36.799] and there we go. a whole bunch of
+[00:23:38.240] information uh based on based on how
+[00:23:42.480] what what Claude Code has created
+[00:23:44.799] differs from my my coding best
+[00:23:46.480] practices. I really will stop there now
+[00:23:48.159] and I'll pass over to uh to Alan. Any
+[00:23:51.039] questions while Alan is setting up?
+[00:23:53.600] >> Yes. Uh
+[00:24:09.840] Yeah, great question. So the question
+[00:24:11.039] was does does Tesla tiles work uh with
+[00:24:14.480] or against the claude MD? Actually when
+[00:24:16.880] we do the Tesla in it, one of the first
+[00:24:18.640] things we do is actually add to the
+[00:24:20.159] claude MD file. So we are we are
+[00:24:22.559] encouraging Claude through its means to
+[00:24:25.440] use Tessle. Uh there will be other
+[00:24:27.760] things that we will integrate with like
+[00:24:28.880] tessle like claude skills and things
+[00:24:30.640] like that is you know also another
+[00:24:32.240] amazing way that that can be done. So we
+[00:24:34.559] want to integrate with those more native
+[00:24:36.880] uh uh kind of integrations so that
+[00:24:39.679] Tessle can be best used with that. One
+[00:24:41.600] of one of the the key things is we're
+[00:24:44.240] not restricted to any agent. So anything
+[00:24:46.559] that uses MTP you can use Tessle. So if
+[00:24:48.559] you're using clawed code, someone else
+[00:24:50.159] over here is using Gemini, someone else
+[00:24:52.159] over there is using codeex, you know,
+[00:24:54.240] you can use the same knowledge across
+[00:24:56.320] all and we'll just try and plug in at at
+[00:24:58.640] the right stages. Um we'll take
+[00:25:00.559] questions in a bit as again I'll pass
+[00:25:02.400] over to Alan. Hello everyone. Uh me
+[00:25:04.640] again. Uh so I wanted to do a little
+[00:25:06.960] workshop with you and give you some uh
+[00:25:10.320] capacity to be creative and come up with
+[00:25:13.440] something yourself. Um so not many
+[00:25:16.159] constraints on what um what I'll ask you
+[00:25:19.520] to do. Um and the concept is wrapped. So
+[00:25:24.080] I'm sure you've all heard of Spotify
+[00:25:26.080] wrapped. uh where around about this time
+[00:25:28.559] of year, everyone gets told what
+[00:25:31.039] terrible music taste they have. Uh I
+[00:25:33.919] know I do. This is actually mine.
+[00:25:36.880] Michael Boué appears in my Spotify list
+[00:25:40.080] because the Alexa in the kitchen is tied
+[00:25:42.480] to my Spotify account and my wife likes
+[00:25:45.360] Michael Boué. Honest. Uh that's my story
+[00:25:49.520] and I'm sticking to it. Uh so what uh
+[00:25:53.120] this does is generally take a load of
+[00:25:55.440] data and then summarize it in a visually
+[00:25:58.799] pleasant way that you're probably
+[00:26:01.440] inclined to want to share with your
+[00:26:03.039] friends or maybe not in my case. And so
+[00:26:06.799] uh over here what I've uh suggested is
+[00:26:09.360] you create a wrapped of some kind. Sorry
+[00:26:12.559] about that just now. Sorry. Uh a wrapped
+[00:26:16.159] of some kind. Now, I'll give you some
+[00:26:17.600] inspiration in a minute, but that's the
+[00:26:18.960] goal is to create some kind of wrapped
+[00:26:21.679] of this year because it's about that
+[00:26:23.679] time.
+[00:26:25.440] Here's some guidelines. Pick something
+[00:26:27.039] meaningful to you. Uh what that is, I
+[00:26:30.240] don't know. Everyone has a different
+[00:26:31.440] definition of what meaningful is. Uh
+[00:26:34.159] write some guidance in markdown format
+[00:26:36.880] and build a beautiful dashboard. Now, I
+[00:26:40.000] think you know, beauty is subjective.
+[00:26:42.640] The last time we did this in uh in our
+[00:26:45.279] office in London, we had a room full of
+[00:26:47.360] students and boy oh boy, their
+[00:26:49.760] definition of beautiful is very
+[00:26:51.039] different from mine. Um I think the key
+[00:26:53.840] word that they used to give beauty was
+[00:26:56.720] brain rot. Uh if you feel the need to
+[00:26:59.200] put brain rot in your definition, then
+[00:27:01.760] uh you'll find an interesting uh result.
+[00:27:04.400] Uh and then maybe draw some conclusions
+[00:27:06.559] from this. Maybe it'll pull together
+[00:27:07.919] some data and teach you something you
+[00:27:09.520] didn't know. like I didn't know that I
+[00:27:12.159] liked Michael Boué. Um, and then maybe
+[00:27:15.039] share your creations. We've got a git
+[00:27:16.640] repo. If you want to, you can fork that
+[00:27:19.200] and I'll walk you through what to do
+[00:27:21.039] there. Uh, or if you if you create
+[00:27:23.520] something really crazy, you want to come
+[00:27:25.679] up here and show the world, then uh,
+[00:27:27.600] you're more than welcome to do it. But
+[00:27:29.039] if you want to keep it to yourself, I
+[00:27:30.559] completely understand. No judgment.
+[00:27:33.360] Here's some suggestions. Uh, GitHub
+[00:27:35.679] wrapped. Uh, I'll show you an example of
+[00:27:37.440] that. like what did I do this year on
+[00:27:39.360] GitHub or maybe GitLab or some other
+[00:27:42.799] code hosting solution doesn't have to be
+[00:27:44.559] GitHub could be anything that you can
+[00:27:46.400] get data out of email wrapped this is a
+[00:27:50.559] possibly dangerous one like get an AI to
+[00:27:53.600] scrape through all of your email and
+[00:27:55.200] tell you how angry you are on certain
+[00:27:57.440] days of the week or you know interpret
+[00:28:00.240] the the people that you communicate with
+[00:28:02.640] in a particular way that might be fun
+[00:28:05.120] wrapped if you're a Straa user or
+[00:28:08.080] whatever fit people do. Uh you could
+[00:28:10.720] maybe get some data from that and
+[00:28:12.240] process that or maybe even rather meta,
+[00:28:15.360] you could do Claude unwrapped or
+[00:28:17.679] whatever agent you use, get the logs of
+[00:28:20.240] your conversations and see if you can
+[00:28:22.559] introspect that and come up with a
+[00:28:24.320] dashboard that tells you, you know,
+[00:28:26.080] what's your favorite word that you use
+[00:28:28.000] all the time. I think it might be
+[00:28:30.399] awesome if we were to ask Claude. Um oh,
+[00:28:34.559] browser history wrapped. I did this one.
+[00:28:36.480] This is quite fun. You can see uh what
+[00:28:39.279] uh you know websites you go to a lot.
+[00:28:42.799] You may not want to share that one.
+[00:28:44.320] That's entirely up to you. Again, no
+[00:28:45.840] judgment. Um I did do this uh on my work
+[00:28:49.919] laptop and it was all perfectly fine. So
+[00:28:54.320] that's not a problem. I'm not going to
+[00:28:55.919] show it to you. Uh but that's just some
+[00:28:57.679] ideas. You might have other things. Uh
+[00:28:59.679] some examples that came up at hackathon
+[00:29:01.120] we had in London. Uh, one person
+[00:29:04.320] accessed their like their Costco card to
+[00:29:07.200] see their Costco history and see what
+[00:29:08.799] they've been buying for the year, but in
+[00:29:10.640] fact they access their girlfriend's
+[00:29:12.559] Costco card data in order to see. I'm
+[00:29:15.279] not suggesting you do anything illegal.
+[00:29:17.360] I would like to come back to America
+[00:29:18.880] again sometime. Um, other things you
+[00:29:22.080] might do is uh interrogate your Netflix
+[00:29:24.720] history or maybe if you're a big
+[00:29:26.960] self-hoster, you could look at your Plex
+[00:29:29.039] history or jellyfin or whatever it is
+[00:29:31.039] that you've got data that you can
+[00:29:32.720] access. Pull that data in and then uh
+[00:29:35.360] build a dashboard. Could be fun.
+[00:29:38.399] Here's an example that I made which is
+[00:29:40.880] going to be terrible. Uh, I asked for a
+[00:29:44.640] GitHub dashboard. Um, actually I don't
+[00:29:47.840] need that slide, right? Uh, this is my
+[00:29:54.159] year in GitHub. And you'll notice it
+[00:29:57.440] looks terrible. Uh, and uh, that's, you
+[00:30:01.440] know, that's an aesthetic I quite like,
+[00:30:03.360] the green neon. Not quite this much, but
+[00:30:06.399] okay. But and it's not it's not quite
+[00:30:09.279] what I was after. I didn't steer it very
+[00:30:11.440] well. This was very much vibecoded like
+[00:30:14.240] from nothing. Um, yeah, total events,
+[00:30:17.120] how many pull requests, you know, it
+[00:30:19.279] doesn't really look like a Spotify
+[00:30:20.799] wrapped, uh, top languages. I've never
+[00:30:23.520] written any GDScript in my life. I don't
+[00:30:25.279] know where it got that from. Um, yeah,
+[00:30:27.760] some of these other things are vaguely
+[00:30:30.240] interesting. You know, how many pushes,
+[00:30:31.679] how many pulls, you know, how much
+[00:30:33.360] activity. I went a bit crazy this month.
+[00:30:35.919] Um, not so much in other months. So, you
+[00:30:39.120] know, you can you can create something
+[00:30:40.720] very quickly um, and it might not look
+[00:30:43.760] great. and I did this in like 10
+[00:30:45.679] minutes. So, I would challenge you to
+[00:30:47.679] spend more than 10 minutes. And your
+[00:30:49.600] challenge is to make something that
+[00:30:50.799] looks better than this. And I don't
+[00:30:52.320] think it's that hard. Um, so how did I
+[00:30:54.720] go about doing this? Well, um, I just
+[00:30:56.880] used uh Claude and created a really
+[00:31:01.279] basic prompt. I didn't use any of the
+[00:31:03.679] the new skills that, uh, Simon talks
+[00:31:06.799] about with Tessle and I didn't write a
+[00:31:08.799] comprehensive spec. Normally I do. I did
+[00:31:11.440] this really really basic, right? So, all
+[00:31:14.399] I did was I installed Tessle so that
+[00:31:16.559] Claude was aware of it. Uh, and I made
+[00:31:19.039] sure I had the latest version and uh Oh,
+[00:31:21.520] that's nice. Um, and I'll show you the
+[00:31:24.080] prompt that I came up with, right?
+[00:31:25.600] Hopefully, you can read this. It's
+[00:31:26.720] pretty big. Um, so I said we're working
+[00:31:29.120] on example for a workshop. Make it
+[00:31:31.200] quickly safety. Hit the goal. I'm only
+[00:31:34.399] going to run it on my laptop. It's not
+[00:31:35.679] going to run in production. Don't worry
+[00:31:37.039] about it. The main goal create a your
+[00:31:39.120] your year in GitHub summarizing personal
+[00:31:41.600] activity over the last year. It's 2025.
+[00:31:44.159] I had to say it's 2025 because on one
+[00:31:46.480] occasion doing this it thought it was
+[00:31:48.159] 2024 and went and found all my history
+[00:31:50.480] for 2024. I was like that's pretty
+[00:31:52.080] useless. Some sub goals uh make a usable
+[00:31:55.840] example for all of you. That was one of
+[00:31:57.760] the sub goals. Um and contribute
+[00:32:00.399] reusable tiles to the Tesla spec
+[00:32:02.080] registry. I just threw that in there
+[00:32:03.919] hoping it would uh come up with
+[00:32:05.360] something. And I asked it to do this in
+[00:32:07.039] two stages. And this is really what you
+[00:32:09.200] will probably want to do uh if you're
+[00:32:11.760] going to partake in this uh this fund is
+[00:32:14.880] create a data gathering process that
+[00:32:16.559] gets all the data via some method uh and
+[00:32:20.000] puts it somewhere. And then the second
+[00:32:22.080] part is to create a web page that like
+[00:32:25.360] shows that off in a beautiful way. I
+[00:32:27.279] think what did I say? I said something
+[00:32:28.880] about did I say somewhere in here mono?
+[00:32:32.000] Oh yeah, mono font with green
+[00:32:33.360] highlights. I think it took that a
+[00:32:35.519] little bit too seriously there. Yeah,
+[00:32:38.320] there we go. Anyway, uh what did that
+[00:32:40.240] look like? Um somewhere here I've got
+[00:32:42.720] the entire claude conversation. If you
+[00:32:45.440] want, we could go through this, but I
+[00:32:46.799] don't think that's a good use of
+[00:32:48.240] anyone's time. But it literally was me
+[00:32:50.799] just asking that that question. I pasted
+[00:32:53.120] that prompt in and it asked a few
+[00:32:55.440] questions. It went looking around the
+[00:32:57.039] directory structure, made a folder to
+[00:32:59.600] put my data in, [snorts] uh created a
+[00:33:02.880] git ignore file, and it did a few other
+[00:33:05.760] things like created a node uh JavaScript
+[00:33:09.600] thing to go and fetch my GitHub data.
+[00:33:13.200] And then it went off and created some
+[00:33:15.039] sample data as well so that it could
+[00:33:16.640] test the front end. But I didn't really
+[00:33:18.559] have to do any uh interaction with this.
+[00:33:21.200] This is real proper VI coding nonsense.
+[00:33:24.399] um inserted 2025 in there. Brilliant. Uh
+[00:33:27.760] and so yeah, it's it did it right at the
+[00:33:31.039] end what I got was um a file, a data
+[00:33:34.559] file which contains my contributions
+[00:33:37.120] popy on GitHub. That's me. Um and uh
+[00:33:41.279] like pulled out that's contributions to
+[00:33:43.200] this very repository and all the other
+[00:33:46.000] stuff is down there somewhere, you know,
+[00:33:48.480] lots and lots and lots and lots of
+[00:33:49.919] contributions. Um, and somewhere, uh,
+[00:33:53.039] was that everything? Um,
+[00:33:57.519] uh, somewhere in here, I've got all of
+[00:33:58.960] that. I called it year in GitHub. I've
+[00:34:01.519] got a dodgy internet connection here,
+[00:34:03.120] but this is all the stuff that it
+[00:34:05.120] created. Now, it did have a go at
+[00:34:07.440] creating some tiles. I I don't think it
+[00:34:11.200] was especially uh effective, but it
+[00:34:14.159] wanted to create a couple of tiles. one
+[00:34:16.720] for the GitHub data fetcher and one for
+[00:34:19.599] the visualizer. Um, I will put all of
+[00:34:22.639] this in the Git repo that I'll show you
+[00:34:24.399] in just a minute. And you can clone that
+[00:34:25.760] and use that as a base if you want to. I
+[00:34:28.000] won't put my personal data in there and
+[00:34:29.760] I strongly recommend if you put any of
+[00:34:31.359] this on GitHub, you don't put your
+[00:34:32.960] personal data in there, but you know,
+[00:34:35.919] uh, you do you, as they say. Um,
+[00:34:38.340] [snorts] the repo is here. It's AI
+[00:34:40.879] native dev community on GitHub. Um, and
+[00:34:44.399] we've called it AI ND workshops. And
+[00:34:47.359] there's a folder here, Devcon 25NYC,
+[00:34:51.040] that just has some notes and suggestions
+[00:34:52.960] for what you might want to do. Um, and
+[00:34:55.679] what I would do is fork that repo and
+[00:34:58.960] press the star button so you can join
+[00:35:00.800] the lonely two people, me and one other
+[00:35:02.880] person who start
+[00:35:05.359] quite sad, isn't it? Uh, and get this
+[00:35:07.520] rocketing up to trending on GitHub, I
+[00:35:09.680] don't think. Um, and then start building
+[00:35:12.160] something. We could have a go at doing
+[00:35:13.680] it live on either your or my laptop if
+[00:35:16.320] we get an internet connection. But
+[00:35:18.400] that's that's really all I went through.
+[00:35:20.640] And it actually turned out I created
+[00:35:22.720] something. It doesn't look visually
+[00:35:23.920] super compelling, but I could iterate on
+[00:35:26.160] that. It didn't use Tesla tiles, but I
+[00:35:29.760] didn't coersse it very much. You'll see
+[00:35:31.520] I barely mentioned Tesla at all. I
+[00:35:34.000] didn't create a comprehensive spec. So
+[00:35:35.760] what I what I'm trying to show you is
+[00:35:37.920] don't do what I did. Like there are
+[00:35:40.880] better ways to do it. This kind of
+[00:35:42.240] illustrates some of the points that
+[00:35:43.440] Simon was making earlier that it you
+[00:35:45.520] know it it takes what you give it and if
+[00:35:47.760] you don't give it comprehensive
+[00:35:48.880] instructions then you know you get
+[00:35:51.040] monochrome neon green nonsense in the
+[00:35:53.599] web page. That's the answer. Um if you
+[00:35:56.720] have any questions I think that was the
+[00:35:58.720] only other slide was uh if you have any
+[00:36:02.960] questions uh feel free to shout and
+[00:36:05.599] we'll throw a microphone in your
+[00:36:06.880] direction. uh but I would love to help
+[00:36:10.000] you create a dashboard looking back over
+[00:36:12.960] 2025
+[00:36:14.480] uh either using Tesla or contributing to
+[00:36:16.800] Tesla uh using uh our [snorts] uh spec
+[00:36:19.920] registry. Any questions at all? Any
+[00:36:22.400] comments?
+[00:36:24.240] Any comments about my wonderful taste in
+[00:36:26.240] monochrome web pages?
+[00:36:28.560] >> Yeah.
+[00:36:29.359] >> Or music?
+[00:36:30.400] >> Pardon?
+[00:36:30.880] >> Or music?
+[00:36:31.599] >> Or Ah, yes. No, I can't. That's not me.
+[00:36:34.400] Uh right. Uh where do we go? Okay, so
+[00:36:37.839] next steps if you wanted to go back to
+[00:36:39.680] GitHub perhaps.
+[00:36:43.760] >> Okay, so the next steps uh this will
+[00:36:46.320] contain kind of a little bit step by
+[00:36:47.920] step in terms
+[00:36:48.800] >> Yeah, I should show that actually
+[00:36:49.920] >> in in terms of what you need to do. So
+[00:36:51.599] >> it tells you what to do.
+[00:36:52.640] >> It tells you what to do. Perfect. So if
+[00:36:54.800] you go to GitHub AI native dev community
+[00:36:57.200] with hyphens
+[00:36:59.200] um you'll see the AI and D workshops
+[00:37:01.119] there. You can start that if you wish
+[00:37:03.040] but um or or fork it if you wish. Then
+[00:37:06.320] from there in the Devcon 25NYC folder,
+[00:37:09.760] there is a readme there with
+[00:37:11.040] instructions that will walk you through
+[00:37:13.680] how to do things like whether it's
+[00:37:15.200] creating a Tesla account or uh looking
+[00:37:17.680] at what a what uh what specs that you
+[00:37:20.720] want to want to build. It's entirely up
+[00:37:23.040] to you how you want to coers or guide
+[00:37:26.880] your agent. Feel free to either use
+[00:37:29.200] Tessle specs that we have around uh open
+[00:37:33.359] source libraries if you wish to use
+[00:37:34.720] those or feel free to add guidance as um
+[00:37:38.880] as markdown. This could be maybe you're
+[00:37:41.200] already using cursor rules or maybe
+[00:37:43.040] you're using other um uh other steering
+[00:37:47.520] style specs to make sure agents do what
+[00:37:49.920] you want. Add them as specifications
+[00:37:51.839] into the into the workshop. Uh and if
+[00:37:54.720] you want to contribute that back or use
+[00:37:56.800] what other people in the workshop are
+[00:37:58.160] doing if you can send us your ID on the
+[00:38:02.000] where are we saying the discord is it?
+[00:38:04.240] >> Uh yeah or just come and show us. Uh I
+[00:38:06.800] open it here somewhere. Uh uh where have
+[00:38:09.440] I lost it?
+[00:38:14.000] >> Wow that's bright.
+[00:38:15.200] >> Yeah. Sorry. I I realized that dark mode
+[00:38:17.760] is not great for uh
+[00:38:19.200] >> Yeah.
+[00:38:21.599] But much better [laughter] actually for
+[00:38:23.040] your eyes. So yeah. Uh did you show the
+[00:38:25.520] workspaces?
+[00:38:26.480] >> Uh I didn't actually. No. So you saw I
+[00:38:29.040] created No, I didn't create a private
+[00:38:30.400] workspace. I I was a me I was added
+[00:38:32.400] previously about 30 minutes ago. No, an
+[00:38:34.560] hour ago to this workspace. When you
+[00:38:37.520] create your Tesla account, if you do
+[00:38:39.920] Tesla who am I at the command line, uh
+[00:38:42.400] you will you will find yourself with a
+[00:38:44.480] wonderful user ID called user_bd
+[00:38:48.000] blah blah blah. If you go to tesl.io/
+[00:38:50.640] io/acounts.
+[00:38:52.160] Uh you will be able to There we go. Uh
+[00:38:54.720] so username here is Popey. Uh that's
+[00:38:57.280] because you've changed your username to
+[00:38:59.119] something nice. Uh if you go to
+[00:39:00.880] tesla.io/acounts
+[00:39:03.119] uh and you and you log in, you'll be
+[00:39:05.040] able to change your ID to whatever you
+[00:39:06.960] wish. Or you could use user whatever
+[00:39:10.160] whatever whatever. So if you go account
+[00:39:11.599] settings down here, u you can see Alan
+[00:39:14.240] can change his username there to
+[00:39:15.920] whatever he wishes. If you then share
+[00:39:17.680] that with us, we'll add you to the
+[00:39:19.040] workspace and then you can see
+[00:39:20.400] everything there including including
+[00:39:22.400] that TypeScript um including that
+[00:39:24.880] TypeScript tile I just added and feel
+[00:39:27.359] you have you will have rights to publish
+[00:39:29.760] uh as well as download anyone else's
+[00:39:31.680] tiles. So I would say start there maybe
+[00:39:34.320] let's spend about 20 to 30 minutes
+[00:39:36.960] building the specifications you want
+[00:39:39.119] having a look at specifications that you
+[00:39:40.720] can pull down from the Tessle registry.
+[00:39:42.720] Uh and then from there we'll publish
+[00:39:44.720] those, we will share those and then we
+[00:39:46.720] can start building the app hopefully
+[00:39:48.640] using the guidance uh from these tiles.
+[00:39:52.320] Does that make sense?
+[00:39:54.480] Any questions? Any any anyone stuck and
+[00:39:57.520] everyone know what your next steps are?
+[00:40:00.160] Hands up if you're
+[00:40:02.320] which way should we go? Hands up. Let's
+[00:40:03.839] try and wake people up. Hands up if you
+[00:40:05.440] know what you're doing.
+[00:40:07.040] >> Ah, [laughter]
+[00:40:08.079] >> we have seven people who know what
+[00:40:10.000] they're doing. Cool. Tell a friend. Um I
+[00:40:13.040] think [laughter]
+[00:40:13.440] >> you can you can collaborate with the
+[00:40:14.720] person next to you if uh you know you
+[00:40:17.040] want to uh work together and use
+[00:40:18.640] multiple brain cells in order to uh
+[00:40:20.720] collaborate on this thing. That works
+[00:40:23.040] >> and Alan and I will uh we'll wander
+[00:40:24.720] around if there's uh
+[00:40:26.240] >> y
+[00:40:27.280] >> or you I I could live vibe the you know
+[00:40:31.599] you direct me through it and
+[00:40:33.680] >> I can do it. Let's let's let the room do
+[00:40:35.839] it for a little bit and then we'll
+[00:40:37.440] perhaps jump into that once we have in
+[00:40:39.119] fact maybe maybe maybe people can build
+[00:40:40.960] specifications and then you can use some
+[00:40:42.400] of those specifications to uh uh to to
+[00:40:45.040] to build that.
+[00:40:46.560] >> Awesome. Okay, we'll give 20 minutes or
+[00:40:48.560] so 25 minutes um start building the the
+[00:40:51.040] the the markdown that you want. Anyone
+[00:40:54.160] has any questions throw a hand up and
+[00:40:56.160] we'll we'll come by. I'll stop. Sweet.
+[00:41:06.400] Sorry. The installation command for
+[00:41:07.440] Tesla is npm install-g
+[00:41:11.920] uh at
+[00:41:14.079] uh tessleward
+[00:41:16.079] slash cli.
+[00:41:30.480] make it embedded
+[00:41:38.640] my product, you saw that it was like
+[00:41:40.000] super brief. Uh, and I'm I'm quite a
+[00:41:42.480] wordy kind of guy. And this is one of
+[00:41:44.400] the reasons why this whole spectrum
+[00:41:46.079] development works in my head is because
+[00:41:48.720] I find it really convenient to be
+[00:41:52.319] incredibly devo verbose about what I
+[00:41:54.880] want to create. And so if if you can get
+[00:41:57.839] into that mindset of you're explaining
+[00:42:00.240] to a an alien or a three-year-old
+[00:42:03.839] uh what it is you want or your
+[00:42:05.760] grandmother or grandfather or whatever
+[00:42:08.079] like use many words as I tell my
+[00:42:10.480] children use your words uh in order to
+[00:42:13.040] explain something and uh it it certainly
+[00:42:16.240] makes a massive difference. Like if
+[00:42:17.920] you've seen any of the the workshops, a
+[00:42:20.079] lot of people use uh these markdown
+[00:42:22.400] files that are quite verbose and
+[00:42:25.200] describe in incredible detail what what
+[00:42:27.839] you want. And I find that is uh a way
+[00:42:31.040] better way to get the AI to do your
+[00:42:33.359] bidding. Um personally speaking anyway,
+[00:42:47.839] request.
+[00:42:51.839] So we give it
+[00:42:53.359] >> It's not my laptop. It's GitHub that's
+[00:42:55.440] broken. Is it? Is it? Seriously?
+[00:42:59.119] >> Oh my life.
+[00:43:01.520] >> Oh no, we've doeds GitHub.
+[00:43:03.680] >> Is that what it is?
+[00:43:04.400] >> It doesn't. Well, two two ways I guess.
+[00:43:06.640] You'll see.
+[00:43:11.359] H that's why when I did get push it
+[00:43:14.400] broke
+[00:43:15.119] >> in the dialog get a plus if it's
+[00:43:16.960] something obvious.
+[00:43:17.680] >> Oh man this light I can't get on. Do you
+[00:43:20.079] mind if I go dark?
+[00:43:22.160] >> Cannot get on with this.
+[00:43:23.839] >> There we go. Oh
+[00:43:24.960] >> things the way you want it to do. So
+[00:43:26.400] it's either not you'll either see it
+[00:43:28.160] because it's just not doing the thing
+[00:43:29.440] the ways for me
+[00:43:30.560] >> or you will actually see it like that.
+[00:43:32.240] It never reads it or never trying to
+[00:43:34.400] pull it.
+[00:43:35.520] >> Oh.
+[00:43:37.440] >> Uh well there's another way you can do
+[00:43:38.880] it. Uh you can uh in the repo if you go
+[00:43:43.359] to the top of the repo
+[00:43:45.119] >> you can download it
+[00:43:48.480] >> you can download it as a zip file and
+[00:43:50.720] probably
+[00:43:51.760] >> exactly and if you click on the
+[00:43:53.280] >> that will work
+[00:43:54.079] >> uh these are your workspaces. So if you
+[00:43:56.079] click on that there'll be nothing in
+[00:43:57.520] your private work but if yours
+[00:43:58.960] >> it does
+[00:43:59.680] >> if it's not import
+[00:44:00.560] >> so there's another option is download
+[00:44:02.079] the zip file unpack it
+[00:44:04.240] >> your personal one
+[00:44:05.520] >> and that might work
+[00:44:06.640] >> other repositories for your organization
+[00:44:08.640] for your team and then everyone in your
+[00:44:10.800] team are
+[00:44:11.440] >> 10 stars
+[00:44:12.720] >> Simon we've got 10 stars
+[00:44:14.480] >> as long as they're using the MTP server
+[00:44:16.160] that's installed
+[00:44:16.880] >> exactly next year um when when we what
+[00:44:20.079] we would do is we would we would add
+[00:44:21.599] something called a tessle JSON in your
+[00:44:23.520] directory and that then says These are
+[00:44:25.760] all the this is being built using this
+[00:44:28.160] knowledge.
+[00:44:29.040] >> So
+[00:44:29.280] >> I'll upload my example when GitHub comes
+[00:44:31.119] back
+[00:44:31.520] >> then pull all that knowledge into your
+[00:44:33.920] environment. It's a little bit like an
+[00:44:34.880] npm install
+[00:44:36.400] >> whereby you wouldn't check your your um
+[00:44:40.960] your your mpm
+[00:44:43.359] >> modules rather.
+[00:44:44.400] >> Um so it just pulls in that and then
+[00:44:46.800] every time it starts building it uses
+[00:44:48.400] that context. Yeah.
+[00:44:49.359] >> Okay.
+[00:44:50.000] >> All right. Thank you.
+[00:44:50.560] >> Cool. No worries.
+[00:44:59.200] What are the chances that Cloudflare and
+[00:45:01.040] GitHub would go out in the same day?
+[00:45:04.800] >> It wouldn't surprise me if uh it's
+[00:45:06.800] because of Cloudflare that GitHub's
+[00:45:08.560] down. Perhaps
+[00:45:09.920] >> should all be in Azure, shouldn't it?
+[00:45:12.160] >> Yeah, possibly.
+[00:45:15.440] >> I guess roll the dice and guess which
+[00:45:17.599] one's going down tomorrow.
+[00:45:23.359] Sorry.
+[00:45:26.880] 11 stars.
+[00:45:28.960] Sorry. Get excited with stars.
+[00:45:32.400] >> Just mine.
+[00:45:33.200] >> That's mine.
+[00:45:33.760] >> Oh, mine's here.
+[00:45:41.440] >> Has anyone done any like spec during
+[00:45:43.520] development before? Anyone like gone
+[00:45:45.920] into writing clear, very descriptive
+[00:45:49.200] specs? Do you find it like useful to
+[00:45:51.920] articulate, you know, or do you find it
+[00:45:54.079] just like a massive waste of time? What
+[00:45:56.800] did you try?
+[00:46:00.000] >> Bit of both.
+[00:46:01.359] >> Uh, yeah. I've I've just been trying to
+[00:46:02.880] see what I can do with with different
+[00:46:04.000] specs. So, I was trying to use like
+[00:46:06.240] Claude Flow the other day just to see if
+[00:46:08.079] I could max out everything and and how
+[00:46:09.920] fast I could put my AI slop together.
+[00:46:12.560] Uh, but then it ended up just that AI
+[00:46:14.640] slop even with a pretty good spec. I've
+[00:46:16.720] tried a few other things like Gustav and
+[00:46:19.040] a few other, you know, claude related
+[00:46:20.800] frameworks. I just started playing with
+[00:46:22.960] like Google ADK. I haven't tried your
+[00:46:24.720] guys' tools. Um, but so far I haven't
+[00:46:27.359] found a great way to like paralyze
+[00:46:28.960] everything and just be like generate
+[00:46:30.960] everything, yolo, and actually get a
+[00:46:32.880] good result.
+[00:46:34.160] >> Yeah, I Yeah, I'm not sure that's a good
+[00:46:36.079] go. That's a It's a great point. I'm not
+[00:46:37.839] sure like I I want to yolo my way to
+[00:46:41.760] success, but fun though it is. Um, I
+[00:46:46.240] think there's um there's something in
+[00:46:49.760] getting into that mindset where you're
+[00:46:52.640] articulating what you want really
+[00:46:54.800] explicitly
+[00:46:56.720] and using that as a blueprint for the
+[00:46:58.960] next time you're doing it. And that that
+[00:47:00.800] makes sense. You end up with a giant
+[00:47:02.640] spec that you're carrying around to each
+[00:47:04.720] project. But then
+[00:47:07.119] why keep that to myself? It's what I'm
+[00:47:09.040] thinking. I want to share that with the
+[00:47:10.240] world. I don't want it to be one giant
+[00:47:12.079] file. I want it to be broken down. I
+[00:47:13.839] want to have the little pieces. I want
+[00:47:15.839] atomic like that's the TypeScript bit.
+[00:47:18.240] That's the, you know, the the Python
+[00:47:20.319] back end. That's the database and have
+[00:47:21.920] all those little reusable components
+[00:47:23.359] that I can pick and choose from.
+[00:47:24.960] >> Yeah, I think the atomic bit makes a lot
+[00:47:27.040] of sense because the models, even if you
+[00:47:29.280] use a lesser model, they get really
+[00:47:30.800] distracted and if you don't give them
+[00:47:32.400] really small chunks, then they they can
+[00:47:34.560] easily go ary. So,
+[00:47:36.240] >> yeah.
+[00:47:36.560] >> Yeah.
+[00:47:37.440] >> Yeah. I think uh like switching to um a
+[00:47:42.079] provider that has more tokens is really
+[00:47:44.720] like a coping strategy. Like like I I
+[00:47:47.599] switched to Gemini thinking, well, it's
+[00:47:50.000] okay cuz I can put more stuff in there,
+[00:47:52.560] which is just like it's like me going to
+[00:47:55.359] the kitchen trash and pushing it down
+[00:47:57.839] with my hands, right? At some point, I'm
+[00:48:00.400] going to have to take that outside,
+[00:48:02.000] right? [laughter]
+[00:48:02.560] I I can't just keep pushing it down,
+[00:48:04.880] right? Um, so yeah, that that's how I I
+[00:48:08.319] feel is I need to solve this problem
+[00:48:10.400] because it's getting a bit silly now.
+[00:48:14.880] >> Anyone else done any spec driven stuff
+[00:48:16.640] or articulating? Oh yeah. Wow. The
+[00:48:19.680] master of cursor rules over here.
+[00:48:22.800] >> Yeah. So I've done specdriven
+[00:48:25.599] development within cursor. So I've
+[00:48:28.000] created a custom mode in cursor um that
+[00:48:32.400] um takes specdriven development in
+[00:48:34.960] steps. So like step one is like getting
+[00:48:38.880] what I want out of my head so that the
+[00:48:41.520] agent understand what I want to develop
+[00:48:44.240] exactly. Then the second step is like
+[00:48:47.599] finding the relevant files and the
+[00:48:49.440] context from the system. So from the
+[00:48:51.359] actual code to understand that hey this
+[00:48:53.680] is the requirement now this is the code
+[00:48:56.559] then it actually the third step is
+[00:48:59.119] actually understanding the versions of
+[00:49:00.800] the libraries and kind of text and stuff
+[00:49:03.359] like that. So it discusses those things
+[00:49:05.200] with me and all of this is like really
+[00:49:07.280] collaborative. So it's like active
+[00:49:08.800] communication between me and cursor
+[00:49:10.319] figuring out what I want to do. The
+[00:49:12.400] fourth step would be like actually now
+[00:49:14.720] putting all of these things together to
+[00:49:16.400] to understand hey are there any missing
+[00:49:19.040] questions or issues or gaps that are
+[00:49:21.359] that that we need to fill before we
+[00:49:23.680] actually start implementing. It's going
+[00:49:25.599] to do that. The the fifth step would be
+[00:49:27.200] to actually define the test scenarios
+[00:49:29.839] and the acceptance criteria that we want
+[00:49:32.480] and how we would go about testing that
+[00:49:35.040] during the implementation phase itself.
+[00:49:37.200] The sixth phase will be like creating
+[00:49:38.640] the spec itself where we would create
+[00:49:40.640] everything in a spec. So I would take
+[00:49:42.400] that spec then and then create a new
+[00:49:44.079] thread in a new chat and then I would
+[00:49:46.480] just give that that you know uh spec and
+[00:49:50.160] then we'll basically start working on
+[00:49:51.680] that and this workflow for me has worked
+[00:49:54.240] extremely well wherein I'm able to like
+[00:49:56.319] oneshot whatever spec I create. Um but
+[00:50:00.160] it does take you know 30 minutes to an
+[00:50:02.640] hour just working on this spec itself
+[00:50:04.720] and then the development itself takes
+[00:50:06.559] like 10 to 15 minutes but
+[00:50:09.280] >> yeah that that's a very good point like
+[00:50:12.000] like [clears throat]
+[00:50:13.599] before I started looking at spectrum of
+[00:50:15.280] development I realized I was leveraging
+[00:50:19.359] other human meat bags to do this. Like I
+[00:50:23.040] would have an idea for an application
+[00:50:25.440] and I'd have a DM conversation with a
+[00:50:27.680] couple of friends and say, "Hey, what do
+[00:50:28.880] you think about this?" And have a
+[00:50:30.480] conversation and they would be almost
+[00:50:33.200] adversarial uh asking me questions.
+[00:50:35.920] Clarify this. What do you mean by that?
+[00:50:37.520] Cuz in my head, I know fully formed what
+[00:50:40.000] this application needs to look like and
+[00:50:41.680] I can visualize it. but trying to
+[00:50:43.599] explain it to another human. Um, I I
+[00:50:46.720] explained these applications to people
+[00:50:48.640] and sometimes I would end up nerd
+[00:50:51.119] sniping them and they would end up
+[00:50:52.640] writing it for me. Brilliant. Like
+[00:50:54.800] mission accomplished. But sometimes just
+[00:50:57.680] having that conversation, if I look back
+[00:50:59.599] over the conversation in DMs with this
+[00:51:01.680] person, I realize actually what they're
+[00:51:04.880] doing is clarifying everything. And some
+[00:51:06.880] of these things I hadn't thought of and
+[00:51:08.960] even like the viability of it as a as a
+[00:51:12.400] project or the already like prior art of
+[00:51:16.000] the existence of another tool that
+[00:51:17.599] already does the thing that I think I
+[00:51:19.359] had a I've had a shower thought this
+[00:51:20.960] thing should exist and it turns out it
+[00:51:22.640] already does. Somebody else did that.
+[00:51:24.559] Um, and I think that having that uh that
+[00:51:27.839] conversation with an AI or with another
+[00:51:30.480] human, it takes the load off my friends
+[00:51:32.880] and they get less annoyed, but also I
+[00:51:36.079] end up with a way that I can summarize
+[00:51:38.720] that thing. Like you're using an LLM to
+[00:51:41.040] summarize that and then take that to the
+[00:51:43.200] next part of the process. Is that like
+[00:51:44.480] you do with like the multi-step process?
+[00:51:46.559] I love that. It just fits my brain
+[00:51:49.280] somehow.
+[00:51:50.800] >> Got a question over here, Alan.
+[00:51:52.559] >> Uh, I can't see. Where are you?
+[00:51:54.400] >> I'm here. Um at the back. I'm waving
+[00:51:57.520] right now.
+[00:51:58.720] >> I can't see you. Where are you?
+[00:51:59.839] >> I'm here. I'm looking right at you.
+[00:52:02.079] >> Yeah, that's
+[00:52:02.960] >> You can't see me.
+[00:52:04.000] >> Oh, there you are. I need new glasses.
+[00:52:07.440] >> Go ahead.
+[00:52:08.079] >> Okay.
+[00:52:08.960] >> Here you go.
+[00:52:10.880] Okay. Um he was just joking with you.
+[00:52:13.119] We're over here on the left on your
+[00:52:14.160] right. Um, [laughter]
+[00:52:17.520] >> but uh, yeah, I wanted to comment about
+[00:52:20.000] that and like yeah, sometimes I feel
+[00:52:21.440] really lazy and like there are words for
+[00:52:24.240] what I want to describe and I would just
+[00:52:26.000] like the LM to guess until it guesses
+[00:52:27.839] them correctly and writes them down for
+[00:52:29.359] me and then once it looks like it's
+[00:52:31.760] close enough, then it can start working
+[00:52:33.599] on it. U, and then the babysitting
+[00:52:35.599] starts. But like having to think of
+[00:52:38.400] those words for like a codebase can be
+[00:52:40.400] really expensive or just exhausting. And
+[00:52:42.240] so just like give it to the LM, it'll
+[00:52:44.400] like draft it pretty well. Um, and like
+[00:52:46.559] you said, like there's a lot of I'm not
+[00:52:49.200] like a perfect engineer, right? Like I
+[00:52:50.800] don't know a lot of the words that may
+[00:52:52.160] be useful for the LM to implement it
+[00:52:54.160] correctly. So asking it to give me
+[00:52:56.240] suggestions like um the speaker said uh
+[00:52:59.440] don't limit it with like what you want
+[00:53:01.839] uh or what you can think of. It's just
+[00:53:03.200] like I have a vague idea what what can
+[00:53:05.280] you think of helps a lot.
+[00:53:06.880] >> Yeah. Yeah. Absolutely. I I find like
+[00:53:09.680] the first thing in the morning, that
+[00:53:11.040] morning moment when you're like, I've
+[00:53:13.599] had like I've had a fever dream and I
+[00:53:15.280] know what I want and I've got to get it
+[00:53:16.480] out. That's the best time to have that
+[00:53:18.160] conversation, right? And get it get it
+[00:53:20.079] down on paper. I have so many of these
+[00:53:22.559] like ideas and they're all written down
+[00:53:24.480] and I've got these big specs and just
+[00:53:26.880] I've I've gone from having
+[00:53:29.760] uh not enough time to write the code to
+[00:53:34.880] not knowing which of these projects that
+[00:53:37.119] I can spend the next few hours like
+[00:53:39.760] actually turning into a real thing. That
+[00:53:43.520] it's not a bad problem to have really,
+[00:53:46.079] is it?
+[00:53:46.960] >> Yeah. I think as well for specs that are
+[00:53:49.359] reusable by lots of people, I think
+[00:53:51.920] there'll probably be an ownership switch
+[00:53:54.319] where it won't actually be developers
+[00:53:55.920] necessarily writing a lot of the
+[00:53:57.440] guidance. Uh it will probably be
+[00:53:59.359] platform teams that certainly own it. Uh
+[00:54:02.240] own the distribution and possibly kind
+[00:54:05.280] of probably workshop a lot of the text
+[00:54:08.160] with with various people from an app
+[00:54:10.720] point of view where you create apps that
+[00:54:12.480] are specs. Yeah, there's I think I feel
+[00:54:14.880] like there's a bit of a technology gap
+[00:54:16.480] there, which is one of the reasons why
+[00:54:17.599] we as Tesla are focusing more heavily on
+[00:54:19.760] the spec registry and the the idea of
+[00:54:21.920] guidance to agents and and how you
+[00:54:23.599] actually improve agents as best you can.
+[00:54:25.760] Um, but also, yeah, when we talk about
+[00:54:27.440] the oneshot kind of based on a spec, I I
+[00:54:30.319] think that's the future. There will be
+[00:54:31.680] there there is a vision that we're
+[00:54:32.960] working to certainly at Tesla where the
+[00:54:34.880] point is everything's written down
+[00:54:36.240] enough where you can oneshot it. But I
+[00:54:38.079] think that's not where we are right now
+[00:54:40.000] in terms of uh what the capabilities are
+[00:54:42.319] of an LLM. Um but uh but yeah, it's
+[00:54:45.920] would be interesting to see how a lot of
+[00:54:47.680] that's possibly taken up by a program by
+[00:54:51.200] a platform team certainly for guidance
+[00:54:53.839] and and best practices of development.
+[00:54:58.079] Okay. Who's uh where where are we? Who's
+[00:55:00.000] uh who's who's created a Tesla account
+[00:55:04.400] and
+[00:55:06.319] maybe a spec?
+[00:55:08.960] I'd love to know if anyone's got any
+[00:55:10.319] ideas like what like where what are you
+[00:55:13.839] going to data you going to introspect?
+[00:55:17.200] What are you going to rumage around in?
+[00:55:20.400] That would be awesome.
+[00:55:26.880] Let's get her back.
+[00:55:31.440] What was wrong with it? Oh wow.
+[00:55:33.680] >> Yeah, it it down.
+[00:55:38.240] >> Oh dear. Well, no more development
+[00:55:41.200] today.
+[00:55:56.799] Yeah. Try something.
+[00:55:59.920] Oh my gosh.
+[00:56:02.559] Um,
+[00:56:10.880] >> it
+[00:56:13.943] [snorts] Yeah, good point actually. Uh,
+[00:56:15.920] instead of a full fork,
+[00:56:18.240] >> you can download.
+[00:56:19.680] >> Ah, you can fork it and then download
+[00:56:21.040] the zip directly and then just unzip
+[00:56:22.480] that onto your
+[00:56:23.920] >> Yeah.
+[00:56:25.200] >> Yeah.
+[00:56:27.839] Yeah, at the bottom down it's up.
+[00:56:33.594] [snorts]
+[00:56:41.920] >> I just had a question.
+[00:56:42.960] >> Yeah.
+[00:56:43.440] >> Um,
+[00:56:44.319] >> hi there. Just a quick question. I was
+[00:56:47.200] trying to understand fully what you guys
+[00:56:48.880] mean by specs. Are these like prompts?
+[00:56:52.000] like just really elaborate prompts that
+[00:56:53.920] are in a very particular
+[00:56:56.160] uh format and uh it's like a global
+[00:56:59.280] format. Is that what the specs are? And
+[00:57:01.119] and and that's what's helping with the
+[00:57:03.599] tiles. Is that I'm sorry for
+[00:57:05.680] >> Yeah,
+[00:57:06.240] >> trying to get a little clear on this.
+[00:57:07.440] >> It's a great question. like what is a
+[00:57:08.799] spec and like in my mind I see it as
+[00:57:13.119] like all the slides that that Simon
+[00:57:15.200] showed where uh uh an agent can kind of
+[00:57:19.920] deviate from the happy path that you
+[00:57:22.000] want to get to like you've got a goal I
+[00:57:23.680] want to create this web app or whatever
+[00:57:25.839] it might be and there's a happy path to
+[00:57:28.000] get there but the happy path is beset
+[00:57:31.040] with branches off in directions that are
+[00:57:34.000] not going to ultimately end up or they
+[00:57:36.079] might go via a very
+[00:57:37.680] securous route and there may be uh
+[00:57:41.119] incorrect assumptions made by the LLM
+[00:57:43.599] because you didn't articulate
+[00:57:46.079] specifically that you actually want this
+[00:57:48.799] version of Python or that particular
+[00:57:52.079] framework or I want all my tests to be
+[00:57:54.720] compliant with this company standard or
+[00:57:57.280] you whatever whatever those uh facts are
+[00:58:00.559] that it should have known up front that
+[00:58:02.319] we assume it knows in some cases those
+[00:58:05.760] being articulated ated in a
+[00:58:09.119] not necessarily even a universal way,
+[00:58:11.280] but a standardized way. And they all
+[00:58:14.000] open markdown files. And so yeah,
+[00:58:17.440] something which like in general a spec
+[00:58:20.160] generally has um the details that are
+[00:58:24.400] enough to try to guide the agent back on
+[00:58:29.040] the happy path. And that may mean
+[00:58:33.440] telling it specific tools you want to
+[00:58:35.599] use, specific frameworks, uh, versions
+[00:58:39.359] or, um, or other like compliance
+[00:58:44.000] guidelines based on what your rules are
+[00:58:47.119] within your organization. Um, now
+[00:58:50.240] different organizations have different
+[00:58:51.760] ideas about what they think that spec
+[00:58:53.760] format should look like, but in general
+[00:58:56.319] it's a human readable piece of text that
+[00:58:59.359] articulates
+[00:59:01.040] a part of the development process. Is
+[00:59:04.319] that fair?
+[00:59:04.960] >> Yeah. Yeah. And I think it's funny how
+[00:59:06.880] everyone uses markdown. Um, but I think
+[00:59:09.680] there's a couple of good reasons. one
+[00:59:11.280] because visually for humans it's
+[00:59:13.599] actually very nice to to look at and to
+[00:59:16.720] be able to section and and have nice
+[00:59:19.280] headers and things like that. Um, but
+[00:59:21.280] when we think about how LLMs consume
+[00:59:23.359] that as well, LLMs love the sections and
+[00:59:26.960] the titles and things like that, they
+[00:59:28.559] will actually when we when we did early
+[00:59:30.880] stage um testing on what how an LLM
+[00:59:34.480] consumes a spec, we we originally did a
+[00:59:37.119] bunch of stuff where we used almost like
+[00:59:38.480] an XML format of tags to say this is a
+[00:59:41.200] section start and end. And it was it it
+[00:59:44.079] when it consumed a a a spec that had
+[00:59:47.680] that level of categorization or
+[00:59:49.760] sectioning, it it produced far better
+[00:59:53.200] output. Um and and you'll find a lot of
+[00:59:55.599] vendors, a lot of people who are trying
+[00:59:57.280] to create a style of specification for
+[00:59:59.920] their tools use markdown not just
+[01:00:02.240] because it's neat neater to for a human
+[01:00:04.480] to read it, but they will get better
+[01:00:06.559] output from their LM as a result. Um
+[01:00:10.960] and I think
+[01:00:12.880] like there's no real standardization of
+[01:00:15.119] what a spec should look like. I mean,
+[01:00:16.640] it's all natural language and just just
+[01:00:18.400] descriptive trying to trying to capture
+[01:00:21.280] our intent or our um decisions that
+[01:00:25.280] we're trying to make. There's a lot that
+[01:00:27.119] you don't have to write in a spec if you
+[01:00:28.880] don't care about what how an LLM
+[01:00:32.559] actually makes that decision or or how
+[01:00:34.880] it will implement something from that.
+[01:00:36.960] You might want to provide that as
+[01:00:39.520] context to the LLM. if you reiterate
+[01:00:42.000] through your code creation just so your
+[01:00:44.559] output isn't wildly different version to
+[01:00:46.559] version. Um but but I think as was kind
+[01:00:49.839] of mentioned sometimes the the the less
+[01:00:52.079] you give an LLM sometimes the better
+[01:00:54.079] result as well because it can make a lot
+[01:00:55.760] of those decisions by itself. Uh but
+[01:00:58.160] yeah, I think it's the spec is really
+[01:00:59.920] capture of intent, which when we think
+[01:01:01.839] about a code to spec. Um it's it's very
+[01:01:05.520] hard in the code to spec process to
+[01:01:07.520] determine intent from code. Uh because
+[01:01:10.319] there's too much implementation noise in
+[01:01:12.000] there. Uh so so think of it as just a
+[01:01:14.720] set of intents that are that are built
+[01:01:16.880] in a that that are detailed in a way
+[01:01:19.599] whereby they're they're sectioned and an
+[01:01:22.799] LLM can you know understand your intent
+[01:01:26.720] and therefore using that context create
+[01:01:28.960] something in a in a more more
+[01:01:31.520] representable way to your to your needs.
+[01:01:34.880] Um yeah, I just had a question around
+[01:01:37.280] like what mitigation tactics if any
+[01:01:41.200] Tesla uses in terms of um avoiding
+[01:01:44.720] context bloat. So like how many tools
+[01:01:48.000] are available in the MCP and do you have
+[01:01:50.960] like checks and balances in there to
+[01:01:52.799] make sure that doesn't happen?
+[01:01:55.280] Yeah, it's a really good question and I
+[01:01:56.640] think as an as a project grows as well,
+[01:01:58.880] the amount of context can get massively
+[01:02:00.720] out of hand. And I think the the key is
+[01:02:02.799] oop sorry the key the key is there's a
+[01:02:06.640] um
+[01:02:09.440] there's a the MCP tool which is I think
+[01:02:12.480] it's called get library context or
+[01:02:14.400] something along those lines and what it
+[01:02:16.400] does is based on the based on the
+[01:02:18.319] request you make. So if I was to say
+[01:02:20.000] create create a new
+[01:02:22.480] let's say I have a usage spec for the
+[01:02:24.079] commander CLI library and I say create
+[01:02:27.280] this new addition to my CLI it will
+[01:02:30.880] spawn off a sub agent number one that
+[01:02:33.200] will effectively go if essentially do a
+[01:02:36.000] research style task and it will look
+[01:02:37.760] through all the context it has that is
+[01:02:39.440] relevant and pull just the amounts from
+[01:02:42.160] that into the contain
+[01:02:45.200] uh agent's context that it needs to
+[01:02:47.520] better
+[01:02:49.119] better perform that task. So it's not
+[01:02:51.760] actually pulling everything across and
+[01:02:54.079] even that research is happening on a
+[01:02:55.680] separate separate uh task as well. So
+[01:02:59.119] it's not actually using that context and
+[01:03:01.680] once it has that limited context that it
+[01:03:03.599] actually needs to pass in that's going
+[01:03:06.559] to be an amount that shouldn't blow your
+[01:03:08.799] context window. Uh there's obviously
+[01:03:11.680] we're we're a beta product right now so
+[01:03:14.640] we haven't tested it to the extreme and
+[01:03:17.039] there probably will be edge cases where
+[01:03:18.559] it's like oh crap we're way over or
+[01:03:20.640] whatever. Um but uh but yeah right now
+[01:03:23.599] it's sub agents and handling things off
+[01:03:26.240] the main agent which causes uh all the
+[01:03:29.760] bloat of of context to to avoid the main
+[01:03:34.160] agent.
+[01:03:37.520] Uh if you're using Claude, by the way, a
+[01:03:40.000] really useful uh command in Claude is to
+[01:03:43.440] type slash context and it'll were away
+[01:03:48.480] for a little bit and then it will show
+[01:03:49.760] you this really nice little kind of
+[01:03:51.599] histogram like Oh, here we go. Are you
+[01:03:54.240] going to do it?
+[01:03:54.880] >> Yeah. I was just trying to find one of
+[01:03:56.559] the many tabs that has my claw. Uh
+[01:03:58.559] >> that's a good question, Joe. Do we know
+[01:03:59.920] the token size for
+[01:04:03.599] >> uh for for our MCP?
+[01:04:07.920] Jay's a Jay's a developer on our team,
+[01:04:10.000] by the way. I'm not just asking random
+[01:04:12.880] stranger.
+[01:04:13.599] >> Uh I don't know about the MCP server
+[01:04:15.039] itself, but we pull in uh we pull in the
+[01:04:17.440] relevant context based on the request.
+[01:04:19.359] So we're not just throwing everything in
+[01:04:21.039] the system context window. So if you've
+[01:04:23.359] got a request about writing some tests
+[01:04:25.039] about something, it will pull out your
+[01:04:26.240] testing guidelines, say, but it's not
+[01:04:27.839] going to pull everything else into
+[01:04:28.960] context. Um so you're not blowing up
+[01:04:31.520] your context window, if that answers
+[01:04:33.039] your question. [snorts]
+[01:04:36.559] So is it is it does Tesla know how much
+[01:04:38.720] is left and does work to make sure it
+[01:04:41.359] doesn't blow that context window?
+[01:04:43.119] >> Is that the question? No, it was more
+[01:04:45.920] like for instance like uh
+[01:04:50.319] >> um you know early on when MCPS first
+[01:04:53.599] started like uh you know the context 7
+[01:04:57.920] moment or or even like playright and so
+[01:05:01.599] uh you know I started incorporating more
+[01:05:03.440] and more MCPs and binding those tools to
+[01:05:06.400] to my agents and then very quickly I
+[01:05:09.200] realized like I'm getting way worse
+[01:05:11.760] results from the LLM.
+[01:05:14.000] Um, and so like something like Playright
+[01:05:16.240] has 128 tools that it ships with. So if
+[01:05:19.920] like you just leave that on and you're
+[01:05:21.280] not paying attention, like that's
+[01:05:23.200] already eating up I think you know close
+[01:05:25.359] to like 50k tokens in in context just by
+[01:05:28.400] having it there. So that's why I was
+[01:05:30.079] curious. But um you clearly have the MCP
+[01:05:34.400] here and uh I don't know if you only
+[01:05:37.359] have Tesla MCP. If if that's the only
+[01:05:41.039] one, then you are kind of around 60k
+[01:05:43.359] tokens, which is quite a lot.
+[01:05:48.559] >> Yeah, if you look at my uh the nonsense
+[01:05:52.000] thing I made earlier, uh I have a few
+[01:05:55.440] tools, not just test. I've got a whole
+[01:05:57.280] bunch of other nonsense in there. And
+[01:05:59.119] you can see the MCB tools takes up by
+[01:06:02.000] far and away the majority of the
+[01:06:03.760] content. I'm obviously nowhere near the
+[01:06:05.440] end, but they take up quite a bit of
+[01:06:09.039] space.
+[01:06:11.440] >> If you if you scroll down to Tessle
+[01:06:13.440] >> Yeah. It's way down the bottom.
+[01:06:17.599] >> But I didn't actually use Tesla at all.
+[01:06:19.440] >> No. No. So, yeah. Only
+[01:06:22.240] >> few thousand. Yeah.
+[01:06:29.039] >> Yeah. Some of these are just enormous. I
+[01:06:31.520] would love to ask a follow-up question
+[01:06:33.680] because it feels like you're saying
+[01:06:35.599] you're doing some kind of lazy load with
+[01:06:37.760] MCP. Is that right? I thought they
+[01:06:40.799] didn't do that, but if you know how to
+[01:06:42.559] do that, I would love to know.
+[01:06:46.480] >> It's a good way of putting it. Um, yeah,
+[01:06:48.319] it's one MCP in MCP tool that's called
+[01:06:50.880] and we ask the agent to explain
+[01:06:55.119] essentially what the users asked to do.
+[01:06:56.880] Um, and then we use that to then search
+[01:06:59.520] through the knowledge and pull out the
+[01:07:00.720] relevant files. So it's a it's sort of a
+[01:07:02.880] way it's essentially a way of of doing a
+[01:07:05.520] lazy MCP uh call with one tool.
+[01:07:08.640] >> You just basically have a
+[01:07:11.039] >> So basically, if I understand you
+[01:07:12.400] correctly, you just have like one MCP
+[01:07:14.400] piece that knows all about your tools
+[01:07:17.119] and it doesn't pull everything else, but
+[01:07:19.119] it can search and pull it that that's
+[01:07:21.359] awesome. Thank you.
+[01:07:24.960] >> Yes. So the search and the search and
+[01:07:27.200] install will kind of pull all the
+[01:07:29.200] knowledge down. So you'll have
+[01:07:31.119] everything locally, but then the the the
+[01:07:33.680] the the context library will only pull
+[01:07:36.000] then those relevant pieces once it's
+[01:07:37.760] called and fill the context with not
+[01:07:40.000] fill it, but add to the context those
+[01:07:41.839] few pieces. Yeah.
+[01:07:43.520] >> Yeah.
+[01:07:45.119] Yeah. Because we in in some of our
+[01:07:47.039] original tests, it was kind of we
+[01:07:49.200] realized quickly how it it it blew up
+[01:07:51.520] the context and so we needed that
+[01:07:53.200] research step. Um did you want to add?
+[01:07:56.160] >> Yeah, just maybe a helpful metaphor is
+[01:07:58.160] uh we sometimes think of it as like um
+[01:07:59.920] bit like npm. Um so you're running npm
+[01:08:02.559] install, you're pulling your
+[01:08:03.440] dependencies into a node modules folder.
+[01:08:05.760] You're not committing that but it's sort
+[01:08:07.200] of like part of your setup and then you
+[01:08:09.599] know you import the things that you
+[01:08:10.960] need. Um so it's maybe a helpful
+[01:08:12.880] metaphor to think about.
+[01:08:17.520] >> Awesome. So, um,
+[01:08:21.359] is if anyone's if anyone's created some
+[01:08:26.640] specs that they want to contribute, feel
+[01:08:28.480] free to put your hand up and I'll come
+[01:08:29.679] around and I'll share the or I'll grab
+[01:08:32.000] your username and add that to the to the
+[01:08:34.880] workspace. Um, would it be good for us
+[01:08:37.920] to maybe do a bit of live coding? Add uh
+[01:08:40.880] create create a um
+[01:08:43.679] >> yeah
+[01:08:46.000] a data source that's innocuous. I could
+[01:08:48.400] put commit to video
+[01:08:49.600] >> claude history.
+[01:08:50.960] >> Uh
+[01:08:54.560] yeah.
+[01:08:55.440] >> What's most personal about you, Alan,
+[01:08:57.359] that we can share on uh on a recorded?
+[01:09:00.799] >> Probably cat pictures. [laughter]
+[01:09:03.120] Uh oh, man.
+[01:09:06.239] Yeah,
+[01:09:07.759] put me off stage. Ask me that. Um,
+[01:09:19.600] yeah. Problem is I don't use most of
+[01:09:22.560] these tools. Um, like the the one main
+[01:09:26.480] one I use is Spotify. You know, GitHub
+[01:09:28.159] is a good one, but uh
+[01:09:30.239] >> Spotify.
+[01:09:31.759] >> Yeah, but Spotify exists and Spotify
+[01:09:34.080] wrapped exists. I'd like to like uh
+[01:09:37.359] >> how about a YouTube? Can I get
+[01:09:41.600] >> what videos I've watched? How much of my
+[01:09:44.400] life have I wasted watching YouTube?
+[01:09:46.239] Should we give that a go?
+[01:09:47.759] >> Yeah.
+[01:09:48.319] >> Oh, my life. I am opening myself up
+[01:09:50.960] here. Uh like um let's put this in the
+[01:09:55.280] scratch folder.
+[01:09:57.280] Uh there's nothing there, right? Um I
+[01:10:00.640] haven't got any MCPS or anything, have
+[01:10:02.239] I? Uh
+[01:10:04.719] if I do tessle in it, right, we're going
+[01:10:09.120] to collaboratively work on
+[01:10:12.159] um right. So now
+[01:10:16.000] is this text big enough? Do you need it
+[01:10:17.600] bigger?
+[01:10:18.719] >> Is that all right? Okay, cool. Um
+[01:10:24.640] right, I'll use Claude.
+[01:10:28.719] Yep.
+[01:10:30.400] Okay,
+[01:10:33.313] [snorts]
+[01:10:35.040] I'd like to make my own Spotify rap
+[01:10:41.760] style
+[01:10:43.520] uh page, but for my own personal YouTube
+[01:10:50.400] watch history. Oh man,
+[01:10:53.679] I'm not even up to my three month like
+[01:10:56.560] probationary period. Um
+[01:11:00.719] okay. Uh
+[01:11:03.679] this will need two uh stages.
+[01:11:08.400] One to G data gather gather
+[01:11:13.440] data using
+[01:11:17.679] YouTube YouTube
+[01:11:19.360] API
+[01:11:20.880] and the can I get it from the YouTube
+[01:11:22.719] API
+[01:11:25.600] there to
+[01:11:26.560] >> I think it might be uh YouTube MCP maybe
+[01:11:29.920] >> uh web page to
+[01:11:34.719] show the data
+[01:11:37.360] in Baby
+[01:11:41.280] or way if you like
+[01:11:46.320] bra
+[01:11:48.400] start
+[01:11:51.679] uh right what are we going to need?
+[01:11:55.199] Uh any do we want to specify any
+[01:11:57.679] particular libraries or tools or
+[01:12:00.400] frameworks? Shout them out and they will
+[01:12:03.040] get integrated if you're not careful.
+[01:12:08.000] language.
+[01:12:09.760] >> Oh, pick a language. Backend Python,
+[01:12:12.159] front end node, something else. Backend
+[01:12:15.679] Rust. Let's go. Oh god, there's always
+[01:12:18.480] one. Um, okay. Well, why not? Well, no,
+[01:12:21.040] because we'll spend all the time
+[01:12:22.080] building it.
+[01:12:25.679] >> Sorry.
+[01:12:27.120] >> Python sounds great. Let's use Python.
+[01:12:32.080] Python for the back end.
+[01:12:36.000] Hey,
+[01:12:38.800] >> yeah, we use UV. Yeah, UV is the best.
+[01:12:42.800] Uh, and UV for the package management
+[01:12:48.080] dependency management.
+[01:12:53.485] [snorts]
+[01:12:54.719] We are not currently in a UV
+[01:12:58.719] environment.
+[01:13:02.320] We'll need to make that
+[01:13:05.275] >> [snorts]
+[01:13:05.840] >> I'm not usually this for both uh front
+[01:13:08.640] uh anything else any other uh it it
+[01:13:11.600] should be able to figure out
+[01:13:14.480] uh looking
+[01:13:16.719] in the Tesla registry for Python modules
+[01:13:23.199] specs that we can use on the back end.
+[01:13:28.480] >> Good shout. Uh what about the front end?
+[01:13:31.760] What do we want? node I suppose
+[01:13:42.000] >> uh node for the front end
+[01:13:46.800] any particular like like do we want to
+[01:13:50.000] use react or something else something
+[01:13:51.840] lean
+[01:13:55.679] >> do react
+[01:13:56.880] >> react not react hey how about react
+[01:14:03.760] for the framework.
+[01:14:06.400] By the way, I should have introduced
+[01:14:07.840] this whole thing with I'm not a
+[01:14:09.199] developer. I mean, that clearly shows,
+[01:14:10.880] right? You know this. Okay, good.
+[01:14:13.396] [laughter] Uh,
+[01:14:15.040] forgot framework again. Look in the
+[01:14:18.800] Tessle registry
+[01:14:21.280] specs that can help us.
+[01:14:26.560] Uh, what else do we need? test framework
+[01:14:30.400] tests
+[01:14:32.000] are for losers. So, we'll do that
+[01:14:36.159] another day.
+[01:14:40.080] Yeah, I'm I'm kidding. Uh are for
+[01:14:45.280] people
+[01:14:47.440] who have more than 44 minutes left on
+[01:14:51.280] the clock.
+[01:14:54.007] [snorts] So, we'll do that another day.
+[01:14:56.320] Uh, anything else?
+[01:15:00.480] Uh, the UI. What should the UI look
+[01:15:02.320] like? I have mentioned brain rot,
+[01:15:04.239] haven't I? Oh dear. Um,
+[01:15:09.679] should we see how it goes with that?
+[01:15:11.040] Build build me first.
+[01:15:15.040] First build me a spec
+[01:15:18.480] detailed spec and to-do list
+[01:15:22.800] for this project. This is terrible. Like
+[01:15:26.880] ordinarily I would have a whole load of
+[01:15:28.960] uh um MCPS and loads of other stuff
+[01:15:33.280] added. So this is going in very raw for
+[01:15:35.360] me. Anything else we need to add? Shout
+[01:15:38.320] now or I'll press enter.
+[01:15:41.679] >> Do it.
+[01:15:46.719] At some point I'm going to have to go
+[01:15:47.920] and get a YouTube API key, aren't I?
+[01:15:50.239] Right. I'm gonna say yolo do everything
+[01:15:54.000] fast API. Oh, look at that. Found a
+[01:15:57.520] YouTube transcript API. That's not quite
+[01:15:59.760] what I want, but okay.
+[01:16:02.480] React animations.
+[01:16:07.520] Perfect, says [laughter] Claude. Let's
+[01:16:10.560] create a comprehensive spect. Okay.
+[01:16:18.560] Now, obviously, we could have used any
+[01:16:21.280] tool. I just happen to have Claude open
+[01:16:23.199] in this terminal at the time. We could
+[01:16:24.960] have used VS Code or uh Copilot or
+[01:16:28.000] whatever. [snorts]
+[01:16:31.520] Is there a preference? Does everyone
+[01:16:33.199] just use everything or is there Claude?
+[01:16:35.920] Everyone Claude or Gemini or Gemini?
+[01:16:40.320] Gemini. Gemini. GVT.
+[01:16:44.080] Wow. Does nobody use Open AI anymore?
+[01:16:47.440] Remember them. Okay. Where is the
+[01:16:50.320] structure? Two clear stages. Do it. Um,
+[01:16:54.800] has it written anything yet?
+[01:16:57.920] >> No. Okay.
+[01:17:01.600] Do it.
+[01:17:11.520] Uh, hang on. Displaying in an
+[01:17:13.199] over-the-top meme style wrapped
+[01:17:14.719] experience. Oh, good.
+[01:17:17.040] Brilliant. Uh,
+[01:17:19.440] yes. And always create stuff.
+[01:17:22.719] I worry this is going to go wrong.
+[01:17:28.960] Whose YouTube account do I have access
+[01:17:30.800] to that's not mine?
+[01:17:37.440] Right. So, it's using it's understood
+[01:17:39.280] it's using UV. Good. Just do it. I would
+[01:17:43.920] never use UV in it. That's interesting.
+[01:17:48.719] Interesting [snorts] that chose Python
+[01:17:49.760] 311.
+[01:17:56.400] Where's uh Joe? Simon, is this what you
+[01:17:59.679] expect?
+[01:18:02.719] Pi Pi Google API Python client
+[01:18:09.840] do it.
+[01:18:12.080] >> We're yoloing this project. It's 41
+[01:18:15.520] minutes in counting.
+[01:18:20.080] Okay.
+[01:18:22.080] Law.
+[01:18:28.719] There's a command line option for claw,
+[01:18:30.159] isn't there, that makes it into yolo
+[01:18:32.080] mode, or is it like accept all?
+[01:18:39.520] >> Oh, a tile has been added to your
+[01:18:41.040] project's test.json and extracted. Ah,
+[01:18:44.239] there we go.
+[01:19:00.960] Uh, okay. Has it just not saved that
+[01:19:02.880] yet? Was I too premature?
+[01:19:07.600] YouTube API fetch a script to retrieve
+[01:19:10.080] history. Okay.
+[01:19:12.159] Wow. What did we get? We got We got some
+[01:19:16.080] Python
+[01:19:21.520] extracted to there. I wonder where that
+[01:19:23.280] went.
+[01:19:36.719] No, there was nothing in there, I don't
+[01:19:38.000] think.
+[01:19:43.520] >> Oh, hang on. Is it in the back end? Uh,
+[01:19:46.320] yeah. Let's put it all down here.
+[01:19:50.239] No, maybe in source.
+[01:19:57.920] No. Where's he put it?
+[01:20:03.440] >> Oh, there you go. Look. Back end tessle
+[01:20:05.120] tiles. There we go. Nice.
+[01:20:34.239] Okay.
+[01:20:39.040] So, this is
+[01:20:42.000] >> steering for Tesla.
+[01:20:45.199] >> Nice.
+[01:20:46.800] Okay. Interesting. It says you're
+[01:20:48.640] working in a large organization.
+[01:20:51.640] [clears throat]
+[01:20:51.760] >> Yes. Uh,
+[01:20:53.920] that looks like a yolo. [snorts]
+[01:20:57.280] >> You're going to make me run this, aren't
+[01:20:58.560] you?
+[01:21:04.960] >> I was curious what you watch.
+[01:21:12.400] >> What? Front end. Bold front end temp
+[01:21:15.679] front end. It's like I think it's got
+[01:21:17.840] itself a little bit confused.
+[01:21:23.280] What have we got in there?
+[01:21:26.640] Oh, I don't want to do tree, do I? Uh,
+[01:21:29.440] yeah. Front end.
+[01:21:35.920] >> Wonder what went wrong with that.
+[01:21:41.520] >> Anyone see what went wrong with it?
+[01:21:44.239] Python back end and then when it started
+[01:21:46.880] on the front end
+[01:21:49.760] force.
+[01:21:53.280] >> Wow.
+[01:21:57.760] Let me try a different oper operate. So
+[01:21:59.520] it just killed that and started again.
+[01:22:02.400] Okay, [snorts]
+[01:22:03.760] fair enough. I should just not question
+[01:22:05.679] this and uh yeah having a nodding bird
+[01:22:08.960] on my enter key. I was I forgot to
+[01:22:12.800] >> What?
+[01:22:14.400] Claude, come on.
+[01:22:17.840] >> Okay.
+[01:22:23.520] Have any of you ever done uh vibe coding
+[01:22:25.920] while someone's watching?
+[01:22:29.520] I've watched people on YouTube do it and
+[01:22:31.760] uh
+[01:22:33.040] >> yeah,
+[01:22:37.199] >> maybe that'll show up in my uh in my
+[01:22:39.199] list.
+[01:22:43.120] >> A tile has been added to your project.
+[01:22:45.360] Okay.
+[01:22:48.560] >> Yeah, let's just do it.
+[01:22:55.437] >> [snorts]
+[01:22:56.000] >> You know, one day AI is going to see
+[01:22:57.920] that line and it's going to connect to
+[01:23:00.159] my bank account and just like send money
+[01:23:02.320] to these projects. That's Hey, someone
+[01:23:05.280] should make an MCP that does that. It's
+[01:23:08.480] like, oh well, you're clearly using it.
+[01:23:10.000] You should contribute.
+[01:23:14.639] >> Oh my gosh. Creating brain rock style
+[01:23:16.800] animated components for stats reveal.
+[01:23:19.360] Good lord,
+[01:23:22.080] >> this better be worth it.
+[01:23:27.440] >> Would it be all right if I said create
+[01:23:29.600] sample data for this rather than using
+[01:23:43.253] [snorts]
+[01:23:45.120] Now,
+[01:23:49.040] >> do you do something else while you're
+[01:23:50.960] doing this? Do you ever like watch TV or
+[01:23:54.159] like have a film on? Yeah, watch two
+[01:23:56.320] TVs.
+[01:23:57.920] >> Oh, two other projects. Oh, of course.
+[01:23:59.840] Yeah. Yeah. Just have it all going in
+[01:24:01.440] parallel. Of course.
+[01:24:04.400] >> Yeah.
+[01:24:12.073] >> [snorts]
+[01:24:12.239] >> I've um Have I got audio on? Yeah.
+[01:24:16.400] >> Oh, have I got it? Yeah,
+[01:24:19.840] >> I have um a hook in. Have I got it on
+[01:24:23.120] this one?
+[01:24:34.320] Yeah. So, I have it like a hook
+[01:24:39.679] >> when um
+[01:24:41.920] if I get distracted by the TV or while
+[01:24:44.000] I'm cooking or looking after the
+[01:24:46.159] children, um I have it say out loud,
+[01:24:50.159] "God is waiting for human response."
+[01:24:54.159] uh then I know the laptop needs me and I
+[01:24:57.120] have to drop the children and uh get
+[01:24:59.760] back to the computer.
+[01:25:02.400] >> It's quite useful.
+[01:25:13.199] The really weird thing is this.
+[01:25:31.199] >> You can actually have uh there's a bunch
+[01:25:34.239] of voices and a a speech synthesis
+[01:25:37.920] synthesis
+[01:25:39.760] uh called Piper. And if you want down
+[01:25:43.360] here in English
+[01:25:46.960] GB is my voice. Um, [snorts] so this
+[01:25:54.000] >> if you really wanted, you could have
+[01:25:55.440] Claude talk to you in my voice.
+[01:26:00.639] >> Yeah, you probably don't want to do
+[01:26:01.679] that.
+[01:26:03.760] >> Okay, still going.
+[01:26:08.800] >> But yeah, sorry.
+[01:26:18.400] Hope you didn't hear my snoring.
+[01:26:20.639] >> Come on. You got 33 minutes left.
+[01:26:31.199] >> Well, he thinks it's done.
+[01:26:37.679] There's no way
+[01:26:39.760] to
+[01:26:41.679] speed.
+[01:26:45.600] >> Claude is waiting for human response
+[01:26:48.159] >> like that.
+[01:26:48.639] >> No way.
+[01:26:50.480] >> Okay.
+[01:26:52.159] >> Little
+[01:26:56.000] >> is there sample data in here?
+[01:26:58.239] >> Oh, to configure to use mock data.
+[01:27:04.320] Okay, let's see.
+[01:27:17.600] >> Is that working?
+[01:27:20.320] >> Okay, let's go.
+[01:27:30.719] Do we really want to click on this?
+[01:27:36.480] >> Press the wrong button,
+[01:27:42.000] >> right? This better be good.
+[01:27:47.840] >> What do we think?
+[01:27:51.500] >> [laughter]
+[01:27:54.000] >> thing.
+[01:27:55.040] >> Oh, dear me.
+[01:27:57.280] Is it running on 8,000? Where's the
+[01:27:59.360] >> You're running the
+[01:28:00.000] >> back end. Uh
+[01:28:03.280] >> well, it is, isn't it?
+[01:28:14.159] >> That's a good question.
+[01:28:16.719] Is it because it's not a networking
+[01:28:19.600] thing because this is on
+[01:28:21.120] >> an error
+[01:28:22.320] >> local host and the other one is on
+[01:28:25.040] >> 127001
+[01:28:26.560] >> or is it 127
+[01:28:34.000] >> local
+[01:28:34.960] >> suggestions welcome
+[01:28:39.280] >> I mean I could
+[01:28:45.040] >> that's the right way to do it. Expose it
+[01:28:47.520] to the world. This production code.
+[01:28:53.040] >> Oh no. This is not the one that needs
+[01:28:55.120] exposing, is it?
+[01:29:01.600] >> Yeah. Yeah. Go for it. I I will take any
+[01:29:03.520] suggestions.
+[01:29:09.440] >> Launch both of these. Yeah.
+[01:29:15.760] Uh, where did it cool? There he is. Hang
+[01:29:18.239] on.
+[01:29:21.840] >> He's already confused. He's
+[01:29:29.199] >> dramatic animations.
+[01:29:32.719] >> Yeah, people always put this last
+[01:30:02.639] So I'm saying give me a shell script
+[01:30:04.320] that launches it and then run that. Make
+[01:30:06.080] sure it works and there are no errors
+[01:30:07.679] between the front and the back end.
+[01:30:09.520] Oh, and
+[01:30:12.480] run it on 00 Z00 Z for funsies.
+[01:30:20.639] >> H.
+[01:30:23.520] >> Yeah, both of them can be on 00 but
+[01:30:27.760] but different ports. I assume it knows
+[01:30:30.560] that, doesn't it? Claude's not that daft
+[01:30:33.920] surely.
+[01:30:41.360] Right. While that's happening, come on.
+[01:30:44.000] >> Can I just like use this time to mention
+[01:30:45.840] something else that I vibe coded?
+[01:30:51.199] >> Go here and find nerdy places to go all
+[01:30:54.400] around the world. Uh uh and uh there are
+[01:30:58.320] already quite a lot in America. And if
+[01:31:00.400] you find any other nerdy places to go,
+[01:31:02.159] can you please add them to this website?
+[01:31:04.480] This was almost 100% vibe coded up the
+[01:31:07.040] wazoo and there's a lot of places here
+[01:31:09.280] but uh yeah if you could add places to
+[01:31:11.120] nerdy daytrips.org just a little side
+[01:31:13.520] project. Uh that'll be awesome. Thanks
+[01:31:16.239] very much.
+[01:31:19.120] >> Uh [groaning]
+[01:31:22.400] what's that?
+[01:31:24.239] What is that?
+[01:31:26.800] Oh my gosh. I don't even know what that
+[01:31:28.159] is. This one doesn't have a description.
+[01:31:29.440] There's also it's all in GitHub. You can
+[01:31:31.199] do pull requests to fix that.
+[01:31:32.893] >> [snorts]
+[01:31:33.040] >> Um, I think Claude's still working. No,
+[01:31:35.520] it's finished.
+[01:31:37.440] We'll come back to that if we have time.
+[01:31:39.360] But yeah, uh, I'm sure there's there's
+[01:31:41.120] stuff here somewhere. Is that Long
+[01:31:42.480] Island? It is, isn't it? Oh, look. Look
+[01:31:44.000] at that. Some of them have stuff. Uh,
+[01:31:47.360] anyway, let's go back to what we're
+[01:31:49.120] actually here for. Um,
+[01:31:52.000] >> so, okay.
+[01:31:55.280] >> Yeah, just do it.
+[01:31:58.438] [snorts]
+[01:32:03.520] So, so what's [snorts]
+[01:32:07.600] >> 8,000? I know. It's got loads of
+[01:32:09.040] different ports to roll.
+[01:32:14.320] >> Why is it obsessed with putting emojis
+[01:32:16.000] in literally everything?
+[01:32:17.760] >> Like there's a shell script. Fill it
+[01:32:19.120] with emojis.
+[01:32:23.600] >> Yes, just curl is fine. Do it. [snorts]
+[01:32:36.000] Yes.
+[01:32:44.480] >> So, it's launched something in the
+[01:32:46.080] background.
+[01:33:00.960] This is very much don't do it like this.
+[01:33:05.360] >> Do we think that's up now?
+[01:33:08.239] >> Claude is waiting for human response.
+[01:33:10.400] >> Thanks.
+[01:33:13.679] Okay,
+[01:33:15.280] it's still running by the look of it.
+[01:33:23.600] Did it just kill it while I was about to
+[01:33:25.600] load it or did something No.
+[01:33:28.960] Is that all it does?
+[01:33:31.199] Literally, that's all it does. Wow.
+[01:33:35.280] Super disappointed.
+[01:33:38.080] I mean, if it could do the rest of it
+[01:33:40.400] like that, that would be amazing. But
+[01:33:43.199] there is I think there's nothing in
+[01:33:45.199] there. Oh, man.
+[01:33:47.520] >> The other thing you could do is if you
+[01:33:48.960] wanted to wanted it to
+[01:33:50.880] >> after all of that
+[01:33:52.880] >> I mean all of that all I did was press
+[01:33:54.320] enter a lot um
+[01:34:07.199] >> uh I wonder
+[01:34:20.400] So, [snorts] there's a problem here.
+[01:34:23.199] >> Uh, have I got any extensions that are
+[01:34:25.280] causing this to go? No.
+[01:34:30.400] [snorts]
+[01:34:31.920] >> Can someone please help?
+[01:34:34.960] >> I got this.
+[01:34:38.800] >> Oh, my life.
+[01:34:44.155] >> [snorts]
+[01:34:49.600] >> I think we may
+[01:34:51.920] have
+[01:34:54.000] being too hasty.
+[01:34:58.400] Testing was probably a good idea
+[01:35:06.000] because
+[01:35:07.520] I get a great splash screen.
+[01:35:12.480] Then the world goes black
+[01:35:16.960] and I get an error
+[01:35:19.520] the console
+[01:35:28.480] right while that's working. Uh
+[01:35:31.920] any other nerdy day trips? Uh
+[01:35:34.320] >> South Dakota. [snorts]
+[01:35:36.000] >> South Dakota. I I don't I'm not
+[01:35:37.920] American. I don't know where those those
+[01:35:39.679] are. Where's South Dakota go? Left a
+[01:35:41.040] bit, right a bit?
+[01:35:42.800] >> It's like here somewhere, is it?
+[01:35:45.520] >> That's Albuquerque.
+[01:35:48.159] >> That's not it, is it? There's not a lot
+[01:35:50.320] around this kind of area, is there?
+[01:35:52.719] >> Yeah, that's just like [snorts] a
+[01:35:54.639] general statement of fact. Yeah.
+[01:35:58.560] Come on.
+[01:36:01.840] However, you can add your own. If you if
+[01:36:04.080] you know someone, add it, please.
+[01:36:10.560] Oh, I I tell you what I didn't show you.
+[01:36:12.320] The best part of this whole website,
+[01:36:14.159] right, is my note Stewart added a thing
+[01:36:16.960] that lets you go.
+[01:36:21.751] [laughter]
+[01:36:23.040] This is the only reason this exists is
+[01:36:25.679] just donk.
+[01:36:29.360] That's so cool. Uh, right. This is still
+[01:36:31.920] going. Fixing
+[01:36:40.239] Is that literally all it does?
+[01:36:45.199] Ah, classic.
+[01:36:48.560] Is this true?
+[01:36:57.040] >> Is that true?
+[01:37:05.840] Okay, I'll allow it.
+[01:37:08.880] This is
+[01:37:10.639] Is it? It says f it. That's what it's
+[01:37:12.560] doing.
+[01:37:15.440] What's it doing? It's not doing
+[01:37:17.040] anything.
+[01:37:18.737] [snorts]
+[01:37:20.000] Oh, it is.
+[01:37:25.679] It's just taking its time. Right. Back
+[01:37:28.639] to nerdy day trips.
+[01:37:31.600] Uh, did you know there's a pencil
+[01:37:32.960] museum? I think there's more than one as
+[01:37:35.440] well.
+[01:37:41.840] Look at that. Derwent Pencil Museum.
+[01:37:46.080] If you want to go to Derwent, you can go
+[01:37:47.920] to the pencil museum. Come on. Come on.
+[01:37:49.360] Come on. [snorts]
+[01:37:58.080] Is it actually doing anything?
+[01:38:04.560] Oh my life.
+[01:38:07.679] >> Okay.
+[01:38:12.448] [snorts]
+[01:38:14.000] Okay. So, with the sample data, it
+[01:38:16.639] appears to have made a thing that
+[01:38:20.880] uh I'm not sure this is brain rot
+[01:38:22.480] enough, but uh it's um
+[01:38:28.000] made with a skull and questionable life
+[01:38:30.560] choices. Is that all it does? Literally.
+[01:38:37.360] Oh,
+[01:38:39.303] [snorts] some videos watched. Right. All
+[01:38:41.360] right. Oh,
+[01:38:46.159] now come on.
+[01:38:50.880] I mean, it's done something like
+[01:38:54.719] See, this is what I was after. The
+[01:38:57.040] animations.
+[01:38:59.440] Okay. Yeah, it worked.
+[01:39:02.239] Is
+[01:39:03.760] No, I'm not connecting it to mine.
+[01:39:08.320] That is quite cool. Uh, Simon, it
+[01:39:10.800] worked. Uh, our job is done. Like,
+[01:39:15.328] [snorts]
+[01:39:16.960] no, it's sample data. It's not my It's
+[01:39:19.440] not my YouTube account. Uh, and um yeah,
+[01:39:23.440] I'm not doing that until like ask me
+[01:39:25.360] tomorrow. I'll do it on my laptop. I'm
+[01:39:27.840] not doing it on a projector. I love
+[01:39:29.739] [snorts] this.
+[01:39:32.719] >> I mean, it's all plausibly true,
+[01:39:34.978] [laughter]
+[01:39:36.000] but you know.
+[01:39:37.520] >> Yeah.
+[01:39:44.239] Yeah, true.
+[01:39:46.800] >> Yeah,
+[01:39:50.159] it worked.
+[01:39:53.973] [snorts] Uh, if anyone has any
+[01:39:55.600] questions, for sure.
+[01:39:58.960] >> Oh, have you not got your um No, you to
+[01:40:01.119] ask the gentleman over there. They're
+[01:40:02.239] bus they're busy adding things to Nerdy
+[01:40:03.920] Day trips.
+[01:40:15.040] What do we get?
+[01:40:15.920] >> Test, test, test. There you go. Any any
+[01:40:18.560] questions
+[01:40:20.829] [snorts] about anything that we've
+[01:40:22.000] covered? Oh, one question.
+[01:40:34.800] >> Okay, there is your tile.
+[01:40:41.520] >> Did it generate these or did it get
+[01:40:42.880] these from the registry?
+[01:40:53.360] Right.
+[01:41:04.320] >> Yep.
+[01:41:09.300] [snorts]
+[01:41:17.199] >> You're right. Except Right.
+[01:41:31.199] If you um fade out my laptop, I will go
+[01:41:33.920] and register and get an API key because
+[01:41:37.440] you know what could possibly go wrong.
+[01:41:40.800] >> For the hardcore people who stayed here,
+[01:41:44.639] >> let's just do this.
+[01:41:48.239] Um, could you like hide my laptop and
+[01:41:50.639] put something else up?
+[01:41:54.960] >> Thank you.
+[01:41:59.360] >> I'm going to regret this, aren't I?
+[01:42:10.215] >> [snorts]
+[01:42:19.385] [snorts]
+[01:42:20.000] >> Right. Sign in to Google.
+[01:42:28.960] >> Good.
+[01:42:30.560] >> Uh,
+[01:42:35.679] create a new project or select an
+[01:42:37.679] existing one.
+[01:42:47.840] And then when you come back,
+[01:42:55.679] >> what I ended up what I ended up doing
+[01:43:12.960] New project
+[01:43:15.679] >> YouTube
+[01:43:19.280] >> frame rock.
+[01:43:44.159] APIs and services.
+[01:43:48.400] >> What's it called? YouTube a data API v3.
+[01:43:54.400] API v3.
+[01:44:01.760] enable.
+[01:44:13.357] [snorts]
+[01:44:15.760] Okay.
+[01:44:19.199] Uh create an O2 credentials.
+[01:44:22.880] Really do I have to do this credentials?
+[01:44:42.880] Create credential.
+[01:44:45.280] Oorth client ID.
+[01:44:50.960] >> You must first have a consent screen.
+[01:44:56.400] App name YouTube brain rock
+[01:45:02.719] >> support email address
+[01:45:05.920] audience this is internal use only
+[01:45:09.760] contact information
+[01:45:12.080] my email address
+[01:45:16.639] next I agree to all of the data policies
+[01:45:34.000] create an orth client as a desktop app.
+[01:45:38.960] I'm just like clicking through. Name
+[01:45:41.440] YouTube brain.
+[01:45:47.840] Create.
+[01:45:50.080] Oh my gosh. Right.
+[01:45:55.440] Okay. I've got a credentials.json.
+[01:46:05.280] Put the credentials JSON in the backend
+[01:46:07.840] directory.
+[01:46:09.600] Okay.
+[01:46:11.913] [snorts]
+[01:46:15.119] >> Um
+[01:46:16.639] Oh my god.
+[01:46:32.880] Give me
+[01:46:35.493] [snorts]
+[01:46:45.440] right
+[01:46:47.199] done.
+[01:46:55.840] How do I kill this and launch it again?
+[01:47:03.004] [snorts]
+[01:47:19.280] Let me just kill the other one.
+[01:47:30.000] Right.
+[01:47:33.199] >> Let's say you have a spec.
+[01:47:35.520] >> I had a launch program here somewhere,
+[01:47:37.199] didn't I?
+[01:47:47.280] very like day in day out that kind of
+[01:47:51.840] >> we don't think it can do that.
+[01:47:53.679] >> How can this possibly work?
+[01:47:56.880] >> We think it will [clears throat] be able
+[01:47:57.760] to in future and that's what that's the
+[01:48:00.239] vision we have
+[01:48:03.040] >> kind of going in that direction.
+[01:48:06.080] But the area that we feel
+[01:48:11.040] most kind of
+[01:48:13.679] urgently needed is guidance and support
+[01:48:18.480] to be able to be able to develop almost
+[01:48:22.800] rails.
+[01:48:28.560] >> Uh so
+[01:48:31.840] >> I got the credentials file and I plopped
+[01:48:33.600] it in the back end. I I'm not going to
+[01:48:35.199] show it to you just yet. I've just told
+[01:48:38.320] Claude that it doesn't seem to be using
+[01:48:39.920] it.
+[01:48:42.000] >> Uh oh.
+[01:48:45.199] >> Oh god. Open the Gmail app on my phone.
+[01:48:48.080] Oh, my phone is in airplane mode.
+[01:48:52.320] >> Oh my god. It's actually doing it.
+[01:48:54.719] >> God.
+[01:48:57.630] [snorts]
+[01:49:05.520] Bear with me just one moment. I have to
+[01:49:08.000] authenticate this nonsense.
+[01:49:12.239] >> Here we go. Yes.
+[01:49:23.760] YouTube brain wants to access your
+[01:49:25.679] Google account. Allow
+[01:49:31.035] [snorts] the authentication flow has
+[01:49:32.800] completed.
+[01:49:36.639] >> Claude is waiting for human response.
+[01:49:38.719] >> All right. All right. Calm down.
+[01:49:44.480] >> After that, it'll fetch.
+[01:49:47.840] >> Oh my god.
+[01:49:53.360] Right,
+[01:49:58.960] let's relaunch the thing.
+[01:50:01.119] >> Waiting for back ends to initialize.
+[01:50:03.131] [snorts]
+[01:50:20.880] >> This is so exciting.
+[01:50:24.091] >> [snorts]
+[01:50:34.960] >> Okay. I [snorts] told Claude it's
+[01:50:36.080] authorized, but it's still showing uh
+[01:50:39.520] mocked data. So,
+[01:50:44.960] you may be able to show my display now.
+[01:50:50.080] >> Oh god.
+[01:50:54.159] Uh, okay. It's made a change.
+[01:50:57.440] >> Uh, do you want to flip the thing to
+[01:50:59.679] show my display?
+[01:51:04.719] >> Oh god. Yeah, it really has got my data.
+[01:51:06.480] Oh crap. Um,
+[01:51:09.440] >> waiting for human response.
+[01:51:10.719] >> Could you um switch to show my There we
+[01:51:13.760] go.
+[01:51:15.920] >> Uh,
+[01:51:17.840] wow. Okay. So,
+[01:51:22.560] here we go. Is it going to work? Oh,
+[01:51:25.760] man. Right. Well, it's I'm still
+[01:51:28.320] unhinged, apparently.
+[01:51:31.280] >> Oh, well, that's not what it was. My
+[01:51:36.159] previous employer,
+[01:51:38.320] >> comedy news, a lawyer, internet today,
+[01:51:42.000] and uh a lefty YouTuber. [laughter]
+[01:51:45.199] This is why I was worried about doing
+[01:51:47.119] this. Uh, okay. Okay. Most active hour,
+[01:51:51.119] 8:00 at night. Good. Active day, Friday.
+[01:51:53.679] Un unsurprising. It needs to pause a bit
+[01:51:56.560] longer on this, doesn't it?
+[01:51:59.199] Right. Well, it worked. And it wasn't as
+[01:52:01.920] scary as I thought it was going to be.
+[01:52:04.962] [applause]
+[01:52:08.892] [laughter] Top 92% of YouTube addicts.
+[01:52:12.560] Check me out. Oh my gosh. Have a Yeah, I
+[01:52:16.400] like that.
+[01:52:18.480] Good lord. Couple of months. No
+[01:52:20.880] judgment. Maybe a little bit of
+[01:52:22.000] judgment.
+[01:52:24.239] >> Watch street 26 days. What? Longest
+[01:52:27.920] binge 6.3 hours.
+[01:52:32.560] I don't know what we've learned here,
+[01:52:33.920] but uh it works. And um
+[01:52:37.199] never doing that again.
+[01:52:39.840] Any questions?
+[01:52:42.952] [snorts] Oh my life. You're saying
+[01:52:46.000] no.
+[01:52:54.400] Uh, Simon,
+[01:52:56.080] >> great success. This is my YouTube data.
+[01:53:00.320] >> I'll never be let back in the uh in the
+[01:53:02.320] US.
+[01:53:04.568] [laughter]
+[01:53:11.773] [sighs]
+[01:53:12.400] >> 9 hours.
+[01:53:13.760] >> Hey, it's good. I seriously watch
+[01:53:15.280] YouTube for 9 hours.
+[01:53:22.000] >> I think I must. Yeah, it worked.
+[01:53:25.360] >> Yeah,
+[01:53:26.159] >> this is my actual YouTube data. I'm
+[01:53:28.320] quite amazed.
+[01:53:30.960] >> Apparently, at some point I watched
+[01:53:32.320] YouTube for 9 hours solid.
+[01:53:39.360] >> Yeah, maybe I fell asleep in front of
+[01:53:40.880] the in front of the laptop.
+[01:53:43.280] Wow.
+[01:53:43.920] >> Okay. Awesome. Um,
+[01:53:46.560] >> everyone coming here tomorrow?
+[01:53:48.400] >> I do hope so.
+[01:53:49.599] >> Awesome. Awesome. There is a a deeper
+[01:53:52.239] dive into Tessle with uh Drew who's our
+[01:53:54.719] head of products. Uh, and that's
+[01:53:57.119] happening at uh time [snorts]
+[01:54:00.000] >> uh tools and action 4 p.m. I think going
+[01:54:03.199] by memory or 410ish. Um,
+[01:54:09.040] if we scroll,
+[01:54:12.639] >> day two.
+[01:54:13.360] >> Yep. All the way to the bottom. Pretty
+[01:54:14.639] much I think it's the penultimate uh
+[01:54:16.800] session before the keynotes.
+[01:54:25.760] >> Uh, search for Drew.
+[01:54:29.040] >> There he is.
+[01:54:30.239] >> Uh, so 4 p.m. 4 p.m. Yeah. In the
+[01:54:32.480] landing lower level. So other side
+[01:54:34.880] ground uh the the lower floor uh he's
+[01:54:38.480] going to be he's going to be talking
+[01:54:39.760] about uh a little bit deeper into Tessle
+[01:54:42.159] doing some demos and things like that
+[01:54:43.440] deeper than I did. We also have GIO
+[01:54:45.199] who's the founder and creator of Tessle
+[01:54:46.800] who's giving the keynote tomorrow
+[01:54:48.239] morning first thing. Uh so uh so we can
+[01:54:51.360] you can go more into more depth and hear
+[01:54:53.440] about more about the vision uh from from
+[01:54:56.159] GIO himself.
+[01:54:57.440] >> And I'm pretty sure neither Drew or Gipo
+[01:54:59.520] are going to share their YouTube
+[01:55:00.560] history.
+[01:55:01.040] >> Almost certainly not. Almost certainly
+[01:55:02.480] not. It's definitely going to be better
+[01:55:04.159] than this.
+[01:55:04.639] >> Awesome. Thank you very much uh for
+[01:55:06.400] attending and uh we'll see you tomorrow
+[01:55:08.159] as well. Thank you.
+[01:55:09.440] >> Thanks everyone. [music]
+[01:55:26.704] >> [music]

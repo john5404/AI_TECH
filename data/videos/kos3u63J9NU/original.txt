@@ -1,0 +1,710 @@
+[00:00:08.720] We've got uh a super popular um platform
+[00:00:13.679] IDE that that we're going to be talking
+[00:00:15.120] about next. Um this is a platform that's
+[00:00:17.680] uh that's been in development for uh a
+[00:00:19.600] year, just over a year. Uh it's been
+[00:00:21.520] available for 4 months. It was so
+[00:00:23.199] popular actually that they had to close
+[00:00:24.560] off the the the open first. I think you
+[00:00:27.519] got 100,000 or so uh usage downloads in
+[00:00:31.279] in a short period. Um now though, really
+[00:00:34.000] happy to say it's a it's a GA product.
+[00:00:36.399] So uh Kira is is fully GA. Um and Al
+[00:00:40.800] Harris is the tech lead uh at AWS over
+[00:00:43.600] at Kro and he's going to be talking
+[00:00:45.360] about how you can use specs as part of
+[00:00:47.280] spec driven development to to really
+[00:00:49.200] build out those incremental features. So
+[00:00:51.039] uh pass it over to Al. Al, over to you.
+[00:00:53.440] >> Yeah, thank you.
+[00:00:55.600] Uh so first of all, thank you for having
+[00:00:58.000] me. Uh and thank you for putting me on
+[00:00:59.760] the spot about our sort of rolled back
+[00:01:01.920] preview release we did a few months ago.
+[00:01:04.000] Uh that was a fun time. My name is Al
+[00:01:05.920] like uh like Simon mentioned. Um
+[00:01:07.760] principal engineer at Amazon. I'm the
+[00:01:09.280] tech lead for Kira. Um I think we have
+[00:01:12.640] Renee here today as well speaking, but
+[00:01:14.640] he another engineer and I basically
+[00:01:16.159] built Kira from the ground up and
+[00:01:18.159] launched it publicly I think four four
+[00:01:20.960] and a half months ago something like
+[00:01:22.080] that at this point. But yeah, GA this
+[00:01:24.000] week, which basically means we can take
+[00:01:26.080] money in a in a better way now. But uh
+[00:01:28.560] other than that, uh I'm here to talk a
+[00:01:30.000] little bit more about spectriven
+[00:01:31.040] development. So the reason we shipped
+[00:01:33.520] Kira was really because we believed that
+[00:01:35.840] specri development was going to change
+[00:01:37.360] the way we interacted with AI tools and
+[00:01:40.720] allowed us to use these tools better. So
+[00:01:42.159] quick show hands. Who here's done
+[00:01:43.600] something that you would qualify as
+[00:01:45.600] specriven development?
+[00:01:47.680] Maybe 50/50. So, I'm going to just kind
+[00:01:49.920] of flip a coin and say I bet we're not
+[00:01:51.840] calling spec driven dev the same thing.
+[00:01:53.840] That's kind of the starting point. Uh,
+[00:01:55.360] everybody has their own definition right
+[00:01:56.799] now. Spec is an overloaded term. But,
+[00:01:59.439] um, I am going to slightly disagree with
+[00:02:02.320] what guy said earlier this morning that
+[00:02:04.159] spec is context engineering or specri
+[00:02:06.560] dev is sort of equivalent to context
+[00:02:08.239] engineering because the way that I think
+[00:02:09.599] of specri development is your
+[00:02:11.520] specifications become a control surface
+[00:02:13.360] for your codebase. Um, and that's
+[00:02:15.280] something that's been pretty uh a fairly
+[00:02:17.040] consistent throughine for the product
+[00:02:18.480] since we got started. So, uh, we'll talk
+[00:02:21.120] about that in just a second, but you've
+[00:02:23.200] heard it over and over today and
+[00:02:24.319] yesterday. But some of the challenges
+[00:02:25.440] with AI development, um, you have code
+[00:02:29.280] quality that is sort of all over the
+[00:02:30.640] place. You might get a golden patch one
+[00:02:33.599] day and just have terrible experience
+[00:02:35.040] the next. You've got limited control.
+[00:02:36.480] You're sort of begging the agent to do
+[00:02:38.239] something different. No, I meant this.
+[00:02:39.519] Da da da. and the agents do very well at
+[00:02:42.239] small tasks, but you are on the hook for
+[00:02:43.920] sort of breaking your task down to a
+[00:02:45.360] small, repeatable, and understandable
+[00:02:47.360] scope. Um, so we shipped spectriven dev.
+[00:02:51.680] We took about seven attempts to launch
+[00:02:54.239] spectriven development. We had various
+[00:02:56.720] implementations of this, some that we we
+[00:02:59.200] called, oh man, I think ephemeral specs,
+[00:03:01.280] we had hierarchical specs, we had um
+[00:03:03.840] TDDbased specs. Everything had to have
+[00:03:06.239] the word spec at the end. But at the end
+[00:03:07.519] of the day, we wanted you to be able to
+[00:03:08.800] interact with your system via natural
+[00:03:10.319] language. Uh you can interact with a
+[00:03:13.200] natural language representation of the
+[00:03:14.959] system component, module, whatever you
+[00:03:17.200] want to ship and the system will take
+[00:03:19.519] care of that. What we landed on is the
+[00:03:21.360] STD flow that we shipped today or
+[00:03:23.519] shipped a few months ago and we're
+[00:03:24.959] evolving today. Uh and that is that
+[00:03:27.440] effectively your specs represent the
+[00:03:29.440] state of the system you want to ship. So
+[00:03:31.920] previously vibe coding effectively
+[00:03:33.440] covered the implementation. It could
+[00:03:34.720] really cover anything. uh if you ask the
+[00:03:36.959] system to but we envision specs
+[00:03:39.840] effectively covering the full sequence
+[00:03:41.920] of the SDLC and we want to bring the
+[00:03:44.239] classical rigor for the software
+[00:03:46.080] development life cycle into AI
+[00:03:48.159] development. So what is spectriven
+[00:03:50.239] development in my mind uh I'll qualify
+[00:03:52.799] that um it's effectively a set of
+[00:03:54.879] artifacts and a structured workflow that
+[00:03:57.680] is what we launched Kira with and what
+[00:03:59.280] we're moving towards now is delivering
+[00:04:02.400] reproducible results. So the set of
+[00:04:04.640] artifacts we'll talk about first, but
+[00:04:06.799] effectively
+[00:04:08.480] when you use spectriven development in
+[00:04:10.000] Kirao today, we'll push you through a
+[00:04:11.599] workflow that produces a set of
+[00:04:12.959] artifacts that we suggest you commit
+[00:04:15.040] into your repo or you commit into
+[00:04:16.720] wherever you want it to be. Um,
+[00:04:18.479] effectively this is going to be
+[00:04:19.919] requirements design and tasks. Well,
+[00:04:21.919] I'll walk through sort of what each of
+[00:04:23.280] these is. If you were in uh Alex's talk
+[00:04:25.199] on backlog MD yesterday, there's going
+[00:04:27.040] to be a high overlap there. Um, but
+[00:04:29.280] effectively for requirements, I want to
+[00:04:31.440] be able to uh prompt my system. This is
+[00:04:34.479] just a this is not really a pitch for
+[00:04:36.160] Kuro. I'm just showing Kira spec mode.
+[00:04:38.960] Uh, let's build a CLI for meal tracking.
+[00:04:41.360] Da da da. Spit the thing out. Keep on
+[00:04:43.840] trucking. And Kuro is going to go off
+[00:04:45.840] and generate a requirements MD file for
+[00:04:47.680] me. And so this requirements file is our
+[00:04:51.120] interpretation of what the sort of PM in
+[00:04:54.639] your life would have done or if what
+[00:04:56.080] you're going to do if you're going to
+[00:04:56.880] break down work for other engineers on
+[00:04:58.320] your team. And effectively we give you a
+[00:05:02.240] set of basically an intro which is what
+[00:05:04.560] is the summary of the problem you gave
+[00:05:06.320] the customer what is the glossery of
+[00:05:08.240] terms. We'll talk a little bit a bit
+[00:05:10.479] more about that when we get towards
+[00:05:12.080] reproducible results. Uh and then a set
+[00:05:14.560] of requirements with related acceptance
+[00:05:16.400] criteria. So each of these AC's is now
+[00:05:18.720] addressable. We can reason about here
+[00:05:20.800] requirement 1.2 which is the meal
+[00:05:23.039] tracker shall CLI shall accept meal da
+[00:05:25.520] da da. Um but these requirements are
+[00:05:28.000] effectively user stories and then these
+[00:05:29.759] acceptance criteria we we represent in
+[00:05:31.840] ears format and ears is the easy
+[00:05:34.080] approach to requirement syntax uh
+[00:05:36.320] popularized by sort of other highly
+[00:05:39.759] governed industries but we took it
+[00:05:41.759] because it's a structured natural
+[00:05:43.120] language representation of what you are
+[00:05:45.280] saying to a system. So for people who
+[00:05:47.199] have worked in industries with
+[00:05:48.240] requirements engineering where that was
+[00:05:49.600] a thing um they might be familiar with
+[00:05:51.360] ears but it lets us use classic nonLM
+[00:05:54.960] tools on top of your requirements to
+[00:05:56.639] sort of reason about them. Again I'm
+[00:05:58.720] really excited to talk about that. Uh
+[00:06:00.479] that is a set of features that came out
+[00:06:02.160] with our GA on Monday. More about that a
+[00:06:04.080] little bit later. So that's your
+[00:06:05.600] requirements. The overview the glossery
+[00:06:07.759] the user stories or requirements and
+[00:06:10.479] then the acceptance criteria. Next up,
+[00:06:12.720] we'll talk a little bit about taking
+[00:06:14.080] that set of requirements and translating
+[00:06:16.800] it into a design. So, for the purposes
+[00:06:20.000] of the demo, I think I have not changed
+[00:06:22.000] my requirements at all. I gave the the
+[00:06:24.400] prompt was fairly straightforward. Give
+[00:06:26.000] me a meal tracking CLI. I want something
+[00:06:28.160] I can invoke. Maybe I asked for
+[00:06:30.240] something slightly different in the
+[00:06:31.280] requirements. I don't remember. Um, but
+[00:06:34.000] I Kira asks me, hey, are we happy with
+[00:06:36.400] the requirements or do you want to
+[00:06:37.440] iterate? In this case, I just said I'm
+[00:06:39.120] happy. Let's keep on trucking. And so
+[00:06:41.120] Kira is going to start generating a
+[00:06:42.479] design doc. Now this design doc is just
+[00:06:45.600] one template. Uh you are free to sort of
+[00:06:48.319] mutate it in any way you want. And the
+[00:06:51.520] template includes things like highle
+[00:06:53.600] system design modules interfaces uh
+[00:06:56.960] security concerns testing strategies and
+[00:06:59.280] the new addition as of Monday with our
+[00:07:01.120] GA release kuro 0.60 or 060 I should say
+[00:07:05.599] is properties. Um we'll talk a little
+[00:07:08.400] bit more about property testing towards
+[00:07:09.919] the end but that is effectively
+[00:07:12.800] identifying invariance in the system
+[00:07:14.639] which are what are the things that are
+[00:07:15.919] going to be true about the system no
+[00:07:17.120] matter what that if we can prove are met
+[00:07:20.080] will give you confidence that your
+[00:07:21.360] requirements are being met once you've
+[00:07:22.720] done once you're finished with
+[00:07:24.160] implementation. And in this case,
+[00:07:26.000] something else I did, and I might just
+[00:07:27.520] kind of rewind my video here briefly, is
+[00:07:32.319] uh we'll talk a little bit more about
+[00:07:33.919] this, but at the end, I think I said
+[00:07:35.599] something like, "Oh, I want to invoke
+[00:07:37.919] it." Yeah, you'll see the sample use
+[00:07:42.400] usage here was like node CLIJS
+[00:07:44.960] arguments. Um, and I said, "Looks good,
+[00:07:47.520] but I don't want to interact with node
+[00:07:49.759] CLI. I want to just have a named uh
+[00:07:52.400] command." So minor change but at any
+[00:07:54.639] point in time you're in this chatbased
+[00:07:56.319] environment. So you can chat with your
+[00:07:57.520] design docs, you can chat with your
+[00:07:58.720] requirements, you can chat with your
+[00:07:59.919] task lists. Um yeah, so at a high level
+[00:08:03.840] that's what the design is. It's going to
+[00:08:05.120] be the key technical details. It's going
+[00:08:07.120] to be interfaces. It's going to be
+[00:08:08.400] testing and security concerns. And
+[00:08:12.000] importantly, at least to me, it's highly
+[00:08:13.840] flexible because my opinion about what
+[00:08:16.560] matters in a design doc may be very
+[00:08:18.080] different than yours and yours and
+[00:08:19.440] yours. and we're going to be working on
+[00:08:21.120] things that are at different life
+[00:08:22.080] cycles. So I may care much more about
+[00:08:23.680] how a refactor project for example fits
+[00:08:26.080] into the larger ecosystem of the
+[00:08:27.440] codebase. Whereas if I'm doing green
+[00:08:28.800] field it's like skip over the details
+[00:08:31.280] just keep like let's move as fast as
+[00:08:32.719] possible. I only want to talk about
+[00:08:34.159] maybe the interface.
+[00:08:37.120] Last in our set of artifacts is the task
+[00:08:39.599] list. So curo's task list is the thing
+[00:08:41.519] that's closest to backlog empty. But
+[00:08:43.440] this is effectively um given a design we
+[00:08:46.399] want to break it down into tracer
+[00:08:47.600] bullets that can be implemented. each of
+[00:08:49.440] these tracers. Again, in the UI, I sort
+[00:08:51.600] of just say, "Yes, please go to tasks."
+[00:08:53.680] Um, and Kira is going to shepherd me
+[00:08:55.120] through this workflow. And these I
+[00:08:58.880] really should have should not have
+[00:09:00.160] scrolled that much while I was recording
+[00:09:01.760] this. But, um, it's [snorts] going to
+[00:09:04.000] give me a set of tasks potentially
+[00:09:06.000] nested and potentially deeply nested,
+[00:09:07.600] though we sort of disincentivize that
+[00:09:09.279] with the agent. uh which are written uh
+[00:09:13.120] they're effectively the equivalent of a
+[00:09:14.480] Jira or of a you know a sauna task or
+[00:09:17.279] whatever that I would give to an
+[00:09:18.560] engineer and they are uh human readable
+[00:09:21.760] and they tie really crisply back to a
+[00:09:23.600] requirement that is being solved by
+[00:09:25.279] these tasks. There's not a ton that's
+[00:09:27.200] actually super special about the task
+[00:09:28.640] breakdown. Some things we've done since
+[00:09:30.640] launch is we give you like optional
+[00:09:32.560] tasks. So if you don't want to add let's
+[00:09:34.959] say you're doing something closer to
+[00:09:36.240] vibe but you want to review design docs
+[00:09:37.839] as you go we would give you
+[00:09:40.959] like you could do MVP mode I think is
+[00:09:43.680] what we call it where we just don't
+[00:09:44.800] generate unit tests if you don't want if
+[00:09:46.640] you want to skip that. Uh additionally
+[00:09:48.720] with the addition of property tests we
+[00:09:50.640] now allow you to skip that as well. Uh
+[00:09:52.959] since property tests can be expensive at
+[00:09:54.480] least in implementation time although
+[00:09:56.320] they give you a lot of confidence in
+[00:09:57.680] what you're shipping. So that's kind of
+[00:09:59.680] the first um tent pole I'd say for what
+[00:10:03.920] I consider spectriven development to be.
+[00:10:05.680] The second is the structured workflow.
+[00:10:07.920] Um and then this is what's effectively
+[00:10:09.600] different. I've seen a lot of talks in
+[00:10:10.959] the last 36 hours from people to say you
+[00:10:13.200] know I do this and I do this and like I
+[00:10:15.440] go through things this way and
+[00:10:16.640] ultimately what I want to do for you is
+[00:10:18.327] [snorts] to make sure your tools do that
+[00:10:19.680] on your behalf and you don't have to be
+[00:10:21.200] an expert operator to have good results
+[00:10:24.160] out of your tools today. So this is kind
+[00:10:27.440] of a silly diagram, but effectively the
+[00:10:29.920] workflow we just walked through is a
+[00:10:31.200] very simple example. It's a three nodes
+[00:10:32.800] in a graph and at each node you can
+[00:10:34.240] always hop to this like iteration loop
+[00:10:35.760] and go back. Now what's not documented
+[00:10:37.760] is the fact that you're in a very
+[00:10:39.279] flexible system. At any point in time
+[00:10:40.959] you can just hop back and start tweaking
+[00:10:42.720] requirements, tweaking design, tweaking
+[00:10:44.480] tasks, whatever. Um so we do try to keep
+[00:10:46.880] things very flexible. We don't want to
+[00:10:48.560] be too rigid but we do want to move the
+[00:10:50.079] LLM and the agent itself I should say
+[00:10:52.399] through this structured workflow on your
+[00:10:54.480] behalf. Um, and then finally, this is
+[00:10:57.760] the thing I'm the most excited about is
+[00:10:59.519] the reproducible results. So, there's I
+[00:11:02.720] think two things we're doing as of this
+[00:11:04.399] release on Monday, uh, 0.6.0. One is we
+[00:11:07.519] reason over the requirements you provide
+[00:11:09.040] to the system to search for ambiguity. I
+[00:11:11.360] don't know that we surface these visibly
+[00:11:14.640] yet, although more to come. Uh, but we
+[00:11:17.519] will ask you questions to resolve
+[00:11:19.120] ambiguity in your requirements layer.
+[00:11:20.640] So, let's just say um in the example guy
+[00:11:23.360] shared this morning, he's got a button.
+[00:11:25.279] Uh if the system finds that you have
+[00:11:27.120] maybe gone through and built a bunch of
+[00:11:29.360] buttons and you're saying, "I want a
+[00:11:30.480] blue button or I just want a button and
+[00:11:32.560] it doesn't know if you want it to be um
+[00:11:34.720] like an accept or a secondary or an
+[00:11:36.640] alert or whatever." Um that's kind of a
+[00:11:39.120] trivial example, but you could come in
+[00:11:41.120] and the system would say, "Hey, this is
+[00:11:42.560] actually a fairly ambiguous requirement.
+[00:11:44.480] We have some automated reasoning systems
+[00:11:47.040] we run in the back end to help you
+[00:11:48.240] define these things or identify these
+[00:11:50.000] things and then the agent will actually
+[00:11:51.600] help you winnow down that ambiguity. So
+[00:11:53.279] that's step one. Uh step two, we
+[00:11:55.839] highlight the critical decisions in the
+[00:11:57.360] design and we will circle with you until
+[00:12:00.240] we are happy with kind of we understand
+[00:12:03.120] those decisions. You've made a decision
+[00:12:04.480] or you've said I don't care agent flip a
+[00:12:06.399] coin. Keep moving. And then third is
+[00:12:08.480] that we break the work out into
+[00:12:09.760] bite-sized chunks. So this is really
+[00:12:11.440] trying to move the amount of work we're
+[00:12:12.880] asking the agent at any point in time
+[00:12:14.240] down to the smallest uh unit of work
+[00:12:16.880] that could be theoretically committed.
+[00:12:18.959] Uh on the Curo team specifically, we
+[00:12:20.880] spend a lot of time breaking well I
+[00:12:23.200] should say we have a standard where
+[00:12:26.399] you'll you'll create a commit for
+[00:12:28.160] example with your specs and then you'll
+[00:12:29.519] create a commit for effectively every
+[00:12:30.880] task produced so that we can review the
+[00:12:33.120] code peacemail even if it's not
+[00:12:35.040] committed like push peace meal they are
+[00:12:37.360] independent commits that'll be pushed
+[00:12:39.760] and now this is the new stuff we shipped
+[00:12:41.440] on Monday that we're really excited
+[00:12:42.800] about. So this is an example of an ears
+[00:12:46.399] style requirement. It's basically a
+[00:12:48.000] subject predicate. Um so we have that
+[00:12:51.360] dictionary I talked about in the
+[00:12:52.560] beginning. So we will define what the
+[00:12:53.839] traffic control system is, what the
+[00:12:55.360] control module is, what all these
+[00:12:57.440] different things that are sort of
+[00:12:58.880] properties of the system are. And so the
+[00:13:01.040] ears format allows me to say while
+[00:13:05.040] um condition the traffic control system
+[00:13:07.680] subject is operating um this is the
+[00:13:10.399] state the control module subject shall
+[00:13:14.240] predicate maintain the invariant that at
+[00:13:16.240] most one direction displays green. This
+[00:13:17.839] is a very simple English sentence that
+[00:13:19.680] describes sort of the correct behavior
+[00:13:20.959] of a traffic light. You should, no
+[00:13:22.399] matter what happens, any sequence of
+[00:13:24.240] events, any sequence of interrupts, any
+[00:13:26.000] sequence of state should only at most
+[00:13:28.880] one direction should display green.
+[00:13:30.320] We're okay if they're all red, but you
+[00:13:31.680] don't want two green. That's a huge
+[00:13:33.040] problem. So what Kira's done here is
+[00:13:35.839] it's parsed this out in your design into
+[00:13:38.000] a property which is a type of invariant
+[00:13:40.399] a safety invariant that says that at
+[00:13:42.720] most one green signal for any sequence
+[00:13:45.760] of operations and then kind of all those
+[00:13:48.000] things I just mentioned at every point
+[00:13:49.519] in time at most one direction should
+[00:13:51.200] have a green signal and crisply we say
+[00:13:53.200] this validates requirement 2.3 and now
+[00:13:56.399] like on the surface this is not super
+[00:13:57.920] useful this is me just sort of reframing
+[00:13:59.839] the requirement I already wrote but we
+[00:14:02.399] then go and depending Depending on your
+[00:14:03.839] library of choice, we'll pick a property
+[00:14:05.279] based testing framework. Um, I think for
+[00:14:07.519] Python, we use hypothesis. For node, it
+[00:14:09.519] would be fast check. Again, if you have
+[00:14:10.880] a preference, you can tell Kira to use
+[00:14:12.560] that instead. And same ears requirement
+[00:14:16.639] is on the left. We will produce a
+[00:14:19.360] property test on the right. So, another
+[00:14:21.360] quick show of hands. Has anybody here
+[00:14:22.880] done like written property based tests
+[00:14:25.040] used? Okay, we got one, two, uh, three
+[00:14:27.839] in the in the back. Um, [snorts]
+[00:14:31.120] super powerful, huge pain in the ass.
+[00:14:33.920] Um, getting these right, having stopping
+[00:14:36.079] conditions and bounding conditions that
+[00:14:37.680] work are difficult. It's like everyone
+[00:14:39.120] likes BDD until you have to use cucumber
+[00:14:41.199] and actually implement it. Um, I find
+[00:14:43.760] for most teams, the same thing happens
+[00:14:45.199] with property testing. At a high level,
+[00:14:46.959] the way to think about it though if
+[00:14:48.000] you're not familiar is that you
+[00:14:49.600] represent the test cases of your system
+[00:14:52.399] as
+[00:14:54.079] um a set of you effectively define the
+[00:14:57.199] input space which will be autodefined by
+[00:14:59.120] your test runner and then you define the
+[00:15:01.199] the test behavior. So uh you know for
+[00:15:04.160] all countable numbers when I add them
+[00:15:06.720] two of them together the result should
+[00:15:09.120] be the two of them added. That's a bad
+[00:15:10.639] example but um maybe when I double them
+[00:15:13.440] modulo 2 should equal zero. Um well I've
+[00:15:16.880] just decomposed the problem into sort of
+[00:15:18.320] my problem search space and the ver the
+[00:15:20.880] verification logic and then systems like
+[00:15:23.360] hypothesis for python or fast check or
+[00:15:25.920] whatever kind of your pbt library
+[00:15:28.240] closure spec is another one um you will
+[00:15:33.040] go through the process of identifying
+[00:15:34.720] sort of the universe of possible test
+[00:15:36.320] cases identifying edge cases and then
+[00:15:38.639] through a process called shrinking which
+[00:15:40.160] is effectively the secret sauce of any
+[00:15:41.760] library it will run a bunch of these
+[00:15:44.720] samples through and try to find a single
+[00:15:46.320] counter example because all really all
+[00:15:48.000] the test needs is a single counter
+[00:15:49.759] example to say your requirement is not
+[00:15:52.399] being met. If you cannot find one either
+[00:15:54.560] one your universe of possible test cases
+[00:15:56.959] is bad or two your test is poorly
+[00:15:59.920] written. But assuming those two things
+[00:16:02.399] are not true which there are uh patterns
+[00:16:05.040] to address them. uh at the point that
+[00:16:07.600] you have a passing property test and the
+[00:16:09.440] property is testing the right thing in
+[00:16:10.720] your system, you have high confidence
+[00:16:12.160] that what you have shipped in code is
+[00:16:14.000] what you said you were going to ship.
+[00:16:15.759] And that is important because this means
+[00:16:17.680] that if I say while the traffic control
+[00:16:19.839] system is operating the control module
+[00:16:21.600] shall maintain the invariant that at
+[00:16:23.360] most one direction displays green and I
+[00:16:25.519] prove that I now have a high degree of
+[00:16:27.519] confidence in the safety of the system
+[00:16:28.880] I'm shipping. This is one example, but
+[00:16:30.880] there is a lot of uh there are a lot of
+[00:16:33.040] properties um I should say a lot of
+[00:16:35.600] types of invariants. We have I think
+[00:16:36.959] seven classes of invariants we consider
+[00:16:38.639] in Curo of which there's safety and
+[00:16:40.560] timing and data correctness and things
+[00:16:42.880] like that. So this is I think the
+[00:16:45.199] biggest thing we shipped in the last few
+[00:16:46.480] weeks is this property based testing. Uh
+[00:16:48.800] it's very new, hot off the presses as of
+[00:16:50.720] Monday. If you haven't tried out Kira, I
+[00:16:52.720] invite you to try out Kira, give it a
+[00:16:54.639] shot and let us know what you think. But
+[00:16:55.920] I've left quite a few minutes here at
+[00:16:57.120] the end for questions.
+[00:17:07.439] Uh I'm so happy about property based
+[00:17:09.520] testing. I'm just going to install it
+[00:17:11.120] tomorrow and do all kinds of things with
+[00:17:13.039] it. Thank you. Um curious one thing is
+[00:17:16.240] you say you break work into bite-sized
+[00:17:18.480] chunks.
+[00:17:19.679] >> Do you also give the context enough? So
+[00:17:22.240] sized context to do that and plus
+[00:17:24.559] anywhere they need to look at. So the
+[00:17:26.880] way we treat context for task execution
+[00:17:29.200] today is that we provide the entire
+[00:17:30.720] context of the goal that is the design
+[00:17:33.520] and the full task list but we are that
+[00:17:36.000] is effectively provided as background
+[00:17:37.440] context along with all your sort of
+[00:17:38.880] rules and norms your agents MD whatever
+[00:17:41.200] steering files but the task provided to
+[00:17:43.760] the system is execute task x.y which is
+[00:17:47.919] make a system that does this do not
+[00:17:49.840] implement further tasks do not you know
+[00:17:51.760] go beyond the brief. So we provide the
+[00:17:54.480] full context of the goal but we are
+[00:17:56.480] saying which is effectively the same as
+[00:17:58.080] like me giving a junior developer on the
+[00:18:00.000] team let's read the technical design of
+[00:18:01.919] the system you're adding the I don't
+[00:18:04.160] know payments widget something like that
+[00:18:06.160] that's the way we're thinking about it
+[00:18:07.280] today. Um it's perhaps slightly naive
+[00:18:09.600] and something we could iterate on quite
+[00:18:10.880] a bit.
+[00:18:15.360] >> Um which models are you using and is
+[00:18:17.679] that user selectable? Uh and is there
+[00:18:20.000] any option for local models? no option
+[00:18:22.400] for local models. I'm very sorry. Um,
+[00:18:25.280] but the model is user selectable for
+[00:18:28.320] most things. Um, in this case, I think
+[00:18:30.000] in the demo video, I'm using auto, but
+[00:18:32.080] today we have Sonnet [snorts] 4,45,
+[00:18:34.640] Haiku 45,
+[00:18:36.720] uh, maybe a few Nova models, and I think
+[00:18:38.400] we're trying to get Quinn in as well.
+[00:18:40.480] Um, yeah.
+[00:18:43.440] >> Um, property based testing is new to me
+[00:18:45.840] as of a few minutes ago, so I'm very
+[00:18:47.440] happy for that. Um but
+[00:18:50.160] having read what it is
+[00:18:52.799] the problem space can sometimes be
+[00:18:54.320] really big presumably for complex
+[00:18:56.240] systems. So like how do models deal with
+[00:18:59.840] reasoning over trying to find the right
+[00:19:02.400] set of constraints so that your property
+[00:19:03.840] based testing is valid like do you run
+[00:19:05.360] into problems there kind of scaling that
+[00:19:06.880] paradigm
+[00:19:07.520] >> in some cases we do. Um for example just
+[00:19:10.640] I think this weekend um one of the PMs
+[00:19:13.280] testing out the product uh before launch
+[00:19:15.200] said hey my test ran for 8 minutes.
+[00:19:17.200] what's going on? It's like yes, that is
+[00:19:19.120] a problem. We should fix that. Um, it is
+[00:19:21.440] it is one of the key challenges with
+[00:19:22.960] property testing is that anytime you
+[00:19:24.480] have sort of generative input, your
+[00:19:26.960] library of choice will actually have a
+[00:19:28.880] significant influence on the performance
+[00:19:30.320] of the system. But so that uh shrinking
+[00:19:35.039] of the problem space and definition of
+[00:19:36.960] the problem space need to go really
+[00:19:38.320] crisply handinand in order to have
+[00:19:40.240] success. So I'm going to say there's no
+[00:19:42.799] like panacea here. Uh probably we're
+[00:19:45.600] going to go through a little bit of a
+[00:19:46.559] learning period with this feature now
+[00:19:47.919] rolling out to many many more users, not
+[00:19:49.520] the hundred or so we've tested it with
+[00:19:51.039] in the past, but um if you've got
+[00:19:53.600] feedback, please reach out to us on
+[00:19:54.799] GitHub or Discord. Yeah.
+[00:19:58.240] >> Oh, okay.
+[00:20:00.400] Um is it possible to customize how the
+[00:20:04.160] specs are created? like meaning if I
+[00:20:07.440] wanted the ko to call some tools to
+[00:20:10.320] gather more relevant context before he
+[00:20:12.400] starts generating the specs is it
+[00:20:14.400] possible to do that or like
+[00:20:15.520] >> oh totally yeah yeah so I've given this
+[00:20:17.360] talk a few times in the past so I'm
+[00:20:18.720] giving it later this week as well around
+[00:20:20.640] um using for example MCP is a good
+[00:20:22.640] example because it's very easy to
+[00:20:23.840] rationalize but let's say um I actually
+[00:20:27.200] have a a killer product team they've
+[00:20:30.000] defined all of our goals and things in a
+[00:20:32.159] sauna and I don't want to copy things
+[00:20:33.440] into Kira I can just hook up to on MCP
+[00:20:35.760] and say like read all the tasks assigned
+[00:20:37.280] to me, rationalize this into one or more
+[00:20:39.280] projects and generate a specs for spec
+[00:20:41.600] for it or for them. Uh you can do that.
+[00:20:43.919] You can use specs during task execution,
+[00:20:45.840] I'm sorry, MCP or whatever. Um, that
+[00:20:48.559] kind of comes back to the thing I
+[00:20:49.679] mentioned a fair bit earlier, which is I
+[00:20:51.600] want the system to be highly flexible
+[00:20:54.000] for you as a user, which is that not
+[00:20:55.919] just that the structure is flexible and
+[00:20:57.360] you can kind of jump to wherever in the
+[00:20:58.640] workflow you want to revisit, um, but
+[00:21:00.880] also that you can change the the design
+[00:21:05.679] doc structure. You can change the task
+[00:21:07.679] list structure. Task list is a little
+[00:21:09.360] weird because we have highlighting on
+[00:21:11.120] stuff and checkboxes exist for certain
+[00:21:13.280] patterns, but uh, in general, you can
+[00:21:15.440] still do whatever you want. Um we are
+[00:21:17.360] just recommending that this is sort of
+[00:21:18.640] the best starting point.
+[00:21:22.159] >> Okay, we got one question online and
+[00:21:23.840] I'll take this gentleman at the front as
+[00:21:25.039] well. So question from uh AI native dev
+[00:21:27.760] discord. Uh how do you evolve specs or
+[00:21:30.640] design over time? So say that I want to
+[00:21:34.000] change a feature shipped months ago. Do
+[00:21:35.840] I start from a new spec? Do I take the
+[00:21:38.640] previous spec and change it?
+[00:21:40.240] >> Yeah. Um this is I think everybody who
+[00:21:42.960] ask is going to have a slightly
+[00:21:44.000] different opinion. My recommendation and
+[00:21:45.840] what I do on my team and suggest my team
+[00:21:48.080] does as well is that if I'm mutating
+[00:21:50.080] something that exists, I go and mutate
+[00:21:53.360] an existing spec. Let [clears throat] me
+[00:21:55.919] see if I can actually just jump out to
+[00:21:58.320] uh Curo for a moment. So, this is uh my
+[00:22:01.600] hero. Let me use a light mode.
+[00:22:06.799] That's not a light mode. I am going to
+[00:22:09.679] apologize for whatever I just did. Um,
+[00:22:12.400] so here's an example of the cure
+[00:22:14.400] extension. This is where a lot of our
+[00:22:15.520] code is. You can see I'm playing around
+[00:22:16.640] with Tesla and trying to integrate some
+[00:22:18.080] of the grounding specs over there. But,
+[00:22:20.559] um, if I hop into we we delete specs
+[00:22:24.159] actually fairly aggressively when
+[00:22:25.440] they're more than a few weeks old. So,
+[00:22:26.799] you can see the specs that are actively
+[00:22:28.159] or have recently been worked on. Um but
+[00:22:30.880] let's just for example say I want to
+[00:22:33.039] talk through uh the message history
+[00:22:35.360] sanitizer which is a project we we have
+[00:22:38.000] such that if you get into an invalid
+[00:22:39.360] state at any point in time the system
+[00:22:40.799] will kick it out. I can easily dive in
+[00:22:42.720] here and say I want to add a new message
+[00:22:47.760] history sanitization rule such that um
+[00:22:52.159] messages with a Levenstein distance
+[00:22:56.720] uh too close
+[00:22:58.799] will be dduplicated.
+[00:23:02.240] Um and so in this case I'm going to
+[00:23:04.720] commit my PR which really has an
+[00:23:06.480] amendment to the requirements. It will
+[00:23:07.840] have an amendment or set of amendments
+[00:23:09.120] to the design and net new tasks that get
+[00:23:11.520] shipped out. Uh we don't have to watch
+[00:23:13.200] the whole thing play here, but it's
+[00:23:14.880] going to go and find all of my specs.
+[00:23:16.400] It's going to read through relevant
+[00:23:18.000] specs, probably find the message
+[00:23:19.600] dduplicator one or sanitizer one, I
+[00:23:22.080] should say, and then go in and mutate
+[00:23:23.760] them. And instead of me shipping three
+[00:23:25.840] big docs to my team for review, we will
+[00:23:27.919] be talking about really diffs, which is
+[00:23:30.000] what we are working on here. Yeah. So,
+[00:23:31.520] in this case, it's read the existing
+[00:23:33.520] artifacts and it'll keep on trucking.
+[00:23:35.840] >> Awesome. Got time just for one more.
+[00:23:37.440] Also big shout out. Hello Macy. Um
+[00:23:39.679] sorry.
+[00:23:40.960] >> Thank you. Uh I was just curious if uh
+[00:23:43.600] like behind the scenes in Curo.
+[00:23:45.679] >> Does it kind of keep uh like a global
+[00:23:47.840] data of say data models and properties
+[00:23:49.600] of entities or does it actually every
+[00:23:51.679] time go and search out that what needs
+[00:23:53.840] to change?
+[00:23:55.520] >> Uh you mean like structurally in your
+[00:23:57.200] codebase or
+[00:23:57.840] >> Yeah. I I was curious like whe the
+[00:23:59.360] behind the scenes it has a map or a
+[00:24:00.960] model of how your objects and entities
+[00:24:03.039] relate to each other and you store that
+[00:24:04.720] or is every new spec going and mining
+[00:24:07.520] and figuring out where to add things and
+[00:24:09.520] what to change.
+[00:24:10.400] >> I would recommend you take a look at the
+[00:24:11.840] the slides Lada shared yesterday.
+[00:24:13.600] Effectively we do not do that
+[00:24:14.880] automatically for you but I think that
+[00:24:16.240] would be a reasonably easy thing for you
+[00:24:17.520] to do with memory or steering. Y um if
+[00:24:19.440] you haven't played with steering we have
+[00:24:20.880] I mean it's memory it's you know uh
+[00:24:23.039] claud's context whatever. Um, but yeah,
+[00:24:25.600] you can do a lot by just saying, "What
+[00:24:27.440] did you learn from this interaction?
+[00:24:28.880] What do you want to remember for next
+[00:24:30.000] time?" Put it in the steering dock so
+[00:24:31.360] that you can reload.
+[00:24:32.480] >> Cool. Thank you.
+[00:24:33.200] >> Yeah, thank you so much and thanks for
+[00:24:34.480] the patience. You were like second
+[00:24:35.440] person to raise your hand.
+[00:24:36.880] >> Thanks.
+[00:24:37.520] >> Awesome. Thank you very much, Al. And
+[00:24:39.360] yeah, Al is here. So, if you didn't get
+[00:24:42.480] the chance to ask a question, um, it's
+[00:24:44.640] lunch now, so don't let Al don't let Al
+[00:24:46.960] eat. Just keep asking him question after
+[00:24:48.880] question after question. Al, thank you
+[00:24:50.720] very much. Pleasure.
+[00:24:55.382] >> [music]
+[00:25:00.622] [music]
+[00:25:07.279] >> Heat.
+[00:25:10.480] Heat.

@@ -1,0 +1,487 @@
+[00:00:00.120] Hello everyone. Nice to see you.
+[00:00:02.040] Really exciting to be here helping to kick off day two of DevCon.
+[00:00:06.200] And I'm impressed by the number of people in the room today.
+[00:00:10.040] You have made it through the weather, the tube strikes and you're here.
+[00:00:14.520] I know I had my own battle to get here this morning as well.
+[00:00:17.640] I'm Marc Sloan, I'm a member of the product team here at Tessl, and I'm here
+[00:00:23.520] today at a developer focused conference to talk about non developers.
+[00:00:29.000] Now, I don't know if there are any other non developers in the room here today.
+[00:00:34.200] I'm thinking yeah there we go.
+[00:00:36.480] Product managers, designers executives you know
+[00:00:39.760] the people who traditionally wouldn't touch code.
+[00:00:42.880] Although I think we're all we're all turning into developers these days right.
+[00:00:48.960] This talk
+[00:00:50.160] is about the work that they create, but also it is for everyone, rest assured,
+[00:00:55.040] because as we talk increasingly about the context
+[00:00:59.160] that we give agents, coding agents,
+[00:01:02.920] a lot of that, the origination of that context
+[00:01:04.960] comes from non developers, comes from product and design teams.
+[00:01:08.600] And so what I'm going to talk about today is the creation of that context,
+[00:01:13.440] the challenges we face in exposing that to our coding agents and their harnesses.
+[00:01:19.120] And what solutions to those challenges might look like.
+[00:01:24.800] Now, over the last 24 hours, the conversation at Dev Con has been
+[00:01:28.440] pretty much about one thing, and that's giving agents the right context.
+[00:01:33.040] I think it's been super interesting working in this area
+[00:01:36.720] over the last 6 to 12 months, and we've seen the methodology
+[00:01:41.440] we use to do that, evolving from spec driven
+[00:01:44.200] development, where we right up front all the context that the agents
+[00:01:47.720] are going to need in order to get the task done
+[00:01:49.760] to context engineering, which is kind of where we are just now,
+[00:01:53.880] and how that's evolving into harness engineering.
+[00:01:57.480] And the tools are maturing really fast in this area, but a lot of
+[00:02:02.840] it has been focused on context that originates and lives within the code base.
+[00:02:08.320] And the natural form that that context has been taking
+[00:02:12.040] recently has been in the form of skills.
+[00:02:14.240] Now, I don't think I need to convince anybody here of the
+[00:02:18.280] the value of skills and how powerful they are.
+[00:02:21.040] There was a great quote in one of the talks yesterday
+[00:02:24.440] about how the simplest solution is often the right one,
+[00:02:27.680] and the fact that the markdown file is so flexible and adaptable
+[00:02:32.000] makes it the natural place to be able to put code based context.
+[00:02:36.280] I think another powerful aspect of it is the fact that that context
+[00:02:41.040] can live alongside the code that it's describing, that it lives
+[00:02:45.080] within the repo, that it's managed, it's versioned and can be subject
+[00:02:50.120] to evaluations and tests and all that good stuff that comes with the harness.
+[00:02:54.880] And we're still figuring out how to manage that kind of context.
+[00:02:59.560] Right?
+[00:03:00.320] All the stuff we've been talking about with harness engineering,
+[00:03:03.040] the features that you see in the Tessl product, are all about figuring out
+[00:03:06.360] how we turn skills and context into code.
+[00:03:11.400] So to kick us off
+[00:03:13.840] and to kick off this conversation about product
+[00:03:15.640] and design context, I'm going to walk through a typical example,
+[00:03:19.600] the kind of thing I'm sure everybody in this room is familiar to.
+[00:03:22.200] Everybody in this room.
+[00:03:23.720] We're going to describe a scenario here where we've got a company that has a web
+[00:03:28.080] app product, and a customer has asked the product manager
+[00:03:32.560] to put an export button on the dashboard in their product.
+[00:03:37.800] Now, the export feature was something that was hidden behind the settings menu,
+[00:03:42.480] and there was a couple of layers deep, so it was very difficult to find.
+[00:03:45.880] Customer wasn't aware that it existed, and requested
+[00:03:49.840] this to be in a more prominent position.
+[00:03:53.120] On the surface, this seems like the perfect
+[00:03:55.920] kind of job to give to an Agent a Linear ticket that describes it.
+[00:04:01.200] Put a figma design in there that shows where the button should go
+[00:04:04.640] and what it should look like.
+[00:04:05.640] All that good stuff
+[00:04:07.160] fired off to your agents, have it produce a PR job done, customers happy.
+[00:04:11.680] The feature got delivered.
+[00:04:12.640] The customer tried it out and said, it's great.
+[00:04:14.640] So cool.
+[00:04:16.680] This is the world we live in right now.
+[00:04:18.440] We can just send these things off to agents.
+[00:04:21.080] And of course, the agent wasn't building this blind.
+[00:04:24.320] It had access to a bunch of skills that had been developed in advance
+[00:04:28.280] to instruct the agent on how it should be, thinking about the architecture
+[00:04:32.440] of the code, about the front end components that live
+[00:04:35.920] within that, the testing and CI requirements,
+[00:04:39.120] and how to make use of the API to get the data.
+[00:04:43.000] And of course, this is a cutting edge state of the art company.
+[00:04:47.640] So they're using Tessl to manage all of this stuff.
+[00:04:53.120] So problem solved.
+[00:04:54.840] Why do we need to be thinking about product and design context?
+[00:04:57.680] Well in this scenario the agent got one thing wrong.
+[00:05:01.640] It actually ended up using a generic react button component
+[00:05:06.400] that lived within the code base,
+[00:05:07.840] and not the more specific export button components.
+[00:05:11.040] That was the right choice here,
+[00:05:13.800] and this might seem like a trivial error,
+[00:05:16.800] but encoded within that export button component
+[00:05:20.920] are the accessibility requirements that this organization adheres to.
+[00:05:25.600] Interaction patterns that make sense for this kind of async,
+[00:05:29.840] the async operation of this kind of button.
+[00:05:32.080] And this was all missed by the agent in creating this.
+[00:05:36.320] And what's challenging here is that as far as the harness was concerned,
+[00:05:39.840] everything went smoothly.
+[00:05:41.040] The agent got a ticket handed off to it, did the job, created a PR
+[00:05:44.960] that passed, and the feature went out to the customer.
+[00:05:48.480] The valuations that were set up on the skills
+[00:05:50.720] and the other aspects of the harness all seem to be working well,
+[00:05:54.680] but the product and design context was missing
+[00:05:57.600] from the agent in this particular situation.
+[00:06:01.120] And this can have real world consequences because while the customer was happy
+[00:06:04.800] out of the bat in this situation, it might be that down the line.
+[00:06:09.080] The app then ends up failing an accessibility audit
+[00:06:11.960] that delays a critical deal and that kind of stuff.
+[00:06:17.000] So we might
+[00:06:17.880] ask ourselves, well, how should the agents have learned about that?
+[00:06:22.000] How can it find the right context to do it?
+[00:06:24.640] Well, the context was in the design system in Figma this whole time.
+[00:06:30.520] It turns out that the design system team had thought this stuff through
+[00:06:34.720] and already thought about how this button should be created, how
+[00:06:38.520] it should be designed, and how the interaction should work with it.
+[00:06:41.480] In fact, the Figma design that was in that original linear ticket did correctly use
+[00:06:47.200] the export button design component, but the agent just didn't pick this up.
+[00:06:51.400] It used the Figma design as a visual treatment, and then from that,
+[00:06:54.840] inferred that it should be using a generic button that it customized.
+[00:07:01.560] So as we think about building agent harnesses,
+[00:07:06.440] as we've been doing for the last 24 hours in this conference,
+[00:07:10.800] we might ask ourselves, where does product and design context fit into this?
+[00:07:14.720] Now, the way I think about Agent Harnesses is that it's a layer that wraps
+[00:07:19.640] the code base itself, and that layer contains skills, evaluations,
+[00:07:24.600] hooks, policies, all this other stuff that we're working on at the moment.
+[00:07:29.040] And we're using tools like Tessl to manage
+[00:07:34.560] the product and design context.
+[00:07:36.040] I see existing in this layer surrounding the harness, at least right now.
+[00:07:40.680] And it's not just that it's a layer outside of the harness,
+[00:07:43.080] but this data doesn't live in the code base. By design.
+[00:07:45.800] It lives in the third party tools that product managers and designers
+[00:07:49.680] and so on are using day to day,
+[00:07:53.240] every day.
+[00:07:53.880] Context is getting created in these third party tools, and the code base
+[00:07:58.040] is blind to it, and therefore the agent and the agent harness as well.
+[00:08:02.240] And it makes sense that it lives in those tools, because that's the tools
+[00:08:05.560] where product managers and designers are more are spending their time.
+[00:08:09.120] Designers are going to continue to work in Figma
+[00:08:11.240] because it has a canvas and a great set of tools for creating designs.
+[00:08:15.080] PMS will keep working in linear and notion, and more customer data
+[00:08:19.000] is going to continue to live in CRM,
+[00:08:22.800] and for as long as
+[00:08:24.120] that keeps happening, we're going to have important contexts that agents
+[00:08:27.920] need in order to build the right things and do the right job
+[00:08:31.000] living outside the code base, and not just the context.
+[00:08:34.400] Agents need to get the job done, but also the context.
+[00:08:37.160] We need to understand whether the job got done correctly.
+[00:08:41.440] So challenge one is the fact that product and design context
+[00:08:45.000] is important to agents, but it lives outside the code base.
+[00:08:49.200] If we go back to our example, let's imagine
+[00:08:51.760] the team has picked up on this and decided to try and
+[00:08:54.840] bring that context into the code base in order to solve this problem.
+[00:08:58.600] They've set up storybook.
+[00:09:00.000] They've gone through the design system in Figma and made sure
+[00:09:03.000] all of the design components that are there are well represented in storybook,
+[00:09:06.760] with the appropriate documentation and interaction patterns and so on.
+[00:09:10.920] This means the next time a request like this comes in,
+[00:09:14.160] the agent picks up the right component correctly and gets the job done.
+[00:09:18.520] Perfect.
+[00:09:19.600] This is all working, but the world keeps evolving
+[00:09:24.040] and the product and design context isn't static.
+[00:09:26.840] You can imagine in this situation something like this where a new deal comes
+[00:09:30.800] in, and with this new deal comes a new set of accessibility requirements.
+[00:09:35.560] Let's say let's say it's a government agency.
+[00:09:39.080] The PM picks this up and
+[00:09:40.360] produces a notion document that outlines what those requirements are.
+[00:09:44.320] The the design team update Figma and the design components
+[00:09:47.760] there to make sure that they are fully compliant.
+[00:09:49.800] And while all that's going on, the code base is falling
+[00:09:52.800] increasingly out of sync with what's going on in product and design land,
+[00:09:56.840] and the agent is still producing features using the outdated design system.
+[00:10:02.160] And so for as long as we accept that product and design context
+[00:10:06.360] is going to live outside the code base, then we're going to have
+[00:10:09.520] this problem of the two falling out of sync with each other.
+[00:10:13.520] And I've talked about this in one direction so far,
+[00:10:17.320] with the product and design context evolving as the code stays the same.
+[00:10:22.040] But the opposite is also true, especially as we have more and more agents
+[00:10:26.480] being thrown into the code base
+[00:10:28.040] and building new components from scratch and updating existing components.
+[00:10:32.280] We're also going to find ourselves in the situation where the app itself
+[00:10:36.800] has a whole bunch of components the design team know nothing about,
+[00:10:39.560] and so we need to be able to move the context
+[00:10:41.520] in the other direction for them as well.
+[00:10:46.920] Now, in all of
+[00:10:47.600] this, you might be thinking, isn't this a solved problem?
+[00:10:50.600] Should all of these tools have MCP servers today?
+[00:10:53.600] Isn't it just a case of connecting the agent to the MCP server and we're done?
+[00:10:59.360] That's true to an extent, but
+[00:11:02.520] the fact that we need to have this live connection to third party product
+[00:11:06.000] and design context also introduces a set of new challenges, especially as we
+[00:11:10.160] now start to think about the agent harness
+[00:11:12.400] as being something
+[00:11:13.360] that's managed and controlled, and we want to be improving all of the time.
+[00:11:17.880] We now have a live connection that we need to maintain and work around the rate
+[00:11:21.880] limits of that imposes cost constraints
+[00:11:24.920] and the third party availability.
+[00:11:28.640] We also get into a situation where the evals
+[00:11:31.880] and things like that, that we're setting up on.
+[00:11:33.400] The skills and the context in the code base
+[00:11:35.440] is now reliant on third party context that's constantly changing.
+[00:11:39.280] That doesn't necessarily have a canonical source of truth.
+[00:11:42.320] And of course, that's the problem with product and design context.
+[00:11:45.120] It is constantly up to date.
+[00:11:46.760] That's never really a definition of done there.
+[00:11:50.440] It can be in an incomplete state by virtue of its nature.
+[00:11:54.400] And so if we're building harnesses that are reliant on that,
+[00:11:57.400] we have to be very careful about how we make that work.
+[00:12:02.520] So let's
+[00:12:03.280] pause for a moment to reflect on what we've established here.
+[00:12:06.880] I'm saying that for agents to work effectively and for the harnesses
+[00:12:10.680] that use them to work effectively, they need to take into account product
+[00:12:14.760] and design context.
+[00:12:15.920] And this, by its nature, lives outside of the code base.
+[00:12:20.160] It, by its nature, falls out of sync with the code base over time,
+[00:12:25.320] and that trying to maintain a live connection between the agent
+[00:12:29.360] and that context introduces a whole set of new challenges
+[00:12:32.800] that we have to deal with.
+[00:12:36.000] Now, everything I'm talking about
+[00:12:37.880] might seem theoretical,
+[00:12:41.000] or, you know, we're still just trying to get a head around context in the code
+[00:12:45.720] base around skills and how we manage skills and so on.
+[00:12:48.680] Is this really such a big deal at the moment?
+[00:12:51.560] Well, everything I've described
+[00:12:52.880] so far are real challenges that I've faced in my life.
+[00:12:56.640] Prior to Tessl, when I was working at Figma on their dev mode product.
+[00:13:03.200] For those who don't know, dev
+[00:13:04.280] mode is a feature in Figma, which allows designers to hand designs off
+[00:13:09.240] to developers human developers in this case, back in
+[00:13:12.760] back in the Stone age, these were the tools we were using
+[00:13:15.240] and it gives the developer lots of great context about the designs
+[00:13:20.920] that they can use in manually creating the code to implement those designs.
+[00:13:25.680] And over the last couple of years, we've seen that feature
+[00:13:29.360] evolve into Figma, MCP server, the live Connection.
+[00:13:32.920] Right.
+[00:13:33.720] And what we're doing here is just taking that exact same design context,
+[00:13:38.600] but giving it directly to an agent via the MCP server.
+[00:13:42.360] And it was in building this that we started
+[00:13:45.680] to see all of those problems that I've been describing.
+[00:13:48.680] We would see agents picking up the designs
+[00:13:51.760] and doing a fantastic job in creating front end code
+[00:13:55.680] that looked just like the design that functioned as the designer intended.
+[00:13:59.600] But the developers would look at the code and it would have made up
+[00:14:03.960] a bunch of components when they otherwise existed,
+[00:14:06.400] or used them in the wrong way, or completely missed that
+[00:14:09.160] there was a design system that it should have been working towards.
+[00:14:12.240] These were real problems that I encountered with customers every day.
+[00:14:16.160] And so we started.
+[00:14:17.680] We realized quite quickly that we needed to find a way to bridge
+[00:14:21.200] that product and design context gap with what agents were doing.
+[00:14:25.640] And to that end, an early feature we started working on to address
+[00:14:29.400] this was Figma Code Connect product.
+[00:14:31.520] And here is a tool that explicitly
+[00:14:34.560] allowed design system teams to connect the design components
+[00:14:39.240] in that design system with their equivalent in the code base.
+[00:14:43.400] Now I don't want to go into and code connect too much.
+[00:14:48.360] The point here is that these aren't new problems.
+[00:14:53.320] These were problems over the last several years that product
+[00:14:56.440] teams and design teams and devs are dealing with day to day.
+[00:14:59.880] Already.
+[00:15:01.360] We were already dealing with a product and design context to agent
+[00:15:04.760] harness problem before we even defined half of those terms,
+[00:15:08.680] and struggling to find the right solution for that.
+[00:15:13.240] And it's from working on that over the last couple of years.
+[00:15:18.360] And now with my role at all, thinking about how those kinds of things apply
+[00:15:23.360] to harness engineering, that I think there are some useful lessons
+[00:15:26.440] we can take from that as we think about solutions to that problem.
+[00:15:30.760] The first lesson is that
+[00:15:33.200] in building this Code Connect tool, we were aware that there was that
+[00:15:37.960] that connection between product and design context and what's in the code
+[00:15:41.560] base required dedicated maintenance in enterprises.
+[00:15:44.920] There are entire teams whose sole job is to make sure that that connection
+[00:15:48.480] is up to date and is makes sense,
+[00:15:51.800] and that there is equivalence between the two.
+[00:15:55.640] And one of the reasons those teams exist, and that maintenance is required,
+[00:15:59.720] is because the design context and the product context
+[00:16:03.080] is constantly falling out of sync with the code base.
+[00:16:06.360] Both are evolving at their own pace for their own reasons,
+[00:16:09.480] and it requires dedicated effort to keep the two reconciled.
+[00:16:13.400] And one of the learnings was that sometimes
+[00:16:16.680] it's not desirable, actually, to keep the two completely in sync.
+[00:16:20.160] There's an acceptance that they will, of course, have to be out of sync because
+[00:16:23.240] of the pace of design work and product work and dev work and so on.
+[00:16:27.080] And it's the job of this team just to make sure the status quo
+[00:16:30.560] is functional and working and to keep track of that over time.
+[00:16:34.360] And I think that's broadly true not just of design and code context,
+[00:16:37.560] but product and design context in general.
+[00:16:41.160] The third lesson, I think, is interesting in that
+[00:16:44.280] as someone working in product management on this product,
+[00:16:48.040] I was also very much aware of the the business
+[00:16:51.600] and the structural constraints around the tools we were building.
+[00:16:55.800] Figma as an organization was very protective of its design system IP.
+[00:17:00.080] It didn't just want to give away the keys
+[00:17:01.600] to the house, and so we had to be very careful
+[00:17:03.920] about finding the right balance between supporting agents
+[00:17:07.480] and the developers using them, but also not giving everything away
+[00:17:11.160] and destroying the moat that they've built over time.
+[00:17:14.000] And I think that's true across all of these product
+[00:17:16.600] and design SaaS providers, not just Figma.
+[00:17:22.040] So as I spend my days currently thinking about harness
+[00:17:26.600] engineering and how we make sure that agents
+[00:17:29.120] have all the information they need to do a great job for developers,
+[00:17:33.880] and I take
+[00:17:34.560] on board these lessons that I've learned from my experience in trying to solve this
+[00:17:37.760] in other organizations.
+[00:17:39.680] I see maybe three directions that the harness
+[00:17:43.400] can take in order to solve this.
+[00:17:45.480] And if we've got a bit of time, there's a sneaky fourth one as well.
+[00:17:49.480] The first is that we can see these tools
+[00:17:52.360] perhaps opening up, and we're already seeing this.
+[00:17:56.120] The number of these third party tools that have MCP servers just now is exploding.
+[00:18:00.920] And we're also seeing them expand with their own APIs and cliffs and so on.
+[00:18:05.360] I think you still do see restrictions and rate limits in place.
+[00:18:08.440] And we're also seeing this surface being an opportunity
+[00:18:11.920] for those organizations to create new monetization pathways as well.
+[00:18:15.560] So I don't think the solution here is as straightforward as all
+[00:18:19.560] the data will just become available for everything.
+[00:18:21.760] But I do think this is going to get us some of the way there.
+[00:18:25.240] And it's something where we're in the middle of at the moment.
+[00:18:30.760] Another option is the
+[00:18:32.520] idea that there is an agent that sits between the third party
+[00:18:37.120] product and design context, and the harness agent in particular.
+[00:18:42.760] The lesson I learned was about this connection,
+[00:18:45.360] requiring dedicated maintenance and pruning over time.
+[00:18:48.920] And increasingly we did see those teams using agents to a system.
+[00:18:53.400] So it's entirely reasonable that they start to get to a place
+[00:18:57.320] where they can automate a lot of that work.
+[00:18:59.560] And I think as we think as well about the harness itself
+[00:19:03.320] acquiring its own agent in order to build and manage that harness,
+[00:19:07.040] you know, Tessl's IO agent, check it out.
+[00:19:12.360] We can see the role that
+[00:19:14.640] those kinds of agents might have expanding to cover,
+[00:19:18.000] not just managing the context
+[00:19:19.400] within the code base, but also the context that lives outside of it as well.
+[00:19:26.000] And finally,
+[00:19:28.240] another option here is that this context
+[00:19:30.160] that lives outside the code base and is unmanaged and versioned,
+[00:19:33.640] perhaps just gets swallowed by the repo, and we'll see it making inroads into it,
+[00:19:38.360] and then being able to be managed by the harness directly.
+[00:19:42.360] And I think what's interesting with this is that there are some challenges here.
+[00:19:46.280] Certainly we're going to have to still meat products
+[00:19:49.800] and designers and other non developers where they're at,
+[00:19:53.120] because designers are still going to want to design on a canvas regardless
+[00:19:56.760] of where that data ends up living.
+[00:19:58.760] Likewise with CRMs and things like that.
+[00:20:01.640] So we need to meet them where they're at.
+[00:20:03.600] But it could be that there's just still so much value
+[00:20:07.800] in having this context within the harness, that we see an organic pull of that data
+[00:20:13.280] into a place where it can be
+[00:20:14.480] managed and versioned and evaluated and all this great harness stuff.
+[00:20:19.680] I also think what's
+[00:20:20.480] interesting about this direction is it also calls to the fact
+[00:20:25.560] that we as non developers are increasingly looking like developers.
+[00:20:31.120] In fact, there are several talks yesterday and today specifically about this topic
+[00:20:35.720] and about product managers and designers and so on, creating
+[00:20:38.880] PRS and actively contributing to the code base.
+[00:20:42.040] This might be the impetus for us to fold the kind of context
+[00:20:46.800] that we're generating day by day into the repo.
+[00:20:51.320] And with that in mind,
+[00:20:53.320] what I want to do is go back and revisit
+[00:20:56.400] our example from earlier and think about the situation where
+[00:21:01.960] perhaps a developer wasn't involved in this at all.
+[00:21:07.240] We can imagine a PM like myself had that conversation with a customer.
+[00:21:11.760] We transcribed that conversation using Granola, fed that into Claude in Cowork.
+[00:21:16.480] I have my own set of skills there that are able to look through transcripts
+[00:21:21.240] like that and identify features from them, turn those features into linear tickets.
+[00:21:26.520] I have a skill that encodes my roadmap and make sure that this fits my roadmap
+[00:21:30.400] and has the right priority, and one thing to call out here is that I,
+[00:21:35.320] as a non developer, might be developing these skills outside of the code base.
+[00:21:41.160] These aren't versioned.
+[00:21:42.320] These don't have these aren't accessible to my harness.
+[00:21:44.800] They're not aware of them.
+[00:21:46.720] So we need to make sure that
+[00:21:49.440] this might be the first way that we bring
+[00:21:52.320] some of that context into the code base to manage that kind of thing.
+[00:21:55.880] And of course, here Claude turns the feature
+[00:22:00.080] from the granola transcript into a linear ticket
+[00:22:02.640] that then fires off that flow from earlier.
+[00:22:04.320] The feature gets built and the customer is happy.
+[00:22:08.600] Except
+[00:22:10.160] what the PM didn't know is that there's a reason
+[00:22:13.200] this export feature was hidden behind various settings.
+[00:22:16.440] Menu.
+[00:22:17.120] Because of some architectural decision that was made sometime in the past,
+[00:22:20.480] that made exporting the customer's data a hugely expensive task.
+[00:22:25.040] And therefore, we didn't want this to be something
+[00:22:26.960] that was widely available and operating with high bandwidth.
+[00:22:31.120] This causes a PR with a huge number of changes, and
+[00:22:34.000] all of this is invisible to the PM, who's happily tapping away in their computer,
+[00:22:40.320] clapping themselves in the back
+[00:22:41.520] for the fact that they're able to push PRS and make features by themselves.
+[00:22:44.840] And what's missing here is I know personally from my own experience
+[00:22:50.760] managing technical teams, when I'm deciding which features to work
+[00:22:55.440] on, I massively value the feedback and conversation
+[00:23:00.080] that I'm having with my team to let me know.
+[00:23:03.120] Help me understand
+[00:23:03.800] the technical effort that goes into creating some of these features.
+[00:23:07.280] That helps me understand the technical debt
+[00:23:09.560] that we might be creating as a result of this.
+[00:23:12.560] And it can be just as valuable for a product manager to know
+[00:23:15.800] when not to build something than to just look at a backlog
+[00:23:19.400] as its do list that we just need to throw agents at and work through.
+[00:23:24.480] And so another challenge here is that so far,
+[00:23:27.960] I've been talking about bringing product and design context to coding agents.
+[00:23:31.720] But we also need to think about this the other way around, and bringing
+[00:23:36.160] coding context to the kind of decision making that's happening
+[00:23:40.000] outside of the code base, but that's still affects it.
+[00:23:43.240] And so one way this might evolve is
+[00:23:46.520] we keep talking about coding agents and the harnesses that enable them,
+[00:23:50.880] but perhaps it's going to be more like each of the different roles within
+[00:23:54.600] a product team will have their own agent and their own harness.
+[00:23:58.160] And these harnesses are going to have to talk to each other.
+[00:24:01.080] And maybe this is what the solution ends up looking like.
+[00:24:05.800] Now, it's not clear which direction these things are going to go
+[00:24:09.000] in, and we're obviously going to see a lot of progress
+[00:24:10.720] being made on this front in the next 6 to 12 months.
+[00:24:13.760] I think the thing that's clear to me is that product
+[00:24:17.120] and design context is critically important for coding agents.
+[00:24:20.960] And as we work on harnesses for coding agents, certainly
+[00:24:24.000] over the next couple of months, we need to take that into account
+[00:24:27.000] and figure out the best way
+[00:24:28.440] to overcome some of the challenges that we've talked about today.
+[00:24:31.720] I'm sure folks in this room are actively working on this.
+[00:24:34.520] I know I am as well, and I'm really excited to be working in this area.
+[00:24:38.520] And with that, I'd like to say thank you so much.
+[00:24:41.280] Being a great audience, I'm happy to stick around and answer a few questions.
+[00:24:52.240] Awesome.
+[00:24:52.800] Thank you very much. Right.
+[00:24:54.680] I'm going to try these.
+[00:24:55.600] I'm going to try and run through these tables and get get the mic to people.
+[00:24:59.080] If anyone's got a question please raise your hand.
+[00:25:04.160] Any questions?
+[00:25:08.560] Thanks.
+[00:25:09.280] Thanks for the talk.
+[00:25:10.680] My first question comes in if you feed
+[00:25:14.240] in more context in addition to what we're already feeding in.
+[00:25:18.160] Like where do you draw the line and how do you group them?
+[00:25:21.160] When do you when do you feed in a bit of context that's needed?
+[00:25:25.120] I remember there was some board activities
+[00:25:28.480] at my workplace where they were asking what all should be added to the code base.
+[00:25:33.040] So there was this whole wash list of things, including design,
+[00:25:36.800] and everybody wanted to get everything in the code base
+[00:25:39.360] because they want to feed all of that, like, you know, slack conversations, teams
+[00:25:43.160] conversations, your email, conversations with your client.
+[00:25:46.360] It's like, where do you draw? Where would you draw that line?
+[00:25:48.840] Because obviously you need context.
+[00:25:51.000] But then context is king.
+[00:25:52.960] But then which part of it is it's it's quite subjective as well right.
+[00:25:56.920] Yeah.
+[00:25:57.280] So some, some some of your thoughts on that.
+[00:25:59.800] Yeah.
+[00:26:00.440] It's you know, where do you draw the line in terms of adding context to the agent
+[00:26:04.600] when I'm advocating not just for adding code
+[00:26:07.160] based context, but also product and design context,
+[00:26:09.200] which is likely even larger than what's in the code base.
+[00:26:13.320] I mean, I think this is the core problem of context engineering and harness
+[00:26:16.560] engineering in general, even if we just remove the product
+[00:26:19.440] and design context question for now, it's already a huge challenge to figure out
+[00:26:23.720] how to encode all of the contexts that might live within a repo
+[00:26:27.560] and its architecture and its norms, and so on, into something succinct enough
+[00:26:31.880] that's relevant enough for the agent to do the right job.
+[00:26:35.680] And part of the reason we are setting up things like evaluation architectures
+[00:26:40.040] and so on, is so that we can actively work to get that context down into
+[00:26:45.200] just the right size, but also make sure that that context
+[00:26:47.600] is actually doing a good job to evaluate and so on.
+[00:26:51.200] We're going to have the exact same problem,
+[00:26:52.640] I think, with product and design context.
+[00:26:54.440] In fact, that makes it harder because it's I think, as I've said today,
+[00:26:58.760] by virtue, it's messier, there's more of it.
+[00:27:02.280] It's in lots of different places.
+[00:27:03.960] And so
+[00:27:05.240] I think we just need to well, for now, we need to apply the same kind of tools.
+[00:27:08.520] We need to figure out which design context is signal
+[00:27:12.240] versus noise, and perhaps have agents to help us decipher that.
+[00:27:16.000] We need to shrink that down into formats that are enough to either
+[00:27:19.760] live as skills in the code base, or maybe there's some other methodology
+[00:27:23.560] that we shrink this to and have that be accessible to the agent.
+[00:27:27.320] And then we need a set of evals to make sure that our agent
+[00:27:31.080] is actually being boosted by that context and isn't being overwhelmed.
+[00:27:34.800] So the short answer is, I think we need to apply
+[00:27:38.160] all of the same principles with code base context to product and design context
+[00:27:42.760] with that extra layer of difficulty that comes with that, because
+[00:27:45.720] of it being external
+[00:27:49.040] trial and error and evaluate.
+[00:27:50.160] Exactly.
+[00:27:53.120] Probably got time for one more question if there's
+[00:27:55.000] any other questions in the room.
+[00:28:00.880] If not, thank you very much.
+[00:28:02.320] Please give it up for Mark again.
+[00:28:08.240] Okay.
+[00:28:08.440] We've got just under ten minutes till the next session

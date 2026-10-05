@@ -1,0 +1,2053 @@
+WEBVTT
+
+1
+00:00:00.320 --> 00:00:05.120
+Hey folks, thanks for having me. Um, I'm
+
+2
+00:00:02.960 --> 00:00:07.839
+going to talk a bit today about
+
+3
+00:00:05.120 --> 00:00:09.679
+automating uh large scale refactors and
+
+4
+00:00:07.839 --> 00:00:12.480
+like other large highly automatable
+
+5
+00:00:09.679 --> 00:00:14.080
+tasks uh with AI agents. These are tasks
+
+6
+00:00:12.480 --> 00:00:16.160
+that can't really be like oneshotted
+
+7
+00:00:14.080 --> 00:00:17.520
+with an agent today uh but are highly
+
+8
+00:00:16.160 --> 00:00:19.039
+automatable. They involve a lot of wrote
+
+9
+00:00:17.520 --> 00:00:22.439
+work uh that engineers don't typically
+
+10
+00:00:19.039 --> 00:00:22.439
+like to do.
+
+11
+00:00:23.199 --> 00:00:27.599
+Uh a bit about me. Uh my name is Robert
+
+12
+00:00:25.680 --> 00:00:30.320
+Brennan. I'm the CEO and co-founder at
+
+13
+00:00:27.599 --> 00:00:32.880
+OpenHance. Uh we're an MIT licensed uh
+
+14
+00:00:30.320 --> 00:00:35.360
+AI coding agent. Uh started in early
+
+15
+00:00:32.880 --> 00:00:36.800
+2024. Uh I would say we're the leading
+
+16
+00:00:35.360 --> 00:00:38.079
+open source coding agent if you're
+
+17
+00:00:36.800 --> 00:00:41.760
+looking for an open source alternative
+
+18
+00:00:38.079 --> 00:00:43.360
+to something like cloud code or dev.
+
+19
+00:00:41.760 --> 00:00:45.040
+Uh my background in particular is in a
+
+20
+00:00:43.360 --> 00:00:46.800
+mixture of natural language processing
+
+21
+00:00:45.040 --> 00:00:48.640
+and dev tools. Uh so I've been working
+
+22
+00:00:46.800 --> 00:00:50.480
+in commercial open source for a while.
+
+23
+00:00:48.640 --> 00:00:52.800
+Uh and I'm just generally very excited
+
+24
+00:00:50.480 --> 00:00:55.680
+about what uh what LLM are doing for
+
+25
+00:00:52.800 --> 00:00:58.559
+developer productivity today.
+
+26
+00:00:55.680 --> 00:01:01.680
+uh a quick like history of AI coding for
+
+27
+00:00:58.559 --> 00:01:04.239
+those who uh have not been um uh on top
+
+28
+00:01:01.680 --> 00:01:06.240
+of this for the last few years. Uh we
+
+29
+00:01:04.239 --> 00:01:08.720
+started really with like context unaware
+
+30
+00:01:06.240 --> 00:01:10.560
+code snippets. So uh being able to
+
+31
+00:01:08.720 --> 00:01:12.240
+generate code uh you know basically
+
+32
+00:01:10.560 --> 00:01:14.000
+asking chatbt without any kind of
+
+33
+00:01:12.240 --> 00:01:16.640
+context about your codebase you know
+
+34
+00:01:14.000 --> 00:01:18.960
+please write an algorithm that'll do X.
+
+35
+00:01:16.640 --> 00:01:20.799
+Um about a year later we started getting
+
+36
+00:01:18.960 --> 00:01:22.400
+things like GitHub copilot which could
+
+37
+00:01:20.799 --> 00:01:24.240
+take some context in your codebase that
+
+38
+00:01:22.400 --> 00:01:26.479
+could see kind of what the surrounding
+
+39
+00:01:24.240 --> 00:01:28.000
+code was like uh and generate the next
+
+40
+00:01:26.479 --> 00:01:29.840
+few lines of code or generate some code
+
+41
+00:01:28.000 --> 00:01:31.920
+based on you know the context of your
+
+42
+00:01:29.840 --> 00:01:34.560
+particular codebase.
+
+43
+00:01:31.920 --> 00:01:36.880
+Uh then the next year uh 2024 when Devon
+
+44
+00:01:34.560 --> 00:01:38.880
+and openance were born uh we got this
+
+45
+00:01:36.880 --> 00:01:42.000
+this next leap forward where agents were
+
+46
+00:01:38.880 --> 00:01:43.920
+not uh agents basically uh came onto the
+
+47
+00:01:42.000 --> 00:01:45.119
+scene and were able to not just generate
+
+48
+00:01:43.920 --> 00:01:47.439
+code but they could run the code that
+
+49
+00:01:45.119 --> 00:01:48.799
+they generated. uh they could uh you
+
+50
+00:01:47.439 --> 00:01:50.640
+know Google an error message that comes
+
+51
+00:01:48.799 --> 00:01:52.000
+out of the code basically do the entire
+
+52
+00:01:50.640 --> 00:01:53.680
+inner loop of development in an
+
+53
+00:01:52.000 --> 00:01:55.840
+automated fashion. This is a huge leap
+
+54
+00:01:53.680 --> 00:01:58.079
+forward. Uh and what we're seeing now is
+
+55
+00:01:55.840 --> 00:02:00.719
+is the next leap where you've got uh
+
+56
+00:01:58.079 --> 00:02:02.320
+agents that are working together um or
+
+57
+00:02:00.719 --> 00:02:03.920
+you know taking a task and spreading it
+
+58
+00:02:02.320 --> 00:02:07.840
+out across multiple agents so you can
+
+59
+00:02:03.920 --> 00:02:09.679
+get a lot more done faster.
+
+60
+00:02:07.840 --> 00:02:11.360
+Uh some examples of of those like large
+
+61
+00:02:09.679 --> 00:02:12.800
+scale projects that are more appropriate
+
+62
+00:02:11.360 --> 00:02:14.720
+for you know many different agents
+
+63
+00:02:12.800 --> 00:02:16.480
+working rather than a single agent are
+
+64
+00:02:14.720 --> 00:02:17.760
+things like um you know upgrading a
+
+65
+00:02:16.480 --> 00:02:20.319
+programming language through a major
+
+66
+00:02:17.760 --> 00:02:22.239
+version bump like Python 2 to Python 3,
+
+67
+00:02:20.319 --> 00:02:24.239
+rewriting a codebase from one from one
+
+68
+00:02:22.239 --> 00:02:27.040
+language to another. Uh large scale
+
+69
+00:02:24.239 --> 00:02:29.599
+refactors um you know really really
+
+70
+00:02:27.040 --> 00:02:32.480
+anything that uh is going to involve a
+
+71
+00:02:29.599 --> 00:02:34.879
+lot of wte work uh but is too large of a
+
+72
+00:02:32.480 --> 00:02:36.319
+task to fit in like a single PR. uh it's
+
+73
+00:02:34.879 --> 00:02:37.519
+too much. You know, it's something you
+
+74
+00:02:36.319 --> 00:02:39.200
+could imagine giving to a team of
+
+75
+00:02:37.519 --> 00:02:40.959
+engineers rather than a single engineer
+
+76
+00:02:39.200 --> 00:02:42.560
+or something you could imagine uh
+
+77
+00:02:40.959 --> 00:02:43.680
+accomplishing over the series of several
+
+78
+00:02:42.560 --> 00:02:45.360
+different poll requests where you've
+
+79
+00:02:43.680 --> 00:02:46.879
+gone several check-ins to see, you know,
+
+80
+00:02:45.360 --> 00:02:48.000
+are things going well? Are things going
+
+81
+00:02:46.879 --> 00:02:51.000
+in the right direction? Do we need to
+
+82
+00:02:48.000 --> 00:02:51.000
+reorient?
+
+83
+00:02:51.760 --> 00:02:55.920
+Um there's a bunch of reasons why uh
+
+84
+00:02:54.080 --> 00:02:59.360
+these kinds of tasks just can't be like
+
+85
+00:02:55.920 --> 00:03:00.879
+thrown at a single agent today. Um uh
+
+86
+00:02:59.360 --> 00:03:02.720
+some of these are problems with the
+
+87
+00:03:00.879 --> 00:03:05.920
+agents themselves, right? There are some
+
+88
+00:03:02.720 --> 00:03:07.599
+limitations that the LLM have. Um there
+
+89
+00:03:05.920 --> 00:03:09.680
+are also just like some human problems
+
+90
+00:03:07.599 --> 00:03:12.239
+involved here. Uh you know, a lot of
+
+91
+00:03:09.680 --> 00:03:14.480
+times humans uh struggle to actually
+
+92
+00:03:12.239 --> 00:03:16.480
+decompose tasks for agents. Um they
+
+93
+00:03:14.480 --> 00:03:17.840
+can't convey their own intuition. Uh and
+
+94
+00:03:16.480 --> 00:03:19.519
+there's still this need for the human to
+
+95
+00:03:17.840 --> 00:03:20.879
+kind of review each each output step.
+
+96
+00:03:19.519 --> 00:03:23.040
+That's that's a big bottleneck in the
+
+97
+00:03:20.879 --> 00:03:24.959
+process.
+
+98
+00:03:23.040 --> 00:03:27.840
+Uh a handful of things are changing here
+
+99
+00:03:24.959 --> 00:03:29.599
+making this more of a a reality. Uh one
+
+100
+00:03:27.840 --> 00:03:30.799
+is just the underlying LLM technology is
+
+101
+00:03:29.599 --> 00:03:33.280
+getting better. We're seeing longer
+
+102
+00:03:30.799 --> 00:03:35.360
+context windows. Uh inference costs are
+
+103
+00:03:33.280 --> 00:03:36.400
+going down. We're seeing LM getting
+
+104
+00:03:35.360 --> 00:03:38.560
+better at planning and task
+
+105
+00:03:36.400 --> 00:03:40.239
+decomposition. Uh but I think more
+
+106
+00:03:38.560 --> 00:03:42.239
+importantly,
+
+107
+00:03:40.239 --> 00:03:44.319
+we're seeing uh some some evolution in
+
+108
+00:03:42.239 --> 00:03:45.840
+the ecosystem itself. Uh we're seeing
+
+109
+00:03:44.319 --> 00:03:47.120
+agents that aren't just like single
+
+110
+00:03:45.840 --> 00:03:49.680
+threaded running on your computer, but
+
+111
+00:03:47.120 --> 00:03:51.040
+are more cloud-based. Um agents that are
+
+112
+00:03:49.680 --> 00:03:52.080
+running all in their own sandbox, so
+
+113
+00:03:51.040 --> 00:03:55.040
+they're not stepping on each other's
+
+114
+00:03:52.080 --> 00:03:57.040
+toes. Um we're also seeing interfaces
+
+115
+00:03:55.040 --> 00:03:59.599
+for for wrangling multiple agents at
+
+116
+00:03:57.040 --> 00:04:01.120
+once and coordinating them together. Uh,
+
+117
+00:03:59.599 --> 00:04:03.120
+and we're getting better intuition for
+
+118
+00:04:01.120 --> 00:04:04.400
+as humans for how these agents behave.
+
+119
+00:04:03.120 --> 00:04:06.000
+You know, what can they accomplish? What
+
+120
+00:04:04.400 --> 00:04:06.959
+can't they accomplish? How do I need to
+
+121
+00:04:06.000 --> 00:04:09.920
+hold their hand to make sure they're
+
+122
+00:04:06.959 --> 00:04:11.280
+able to get this done?
+
+123
+00:04:09.920 --> 00:04:12.720
+Uh, I'll talk a little bit about, you
+
+124
+00:04:11.280 --> 00:04:13.840
+know, the different workflows that we
+
+125
+00:04:12.720 --> 00:04:17.040
+see when people are working with
+
+126
+00:04:13.840 --> 00:04:18.720
+multiple agents. But just to start, um,
+
+127
+00:04:17.040 --> 00:04:20.720
+this is a typical, you know,
+
+128
+00:04:18.720 --> 00:04:21.919
+agent-driven development task, uh, for
+
+129
+00:04:20.720 --> 00:04:23.680
+humans today. If you're if you're
+
+130
+00:04:21.919 --> 00:04:24.960
+working on a single single task, so
+
+131
+00:04:23.680 --> 00:04:27.600
+you're going to, you know, submit a
+
+132
+00:04:24.960 --> 00:04:29.600
+single PR. Uh, typically you you throw a
+
+133
+00:04:27.600 --> 00:04:32.000
+prompt at the agent. The agent works for
+
+134
+00:04:29.600 --> 00:04:33.280
+5 10 15 minutes on its own, hopefully
+
+135
+00:04:32.000 --> 00:04:35.680
+unsupervised, or maybe you're hitting
+
+136
+00:04:33.280 --> 00:04:37.120
+the the Y key with quad code. Uh, and
+
+137
+00:04:35.680 --> 00:04:38.639
+then it gets to the end of its task and
+
+138
+00:04:37.120 --> 00:04:40.320
+you review the output. Maybe, you know,
+
+139
+00:04:38.639 --> 00:04:42.160
+you're looking at a PR on GitHub or
+
+140
+00:04:40.320 --> 00:04:43.440
+you're looking at your diff and VS code.
+
+141
+00:04:42.160 --> 00:04:45.199
+Uh, and then you might accept that and
+
+142
+00:04:43.440 --> 00:04:46.639
+merge it or you might do another turn of
+
+143
+00:04:45.199 --> 00:04:48.400
+the loop, prompt the agent again, say,
+
+144
+00:04:46.639 --> 00:04:50.560
+"Hey, you you messed up on this part.
+
+145
+00:04:48.400 --> 00:04:53.280
+You know, try and redo it." Pretty
+
+146
+00:04:50.560 --> 00:04:55.040
+simple. simple development loop here.
+
+147
+00:04:53.280 --> 00:04:56.639
+Things get a little bit more complicated
+
+148
+00:04:55.040 --> 00:04:59.840
+when you've got multiple agents all
+
+149
+00:04:56.639 --> 00:05:02.320
+working in parallel. Um, typically this
+
+150
+00:04:59.840 --> 00:05:03.600
+workflow involves decomposing the tasks
+
+151
+00:05:02.320 --> 00:05:05.360
+to be accomplished. You know, say you're
+
+152
+00:05:03.600 --> 00:05:06.800
+you're migrating from Python 2 to Python
+
+153
+00:05:05.360 --> 00:05:08.000
+3. You might say, "Okay, I'm going to
+
+154
+00:05:06.800 --> 00:05:10.320
+start with this directory and then move
+
+155
+00:05:08.000 --> 00:05:11.360
+on to this directory." Um, you know,
+
+156
+00:05:10.320 --> 00:05:12.960
+you're going to break up this problem
+
+157
+00:05:11.360 --> 00:05:14.479
+into into individual tasks that can be
+
+158
+00:05:12.960 --> 00:05:16.479
+assigned out and and worked on in
+
+159
+00:05:14.479 --> 00:05:18.720
+parallel. Uh, then you're going to have
+
+160
+00:05:16.479 --> 00:05:19.919
+all these agents uh working on them. And
+
+161
+00:05:18.720 --> 00:05:21.520
+then at the end, you're going to try and
+
+162
+00:05:19.919 --> 00:05:23.600
+get all those results together in like a
+
+163
+00:05:21.520 --> 00:05:24.800
+single PR or merge into the main branch
+
+164
+00:05:23.600 --> 00:05:27.759
+al together so that you've got the
+
+165
+00:05:24.800 --> 00:05:28.960
+entire task done.
+
+166
+00:05:27.759 --> 00:05:30.800
+But there's still a pretty big
+
+167
+00:05:28.960 --> 00:05:32.880
+bottleneck here. You you're going to
+
+168
+00:05:30.800 --> 00:05:34.720
+need to review the code at each point in
+
+169
+00:05:32.880 --> 00:05:35.840
+the in the process, right? Uh for each
+
+170
+00:05:34.720 --> 00:05:37.440
+of those individual agents, you're going
+
+171
+00:05:35.840 --> 00:05:38.800
+to need to look at its output and make
+
+172
+00:05:37.440 --> 00:05:40.720
+sure that it did the right thing,
+
+173
+00:05:38.800 --> 00:05:43.039
+potentially prompt it again uh and
+
+174
+00:05:40.720 --> 00:05:44.560
+refine your strategy over time. uh you
+
+175
+00:05:43.039 --> 00:05:47.680
+can start to automate this with like
+
+176
+00:05:44.560 --> 00:05:49.280
+CI/CD um and having agents do do their
+
+177
+00:05:47.680 --> 00:05:51.440
+own code review. But at the end of the
+
+178
+00:05:49.280 --> 00:05:52.800
+day, like this is an important step in
+
+179
+00:05:51.440 --> 00:05:57.160
+the process is that you've got a human
+
+180
+00:05:52.800 --> 00:05:57.160
+being reviewing each agent's output.
+
+181
+00:05:57.360 --> 00:06:00.960
+Uh a quick kind of overview of what this
+
+182
+00:05:59.199 --> 00:06:04.000
+actually looks like in practice uh using
+
+183
+00:06:00.960 --> 00:06:05.840
+git. Um typically what I will do is I'll
+
+184
+00:06:04.000 --> 00:06:07.759
+start a new branch uh that's that's
+
+185
+00:06:05.840 --> 00:06:09.840
+going to be like my meta branch for all
+
+186
+00:06:07.759 --> 00:06:11.680
+the work that's being done here. Um,
+
+187
+00:06:09.840 --> 00:06:13.759
+I'll usually add some kind of high level
+
+188
+00:06:11.680 --> 00:06:15.680
+context there. Uh, usually checked into
+
+189
+00:06:13.759 --> 00:06:16.960
+the branch either in agents.mmd or with
+
+190
+00:06:15.680 --> 00:06:19.520
+open hands. We have this concept of
+
+191
+00:06:16.960 --> 00:06:21.199
+microaggents that can be checked in. Um,
+
+192
+00:06:19.520 --> 00:06:22.479
+and then that's kind of in place for all
+
+193
+00:06:21.199 --> 00:06:24.560
+the agents that I'm going to kick off on
+
+194
+00:06:22.479 --> 00:06:26.160
+this branch. Uh, I'll often put some
+
+195
+00:06:24.560 --> 00:06:28.160
+scaffolding in place. This is a really
+
+196
+00:06:26.160 --> 00:06:30.639
+simple example of using like a V1 and V0
+
+197
+00:06:28.160 --> 00:06:32.160
+directory, but um, sometimes I might if
+
+198
+00:06:30.639 --> 00:06:34.000
+I'm like migrating state systems in
+
+199
+00:06:32.160 --> 00:06:35.360
+React, I might put in some scaffold that
+
+200
+00:06:34.000 --> 00:06:37.280
+allows me to live in both worlds at
+
+201
+00:06:35.360 --> 00:06:38.639
+once. Uh, and then you kind of set off
+
+202
+00:06:37.280 --> 00:06:41.280
+these agents, right? You break down the
+
+203
+00:06:38.639 --> 00:06:42.720
+task into uh multiple different parts.
+
+204
+00:06:41.280 --> 00:06:44.319
+You send off each agent maybe on a
+
+205
+00:06:42.720 --> 00:06:45.600
+different directory or a different
+
+206
+00:06:44.319 --> 00:06:46.560
+component, a different part of the
+
+207
+00:06:45.600 --> 00:06:48.880
+problem that they can work on
+
+208
+00:06:46.560 --> 00:06:50.400
+independently. Uh and then at the end
+
+209
+00:06:48.880 --> 00:06:51.759
+you can rip out the scaffolding, get
+
+210
+00:06:50.400 --> 00:06:55.039
+everything merged together and get it
+
+211
+00:06:51.759 --> 00:06:57.120
+merged into domain.
+
+212
+00:06:55.039 --> 00:07:00.960
+Uh task decomposition is a big important
+
+213
+00:06:57.120 --> 00:07:02.639
+part of this. Um figuring out how to uh
+
+214
+00:07:00.960 --> 00:07:05.199
+break down your goal into things that
+
+215
+00:07:02.639 --> 00:07:06.880
+each each agent can actually accomplish
+
+216
+00:07:05.199 --> 00:07:08.800
+uh can be really difficult and sometimes
+
+217
+00:07:06.880 --> 00:07:10.400
+takes some iteration. Uh but you're
+
+218
+00:07:08.800 --> 00:07:12.800
+generally looking for something that an
+
+219
+00:07:10.400 --> 00:07:15.360
+agent will be able to oneshot or get
+
+220
+00:07:12.800 --> 00:07:16.800
+close to oneshotting. Um things that can
+
+221
+00:07:15.360 --> 00:07:18.960
+be done in a single commit or at least a
+
+222
+00:07:16.800 --> 00:07:20.319
+single pull request. Uh and in
+
+223
+00:07:18.960 --> 00:07:22.800
+particular, you want things that you can
+
+224
+00:07:20.319 --> 00:07:23.919
+verify very quickly and easily. Um you
+
+225
+00:07:22.800 --> 00:07:26.000
+want to be pretty confident that if
+
+226
+00:07:23.919 --> 00:07:27.520
+CI/CD is passing, the agent's done the
+
+227
+00:07:26.000 --> 00:07:29.120
+thing. uh or that you can like click
+
+228
+00:07:27.520 --> 00:07:31.840
+around in the UI and verify that it's
+
+229
+00:07:29.120 --> 00:07:34.160
+actually done.
+
+230
+00:07:31.840 --> 00:07:37.360
+Um I'm not going to go uh for the sake
+
+231
+00:07:34.160 --> 00:07:38.800
+of time into into these too much, but um
+
+232
+00:07:37.360 --> 00:07:40.960
+uh you might go like piece by piece
+
+233
+00:07:38.800 --> 00:07:43.120
+here. You might just say file by file or
+
+234
+00:07:40.960 --> 00:07:45.199
+directory by directory.
+
+235
+00:07:43.120 --> 00:07:47.120
+Uh you might uh pull out a whole
+
+236
+00:07:45.199 --> 00:07:48.400
+dependency tree and try to work on the
+
+237
+00:07:47.120 --> 00:07:50.479
+things that have the fewest dependencies
+
+238
+00:07:48.400 --> 00:07:52.080
+first. U so you might do like your
+
+239
+00:07:50.479 --> 00:07:53.680
+utility files first and then you know
+
+240
+00:07:52.080 --> 00:07:55.680
+some middle middle parts and then like
+
+241
+00:07:53.680 --> 00:07:58.000
+finally come down to your your main.py
+
+242
+00:07:55.680 --> 00:07:59.759
+Pi
+
+243
+00:07:58.000 --> 00:08:01.280
+uh and you might do this like scaffold
+
+244
+00:07:59.759 --> 00:08:03.759
+uh and iterate process that I mentioned
+
+245
+00:08:01.280 --> 00:08:05.520
+earlier like um you know I I had one
+
+246
+00:08:03.759 --> 00:08:07.520
+task where I was migrating state
+
+247
+00:08:05.520 --> 00:08:09.120
+management systems in React. I set up a
+
+248
+00:08:07.520 --> 00:08:11.120
+scaffold that would allow me to use both
+
+249
+00:08:09.120 --> 00:08:12.479
+state management systems in parallel uh
+
+250
+00:08:11.120 --> 00:08:14.400
+so that the test would continue to pass
+
+251
+00:08:12.479 --> 00:08:16.560
+as I migrated component by component.
+
+252
+00:08:14.400 --> 00:08:18.319
+Once I got all the components migrated
+
+253
+00:08:16.560 --> 00:08:19.599
+uh then I ripped out the scaffolding and
+
+254
+00:08:18.319 --> 00:08:23.199
+just was living in the new world with
+
+255
+00:08:19.599 --> 00:08:25.039
+the new state management system.
+
+256
+00:08:23.199 --> 00:08:27.440
+Uh another big problem here is concrete.
+
+257
+00:08:25.039 --> 00:08:29.039
+So these agents are going to learn as um
+
+258
+00:08:27.440 --> 00:08:30.319
+you know one one naive approach here
+
+259
+00:08:29.039 --> 00:08:31.840
+would be to just share everything. Maybe
+
+260
+00:08:30.319 --> 00:08:34.240
+you've got one agent that's that's doing
+
+261
+00:08:31.840 --> 00:08:35.680
+everything itself iteratively um or each
+
+262
+00:08:34.240 --> 00:08:39.200
+agent can see every other agents
+
+263
+00:08:35.680 --> 00:08:41.360
+history. Uh but this is you know very uh
+
+264
+00:08:39.200 --> 00:08:42.479
+kind of heavy weight. It's it's too much
+
+265
+00:08:41.360 --> 00:08:44.480
+information to throw out all these
+
+266
+00:08:42.479 --> 00:08:45.920
+agents. Um you're a going to get very
+
+267
+00:08:44.480 --> 00:08:47.839
+confused very quickly about what's going
+
+268
+00:08:45.920 --> 00:08:51.519
+on.
+
+269
+00:08:47.839 --> 00:08:52.880
+Uh a more um uh typical approach I would
+
+270
+00:08:51.519 --> 00:08:54.320
+say is that a human being is passing
+
+271
+00:08:52.880 --> 00:08:57.440
+context to these agents. So if you see
+
+272
+00:08:54.320 --> 00:08:59.600
+agent A struggling with uh you know a
+
+273
+00:08:57.440 --> 00:09:00.959
+particular library that's being updated
+
+274
+00:08:59.600 --> 00:09:02.240
+uh you might say okay I figured that
+
+275
+00:09:00.959 --> 00:09:05.360
+out. I'm now going to tell all the other
+
+276
+00:09:02.240 --> 00:09:07.120
+agents don't use that library. Um you
+
+277
+00:09:05.360 --> 00:09:08.640
+could also manually modify one of these
+
+278
+00:09:07.120 --> 00:09:11.760
+files that's being checked in your
+
+279
+00:09:08.640 --> 00:09:14.720
+agents.md or an openance micro agent to
+
+280
+00:09:11.760 --> 00:09:16.399
+encode that knowledge. Um downsides here
+
+281
+00:09:14.720 --> 00:09:18.399
+are that it involves you like manually
+
+282
+00:09:16.399 --> 00:09:20.480
+intervening. uh you have to like watch
+
+283
+00:09:18.399 --> 00:09:21.839
+these agents and like identify oh that's
+
+284
+00:09:20.480 --> 00:09:23.279
+a that's a lesson that was learned and
+
+285
+00:09:21.839 --> 00:09:25.120
+now I can propagate that to the other
+
+286
+00:09:23.279 --> 00:09:27.680
+agents.
+
+287
+00:09:25.120 --> 00:09:29.279
+So the uh uh another another more
+
+288
+00:09:27.680 --> 00:09:31.760
+automated way would be to have a shared
+
+289
+00:09:29.279 --> 00:09:34.080
+file like this agents.mmd uh tell the
+
+290
+00:09:31.760 --> 00:09:37.600
+agents to like put new information into
+
+291
+00:09:34.080 --> 00:09:39.200
+that file, check it in. Uh downsides are
+
+292
+00:09:37.600 --> 00:09:40.720
+like the automation causes agents to
+
+293
+00:09:39.200 --> 00:09:41.839
+sometimes learn on important things. So
+
+294
+00:09:40.720 --> 00:09:44.399
+there's there's a bit of a trade-off
+
+295
+00:09:41.839 --> 00:09:45.839
+here. Uh when you're the gate, uh you
+
+296
+00:09:44.399 --> 00:09:48.000
+can make sure that they're only learning
+
+297
+00:09:45.839 --> 00:09:50.240
+important things.
+
+298
+00:09:48.000 --> 00:09:53.519
+Um, and then a more uh kind of
+
+299
+00:09:50.240 --> 00:09:55.040
+future-looking uh piece here would be to
+
+300
+00:09:53.519 --> 00:09:57.120
+allow the agents to actually pass
+
+301
+00:09:55.040 --> 00:09:58.560
+messages to each other. U so you can
+
+302
+00:09:57.120 --> 00:10:00.000
+actually give them each a tool that
+
+303
+00:09:58.560 --> 00:10:01.519
+allows them to send messages into the
+
+304
+00:10:00.000 --> 00:10:03.920
+other agents and say, "Hey, you know, I
+
+305
+00:10:01.519 --> 00:10:06.320
+learned, you know, library version 1.2.3
+
+306
+00:10:03.920 --> 00:10:08.000
+doesn't work well. Upgrade to 1.2.4."
+
+307
+00:10:06.320 --> 00:10:10.000
+Um, they can broadcast to all the other
+
+308
+00:10:08.000 --> 00:10:13.600
+agents. Um, and you can see a quick
+
+309
+00:10:10.000 --> 00:10:14.959
+example here using the open hands SDK.
+
+310
+00:10:13.600 --> 00:10:16.160
+Uh, that's all I've got for now, but
+
+311
+00:10:14.959 --> 00:10:17.220
+would love any questions that you'all
+
+312
+00:10:16.160 --> 00:10:23.470
+have.
+
+313
+00:10:17.220 --> 00:10:23.470
+[Applause]
+
+314
+00:10:25.360 --> 00:10:30.959
+Thank you so much. You mentioned context
+
+315
+00:10:27.680 --> 00:10:33.040
+window increasing and I found that this
+
+316
+00:10:30.959 --> 00:10:34.959
+was not a very strong trend. I mean if
+
+317
+00:10:33.040 --> 00:10:36.959
+you take Eric Schmid predicting and
+
+318
+00:10:34.959 --> 00:10:41.920
+limited context windows by the end of
+
+319
+00:10:36.959 --> 00:10:44.320
+24. Uh do you am I wrong? Is it actually
+
+320
+00:10:41.920 --> 00:10:46.640
+happening or or is that something that
+
+321
+00:10:44.320 --> 00:10:48.399
+will take a lot more time? Yeah, it it
+
+322
+00:10:46.640 --> 00:10:50.240
+see
+
+323
+00:10:48.399 --> 00:10:53.600
+that is probably the the like least
+
+324
+00:10:50.240 --> 00:10:56.560
+helpful as agents evolve here. Um it
+
+325
+00:10:53.600 --> 00:10:59.360
+does seem uh like even when you do get
+
+326
+00:10:56.560 --> 00:11:01.200
+the bigger context windows, uh the
+
+327
+00:10:59.360 --> 00:11:02.720
+agents the more context you throw at
+
+328
+00:11:01.200 --> 00:11:04.720
+them, the more confused they get, right?
+
+329
+00:11:02.720 --> 00:11:07.200
+So even then makes sense to cut out
+
+330
+00:11:04.720 --> 00:11:09.200
+unnecessary context as much as possible.
+
+331
+00:11:07.200 --> 00:11:12.160
+So when you're doing very large scale
+
+332
+00:11:09.200 --> 00:11:15.360
+tasks like this, a lot of times the the
+
+333
+00:11:12.160 --> 00:11:17.279
+best strategy is to make sure that um uh
+
+334
+00:11:15.360 --> 00:11:18.959
+each agent is only seeing the context
+
+335
+00:11:17.279 --> 00:11:20.959
+that is important for this particular
+
+336
+00:11:18.959 --> 00:11:22.880
+part of the task, right? Um even if you
+
+337
+00:11:20.959 --> 00:11:24.240
+have an infinite context window, if
+
+338
+00:11:22.880 --> 00:11:26.160
+you're throwing, you know, everything
+
+339
+00:11:24.240 --> 00:11:28.800
+that's been done in this this refactor
+
+340
+00:11:26.160 --> 00:11:30.640
+at an agent, it's going to like have to
+
+341
+00:11:28.800 --> 00:11:32.320
+pick through needles, find find the
+
+342
+00:11:30.640 --> 00:11:34.480
+needle hack to find the information
+
+343
+00:11:32.320 --> 00:11:36.399
+actually needs to push on it particular
+
+344
+00:11:34.480 --> 00:11:38.880
+part of the task. So that's a very small
+
+345
+00:11:36.399 --> 00:11:42.120
+piece of of uh you know things getting
+
+346
+00:11:38.880 --> 00:11:42.120
+better here.
+
+347
+00:11:50.480 --> 00:11:54.480
+&gt;&gt; Thank you for the great talk. Um very
+
+348
+00:11:52.320 --> 00:11:56.959
+inspiring. um on your last slide for the
+
+349
+00:11:54.480 --> 00:11:59.760
+message passing I've never never
+
+350
+00:11:56.959 --> 00:12:02.399
+incurred to me um of of like telling my
+
+351
+00:11:59.760 --> 00:12:05.440
+agents that they took uh talk to have
+
+352
+00:12:02.399 --> 00:12:08.000
+messages sending uh to each other. Um,
+
+353
+00:12:05.440 --> 00:12:10.480
+is there like the way that I would
+
+354
+00:12:08.000 --> 00:12:13.600
+imagining them and I'm sorry I'm using
+
+355
+00:12:10.480 --> 00:12:15.440
+claw code but uh um then then I'm I'm
+
+356
+00:12:13.600 --> 00:12:17.040
+writing messages so I'm kind of like in
+
+357
+00:12:15.440 --> 00:12:19.040
+the middle of kind of like interrupting
+
+358
+00:12:17.040 --> 00:12:22.079
+sending them almost is is that the same
+
+359
+00:12:19.040 --> 00:12:24.560
+thing? And to that question is is the
+
+360
+00:12:22.079 --> 00:12:26.959
+the receiving end kind of like opening
+
+361
+00:12:24.560 --> 00:12:29.600
+up like a special channel kind of like
+
+362
+00:12:26.959 --> 00:12:31.920
+okay when there's output information I
+
+363
+00:12:29.600 --> 00:12:34.079
+stop and maybe rewind or something is
+
+364
+00:12:31.920 --> 00:12:36.399
+like something special logic in there or
+
+365
+00:12:34.079 --> 00:12:38.240
+are we basically just like throwing more
+
+366
+00:12:36.399 --> 00:12:40.160
+information in a running agent?
+
+367
+00:12:38.240 --> 00:12:41.279
+&gt;&gt; Yeah. So um in this particular example
+
+368
+00:12:40.160 --> 00:12:42.800
+we're basically just throwing more
+
+369
+00:12:41.279 --> 00:12:44.480
+information into the into the context
+
+370
+00:12:42.800 --> 00:12:46.000
+window in the same way that you might
+
+371
+00:12:44.480 --> 00:12:47.680
+just type something into the chat window
+
+372
+00:12:46.000 --> 00:12:49.200
+and say you know don't use version
+
+373
+00:12:47.680 --> 00:12:52.079
+one.2.3.
+
+374
+00:12:49.200 --> 00:12:53.839
+Um I have seen an implementation too
+
+375
+00:12:52.079 --> 00:12:55.200
+where the agent had a like receive
+
+376
+00:12:53.839 --> 00:12:57.920
+messages call and there was like a
+
+377
+00:12:55.200 --> 00:13:01.040
+messages stack in the middle. Uh to be
+
+378
+00:12:57.920 --> 00:13:03.360
+clear I have not seen this uh
+
+379
+00:13:01.040 --> 00:13:06.079
+productionized very well like just it's
+
+380
+00:13:03.360 --> 00:13:08.000
+still very experimental. Um but I think
+
+381
+00:13:06.079 --> 00:13:09.360
+I think both are potentially potentially
+
+382
+00:13:08.000 --> 00:13:11.680
+good options. One where the agent has to
+
+383
+00:13:09.360 --> 00:13:13.040
+pull information in and one where uh
+
+384
+00:13:11.680 --> 00:13:15.360
+it's getting that that new information
+
+385
+00:13:13.040 --> 00:13:19.440
+thrown at it. Uh but it is nice that it
+
+386
+00:13:15.360 --> 00:13:22.079
+doesn't have to um uh
+
+387
+00:13:19.440 --> 00:13:25.600
+you know a lot of times some something
+
+388
+00:13:22.079 --> 00:13:26.959
+will be learned in the process here that
+
+389
+00:13:25.600 --> 00:13:28.240
+the agent's not going to think oh
+
+390
+00:13:26.959 --> 00:13:29.760
+somebody else might have discovered this
+
+391
+00:13:28.240 --> 00:13:31.120
+problem already. It's just to kind of
+
+392
+00:13:29.760 --> 00:13:33.200
+push information at the agent
+
+393
+00:13:31.120 --> 00:13:34.399
+&gt;&gt; and make that explicit that that change
+
+394
+00:13:33.200 --> 00:13:34.959
+of information. Yeah
+
+395
+00:13:34.399 --> 00:13:38.360
+&gt;&gt; exactly.
+
+396
+00:13:34.959 --> 00:13:38.360
+&gt;&gt; Yeah. Thanks.
+
+397
+00:13:43.440 --> 00:13:49.360
+Thank you for the talk. Um those the
+
+398
+00:13:46.560 --> 00:13:52.959
+tasks you are addressing here are pretty
+
+399
+00:13:49.360 --> 00:13:54.560
+advanced. Uh and on the other hand I I
+
+400
+00:13:52.959 --> 00:13:57.040
+I've heard about your company because
+
+401
+00:13:54.560 --> 00:14:01.680
+you are one of the leaders of three pen
+
+402
+00:13:57.040 --> 00:14:03.199
+verified. Uh congrats for that. Um but I
+
+403
+00:14:01.680 --> 00:14:06.160
+don't think that benchmarks currently
+
+404
+00:14:03.199 --> 00:14:08.399
+are are good way to evaluate this kind
+
+405
+00:14:06.160 --> 00:14:10.240
+of task because they are just basically
+
+406
+00:14:08.399 --> 00:14:13.440
+too complex too much human in the loop
+
+407
+00:14:10.240 --> 00:14:15.519
+involvement. What is your way to assess
+
+408
+00:14:13.440 --> 00:14:18.480
+your the current performance of open
+
+409
+00:14:15.519 --> 00:14:20.560
+hands and what is for this kind of task
+
+410
+00:14:18.480 --> 00:14:22.320
+what is the the current relevant
+
+411
+00:14:20.560 --> 00:14:23.279
+benchmark or the most relevant
+
+412
+00:14:22.320 --> 00:14:24.639
+benchmark?
+
+413
+00:14:23.279 --> 00:14:26.639
+&gt;&gt; Yeah, this is something we're actively
+
+414
+00:14:24.639 --> 00:14:28.160
+working on. Um, you know, we actually
+
+415
+00:14:26.639 --> 00:14:30.639
+put one of our researchers on
+
+416
+00:14:28.160 --> 00:14:32.240
+specifically this problem. Uh, and he
+
+417
+00:14:30.639 --> 00:14:33.920
+has been reviewing the literature a
+
+418
+00:14:32.240 --> 00:14:35.600
+bunch. There's really no benchmarks for
+
+419
+00:14:33.920 --> 00:14:37.279
+these very large tasks because they're
+
+420
+00:14:35.600 --> 00:14:38.959
+not entirely automatable. You need a
+
+421
+00:14:37.279 --> 00:14:41.040
+human in the loop. If you're going to
+
+422
+00:14:38.959 --> 00:14:44.000
+say migrate a codebase from Python 2 to
+
+423
+00:14:41.040 --> 00:14:45.440
+Python 3 or working on Spark 2 to three
+
+424
+00:14:44.000 --> 00:14:46.959
+migrations that go all the Java
+
+425
+00:14:45.440 --> 00:14:48.399
+transformations, if you look at the
+
+426
+00:14:46.959 --> 00:14:51.680
+papers, they all focus on a single
+
+427
+00:14:48.399 --> 00:14:53.360
+codebase. And it's always a um uh a
+
+428
+00:14:51.680 --> 00:14:55.279
+review of like what it took to get
+
+429
+00:14:53.360 --> 00:14:57.760
+agents to automate most of this task
+
+430
+00:14:55.279 --> 00:14:59.360
+with a human thinking about it and using
+
+431
+00:14:57.760 --> 00:15:01.839
+their own intuition for the codebase
+
+432
+00:14:59.360 --> 00:15:03.519
+etc. So uh to some degree it's like it's
+
+433
+00:15:01.839 --> 00:15:05.360
+it's based on vibes like are we getting
+
+434
+00:15:03.519 --> 00:15:08.399
+better at these sorts of tasks over time
+
+435
+00:15:05.360 --> 00:15:10.480
+by using these different strategies. Um
+
+436
+00:15:08.399 --> 00:15:12.800
+I could see having a benchmark that is a
+
+437
+00:15:10.480 --> 00:15:14.240
+little bit more uh human oriented like
+
+438
+00:15:12.800 --> 00:15:16.399
+you give the task to a human and see how
+
+439
+00:15:14.240 --> 00:15:18.240
+much they can get done after uh doing
+
+440
+00:15:16.399 --> 00:15:20.079
+some training and then you know working
+
+441
+00:15:18.240 --> 00:15:21.440
+with agents. Uh but it's a very hard
+
+442
+00:15:20.079 --> 00:15:25.560
+thing to measure in that sort of pure
+
+443
+00:15:21.440 --> 00:15:25.560
+way that we measure tasks.
+
+444
+00:15:27.519 --> 00:15:31.519
+&gt;&gt; Um I'm trying to be really quick. Um
+
+445
+00:15:30.000 --> 00:15:34.079
+actually there's a benchmark that was
+
+446
+00:15:31.519 --> 00:15:37.519
+released yesterday by SCI that probably
+
+447
+00:15:34.079 --> 00:15:40.000
+address what you mentioned.
+
+448
+00:15:37.519 --> 00:15:42.240
+It looks very interesting. Um, two quick
+
+449
+00:15:40.000 --> 00:15:44.320
+question. The first one is do you use
+
+450
+00:15:42.240 --> 00:15:46.160
+open hands to develop open hands?
+
+451
+00:15:44.320 --> 00:15:47.839
+&gt;&gt; Yeah, I think uh close to half the
+
+452
+00:15:46.160 --> 00:15:51.199
+commits open hands now are done by open
+
+453
+00:15:47.839 --> 00:15:53.360
+hands. Um, and second question
+
+454
+00:15:51.199 --> 00:15:55.360
+specifically for display is it something
+
+455
+00:15:53.360 --> 00:15:57.759
+that is completely custom to open hands
+
+456
+00:15:55.360 --> 00:16:00.480
+or are you trying to implement agent
+
+457
+00:15:57.759 --> 00:16:02.880
+rings? Oh, we we are looking at each
+
+458
+00:16:00.480 --> 00:16:04.240
+agent specifically. Uh the SDK is
+
+459
+00:16:02.880 --> 00:16:08.320
+something that we're actively working
+
+460
+00:16:04.240 --> 00:16:09.759
+on. Uh and we're thinking about um uh
+
+461
+00:16:08.320 --> 00:16:12.560
+how do we implement either something
+
+462
+00:16:09.759 --> 00:16:14.880
+like this is totally custom or an A2A
+
+463
+00:16:12.560 --> 00:16:18.040
+more framework.
+
+464
+00:16:14.880 --> 00:16:18.040
+&gt;&gt; Thank you.
+
+465
+00:16:18.639 --> 00:16:22.959
+&gt;&gt; I had one more question about the
+
+466
+00:16:20.959 --> 00:16:26.160
+context sharing. So you were talking
+
+467
+00:16:22.959 --> 00:16:27.519
+about like you could give a file or the
+
+468
+00:16:26.160 --> 00:16:29.920
+human could determine what's best.
+
+469
+00:16:27.519 --> 00:16:31.920
+Couldn't a agent be developed
+
+470
+00:16:29.920 --> 00:16:33.519
+specifically for contact sharing and
+
+471
+00:16:31.920 --> 00:16:35.360
+then they understand what happens and
+
+472
+00:16:33.519 --> 00:16:37.920
+then they have the full context and
+
+473
+00:16:35.360 --> 00:16:39.199
+determine what is given to an agent.
+
+474
+00:16:37.920 --> 00:16:41.600
+That that could be a really neat one
+
+475
+00:16:39.199 --> 00:16:43.040
+where you just have each one looking at
+
+476
+00:16:41.600 --> 00:16:46.959
+one agent looking at what every other
+
+477
+00:16:43.040 --> 00:16:49.519
+agent's doing. If I go back to my uh
+
+478
+00:16:46.959 --> 00:16:51.519
+timeline slide,
+
+479
+00:16:49.519 --> 00:16:53.519
+I will put it as an open question. What
+
+480
+00:16:51.519 --> 00:16:57.920
+happens in 2026? But I think manager
+
+481
+00:16:53.519 --> 00:17:01.639
+agents are going to be more of a thing.
+
+482
+00:16:57.920 --> 00:17:01.639
+You got one in the back.
+
+483
+00:17:02.079 --> 00:17:05.079
+&gt;&gt; Yeah.
+
+484
+00:17:07.520 --> 00:17:12.160
+&gt;&gt; You mentioned uh at the end there about
+
+485
+00:17:10.000 --> 00:17:13.600
+how agents can share their knowledge.
+
+486
+00:17:12.160 --> 00:17:16.319
+How do you define the knowledge? How do
+
+487
+00:17:13.600 --> 00:17:17.679
+you define a learning? What how would it
+
+488
+00:17:16.319 --> 00:17:19.919
+get back and shared?
+
+489
+00:17:17.679 --> 00:17:21.679
+&gt;&gt; It's a good question. Uh you know when
+
+490
+00:17:19.919 --> 00:17:23.120
+you as a human see it, you know it,
+
+491
+00:17:21.679 --> 00:17:24.319
+right? You see, you know, I've seen
+
+492
+00:17:23.120 --> 00:17:26.079
+three different agents struggle with
+
+493
+00:17:24.319 --> 00:17:28.079
+this one part of the task. If I just add
+
+494
+00:17:26.079 --> 00:17:31.280
+this two sentences the prompt, they'll
+
+495
+00:17:28.079 --> 00:17:34.720
+figure it out much faster. U I would say
+
+496
+00:17:31.280 --> 00:17:36.320
+agents are iffy on recognizing uh when
+
+497
+00:17:34.720 --> 00:17:38.559
+something is like you know worthy of
+
+498
+00:17:36.320 --> 00:17:40.640
+being shared or not. Uh so sometimes it
+
+499
+00:17:38.559 --> 00:17:42.480
+is nice to have a human in that loop and
+
+500
+00:17:40.640 --> 00:17:44.960
+uh deciding what what learnings are
+
+501
+00:17:42.480 --> 00:17:47.280
+going to go in. Um you can have it set
+
+502
+00:17:44.960 --> 00:17:49.600
+up so that like the agents are like
+
+503
+00:17:47.280 --> 00:17:51.760
+making PRs back to the agents.mmd or to
+
+504
+00:17:49.600 --> 00:17:52.960
+a micro agent saying um you know here's
+
+505
+00:17:51.760 --> 00:17:54.960
+what I want to add to the context
+
+506
+00:17:52.960 --> 00:17:58.080
+window. Um, and then you can either
+
+507
+00:17:54.960 --> 00:17:59.840
+approve or deny. Um, they tend to be a
+
+508
+00:17:58.080 --> 00:18:01.280
+little bit too trigger happy with like,
+
+509
+00:17:59.840 --> 00:18:02.640
+oh, I learned a new thing. I put it in
+
+510
+00:18:01.280 --> 00:18:05.640
+here. I learned a new thing. Put it in
+
+511
+00:18:02.640 --> 00:18:05.640
+here.
+
+512
+00:18:11.120 --> 00:18:15.240
+&gt;&gt; Thank you. Thank you.
+
+513
+00:18:16.940 --> 00:18:20.180
+[Applause]

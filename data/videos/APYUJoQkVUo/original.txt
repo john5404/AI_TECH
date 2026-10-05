@@ -1,0 +1,1192 @@
+[00:00:00.000] Two weekends ago we had quite a busy Friday, and the Dark Factory
+[00:00:03.600] ended up shipping 150 PRs for the two of us over the course of the weekend.
+[00:00:07.560] And that was just while we were out hanging about,
+[00:00:09.560] enjoying London in the heatwave
+[00:00:11.120] Last time I looked, I think about only 5% of the Dark Factory
+[00:00:14.760] code base had ever had a human look at the PR and to prove it,
+[00:00:18.160] I don't think people actually go
+[00:00:19.400] look at code anymore because they're all just using agents.
+[00:00:21.560] And so that means, by implication, 95% of our code
+[00:00:24.600] base has never had a human look at it.
+[00:00:28.000] The AI Native Dev is a podcast for developers and engineering
+[00:00:31.280] leads at the cutting edge of AI and agentic coding.
+[00:00:34.600] Join your hosts, Guy Podjarny and me, Simon Maple,
+[00:00:37.600] every week as we chat with the most exciting voices in
+[00:00:40.800] AI and tackle the biggest questions facing developers today.
+[00:00:45.200] This is the AI Native Dev.
+[00:00:50.560] We just
+[00:00:50.960] wrapped up two amazing days at AI Dev Con in London.
+[00:00:54.160] But the great thing is that
+[00:00:55.240] we get to do it all over again in New York City this November.
+[00:00:59.080] You're absolutely right.
+[00:01:00.200] We're going to be back in the City that never sleeps on November 3rd and
+[00:01:04.080] fourth for more amazing sessions, really engaging hands on workshops and much more.
+[00:01:09.480] Yeah, all that great networking, partying, eating and
+[00:01:12.520] drinking that you've come to expect from AI Dev Con.
+[00:01:15.520] We think we have one of the best hallway tracks from the business,
+[00:01:18.520] and it's the perfect complement to our incredible speakers and presenters.
+[00:01:23.000] We'll both be in person and virtual,
+[00:01:25.120] with live streamed access to all mainstage keynotes and talks.
+[00:01:28.960] Sign up right now for our Super Blind Bird ticket for just $100.
+[00:01:32.680] Only available for a limited time.
+[00:01:34.840] We're really excited to be headed back to the Big Apple, and we hope
+[00:01:38.520] to see you all that.
+[00:01:42.760] That's your first test.
+[00:01:44.920] Hello, and welcome to another episode of the AI Native Dev.
+[00:01:48.760] Did you know that last week alone, Tessl raised 516 pull requests,
+[00:01:54.800] and the whole company was at a week long offsite.
+[00:01:58.280] The week before, we seemed to raise only 608, so only 90 or so more.
+[00:02:05.040] How do we do this?
+[00:02:06.000] It's all about the usage of software factories and the Dark Factory.
+[00:02:10.520] Joining me is Rob Willoughby, who is the AI engineering lead at Tessl.
+[00:02:15.640] And Rob's going to tell us all about how Tessl uses dark
+[00:02:20.000] factories and software factories internally to create such amazing numbers.
+[00:02:24.720] Rob, welcome. How are you?
+[00:02:26.080] Thank you. Thank you. Doing well.
+[00:02:27.800] And first time on the Dev podcast.
+[00:02:29.640] It is first time on a podcast.
+[00:02:30.920] All right. We have to do the induction unfortunately.
+[00:02:33.440] So no, there's no induction. Yeah.
+[00:02:35.560] I was thinking of making something up then, but.
+[00:02:37.800] Yeah. You didn't tell you that.
+[00:02:39.440] So, Rob, first of all, tell us a little bit about what you do at Tessl.
+[00:02:43.400] Yeah.
+[00:02:43.680] So I run the engineering team here, which is part of the team
+[00:02:47.080] that kind of broadly is looking at agents enablement kind of across Tessl.
+[00:02:50.600] And so what our mandate is, is really to build and then drive adoption
+[00:02:54.120] of a dark software factory internally that we use for kind of two main reasons.
+[00:02:58.520] One is to improve our own engineering velocity.
+[00:03:00.840] We want to ship faster, ship more, ship higher quality
+[00:03:03.400] stuff, be able to use agents better, but then also additionally,
+[00:03:07.280] we use that as a testing ground for our own thesis and hypotheses
+[00:03:11.200] about how to effectively run a factory.
+[00:03:13.320] We want to be able to take the learnings from there
+[00:03:15.640] and put those into our products, that we can
+[00:03:17.600] then go help other companies bring along on the adoption curve
+[00:03:20.600] as they start to build these factories internally for themselves.
+[00:03:24.000] So let's these numbers are they seem crazy, right?
+[00:03:27.640] Every time I talk to people and say even a few hundred pull requests for,
+[00:03:32.960] you know, not a huge team, not a small team, but,
+[00:03:35.240] you know, a reasonable size team, people are surprised.
+[00:03:38.160] They're like, how do you deal with that?
+[00:03:39.480] How do we deal with things like, you know,
+[00:03:42.600] code reviews and the human interaction and things like that?
+[00:03:45.400] We'll cover a lot of this.
+[00:03:46.360] And actually, during this podcast,
+[00:03:47.720] we're going to talk about how Tessl adopted a Dark Factory.
+[00:03:52.600] What were the sticking points, what worked,
+[00:03:54.360] what didn't work, how we overcame them.
+[00:03:56.320] But for now, let's actually take a look at
+[00:03:58.240] what a good interaction looks like through the Dark Factory.
+[00:04:01.240] Let's now go through a full end to end test of two pull requests, one
+[00:04:06.320] which requires human interaction and the other which will go end to end
+[00:04:09.960] without human interaction,
+[00:04:11.120] starting from a linear ticket all the way through to a completed pull request.
+[00:04:15.120] So this ticket is one that I prep beforehand,
+[00:04:18.440] which has to deal with
+[00:04:19.560] some findings from an audit we did where we can accidentally allow
+[00:04:23.320] data from GitHub repos, inject
+[00:04:27.080] commands into the Tessl agent commands that we are showing on the website.
+[00:04:30.320] That just has to do with string escaping and all that kind of stuff.
+[00:04:32.880] So relatively simple fix, but security important.
+[00:04:36.440] This is going to be touching what shows on our website.
+[00:04:39.040] So will require a human PR review in order to land.
+[00:04:42.840] All I've got to do is I've got this ticket prepped saying it's in apps front end.
+[00:04:46.680] So that's our front end, obviously.
+[00:04:48.600] And then I'm going to flip it into to do because it's been delegated
+[00:04:51.600] to the Dark Factory.
+[00:04:52.640] That means that the Dark Factory is going to pick it
+[00:04:54.320] and go do this implementation for me.
+[00:04:56.280] So that's kicking off the Dark Factory.
+[00:04:57.880] Just pulling that into it to do the Dark Factory recognizes
+[00:05:00.600] there's a hand over there,
+[00:05:01.920] and it kicks off a new container where it can kind of like do.
+[00:05:04.920] All that. And so now I'm hands off at this point.
+[00:05:07.720] The second ticket is one that is targeting or Dark Factory itself.
+[00:05:11.160] Kikimora.
+[00:05:12.520] That's just our own internal name for it.
+[00:05:14.240] This is another one that is around expanding at our metrics.
+[00:05:18.360] We aren't actually capturing which inference geo
+[00:05:21.360] where we're running these queries against,
+[00:05:23.160] which means that we're not able to properly analyze
+[00:05:25.400] the effects of caching because our request could go across any different GEOs,
+[00:05:29.240] which then affects cache rates and also cost overall.
+[00:05:33.120] So because this is within our own Dark Factory,
+[00:05:36.240] we have a policy of auto merging everything.
+[00:05:38.800] Because if we can't auto merge it,
+[00:05:40.520] that means that we don't have the verification in place
+[00:05:43.360] to have confidence in the process of writing code or building code.
+[00:05:46.840] So you can see that this auto merge label is down here.
+[00:05:50.000] This means that as soon as the dark factory is done
+[00:05:51.800] creating, it will go through PR cycle process using bots.
+[00:05:54.960] Of course, no human intervention here, and then we'll get auto merged
+[00:05:58.600] into the repo once all of CI passes and once our review agents approve it.
+[00:06:03.120] So I'm going to flip that into to do.
+[00:06:04.600] And we'll check back in on this one at the end of the podcast.
+[00:06:07.200] Amazing.
+[00:06:07.640] And the fact that that is set to auto merge,
+[00:06:10.600] if that wasn't there, presumably that then would require a human to go
+[00:06:13.840] in, maybe review the PR and actually push it themselves.
+[00:06:17.000] Yeah, exactly.
+[00:06:17.960] So auto merge is an optional label that just gets the bot to literally select
+[00:06:21.520] auto merge on GitHub so that it will go in once CI is green.
+[00:06:25.320] it. Some amazing.
+[00:06:26.480] So now we've raised two tickets.
+[00:06:28.160] Two linear tickets.
+[00:06:29.320] One which requires a human review.
+[00:06:31.640] So the Dark Factory will do all the work, and then it will say,
+[00:06:35.600] this is done, here's the pull request.
+[00:06:37.120] Approve it, and it will be it will be merged.
+[00:06:39.520] The second one, because it's a PR that goes directly to the Dark Factory.
+[00:06:43.440] It's a PR for the Dark Factory that will auto merge.
+[00:06:46.000] So as soon as it's done, it will
+[00:06:47.360] it will squash that down and merge that into the code base. Yep.
+[00:06:50.240] Correct. Amazing.
+[00:06:51.000] We'll come back to that at the end of the podcast.
+[00:06:53.720] So what don't we talk about how Tessl uses the Dark Factory
+[00:06:58.040] numbers wise, first of all.
+[00:06:59.480] And then we'll maybe look backwards to
+[00:07:01.760] as to what we were doing before the Dark Factory existed.
+[00:07:04.440] So when we think, numbers wise, what percentage of Tessl's
+[00:07:08.200] pull requests today use the Dark Factory?
+[00:07:11.680] Yeah. So varies a little bit week over week.
+[00:07:13.880] But for the last week we are between 65 and 70%.
+[00:07:17.880] Mind you.
+[00:07:18.360] This is including pull requests
+[00:07:20.000] that are building the Dark Factory using the Dark Factory.
+[00:07:22.600] So there is a lot of those.
+[00:07:24.600] As you can expect, we are heavy users of it internally on our team.
+[00:07:27.600] The last time that I looked for the production part of our code base.
+[00:07:30.880] So the stuff that is serving the registry or web UI or CLI, all of that kind of
+[00:07:35.520] stuff, we are at about 40% of production PRs were raised using the Dark Factory.
+[00:07:40.880] And all of those 40% require a human review to some extent, correct?
+[00:07:45.000] Yes. Our policy is that we only allow auto merge on stuff
+[00:07:48.480] that is in our research code base, stuff that is in our Dark Factory code
+[00:07:51.520] base, and stuff that our GTM team is building,
+[00:07:54.480] using the Dark Factory to help build out their own internal flows to.
+[00:07:57.600] And how about weekends?
+[00:07:58.680] Does the factory work while we sleep?
+[00:08:00.800] Oh yes, we'll happily work weekends and overnight,
+[00:08:04.280] and as long as they're working, there is work in the queue.
+[00:08:06.720] It feels like a little bit of the shift in my own thinking about
+[00:08:08.840] this is less about what is the coding work that I think I can do
+[00:08:12.080] over the course of the week, but what is the coding work
+[00:08:14.280] that I can be able to effectively feed the queue over a long enough time?
+[00:08:17.600] Because we respect linear blocking relationships and able to handle
+[00:08:20.880] kind of subtasks and all that kind of stuff.
+[00:08:22.640] I can actually sequence quite a fair amount of work
+[00:08:24.720] before I go away for the weekend and come back to
+[00:08:27.520] not a fundamentally different architecture,
+[00:08:28.960] but a relatively different architecture over the course of the weekend.
+[00:08:32.080] I think two weekends ago we had quite a busy Friday,
+[00:08:35.800] and the Dark Factory ended up shipping
+[00:08:37.280] 150 PRs for the two of us over the course of the weekend.
+[00:08:41.280] And that was just while we were out hanging about,
+[00:08:43.280] enjoying London in the heatwave and some of the sun here.
+[00:08:45.320] And was there any interaction that you had over that weekend during those?
+[00:08:48.960] So those were all auto merged in. Amazing.
+[00:08:51.200] So Tessl didn't always use a Dark Factory of course.
+[00:08:54.960] What was the engineering styles and culture pre you building the Dark Factory.
+[00:09:00.840] So the way I'd framed it was single-player agentic engineering
+[00:09:04.800] in terms of you had people have their local agent
+[00:09:08.720] or maybe a cloud agent,
+[00:09:10.240] like cloud code on the web,
+[00:09:11.360] or cursor agent in the cloud or anything along those lines.
+[00:09:14.600] But it was still ultimately being driven by an engineer
+[00:09:17.600] and the interactive human or the interactive driver seat to.
+[00:09:20.840] And so you'd figure out what your team, what the work you want to do.
+[00:09:24.800] You then work with an agent to scope that work, do the implementation test
+[00:09:28.240] and verify locally, push up and merge the PR.
+[00:09:31.480] So very similar to kind of the previous flow prior to agents prior to LLMs,
+[00:09:36.000] just on an accelerated time scale because the implementation
+[00:09:38.520] was now getting cheap and so but it was still that very much so.
+[00:09:42.000] I'm a human driving a ticket through to completion
+[00:09:45.760] with many touch points along the way.
+[00:09:47.440] Yeah, so it wasn't so much a workflow change.
+[00:09:49.280] It was more like you say, it's an acceleration of that code generation.
+[00:09:53.520] Really.
+[00:09:54.160] And I guess what, what what were the tripping points at that stage?
+[00:09:57.120] What were the things that would slow us down?
+[00:09:58.880] Because I guess, you know, speeding us up with,
+[00:10:01.400] with the same workflow is going to cause problems.
+[00:10:03.160] It's going to cause a different bottleneck, likely in another place.
+[00:10:05.680] What were the problems though?
+[00:10:06.600] Yeah.
+[00:10:06.920] So I think verification and testing was a big problem.
+[00:10:10.840] We so we run a mono repo where we have a bunch of build dependencies.
+[00:10:16.480] And so in order to test it effectively, test
+[00:10:18.720] everything, you've got to build it locally.
+[00:10:20.360] And then you need to walk
+[00:10:21.440] kind of through a whole bunch of go hit a bunch of endpoints
+[00:10:24.040] or go click a bunch of buttons in the UI or something along those lines.
+[00:10:27.240] And so that meant that any change that you were doing, yes.
+[00:10:29.880] Now your implementation is free or functionally free, but you still have to
+[00:10:34.000] pay that verification burden in terms of, hey, I've got to go actually check that
+[00:10:37.600] this did the thing that I wanted it to do rather than just looking at the code.
+[00:10:41.240] The other bottleneck is the code review.
+[00:10:43.360] Suddenly you're shifting this, what an engineer is spending
+[00:10:46.600] the majority of their day doing, from writing code to reviewing code.
+[00:10:50.400] And there are very few people out there who would have said,
+[00:10:53.080] I think in this prior world that they'd love code review
+[00:10:56.040] as the most important part of the job, but it is something that is needed,
+[00:11:00.360] and it's something where we share best practices, share culture through.
+[00:11:03.600] And now people were just doing it day in and day out
+[00:11:06.480] because I can churn out 20 in a day using a local agent.
+[00:11:10.760] But if we have a policy where every PR needs a human review on it.
+[00:11:14.240] Well, then my team needs to go review 20%.
+[00:11:16.480] And yes, then they'll also be churning out a bunch of errors.
+[00:11:18.720] And then I have to review their PRs.
+[00:11:20.000] We just end up in the cycle of we're actually spending
+[00:11:22.240] more time reviewing and then get stale, and then they've merge conflicts and it's
+[00:11:26.000] this, this, this other bottleneck that I think we never had to engage with before
+[00:11:31.240] because we just weren't making enough code before.
+[00:11:34.280] So it's very interesting when we compare that previous approach where Tessl
+[00:11:38.040] was essentially using those coding agents as an accelerator to writing code.
+[00:11:43.200] Come the Friday, we're essentially trying to get as much done as we possibly can
+[00:11:47.040] looking backwards on that week.
+[00:11:49.280] Whereas today with the Dark Factory,
+[00:11:51.800] what we're actually doing is it's a bad Friday.
+[00:11:53.440] If we don't prep the weekend,
+[00:11:54.680] we're actually looking forward to think, can I plan and stack
+[00:11:58.520] and queue enough for the Dark Factory to have enough work going forward?
+[00:12:02.840] It's a very different mindset in terms of you're essentially managing
+[00:12:06.800] the agent work versus, you know, essentially feeding
+[00:12:10.640] on a minute to minute basis the agent with tasks to do. Yep.
+[00:12:15.160] Yeah, definitely.
+[00:12:16.000] And it's a little bit of that shift in my mind.
+[00:12:18.640] Like you're shifting up the abstraction stack a bit.
+[00:12:20.760] You're no longer thinking about like,
+[00:12:22.080] what is this ticket that I'm going to try to get done?
+[00:12:24.560] You're thinking about what is this feature that I'm going to I want to do?
+[00:12:27.600] What is the sequence of steps that someone needs to do it,
+[00:12:30.200] just like I divvy up to a junior engineer
+[00:12:32.120] or an intern or something along those lines.
+[00:12:34.080] And then how do I make sure that the stuff that I care about, either
+[00:12:37.480] like the correctness or the UI verification,
+[00:12:40.040] or the clicking the buttons or hitting the endpoints or whatever
+[00:12:43.080] it is, that kind of eye is important to me.
+[00:12:45.440] How do I make sure that's encoded in a way
+[00:12:46.960] where I trust that it's going to get done and the agent is going to do it?
+[00:12:50.800] And so I think it's both for me
+[00:12:53.040] kind of like that stacking up and that forward looking aspect of it.
+[00:12:55.720] But the other big shift has been kind of what
+[00:12:59.920] we now have these agents, these models
+[00:13:02.800] where we can literally deterministically load context into their context window
+[00:13:07.480] to enforce the fact that they've read something.
+[00:13:09.760] It's very hard for me to get a human to go read
+[00:13:11.600] a doc on best practices or principles or something along those lines.
+[00:13:14.600] So I have this additional leverage from being able to say,
+[00:13:17.840] you know, that I want to build the code, a codebase in this way.
+[00:13:21.160] So you're going to go build it in that way.
+[00:13:23.320] And I
+[00:13:24.320] therefore have a higher level of trust in the code that's going to be outputted.
+[00:13:27.640] I can then also start layering in other bits of verification around
+[00:13:31.280] like coding styles, or around testing, or around enforcement or stuff
+[00:13:34.840] along those lines.
+[00:13:35.600] And this is all about to that feeding the qubit.
+[00:13:38.280] The only way that I would trust to be able to build a queue that will
+[00:13:42.240] then sequence and run autonomously is if I have enough trust that the output of
+[00:13:45.840] that queue isn't at a bare minimum going to break existing functionality,
+[00:13:49.880] but ideally is going to be something that maybe not proud of writing myself.
+[00:13:53.840] But I would be okay if I had written it myself.
+[00:13:56.600] Yeah.
+[00:13:57.360] Let's, let's jump through what a Dark Factory is, component by component.
+[00:14:03.320] And and I'd love for you to walk us through
+[00:14:06.440] how we started on this Dark Factory journey, what we implemented first.
+[00:14:11.280] And yeah, you know, really understanding that path
+[00:14:14.600] so that others can kind of follow and understand what they should do first.
+[00:14:18.800] So when we first
+[00:14:20.480] tried to build this Dark Factory, what were the initial steps that we took.
+[00:14:24.240] So I think there to kind of set the lay of the land a bit.
+[00:14:29.240] There's a couple important concepts here.
+[00:14:31.760] One is the orchestrator, which is what's actually picking up tickets
+[00:14:36.240] and then passing it off to coding agents
+[00:14:38.400] doing work
+[00:14:39.040] and doing the whole babysitting thing in terms of making
+[00:14:41.080] sure the PR goes through and all that kind of stuff.
+[00:14:43.000] But then importantly and we'll touch on the second is the actual context
+[00:14:47.280] and environment within our repo that we give to the coding agents,
+[00:14:50.720] which I personally think is where the higher amount of leverage comes from.
+[00:14:53.720] But we built the first thing first, the orchestrator first,
+[00:14:57.640] just because that is the tractable thing.
+[00:14:59.120] That's kind of what we think of when we think of it.
+[00:15:01.040] Ark Software Factory is the mechanism to go from linear tickets
+[00:15:05.080] to actually produce code.
+[00:15:07.200] I think just one of our big learnings previewing this has been
+[00:15:10.240] that is dead simple and not that hard.
+[00:15:13.280] It's everything else that surrounds that where you then because if you don't
+[00:15:17.520] kind of invest in those other layers, you then back in that previous workflow case
+[00:15:21.160] we were talking about
+[00:15:22.000] where you stand up overwhelmed with review or you end up overwhelmed with code,
+[00:15:25.120] or you end up doing things that aren't actually driving the whole system forward.
+[00:15:28.600] So the orchestrator isn't here,
+[00:15:29.800] an agent orchestrator, it's essentially almost like a workflow orchestra.
+[00:15:33.080] Exactly.
+[00:15:33.520] It's it's connecting.
+[00:15:35.000] It's an integrator between agents
+[00:15:36.800] and other tools or other things like linear as a good example.
+[00:15:41.120] Exactly.
+[00:15:41.840] And so our journey started with basically a Python queue that connected to linear
+[00:15:47.560] and connected to GitHub and ran an agent locally in a Docker sandbox.
+[00:15:52.120] And we literally had one of our engine not allowed to close our laptop
+[00:15:55.000] for about a week
+[00:15:55.720] because it was already locally on our machine, and we had much more adoption
+[00:15:59.600] on that that than we had expected internally there.
+[00:16:02.600] And so kind of the design decisions that we made around
+[00:16:05.480] that were trying to keep things as simple as possible
+[00:16:08.960] and relying on other systems as their source of truth, where we could,
+[00:16:12.560] because we didn't want to have to reinvent the wheel there.
+[00:16:14.600] So we've made an opinion choice.
+[00:16:16.560] Linear is our source of truth ought to be done.
+[00:16:18.480] Everything must flow through linear if it's going to result in a durable artifact
+[00:16:23.280] that is oriented,
+[00:16:24.600] that is a pure in our codebase, or a notion doc,
+[00:16:27.720] or any of the other artifacts that are produced by the Dark Factory,
+[00:16:30.520] that just allows us the audit trail, the debugging, the visibility on that.
+[00:16:35.640] And it means that we can
+[00:16:36.520] then rely on all the work that linear is done in terms of blocking relationships,
+[00:16:40.160] subtasks, tagging for the reporting and the mechanisms that we need there.
+[00:16:43.960] And we don't need to build it ourselves.
+[00:16:45.720] So we have basically a pole.
+[00:16:48.560] We're working to shift this over to webhooks.
+[00:16:50.360] It just hasn't been a top of the priority list,
+[00:16:52.120] because we haven't broken linear yet with our polling other than our tests,
+[00:16:55.120] which I'll mention later.
+[00:16:56.240] So we have something that polls linear for new work delegated to factory
+[00:17:00.240] and state to do, picks it up, puts it onto the queue.
+[00:17:03.320] There's a bunch of prioritization logic depending on kind of which project it's
+[00:17:07.120] coming from, what the priority is, whether it's being blocked, stuff
+[00:17:10.200] along those lines that then gets farmed out to a coding agent.
+[00:17:15.040] As I mentioned originally, that was just running in Docker on someone's machine.
+[00:17:18.920] We just really want an isolated environment,
+[00:17:20.760] because we don't want these agents to kind of be interacting with each other,
+[00:17:23.880] because each one is meant to be kind of a one shot to implementation.
+[00:17:28.080] Mind you, they can technically understand what other agents are going on.
+[00:17:31.680] And we do see this in the logs, because we'll
+[00:17:33.640] often reference other tickets in the description of a ticket.
+[00:17:36.600] And so an agent will go check in on
+[00:17:38.640] how that ticket is going or what the PR was associated with that.
+[00:17:41.400] But that's just kind of an emergent behavior in terms of building up
+[00:17:43.800] the context needed to be able to do effective implementation.
+[00:17:47.000] These agents currently, for us run in a sandbox, we're using Daytona
+[00:17:51.320] just because of the isolation and security guarantees there.
+[00:17:53.880] This runs in our own internal Daytona
+[00:17:55.760] environments, and we provision a relatively beefy box for that.
+[00:18:00.000] Technically VM in order to technically container actually
+[00:18:04.040] in order to allow it to spin up the entire mono repo testing stack.
+[00:18:07.760] So basically everything that a local engineer can do on their
+[00:18:10.760] machine modulo creds that the local engineer has access
+[00:18:13.800] to, that we don't give to the agent we want the agent to be able to do.
+[00:18:16.840] This allows the agent to run our full test suite, including integration tests.
+[00:18:20.560] Spin up the repo, click around on a UI, click around on basically anything that we
+[00:18:25.760] would be doing for validation and testing, all in their own virtual environment.
+[00:18:29.960] That helps us build kind of confidence there when really interesting
+[00:18:34.520] benefit of that is that we've now been able to have the agent post videos
+[00:18:37.600] and screenshots back onto the PR so that we, as humans can go
+[00:18:41.040] manually verify the work without needing to actually SSH on the box and go
+[00:18:44.840] click the buttons ourselves.
+[00:18:45.960] We can see what the flow looks like from that video, from that evidence,
+[00:18:49.400] which helps
+[00:18:49.840] then build trust and build confidence in that it implemented the right thing.
+[00:18:53.680] That is kind of the crux of the orchestration flow.
+[00:18:57.560] The other bit of the orchestrator is just basically babysitting and PR.
+[00:19:01.880] So once the coding agent is done, pass a couple of hooks, pushes up a PR,
+[00:19:07.600] we're relatively confident that PR at least like passes lint builds, passes
+[00:19:11.680] tests, like it's a good agent for short implementation on the PR surface.
+[00:19:17.160] So this is now we're in GitHub.
+[00:19:18.880] We were in two different coding agents.
+[00:19:20.920] One is Code Rabbit.
+[00:19:22.040] One is our own internal code review agents.
+[00:19:24.160] Our internal code review agents kind of is anchored on skills.
+[00:19:27.000] So we have written three at the moment.
+[00:19:29.320] Other ones coming soon, skills that are targeting different
+[00:19:32.680] bits of kind of the way that we what our code review philosophy is.
+[00:19:36.360] So we're on our own security
+[00:19:38.040] one around legibility, which is really is this code easy to maintain in the long
+[00:19:41.920] term and one around kind of catch all functional correctness.
+[00:19:45.640] We then so we run our own code review tool.
+[00:19:49.920] This is what's exposed via tehsil change review.
+[00:19:52.760] And we are using that as signals on the PR for the agent to go fix.
+[00:19:56.920] So Code Rabbit and our internal tool post comments back on the PR
+[00:20:02.240] and we have failures in CI when some tests don't pass or
+[00:20:06.400] some we do some what's called mutation testing, property based testing,
+[00:20:10.480] a whole bunch of that kind of stuff.
+[00:20:11.400] If those don't pass, those all get posted back as signals on the PR,
+[00:20:14.720] the orchestrator is watching the PR, and so we'll rework the agent
+[00:20:19.120] when those comments are passed back and the agent then goes fixes them.
+[00:20:23.200] It will take in the comments. It will reason over them.
+[00:20:25.720] It then responds inline in those comments were appropriate
+[00:20:29.240] or is a top level comments resolving where appropriate as needed
+[00:20:33.000] and also potentially escalating back to human for review.
+[00:20:36.600] So it has the ability to say, hey, I need context,
+[00:20:40.520] can pause everything and go post that question
+[00:20:43.440] back on the linear ticket, which then notifies the human.
+[00:20:46.160] And so that is kind of the flow in a nutshell, going from a linear ticket
+[00:20:50.440] to orchestrator to coding agent on box to pair
+[00:20:53.840] to a bunch of cycles on the PR review between automated bots
+[00:20:57.000] and CI checks back to the agent and till it gets to a state that is good.
+[00:21:02.280] That's normally when we flip to in review, and we'll get the human
+[00:21:06.800] in order to engage with that, because it's kind of like in
+[00:21:09.520] hopefully the best state that it could possibly be.
+[00:21:11.800] And to human, the interaction mode there is twofold.
+[00:21:14.920] One, we do have the escape hatch.
+[00:21:16.720] If they can pull down the branch locally, make changes
+[00:21:19.720] and then push it back up, that's always an option
+[00:21:22.160] if it's going to be quicker or they need to do it that way.
+[00:21:25.360] But we're trying to push for, though, is doing the interaction mode on that PR
+[00:21:29.080] surface via comments, because that then allows us to kind of track
+[00:21:32.880] that and also integrate that back into kind of what our review philosophy is
+[00:21:37.400] that makes it serviceable, actionable,
+[00:21:39.240] so that we can kind of continue to leverage agents or continue to leverage
+[00:21:43.280] those insights into better review flows so that we don't need to get a human
+[00:21:47.120] to identify that stuff again.
+[00:21:48.080] And that's just pull requests that do require a human interaction.
+[00:21:51.680] Exactly. For for a review. Exactly. Awesome.
+[00:21:53.760] So the orchestrator in this sense actually does sound like kind of
+[00:21:56.720] what a human would do today in that kind of flow.
+[00:21:59.320] So it's pretty much and let's talk a little bit about each step there.
+[00:22:02.760] Because, you know, if we were to ask an agent
+[00:22:07.200] to do various things, whether it's coding, whether it's design,
+[00:22:09.520] whether it's a bit of architecture work or whatever
+[00:22:11.360] at the various stages, it's not always going to get it right.
+[00:22:14.160] What, what, how do we manage
+[00:22:17.560] to ensure that either the agent or the orchestrator
+[00:22:21.360] is validating that what is being built, this is pretest.
+[00:22:26.200] What is being built is being built to our guidance or our standards.
+[00:22:31.000] Yeah. So twofold.
+[00:22:34.280] One is we intentionally shift
+[00:22:37.480] task ownership and task decomposition onto the human at the moment.
+[00:22:41.280] So we're not saying
+[00:22:42.440] give the Dark Factory your Q1 plans and it will go do all of that for you.
+[00:22:46.480] We're saying give the Dark Factory will scope linear ticket like you would
+[00:22:49.920] to a junior or mid-level engineer, and it will go implement that for you.
+[00:22:54.360] And so there is an expectation that there has been a fair amount of design
+[00:22:57.600] work, design thinking, potentially whiteboarding, potentially discussion
+[00:23:01.400] beforehand, which you are then able to encode in the linear ticket,
+[00:23:05.080] which then kind of guides the implementation after that.
+[00:23:08.440] And so think of it as your job no longer is take ticket and go implement it.
+[00:23:13.080] Your job is have the whiteboarding conversation with your colleagues.
+[00:23:16.680] Capture that either as like a granola transcript or a screenshot or whatever,
+[00:23:21.160] and then work with an agent to then translate that into a set of tickets
+[00:23:24.480] that the factory can then go implement for you.
+[00:23:26.720] So there's a little bit of that shift of prior work up front
+[00:23:30.640] in terms of the actual does it follow what you do?
+[00:23:34.080] There's one thing is implementation is a free or functionally free.
+[00:23:38.760] You have to pay token costs.
+[00:23:39.960] So kick off six, kick off seven.
+[00:23:42.120] Like you've got a couple of ideas.
+[00:23:43.200] Just go kick them off and don't send them an auto merge and go look at the code.
+[00:23:46.680] Like I kind of almost view the fact that there is a potential
+[00:23:50.200] like wide state space of potential solutions as either
+[00:23:53.800] you don't care about it
+[00:23:54.560] and so you should accept whatever satisfies it or be you're unsure.
+[00:23:58.200] And so you should use the agents and then help explore that state space.
+[00:24:01.240] And you can ground your analysis in a real code artifact,
+[00:24:04.080] like how it looks and how it feels,
+[00:24:05.840] rather than just in the theoretical abstract of
+[00:24:08.800] I think this is going to feel nicer if the interface is designed this way
+[00:24:12.040] or that way.
+[00:24:12.840] And so that kind of approach, I think, is quite powerful,
+[00:24:16.080] because it's allowing you to kind of do more experimentation because you
+[00:24:19.880] then don't need to run the experiments.
+[00:24:21.520] Factory does it for you, and you're just kind of
+[00:24:23.520] looking at the outputs of that on the taste and the architecture.
+[00:24:27.280] Specifically.
+[00:24:28.360] Our solution to that has been verifiers, which are basically kind of
+[00:24:31.600] like natural language, single statements that can resolve to
+[00:24:34.640] yes or no to boolean about a specific piece of code.
+[00:24:38.480] And so they're the mechanism that we're giving engineers to kind of
+[00:24:42.040] instill principles about the code into their own specific parts of the code base.
+[00:24:47.200] That will then only trigger when those parts of the code base are modified.
+[00:24:50.360] And so that's a deterministic trigger or that's.
+[00:24:52.760] It's a deterministic trigger,
+[00:24:54.200] but it is sent to an LLM as a judge in order for the Boolean evaluation.
+[00:24:58.160] So think along the lines of something like these files
+[00:25:02.440] should only ever import from other library files.
+[00:25:06.960] Yes, you can technically write
+[00:25:08.240] a very convoluted regex in order to do that as a deterministic rule.
+[00:25:12.080] Or you can encode that principle of like, hey, we want library to be the
+[00:25:15.840] single source of truth.
+[00:25:16.720] And so things should only ever
+[00:25:17.960] be importing from the library and should never be importing
+[00:25:20.560] from other modules within the code base in order to kind of maintain dependency,
+[00:25:24.200] clean dependencies.
+[00:25:25.440] And so that kind of taste is really hard to write deterministic rules for.
+[00:25:30.440] And we've historically kind of caught it in code review.
+[00:25:33.240] Agentic code review is expensive and slow.
+[00:25:35.840] Can we shift kind of these discrete chunks into a human legible form that we can
+[00:25:40.480] then put next to the code so that the agents can go bang their head
+[00:25:43.760] against the wall in terms of making them pass as part of the CI flow.
+[00:25:47.920] So that I think that's a little bit of the shift in framing as well.
+[00:25:51.320] And it does feel like
+[00:25:52.440] I think you alluded to that the verifiers are very, very fast to run.
+[00:25:55.680] Yes. terms of the this, you know, the, the the task
+[00:25:58.960] that the agent is trying to do as part of that verifier.
+[00:26:03.440] It sounds like the scope is much, much smaller as well.
+[00:26:05.800] So for example, if that if that one check
+[00:26:08.880] was part of a code review, it feels like that's going to be missed by an LLM
+[00:26:13.440] because not all the time, but that's going to be missed by an LLM
+[00:26:17.000] some of the time because the code review covers a huge number of things.
+[00:26:21.040] Whereas if it's a small scoped piece that an LLM
+[00:26:25.080] just needs to check on this file or on this set of files, this one thing,
+[00:26:29.600] it's going to have a higher chance of actually actually validating
+[00:26:32.640] whether that's done or not. Correct. Yeah.
+[00:26:34.240] And so like a bit of our philosophy is agentic code review should be the catch
+[00:26:38.280] all for things that we miss.
+[00:26:39.480] But once we have identified something that we think is important,
+[00:26:42.520] we should be shifting them to verifiers if we can,
+[00:26:45.040] because as you mentioned there a lot cheaper to run.
+[00:26:46.920] It's an LLM call over the diff.
+[00:26:48.680] And so we can assess that.
+[00:26:51.000] And we also run one LLM call per verifier.
+[00:26:53.720] So that LLM is really just reasoning about the single verification,
+[00:26:57.520] not about all of the conflicting priorities that it might have in its head.
+[00:27:00.640] So we're trying to kind of sketch out a boundary around the code, around
+[00:27:03.880] what is acceptable code from a bunch of different points,
+[00:27:06.840] rather than trying to build like a smooth, a smooth line basically
+[00:27:10.000] in a skill or an engineer review or something along those lines.
+[00:27:13.160] The other kind of principle that we have is anything that is a verifier
+[00:27:17.000] that we can make
+[00:27:17.560] deterministic, fully deterministic, well, then we should make that deterministic.
+[00:27:21.520] I think historically a lot of people haven't written really complex lint rules
+[00:27:25.280] because they're annoying and finicky,
+[00:27:26.920] and they slow human engineers down in their hearts.
+[00:27:28.640] Right. Well, right now we have no human engineers.
+[00:27:31.360] Agents are fine with annoying and finicky.
+[00:27:32.960] They can very happy to go bang their heads
+[00:27:34.720] against the wall in order to make something work.
+[00:27:36.680] And they're not quick.
+[00:27:37.520] But like an agent can write, it doesn't matter to me how convoluted it is.
+[00:27:40.720] And so that then allows us to not even pay the cost.
+[00:27:43.640] Then we're just playing the CPU
+[00:27:44.840] cost of kind of deterministic verification in that regard.
+[00:27:48.640] And so it's like a sequencing almost for engineers
+[00:27:52.080] to kind of build their the things that they had in their head
+[00:27:55.160] around quality or around what looked like or how good code smelled.
+[00:27:59.240] We can kind of put that into the code base
+[00:28:00.800] in that sequence of the very, very quick deterministic verifiers.
+[00:28:05.000] Linting rules.
+[00:28:06.000] The LLM is a judge, verifiers that are just over the diff,
+[00:28:09.640] which are natural language and so probably too fuzzy to express,
+[00:28:12.960] but easy enough for a good reasoning model to understand.
+[00:28:16.160] And then the catch all review.
+[00:28:18.240] One of the really interesting things about
+[00:28:19.880] I think about that sequence is that we can run automatic promotion.
+[00:28:23.080] So every night we look at kind of the PR comments
+[00:28:26.160] that are being posted by a generic review and human review,
+[00:28:28.440] and we assess whether any of those should be verifiers.
+[00:28:30.680] And so we can kind of continually shift left in that regard to get faster,
+[00:28:35.200] to get quicker, to get cheaper, but also importantly as well, for me,
+[00:28:38.400] I think to get more human legible.
+[00:28:40.200] If I look at a verifier, it's much easier for me to reason about that than to read
+[00:28:44.360] a long skilled D and figure out, as this thing going to be correctly
+[00:28:48.240] waited for something that I think is really important
+[00:28:50.440] against all of the other compounding trade offs that it might have.
+[00:28:53.120] Super interesting.
+[00:28:54.640] Let's go into what worked and what didn't work.
+[00:28:57.640] Obviously this this unlocked.
+[00:28:59.520] It sounds like a ton. Yeah.
+[00:29:01.360] What were the biggest learnings you had early on with this.
+[00:29:04.640] Coding agents are really good,
+[00:29:05.920] and if you give them a wide enough scope, they will do some great things.
+[00:29:09.080] I think there was definitely a bit of a kind of bias internally,
+[00:29:13.160] going from kind of going from a philosophy of I've got to be there babysitting
+[00:29:17.440] the coding agent to shoot.
+[00:29:19.160] I can't even look at the logs of this
+[00:29:20.640] because it's running on a sandbox in the cloud.
+[00:29:22.880] I better make sure that my tickets are super well scoped
+[00:29:26.120] and super small and super tiny, kind of like intern level tickets.
+[00:29:29.680] And now we've slowly been and this is cultural, not technical,
+[00:29:33.360] slowly been relaxing those constraints.
+[00:29:35.240] And people have been like, cool.
+[00:29:36.880] What is actually the biggest thing that I can give
+[00:29:38.680] to the Dark Factory and see it produce something that is relatively valid
+[00:29:42.560] as a result. And so the tickets. Are trust.
+[00:29:44.640] Was that a trust issue? It was interesting.
+[00:29:47.200] I think trust comfortability, seeing seeing the results.
+[00:29:50.160] We're asking people to trust that something that is kind of hidden.
+[00:29:54.360] It's called a Dark Factory because we're not looking at the logs
+[00:29:57.320] as it's kind of operating.
+[00:29:58.560] We are post-hoc, but not kind of in the actual operations.
+[00:30:01.560] They need to be able to trust that that's going to do something that they would be
+[00:30:04.640] okay with, because ultimately, like, we still have an accountability mechanism.
+[00:30:08.920] The person who filed the ticket is still accountable
+[00:30:10.720] for the code that got produced.
+[00:30:12.480] They still have to if it's in the production
+[00:30:14.160] part of the good, because they still have to review the PR.
+[00:30:16.200] Like, we're not saying you can object all responsibility
+[00:30:18.840] because the Dark Factory did it. Yeah.
+[00:30:20.600] And so we're now asking people to assign their own accountability
+[00:30:24.920] to something that happens harmlessly produced.
+[00:30:27.240] And so there definitely is going to be a gradual kind of trust adoption curve.
+[00:30:31.520] And we will continue to go through that.
+[00:30:33.400] And I think it's going to be never ending,
+[00:30:35.000] because there's always going to be kind of an increased scope
+[00:30:38.000] or increased verification you can do to build that trust.
+[00:30:41.000] Yeah, I like to think autonomy is earned, not enabled.
+[00:30:44.560] You can't just turn something on and say, we can now go at full speed.
+[00:30:48.240] It's about building that cultural trust internal organization to,
+[00:30:52.280] to to get to the next to the next stage. Yeah.
+[00:30:54.840] What problems did you have.
+[00:30:56.760] So just on that trust bed, I think
+[00:30:59.240] one of the things that we've been trying to do on the team to build that trust
+[00:31:02.240] is by running as far ahead as we can and running into the walls early and
+[00:31:07.720] mucking up, basically.
+[00:31:09.360] So we definitely, definitely had. A few of them.
+[00:31:11.120] Let's go do that.
+[00:31:11.880] Yeah. What are the what are the walls we ran in?
+[00:31:14.240] So I think the most interesting there's two kind of classes of ones,
+[00:31:20.000] one around context and one around verification.
+[00:31:23.840] In terms of context, I pull data for the number of slack for sent on our team
+[00:31:29.320] channel versus the other team channels kind of every week.
+[00:31:32.440] And our team, despite being slightly smaller than one of the other
+[00:31:36.240] teams of the company, is sending about between 10 and 15
+[00:31:39.960] x many slack messages per week on our team channel.
+[00:31:43.680] We have had to overcommunicate everything that we're doing
+[00:31:46.800] because we were doing so much more quicker.
+[00:31:48.640] And also with auto
+[00:31:49.720] merge on, everything is changing in ways that we don't really understand.
+[00:31:53.720] Last time I looked, I think about only 5% of the Dark Factory
+[00:31:57.680] code base had ever had a human look at the PR
+[00:32:00.280] and to prove it, and I'm not, I don't think people actually go
+[00:32:03.280] look at code anymore because they're all just using agents.
+[00:32:05.440] And so that means, by implication, 95% of our code base has never had a human
+[00:32:09.480] look at it.
+[00:32:10.240] And so we don't know what's going on there.
+[00:32:13.360] So we need to build the signals in the context
+[00:32:16.280] on top of that to give us trust that this is working
+[00:32:18.840] the way that we think it's going to be working.
+[00:32:20.560] But then also we know what everyone else is going to be doing.
+[00:32:22.840] And that 95% that is of the Dark Factory.
+[00:32:25.520] Of the Dark Factory specifically.
+[00:32:26.840] Yes. Everyone has looked at the production code.
+[00:32:29.320] Again, we have human review required there.
+[00:32:31.240] So that has been looked at.
+[00:32:32.360] But it's for the Dark Factory itself.
+[00:32:34.360] And so we needed to figure out mechanisms in order to make sure that everyone knew
+[00:32:40.440] what they were doing,
+[00:32:41.480] make sure that everyone was comfortable
+[00:32:43.560] with their own work getting through in a way,
+[00:32:45.200] and make sure that we understood how the code base was changing over time.
+[00:32:48.560] And so we definitely Sullivan, figure this out.
+[00:32:50.840] I still will wake up on some days and be like, I didn't.
+[00:32:53.400] I don't think that's a good idea. Why did that land?
+[00:32:55.520] But the intention, what we're trying to do
+[00:32:57.040] there is overshare the context so that we're aware,
+[00:32:59.000] but then also fix forward.
+[00:33:00.360] It's not roll back a PR because it wasn't the thing we wanted to do.
+[00:33:03.920] It is okay, cool.
+[00:33:05.000] What we missed on the verification side that allowed this to land either
+[00:33:08.240] in a verifier if it's a human concept, or on test if it's something bad,
+[00:33:12.120] so that we can continually fix forward and build those guardrails.
+[00:33:14.880] Earn that trust on the autonomy side that you mentioned in terms
+[00:33:18.000] of some of the more spectacular failure modes.
+[00:33:20.320] As part of this, we changed our core queue a lot
+[00:33:25.920] in the early days because we weren't verifying it strongly enough.
+[00:33:29.440] And by what I mean by that is
+[00:33:31.240] we would have a fix or actually concretely, we had an issue where
+[00:33:34.880] PR comments were being double counted and so they would end up on the queue twice
+[00:33:38.440] until you would get a agent in two different sandboxes
+[00:33:41.200] responding to the queue.
+[00:33:42.560] You could have race conditions
+[00:33:43.520] where you might produce two different code commits as part of that.
+[00:33:46.760] Sometimes the second sandbox would start up.
+[00:33:48.600] After the first one, I'd be committed. So to recognize, hey,
+[00:33:50.480] the work's being done, but we just it wasn't very effective.
+[00:33:53.760] And the key here, just for the context of what the queue is,
+[00:33:55.760] the queue is the list of tasks that the orchestrator needs to pull to
+[00:34:00.040] then pass to an agent or do something with or something.
+[00:34:02.640] Exactly, exactly. And so we would fix that.
+[00:34:05.760] It'd be good for a day, then it would regress, then
+[00:34:07.560] we'd fix it again, then it would regress, then we'd fix it again.
+[00:34:09.960] There was a point where I think we had like 60 PRs over
+[00:34:13.400] 2 or 3 weeks or, sorry, 2 or 3 days that we're all trying to fix this.
+[00:34:17.040] And so this was just causing constant
+[00:34:20.240] churn and frustration because we'd say we fixed it and then it would regress.
+[00:34:23.800] And it was just it was a pain.
+[00:34:25.320] And so
+[00:34:26.840] the way that we wanted to try to fix that, because we were still going to continue
+[00:34:30.160] to let agents do whatever they wanted, was really lean into the verification side.
+[00:34:34.640] And that.
+[00:34:35.200] And so what we ended up doing was building a quints formal model of our behavior,
+[00:34:39.920] specifically the nipple of being able to kind of add stuff to the queue
+[00:34:45.120] so that we could verify that on every single PR,
+[00:34:48.480] that we hadn't broken that formal model that took.
+[00:34:52.440] I wouldn't have known how to do that in free agent world.
+[00:34:54.240] Just flat out I knew what a formal verification was,
+[00:34:56.840] would have known how to actually build. It.
+[00:34:58.360] Took me about a day with fable and then using the Dark Factory
+[00:35:01.760] to go implement this, and we've had absolutely zero recurrences
+[00:35:05.200] of that after the fact.
+[00:35:06.560] And so that for us was very painful in the moment, particularly as
+[00:35:10.040] we were scaling up, but then be a really important insight of like,
+[00:35:13.960] no, it's not just the kind of verification that we use before of like test
+[00:35:17.760] and shared human context and like trust that a human has enough context
+[00:35:21.760] about everything else going on to know that this is a sensitive
+[00:35:24.960] part of the code base.
+[00:35:25.920] No, we actually have to lean in even firmer than we had before,
+[00:35:28.960] because agents don't have that contextual information
+[00:35:31.120] and don't want to give it to them, because that brings to tokens,
+[00:35:33.400] which is therefore more expensive and slower.
+[00:35:35.600] So that was kind of one really interesting, annoying,
+[00:35:39.760] frustrating bit of time.
+[00:35:41.480] The other one was an experiment we ran during the off site,
+[00:35:45.280] which I was really excited for,
+[00:35:46.920] and which really did not work the way I wanted it to, unfortunately.
+[00:35:50.320] And that was explicitly about stress testing this verification layer.
+[00:35:54.400] My personal belief is that if we get our verification layer
+[00:35:58.200] strong enough, and if we are oriented around specifically
+[00:36:01.320] the behaviors that we care about as an organization,
+[00:36:03.920] not the actual implementation of the code, I don't care about if you
+[00:36:08.120] how when I click a button on the UI, the results appear.
+[00:36:11.080] I care about.
+[00:36:11.760] When I click a button on the UI, the results appear.
+[00:36:13.880] And so we should be able to, just from that verification layer,
+[00:36:18.000] be able to rebuild the entire system from scratch in a new language.
+[00:36:21.440] So we tried to do that.
+[00:36:23.240] We currently are a Python implementation.
+[00:36:25.480] Elixir is a good fit for this in terms of having kind of the actor model.
+[00:36:30.840] And so we took our verification layer only.
+[00:36:33.440] So none of our unit tests,
+[00:36:35.080] nothing other than kind of our end to end tests or integration tests.
+[00:36:39.240] This formal model that we were talking about
+[00:36:42.040] and some of the properties that we that we verify
+[00:36:45.320] kind of on the surface boundary rather than on internal dynamics.
+[00:36:48.560] And we gave that to a coding agent to then go plan out and building that in the
+[00:36:53.200] server from scratch.
+[00:36:54.240] And then we went into that that worked.
+[00:36:57.840] It built something.
+[00:36:59.120] But we hit kind of two
+[00:37:00.720] major roadblocks that kind of prevented us from being able to call this a success.
+[00:37:04.880] One thing I will note are Q was perfect.
+[00:37:06.800] Q works totally fine.
+[00:37:08.400] So the formal model held up well there.
+[00:37:10.640] But what it ended up identifying was even after kind of all the investments
+[00:37:14.560] on verification we thought we had made, we had some pretty big blind spots.
+[00:37:17.960] We weren't actually verifying formally anything to do with the labels on linear,
+[00:37:22.320] which are in a very important routing mechanism.
+[00:37:24.400] That was all just built into unit tests.
+[00:37:26.200] And our end to end tests were just testing the happy path there.
+[00:37:29.320] And so when we ported over the end-to-end test, oh, shoot.
+[00:37:32.760] Suddenly our suddenly the way that we were stacking
+[00:37:35.520] PR is broke because that wasn't tested in an end to end test.
+[00:37:38.920] That was just a unit test.
+[00:37:40.280] So that's core functionality that wasn't verified
+[00:37:43.360] externally and so was broken in the Elixir implementation.
+[00:37:46.960] We weren't able to kind of push out to
+[00:37:48.960] production even though we run in a sandbox production environment.
+[00:37:52.840] And so then I had to manually babysit an agent to go do that.
+[00:37:56.320] And so that's an area
+[00:37:57.440] where we want to be investing in, in terms of getting the Dark Factory
+[00:38:00.440] to be able to make nondestructive changes in production environments,
+[00:38:04.200] or at least the sandbox environment first, and then eventually production
+[00:38:07.240] environments to take the human out of the loop there.
+[00:38:09.200] And then finally there was just some other bits of the functionality.
+[00:38:12.920] I mentioned the stacking of PRs in terms of feature branch.
+[00:38:16.080] I mentioned labels I mentioned, or rather, there's also
+[00:38:19.840] some of our GitHub functionality specifically in terms of
+[00:38:22.600] not just comments, but on CI batching, where we try to take
+[00:38:25.840] in all of the signals on CI failures and send them as a single, as a one off,
+[00:38:29.600] rather than sending them as a sequence that isn't captured by an end to end test.
+[00:38:33.200] So there was some pretty core
+[00:38:34.520] functionality and improvements to the system
+[00:38:36.480] that weren't being captured by this verification layer.
+[00:38:38.640] And so despite really wanting to turn it on.
+[00:38:41.520] Well, I did turn it on and then it immediately broke.
+[00:38:45.080] And then I fixed it and then turned it on again.
+[00:38:47.000] And then it broke
+[00:38:47.760] some people's PR and I had to be like, okay, cool, this didn't work.
+[00:38:50.880] And so I think the real learning from that is this I think is doable.
+[00:38:56.040] We got pretty far with it.
+[00:38:57.720] I think it is an even more ambitious framing, though, than what anthropic did
+[00:39:01.760] with the rust rewrite,
+[00:39:02.960] where they had kind of the original source code as an input to that.
+[00:39:06.360] But I think it actually allows you
+[00:39:08.120] to write idiomatic code better because our, our implementation.
+[00:39:12.240] I'm not an Elixir expert, so this is entirely LLM as a judge
+[00:39:15.600] agent vibe or Elixir implementation evidently was idiomatic Elixir.
+[00:39:19.840] I don't really know how to assess that, but evidently so.
+[00:39:22.400] Rather than being Python to Elixir ported.
+[00:39:25.200] But we need to make sure that we cover everything.
+[00:39:28.360] And I don't know yet exactly how we're going to continually lever
+[00:39:32.120] up on that, other
+[00:39:33.360] than by continuing to do experiments like this, to be able to identify
+[00:39:36.440] where the gaps are, because that's the only way
+[00:39:38.520] that we can build trust and really let agents rip
+[00:39:41.240] when we're confident that that boundary, which we do require human review
+[00:39:44.800] on, is super solid to the extent we can rewrite it.
+[00:39:48.840] So, so one of the things I'm getting here from this discussion, from this
+[00:39:51.800] in this conversation is that, you know, in building this Dark Factory,
+[00:39:56.960] this isn't something that we can necessarily just turn on and expect
+[00:40:00.320] everyone to use.
+[00:40:01.280] A lot of our learnings have come through usage,
+[00:40:03.840] and I'd love to kind of like switch briefly to adoption and onboarding.
+[00:40:08.960] Yep. So so you know, when we would we be able to now with the Dark Factory
+[00:40:14.560] that we've got now if we had a new team that had never used the Dark Factory,
+[00:40:19.720] do you feel like they were better just like on one on, you know, day zero?
+[00:40:23.280] Just switch in directly to a to a scenario where they're using a Dark Factory.
+[00:40:27.880] Or do you feel like they would need to grow into it like layer by layer,
+[00:40:31.800] piece by piece.
+[00:40:32.880] So we had a new starter who on day two was adding verifiers to the Dark Factory,
+[00:40:37.120] which, as I was just
+[00:40:37.960] saying, is one of the most important parts of the Dark Factory.
+[00:40:41.000] So yes, I think you can get new people onboarded to it,
+[00:40:44.800] but it does require specific mindset to I think it needs to be folks
+[00:40:50.520] who are recognizing the fact that agents are not just
+[00:40:55.160] doing the same thing, but faster, but are fundamentally new workflow primitive.
+[00:40:58.920] And how we do software engineering.
+[00:41:00.920] It's this shift in my mind of like, what is the role of the engineer?
+[00:41:05.680] I personally don't think engineers are going to go away.
+[00:41:08.040] I think there's always going to be need for technical expertise
+[00:41:10.760] in terms of understanding what the systems are.
+[00:41:12.760] But just as your mechanic doesn't build your actual car but can go
+[00:41:16.000] debug what happened with your car when it breaks,
+[00:41:18.200] that I think is going to be more so the role of the engineer
+[00:41:20.960] in terms of helping build and create the environment
+[00:41:23.560] for a factory to run in, and then debugging why it broke
+[00:41:26.680] and then improving that so more around the outside.
+[00:41:29.720] And that I think for kind of a new start
+[00:41:31.920] or a new person, it's definitely a mindset shift,
+[00:41:33.920] but it's still engineering, just engineering at the systems level,
+[00:41:37.280] which is what you were meant to do as a senior staff principal level engineer.
+[00:41:41.400] Anyways, we're just now asking junior candidates to start doing that right. Away
+[00:41:45.120] So, hey everyone!
+[00:41:46.320] Hope you're enjoying the episode so far.
+[00:41:48.600] Our team is working really hard behind the scenes to bring you the best guests,
+[00:41:52.480] so we can have the most informative conversations about agentic development,
+[00:41:56.800] whether that's talking about the latest
+[00:41:58.440] tools, the most efficient workflows, or defining best practices.
+[00:42:02.240] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:42:06.160] If you're enjoying the podcast and want us to continue to bring you
+[00:42:09.200] the very best content,
+[00:42:10.480] Please do us a favor and hit that subscribe button.
+[00:42:12.960] It really does make a difference and lets us continue to improve
+[00:42:16.320] the quality of our guests and build an even better product for you.
+[00:42:20.760] All right, back to the episode.
+[00:42:23.600] So an individual
+[00:42:25.120] can join an existing team that has all of this up for their project.
+[00:42:30.200] What about an organization that is trying to that is, you know,
+[00:42:34.160] perhaps where Tessl was a little while back and not using
+[00:42:38.360] not using a Dark Factory or a software factory and perhaps using
+[00:42:42.960] the Claude's and, you know, Claude code and codex and things like that to,
+[00:42:46.560] to assist them to accelerate that building of software.
+[00:42:50.480] Is that something they can snap to directly
+[00:42:52.320] like we're going to turn on Dark Factory and start building this way,
+[00:42:55.280] or is that something that should happen gradually in layers? Yeah.
+[00:42:58.120] So I've been talking a lot about what we're doing
+[00:43:00.640] with building the Dark Factory.
+[00:43:02.200] But as I mentioned,
+[00:43:03.160] like we intentionally tried to front run a lot of these issues here.
+[00:43:06.480] What we've been doing with the rest of the production code base
+[00:43:08.560] is that kind of incremental adoption, because we're not going to
+[00:43:11.120] come out and say, hey, everyone, at Tessl, you must use the Dark Factory.
+[00:43:14.880] We've got into that kind of 65% or 60% of going through the Dark Factory
+[00:43:20.440] by convincing people
+[00:43:21.600] that this is a fun, new, cool way of working that speeds them up.
+[00:43:25.480] And that is very much so.
+[00:43:27.480] By helping them lever up the parts of the code base they own.
+[00:43:30.400] Through all these tools and mechanisms that we've identified specifically
+[00:43:34.240] around the verification, to be able
+[00:43:36.520] to allow them to build that trust and to build that faith and automation.
+[00:43:40.400] So concretely, what that looks like is just start with better context in your repo.
+[00:43:44.840] Like that already improves your local developer flow.
+[00:43:47.600] Like people, companies, organizations
+[00:43:49.720] I think really need to be much more intentional
+[00:43:51.720] about the context in the repo, because that is ultimately
+[00:43:54.920] what goes into the agent, which ultimately, in my mind,
+[00:43:58.000] and part of my kind of belief of where the value is that we can provide
+[00:44:01.120] more important than the actual world underlying model, the context
+[00:44:04.960] that you give will change model results more than swapping a model will.
+[00:44:08.720] And so if you feel you're at a good place in that regard,
+[00:44:12.600] then
+[00:44:13.320] start layering on the verification bit, because that then also helps you trust
+[00:44:17.720] what agents being driven by local
+[00:44:19.280] engineers are producing because they are verified.
+[00:44:21.880] Two ways that kind of go beyond what you might have done historically.
+[00:44:25.120] So tests are dead, right? Right.
+[00:44:27.840] Test for everything. Right end to end test for everything. Right.
+[00:44:30.520] Integration tests for everything. Do behavioral tests for everything.
+[00:44:33.440] Make sure that that kind of layer of the thing that you actually care about,
+[00:44:36.640] which isn't just what the code does, it's the behavior.
+[00:44:39.440] It's the product surfaces things that is expressed.
+[00:44:41.960] Make sure that is super solid, because that mechanism will both help
+[00:44:46.240] build an adoption
+[00:44:47.240] kind of from your internal edge team, because, hey,
+[00:44:49.640] your agent now is producing better work without you.
+[00:44:51.920] Take the reins and guide it through that, as well as fully producing higher quality
+[00:44:56.240] outputs over time,
+[00:44:57.440] I think then you start layering on into the more non-deterministic aspects.
+[00:45:00.720] So adopting verifiers, adopting these kind of discrete units
+[00:45:04.000] which are still very human reviewable, very human understandable,
+[00:45:07.800] but are able to encode kind of fuzzier concepts than you would be able to.
+[00:45:11.400] And deterministic linting rule again, you can
+[00:45:13.880] then have something deterministic run
+[00:45:15.440] that feed that signal back into a local agent or into a Dark Factory,
+[00:45:18.840] and use that to kind of encode preferences in the code base
+[00:45:21.800] and then into agentic review, and then kind of levering up in that way.
+[00:45:25.080] And so these pieces that you can adopt, particularly around the verification side,
+[00:45:29.240] these both do better when you're kind of or rather allow your engineers
+[00:45:33.200] to do better when running local flows and give you the building blocks
+[00:45:36.920] and then move closer and closer to the fully automated factory.
+[00:45:41.760] The last points on my mind, just around the cultural adoption bit,
+[00:45:45.000] I think the most important thing we've been able to give
+[00:45:47.560] to the engineers here at Tessl is the feeling that they still own
+[00:45:51.960] the taste and the quality in their code base,
+[00:45:53.880] and they're not just giving that up to an agent,
+[00:45:55.800] but that we're trying to help them figure out a way to scale out their taste
+[00:46:00.680] to all of the agents that we'll be running on their code base.
+[00:46:03.960] Previously, let's say you were a staff level engineer
+[00:46:07.320] who was responsible for specific part of the code base,
+[00:46:09.800] the way that you would enforce kind of quality.
+[00:46:11.920] There is doing all the PR reviews or doing presentations or writing docs on what
+[00:46:17.600] coding standards look like, or writing a style line or stuff along those lines.
+[00:46:21.600] Now you encode that within a set of verifiers your agents,
+[00:46:25.840] all the agents,
+[00:46:26.680] not just your agents, all of the agents of everyone in
+[00:46:28.760] the company is going to be running that to those verifiers for those bits
+[00:46:32.080] of the code base, and suddenly your impact is now scaled across everyone.
+[00:46:35.560] And so that then forces those agents to engage with it, and also allows you
+[00:46:40.600] the ability to kind of take your learnings over
+[00:46:42.840] however long you've been in the industry and give them to the agents in a way
+[00:46:45.880] that makes them better.
+[00:46:47.040] And so that, I think, is
+[00:46:48.600] where the truly scalable kind of shift in mindset is coming from.
+[00:46:53.080] It's not just kind of like, what can I do to make my local agent better, but then
+[00:46:56.440] can I commit that into the repo in the form that makes all of the agents
+[00:46:59.800] better, and also then gives me the base to build up towards a Dark Factory future?
+[00:47:03.600] Now, a lot of people using Tessl today are using that to just,
+[00:47:07.960] you know, as the registry
+[00:47:09.000] to store their contacts, to evaluate and improve their context, distribute
+[00:47:12.520] their context across organizations in private and public workspaces.
+[00:47:17.440] But the Tessl agent, of course, it can be a great interface
+[00:47:21.200] to a lot of those functionalities and capabilities.
+[00:47:25.080] The Tessl agent can help here as well in doing a lot of what you just said, right?
+[00:47:29.600] Yeah.
+[00:47:30.000] So we think of the Tessl agent kind of as like a natural language interface
+[00:47:34.360] for being able to build the building blocks of your Dark Factory.
+[00:47:37.600] And so it has knowledge of all the bits
+[00:47:41.560] within the Tessl CLI that we've kind of touched upon here.
+[00:47:45.280] So when I was talking about our own internal code review, that's still change
+[00:47:49.200] review when I was talking about verifiers that's Tessl will change verify.
+[00:47:52.480] We also have Tessl change risk, which is our own internal
+[00:47:54.760] risk implementation to whether a PR needs human review or not.
+[00:47:58.760] And so all of these kind of like core primitives are baked into the Tessl agent.
+[00:48:03.080] And the Tessl agent knows how to set them up in your repo.
+[00:48:05.560] We, as I was mentioning earlier, we don't think the orchestration layer
+[00:48:09.360] is like differentiated.
+[00:48:10.800] Everyone probably should
+[00:48:12.040] build their own orchestrator because it's simple and allows you to
+[00:48:15.240] then integrate against a whole bunch of your own internal systems.
+[00:48:18.760] Like do you use JIRA?
+[00:48:19.760] Do you have your own internal custom ticketing system
+[00:48:22.800] where your sources of knowledge like that is important work?
+[00:48:26.840] But the differentiated work in my mind comes from the loops
+[00:48:30.840] that you're able to build on top of that,
+[00:48:32.280] and also these primitives that you're able to compose.
+[00:48:34.960] And so Tessl will then walk you through, how can I set this up
+[00:48:38.960] in your repo using your context, using your way of doing it.
+[00:48:42.040] So for kind of open source repos we'd recommend using GitHub Actions.
+[00:48:46.160] They're easy, they're cheap, they're everywhere.
+[00:48:48.200] And so we can then Tessl agent can then work with you to be like, cool,
+[00:48:52.360] I want to do a review of all of the PR that have landed in this repo
+[00:48:56.640] every single week, and derive verifiers from those.
+[00:49:00.520] Tessl can do that with you.
+[00:49:02.240] And I'm being key there to say with you, not for you.
+[00:49:06.200] Because that verification bit, just to reiterate,
+[00:49:09.320] is something that I think where's the human leverage comes from.
+[00:49:11.680] That's still very much so part of the core engineering job because that's
+[00:49:15.000] where you're encoding your taste, your preferences, all of that kind of.
+[00:49:18.320] Stuff is still in control. Exactly.
+[00:49:20.520] But the actual like go write the GitHub action, do it.
+[00:49:23.000] I don't want to do that.
+[00:49:23.840] Tessl agent will do that for you.
+[00:49:25.640] And if I wanted to get started, I've got a fresh project
+[00:49:28.440] that I'm building.
+[00:49:29.040] I'm currently I'm a coder.
+[00:49:31.000] I'm currently building using various agents.
+[00:49:33.440] I've got various skills and context in that, in that repo as well.
+[00:49:37.800] I'll start up Tessl.
+[00:49:39.040] What do I where do I start?
+[00:49:40.320] What do I what's the first command.
+[00:49:41.520] What's the first prompt I should right. Cool.
+[00:49:43.280] So I guess two commands come immediately to mind.
+[00:49:46.200] One is doing audit of your code base.
+[00:49:47.960] Just ask it to help with that in terms of being able to understand
+[00:49:51.080] like what context do you have?
+[00:49:52.840] What where agents thrashing.
+[00:49:54.680] We have the ability in there to also go look at some of your local logs.
+[00:49:58.600] If you are using cloud code, for example, it knows where to go.
+[00:50:01.640] Find your logs for that session.
+[00:50:03.520] This stays all
+[00:50:04.120] local to your machine to be clear, but it will help you be able to identify
+[00:50:07.880] like hey,
+[00:50:08.600] this is something that the agents have done
+[00:50:10.240] that is constantly thrashing and constantly kind of causing issues.
+[00:50:13.800] Do you want to write a skill for that?
+[00:50:15.680] And then do you want to kind of be publishing and versioning that skill?
+[00:50:19.000] And so that kind of gives you an initial set of insight into
+[00:50:22.960] like where current friction points are or where you're already great
+[00:50:26.680] and you don't really need to do much.
+[00:50:28.240] And then the second one is on those loops.
+[00:50:30.200] It's like, what is the first loop?
+[00:50:31.880] Like get the agent to suggest you do a loop.
+[00:50:34.120] My my personal bias would be probably something I'm looking at the PR surface
+[00:50:38.080] or something looking at like docs, updates or maintenance.
+[00:50:40.920] You know, this kind of tasks that you know you should do but you never want to do.
+[00:50:44.160] And so you get still.
+[00:50:45.120] Docs, agents and loops are great at that.
+[00:50:47.640] And so working with additional agents who figure out what the highest,
+[00:50:52.160] either highest value loop is for you to still
+[00:50:54.920] then be human in the loop
+[00:50:55.880] or highest value that you're comfortable running autonomously, because it's
+[00:50:59.440] a really interesting and cool feeling to be able to wake up and see,
+[00:51:03.360] hey, we call the maintenance agents and you're eternally hey!
+[00:51:06.600] My maintenance agent ran overnight, identified three issues.
+[00:51:09.880] Filed pairs are all in auto merge and they haven't landed.
+[00:51:12.240] And so that just is great.
+[00:51:14.640] To seeing work done. Exactly.
+[00:51:16.280] And it's not work that I had to think about.
+[00:51:17.720] It's like have to initiate.
+[00:51:18.840] It's like I found the signal
+[00:51:20.280] and I want this signal to go up or go down or do something.
+[00:51:23.440] And then maintenance agent goes and does that too.
+[00:51:25.640] Amazing. So that's available in Tessl right now.
+[00:51:28.560] So if you have the Tessl CLI installed just type
+[00:51:30.800] Tessl agent and the CLI on the terminal and you will
+[00:51:33.200] you'll you'll drop into that, drop into that environment.
+[00:51:36.360] And you can ask those ask those prompts straight away I think it's time that's
+[00:51:40.280] so we go back and have a look at some of those linear tickets that we raised.
+[00:51:44.240] Let's see if the Dark Factory has done something with them.
+[00:51:46.720] Definitely.
+[00:51:47.760] this one as a reminder is about adding
+[00:51:50.560] the metrics for where we did the inference geo within the Dark Factory.
+[00:51:54.280] And so we can see that hey there's been a PR associated with it.
+[00:51:57.840] And hey that PR has been merged.
+[00:51:59.560] So I'm just going to click over to the PR here so we can see what happened.
+[00:52:03.200] So we've got the summary from Kikimora.
+[00:52:05.800] As I mentioned that's our internal name for our Dark Factory.
+[00:52:08.480] We have Code Rabbit who runs on review this GitHub action.
+[00:52:12.720] Here is our own individual review harness.
+[00:52:15.320] So these are the comments that have been responded to by Kikimora
+[00:52:19.000] and resolved, given by our own action. Code
+[00:52:22.680] Rabbit also then provided some harness, some comments as well.
+[00:52:27.000] There are some CI failures.
+[00:52:29.040] Thank you for fixing that.
+[00:52:30.880] You can then see that it approved it and Kikimora merged it.
+[00:52:35.000] So this was no human has looked at this up until the point where I'm looking at it.
+[00:52:39.400] Now. This was fully autonomous.
+[00:52:40.800] This joins that 95% of code that has been merged
+[00:52:45.040] with no human exactly like that in our Dark Factory.
+[00:52:48.280] Exactly.
+[00:52:49.000] And I'm not going to go look at it, because I trust that the test pass,
+[00:52:51.800] and therefore it at least isn't broken.
+[00:52:53.720] And if it is broken, we will find that out and then we will fix forward.
+[00:52:56.680] Fix forward. Absolutely. Awesome.
+[00:52:58.080] So this was the first linear ticket
+[00:52:59.640] that, that didn't require the human interaction.
+[00:53:02.800] Perhaps we jumped to the linear ticket that did require that human interaction
+[00:53:05.720] which would go into production.
+[00:53:06.920] And so this is, the ticket where we were looking at fixing the,
+[00:53:11.680] quote issues in terms of what was landing on our web UI.
+[00:53:16.440] So again, something that was in a audit but probably should be fixed
+[00:53:21.360] and something that is fully user visible
+[00:53:23.320] because this is the code or this is what users see on our website.
+[00:53:26.840] We can see that there has been a PR associated with it and it has also merged.
+[00:53:32.280] So clicking over to that, we see that 46 minutes ago.
+[00:53:35.760] So ten 15 minutes after we took it off.
+[00:53:39.240] That's when the initial PR was opened by our internal name for the Dark Factory.
+[00:53:43.920] We see it got kicked off as well as our own internal code tool.
+[00:53:48.840] A bunch of issues found.
+[00:53:50.240] Kikimora then responds to it.
+[00:53:52.200] Code Rabbit approves it, then Sahil,
+[00:53:54.560] who's one of the engineers on our team,
+[00:53:56.160] As I mentioned, these require human review because they are production touching.
+[00:53:59.920] He then approved it and merged it.
+[00:54:01.800] So the only human touch points on this PR to get something from linear
+[00:54:06.000] ticket to production is that required human review,
+[00:54:08.960] because it is still production code and someone clicking the merge.
+[00:54:11.720] Button. So that's Sahil, that was because this was flagged
+[00:54:15.920] or this was marked as something which requires human review.
+[00:54:19.320] Exactly.
+[00:54:19.760] Because this is a critical system, maybe a production system,
+[00:54:22.120] or it might not be a production, but it might just be
+[00:54:24.280] some critical piece of code that we require a human to look at before.
+[00:54:28.200] Do you feel like there'll be a stage where we'll fully trust this?
+[00:54:31.920] Yes, there. Will, I think so.
+[00:54:34.680] One of the things that we are looking to invest more in in the near
+[00:54:38.360] future is how we do risk classification on PRs.
+[00:54:41.360] I would love us to get to a point where we are able to merge straight
+[00:54:46.680] to production for low-risk PRs, according to that classification.
+[00:54:51.040] And the way that we think about that classification, like a lot of else, is
+[00:54:56.240] what is the human visible mechanism for being able to encode that.
+[00:55:00.120] So we can then reason over it rather than an opaque classifier model
+[00:55:03.600] that's doing a binary classification, what is the skill we can give to the agent
+[00:55:06.680] that encodes the things that we think are important,
+[00:55:09.080] so that we can then tune that to that specific risk level.
+[00:55:12.280] And so something like this probably would be auto merge
+[00:55:16.720] at some point in the future because it is a user visible,
+[00:55:19.240] but it is just a documentation change doing a full database migration.
+[00:55:23.080] I still think that one actually might be because that's easy to verify mechanical
+[00:55:27.800] in terms of
+[00:55:28.320] switching over what infrastructure our pipelines run on, that one
+[00:55:31.960] might require some human in the loop, but I think we are working towards that goal.
+[00:55:36.800] So during this podcast, we created
+[00:55:41.600] two linear tickets that have now had created
+[00:55:44.840] and have been merged, one into production one and two, the Dark Factory code base.
+[00:55:50.040] That's two of 6 to 700 pull requests that will be created
+[00:55:54.840] this this week at Tessl, I think we said we're about 6,070%
+[00:55:59.680] of all pull requests at Tessl being created through the Dark Factory.
+[00:56:03.160] What will it take to get that to 100%.
+[00:56:05.320] Building trust?
+[00:56:06.920] Allowing shifting left.
+[00:56:09.560] So actually stepping back quickly,
+[00:56:11.920] we think of it in shifting left and shifting right.
+[00:56:13.960] So from the PR, shifting left is helping engineers create PRs.
+[00:56:18.840] Shifting right is working on the verification of those bars
+[00:56:21.480] so that we trust what the output is.
+[00:56:23.440] And we think we have historically focused more on the shifting right
+[00:56:27.400] to build that initial level of trust of like,
+[00:56:29.280] hey, the code the agent has done is roughly correct.
+[00:56:31.920] There was always more that we can do, and there's always more
+[00:56:33.840] that we will do there to kind of improve the quality of the output.
+[00:56:37.240] But we think we're in a good enough
+[00:56:38.480] spot there where we really want to be doubling down
+[00:56:41.480] and investing in is on how do we make this the easiest way to do work at Tessl,
+[00:56:46.400] not just the fastest or the highest throughput or anything
+[00:56:49.600] along those lines, but where can we bring the Dark Factory
+[00:56:52.000] into making that even easier than possible?
+[00:56:54.400] We have our own internal slack bot that listens ambient
+[00:56:58.680] and channels and can file linear tickets for you and all that kind of stuff.
+[00:57:02.080] We want to move, or we want to move it into actually being able
+[00:57:05.160] to propose tickets on linear or being able to do decomposition.
+[00:57:08.560] We want to move it into the planning process,
+[00:57:10.240] to be able to help you go from PRD and be there as a coworker,
+[00:57:13.360] to kind of be able to riff ideas off of or something along those lines.
+[00:57:16.440] So making it so that the default is that our factory,
+[00:57:19.440] not because we're enforcing it,
+[00:57:20.520] but because that's just what people reach to,
+[00:57:22.200] because it's integrated with the tools that they're using every day. Amazing.
+[00:57:25.000] Well, this has been truly, truly fascinating,
+[00:57:27.760] and it's an amazing accomplishment to see how much of an impact
+[00:57:31.040] this has had on the way we build software at Tessl today.
+[00:57:34.280] And for our audience, our listeners, if you wanted to try this out
+[00:57:38.400] and actually build your own software factory, head to Tessl
+[00:57:42.000] for more information about Dark Factories and about the Tessl agent,
+[00:57:45.360] Load up the Tessl agent just by typing.
+[00:57:47.120] Tessl agent at the command line.
+[00:57:48.520] Once you've got the Tessl CLI installed and just ask those questions,
+[00:57:52.080] take a look at my environment.
+[00:57:53.240] What can I do to improve this and how can I add these verifiers, these
+[00:57:57.240] these you know, the plugin reviews the pieces into the CI
+[00:58:00.720] and the code reviews. This is absolutely amazing.
+[00:58:03.480] It's definitely the next level of software development.
+[00:58:06.840] Rob it's been an absolute pleasure. Thank you so much.
+[00:58:09.040] Thank you. It's been fun. I hope everyone learned something today.
+[00:58:11.680] And thanks for listening. Tune in to the next episode.
+[00:58:13.800] Bye for now.
+[00:58:15.320] The AI Native Dev is brought to you by the package manager for skills and context.
+[00:58:20.040] Your hosts are Guy Podjarny and me, Simon Maple.
+[00:58:23.200] Our producer is Tom Dowler.
+[00:58:25.000] The AI Native Dev is not just a podcast, it's a community.
+[00:58:28.360] And we host monthly meetups at the Tessl offices in central London.
+[00:58:32.040] Visit Tessl IO forward slash community to learn more and I hope to see you there.

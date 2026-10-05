@@ -1,0 +1,591 @@
+[00:00:10.320] And for Tesla and AI Native DevCon, the
+[00:00:13.360] organization here has been just amazing.
+[00:00:16.320] I'm Ray Meyers. Welcome to AI hates
+[00:00:20.000] legacy code. Now, people sometimes ask
+[00:00:22.560] for my slides. You can find them at
+[00:00:24.000] raymyers.org/talks.
+[00:00:26.640] I currently work at OpenHands, the
+[00:00:28.720] leading open source coding agent, which
+[00:00:30.720] as of yesterday is officially a series A
+[00:00:33.040] startup as well. I've also worked at
+[00:00:34.800] some places you've heard of. Uh coding
+[00:00:37.440] agents are cool. We all can agree on
+[00:00:40.160] that.
+[00:00:43.120] What isn't cool is
+[00:00:46.160] if one deletes someone's production
+[00:00:48.239] database
+[00:00:50.000] despite explicit instructions not to. I
+[00:00:52.719] don't consider that cool. has happened
+[00:00:55.120] to someone a few months ago, you may
+[00:00:56.719] have heard, or when, for instance, it
+[00:00:59.039] edits your make file to make the test
+[00:01:02.559] report passing even when they've failed
+[00:01:06.159] as happened to me while I was preparing
+[00:01:08.799] this talk.
+[00:01:10.560] This is a true story. Now, um these
+[00:01:14.000] quirky behaviors relate to, you know,
+[00:01:17.119] model behaviors that we've given names
+[00:01:18.880] like reward tampering and
+[00:01:20.240] hallucinations. These are things that
+[00:01:22.799] the leading model labs like Enthropic
+[00:01:25.360] have been trying to stamp out for well
+[00:01:28.000] over a year. Uh but despite their
+[00:01:31.600] efforts and some progress, this is still
+[00:01:33.600] like a very regular part of your
+[00:01:35.759] experience. If you're using coding
+[00:01:38.000] agents downstream of the models and if
+[00:01:40.880] you're an agent builder like myself,
+[00:01:42.960] these represent
+[00:01:44.960] bugs we can't fix. We have no path to
+[00:01:48.479] fixing these bugs under our present
+[00:01:51.040] assumptions.
+[00:01:52.640] So, do we need to change those
+[00:01:55.040] assumptions is the question I'm raising.
+[00:01:57.280] And people have different ideas about
+[00:01:58.799] that. It depends on what your needs are,
+[00:02:00.560] honestly. Perhaps you're from the land
+[00:02:02.560] of demos, [snorts] the land of
+[00:02:04.640] prototypes. You're from the land of new
+[00:02:07.280] code, some of you, and therefore you are
+[00:02:10.959] from the land where above all AI works.
+[00:02:15.440] You may not have a problem.
+[00:02:18.160] You're from a place I like to call pitch
+[00:02:19.840] deck paradise. I've I've tried to draw a
+[00:02:22.400] representation of it. It's a strange
+[00:02:24.480] place to me. I imagine it as fields of
+[00:02:27.120] green because you do green field
+[00:02:28.640] development. There's a pot of gold
+[00:02:30.160] there. I know that's very important.
+[00:02:31.760] Maybe you've got like a magic mushroom.
+[00:02:33.599] I don't know your life. I'm from a
+[00:02:36.000] different place. I'm at a startup now
+[00:02:39.040] and it's not my first, but I am from
+[00:02:41.280] Legacy Mountain.
+[00:02:44.239] When people are from different places,
+[00:02:46.400] it's sometimes hard for them to
+[00:02:47.840] communicate with one another. And so I
+[00:02:51.040] like to wrestle with the dialogue that
+[00:02:53.360] I've been seeing over the past year or
+[00:02:55.760] so.
+[00:02:57.680] People from pitch paradise will say that
+[00:02:59.440] AI coding is a gamecher and they are
+[00:03:02.720] reporting their true lived experience.
+[00:03:04.640] They are right.
+[00:03:06.720] Whereas people from Legacy Mountain will
+[00:03:08.400] hear that and say your AI doesn't work
+[00:03:10.959] and they are also right. They are
+[00:03:12.640] reporting their true lived experience.
+[00:03:15.360] But people from pitch paradise don't
+[00:03:17.120] understand how someone's experiences
+[00:03:18.720] could be so much different from theirs.
+[00:03:20.319] They say, "You must be close-minded.
+[00:03:22.000] This must be the issue." And start
+[00:03:24.400] blaming the users. But it still is a
+[00:03:28.159] thing that doesn't work in their world.
+[00:03:29.680] This does nothing to help the situation.
+[00:03:31.360] And then they will try and threaten us.
+[00:03:33.360] And they will say, "You will be left
+[00:03:34.959] behind." I have seen hundreds of people
+[00:03:36.799] say, "You're going to be left behind."
+[00:03:39.519] as though I'm in the freaking rapture
+[00:03:43.200] or in a a bem movie franchise starring
+[00:03:45.920] Kurt Cameron instead of trying to have a
+[00:03:48.239] nuance technical discussion.
+[00:03:51.680] Threatening also doesn't make it work.
+[00:03:53.840] It it just doesn't work. We're
+[00:03:55.120] reporting.
+[00:03:57.120] What will help is if the dialogue
+[00:03:59.280] becomes let's fix it. And that's the
+[00:04:02.080] dialogue I want to have. So I declare a
+[00:04:03.680] truce. There have been some harsh words
+[00:04:06.000] on both sides, I'm sure. heart emoji,
+[00:04:08.239] handshake, whatever you need on behalf
+[00:04:10.000] of Legacy Mountain. I welcome you
+[00:04:12.560] because you are trying to climb Legacy
+[00:04:15.120] Mountain and I respect that. We need all
+[00:04:17.600] the help we can get.
+[00:04:20.799] There is some disagreement about how far
+[00:04:22.960] up it we are. For instance, we have
+[00:04:25.680] these great benchmarks like Swebench,
+[00:04:27.919] which is um representative of real tasks
+[00:04:30.960] that had to be done on real GitHub
+[00:04:32.880] repositories. And I think there's strong
+[00:04:35.680] consensus the fact that we have many
+[00:04:37.520] agents now exceeding 70% at what's
+[00:04:39.600] called the verified subset. These kinds
+[00:04:41.759] of benchmark results represent real
+[00:04:43.440] economic value. These are not vanity
+[00:04:45.280] metrics. But how does this translate?
+[00:04:47.759] How far up the mountain are we? Does 70%
+[00:04:51.520] Swedbench mean we're 70% up legacy
+[00:04:54.000] mountain? Some people talk as though
+[00:04:55.840] that's the case. It will get you some
+[00:04:57.520] some shares on LinkedIn, I'm sure. Um,
+[00:05:00.320] others, and I'm closer to this view,
+[00:05:02.320] feel like this is actually 70% up
+[00:05:04.560] something pretty interesting, but it's
+[00:05:06.560] so far down the bottom that you can't
+[00:05:08.639] even see the top from where we are.
+[00:05:13.280] So, Legacy Mountain, we'll find is a
+[00:05:16.400] treacherous place. Sometimes it could
+[00:05:18.639] feel more like this mountain.
+[00:05:21.600] And you may not want to look at that.
+[00:05:23.759] You may not want to think about that. I
+[00:05:25.520] don't blame you. One does not simply
+[00:05:27.520] walk into Mordor, but we have no choice.
+[00:05:30.880] The core the code was forged in the
+[00:05:33.360] fires of Mount Doom and only there can
+[00:05:35.600] it be unmade.
+[00:05:37.520] And just like Gandalf said, I am not
+[00:05:40.320] trying to rob you. I am trying to help
+[00:05:44.160] you when I say AI hates legacy code.
+[00:05:50.479] So this would be a good time to define
+[00:05:52.000] terms. What could I mean by this in this
+[00:05:55.280] context? What I mean is systems based on
+[00:05:59.440] large language models are illequipped
+[00:06:02.240] for the challenges of existing
+[00:06:05.039] production code. [clears throat]
+[00:06:06.880] AI of course can mean many other things.
+[00:06:09.919] They don't literally hate anything. But
+[00:06:13.199] in this context I'm talking time that
+[00:06:14.560] the current assumptions building coding
+[00:06:16.319] agents this is this is what I I mean the
+[00:06:18.720] challenge is
+[00:06:20.479] now I've said legacy code is any
+[00:06:23.600] existing code in production your
+[00:06:25.360] business depends on
+[00:06:27.520] there are particular pieces of legacy
+[00:06:29.840] code that are usually referred to in
+[00:06:31.919] this way because they they are
+[00:06:33.199] challenging and so when we talk about
+[00:06:35.120] the legacy code challenge is usually
+[00:06:36.639] some combination of it being old or
+[00:06:38.479] archaic done in an old way we wouldn't
+[00:06:40.319] do now brittle it breaks easily. It's
+[00:06:43.520] untested. It's forgotten. We We're
+[00:06:46.080] missing some context. Some people have
+[00:06:47.919] moved on.
+[00:06:49.759] But all this boils down to we fear to
+[00:06:53.120] change it. If on pitch deck paradise you
+[00:06:55.759] believe we're afraid to adopt AI, you're
+[00:06:58.319] partly right. There is fear. But it's
+[00:07:00.400] actually a sadder situation than us
+[00:07:02.400] being afraid of the new technology.
+[00:07:04.080] We're afraid of the old technology.
+[00:07:06.080] We're afraid of our own systems. In
+[00:07:08.319] software engineering, the reality in the
+[00:07:10.639] industry is we are quite literally
+[00:07:13.120] afraid of our own legacy. That's what
+[00:07:16.639] you're walking into. Good luck. I'll try
+[00:07:18.960] and help you. Now, why is this a problem
+[00:07:21.440] for large language models specifically?
+[00:07:23.520] You've probably heard throughout 2023
+[00:07:26.000] that it is easy to get large language
+[00:07:28.000] models to give you good value when the
+[00:07:30.720] tasks have certain properties. Like for
+[00:07:32.960] instance, I can ask chat GBT to give me
+[00:07:35.280] a silly goose. I get a silly goose.
+[00:07:37.199] Okay, very good. But more generally,
+[00:07:40.240] tend to excel when it's low risk, there
+[00:07:43.759] is a clear context, and it is easy to
+[00:07:46.639] check the result. I looked at it, it's
+[00:07:49.440] clearly a silly goose. Okay, fine.
+[00:07:52.400] Actually, there's some dispute on this.
+[00:07:54.800] Uh, Opus has claimed it's actually a
+[00:07:57.120] duck. We'll look into that with an aven
+[00:07:58.639] pathologist and get back to you. So
+[00:08:01.840] regardless in Legacy Mountain, it is
+[00:08:05.360] often the case that the exact opposite
+[00:08:07.039] is true. It is a high-risk task because
+[00:08:09.440] you're by definition working on
+[00:08:11.039] something your business depends on.
+[00:08:13.199] There is an unclear context and the
+[00:08:16.160] result is not easy to check. So LLMs
+[00:08:19.360] fail or if they don't, they require
+[00:08:21.199] these elaborate workarounds to manage
+[00:08:23.840] the risk.
+[00:08:26.400] So we see our experience is so different
+[00:08:29.680] because we have different needs and what
+[00:08:32.240] we don't need I claim are excuses. I
+[00:08:36.640] have been hearing some excuses
+[00:08:40.080] not to point any fingers in the in the
+[00:08:43.039] direction unnecessarily of of of any
+[00:08:45.519] particular people in pitch paradise but
+[00:08:47.600] these things are in the air. One the
+[00:08:49.680] models will get better. This well true I
+[00:08:53.120] claim is an excuse because the models
+[00:08:56.399] don't get better in every conceivable
+[00:08:59.680] way imaginable equally which is I think
+[00:09:02.959] what this is a placeholder to mean. We
+[00:09:05.120] have seen very clearly they get better
+[00:09:07.440] in some dimensions and not in others. If
+[00:09:09.200] you're going to make a statement like
+[00:09:10.000] the models will get better I would say
+[00:09:12.080] maybe specify what behavior you'll think
+[00:09:14.399] they'll get better at and how will you
+[00:09:16.640] know when they're there. I think this
+[00:09:19.279] has become too big of a panacea to wait
+[00:09:22.240] for. Another thing that said is humans
+[00:09:24.720] mistake make mistakes too. Again,
+[00:09:27.760] technically true and somewhat useless.
+[00:09:30.720] This is a thought-terminating cliche.
+[00:09:32.959] Humans do make mistakes and we have to
+[00:09:34.800] deal with the consequences of that. And
+[00:09:37.760] LM are not people. They make different
+[00:09:40.399] mistakes for different reasons. So if
+[00:09:43.200] you're using this at the beginning of a
+[00:09:44.640] statement and saying and then how do we
+[00:09:46.560] problem solve from there? Fine, not an
+[00:09:48.720] excuse, but don't use it at the end of
+[00:09:50.720] thought. That'd be a thought terminating
+[00:09:52.240] cliche. Then we have blaming the user.
+[00:09:55.040] Now, we're going to establish these
+[00:09:56.240] tools are very confusing to get real
+[00:09:58.640] results on in many realistic con
+[00:10:00.640] context. So, if you blame the user for
+[00:10:04.640] not knowing your your latest 20 tips,
+[00:10:07.120] trips, tricks, and techniques, you're
+[00:10:09.440] ultimately just holding back your
+[00:10:10.720] product from getting better. Empathy for
+[00:10:12.959] the users will produce innovation that
+[00:10:15.200] gives us better experiences.
+[00:10:17.600] So, we're done with the excuses. Let's
+[00:10:19.839] talk about getting better. There's two
+[00:10:21.680] people we could be talking to, two two
+[00:10:24.240] groups, though they do uh strongly
+[00:10:26.480] overlap.
+[00:10:28.320] A user of coding agents, if you're not
+[00:10:31.120] interested in building and improving the
+[00:10:32.880] the agents we've got, but you want to do
+[00:10:35.200] better using, I do have some some words
+[00:10:37.200] for you, but also we're going to talk
+[00:10:40.079] about getting better as tool builders.
+[00:10:42.720] As a user, I would say apply software
+[00:10:44.959] craft. You can learn how to use AI.
+[00:10:47.760] That's great. I'd like you to do that.
+[00:10:49.680] But there is still something happening
+[00:10:52.000] here that is kind of just the physics of
+[00:10:53.680] the situation you're on. You can call it
+[00:10:55.760] software craft or software engineering.
+[00:10:57.680] And we've had it for a long time. Most
+[00:11:00.320] of it's still relevant. And most
+[00:11:01.760] importantly, we know how to teach it. So
+[00:11:03.440] you have a clearer path to learning
+[00:11:04.800] that. When I say apply software craft
+[00:11:07.360] some starting points, these are some
+[00:11:09.120] books that I I would highly recommend.
+[00:11:11.040] Working effectively with legacy code,
+[00:11:12.959] Michael Feathers. Kill it with fire,
+[00:11:14.959] Marian Botti. Modern software
+[00:11:17.279] engineering by Dave Farley. These are
+[00:11:19.440] some people with blogs and videos I find
+[00:11:22.240] very useful as well. If you've got some
+[00:11:24.320] legacy code challenge, people like this
+[00:11:27.279] have probably said something very
+[00:11:29.279] helpful to you that you could go and
+[00:11:31.519] seek out and then you'll be able to
+[00:11:32.880] apply that insight to use your AI better
+[00:11:35.279] as well if that's what you're doing. Are
+[00:11:37.279] there resources for craft plus AI? Well,
+[00:11:39.680] we're not quite so far along where we
+[00:11:41.360] understand how to teach it even and the
+[00:11:43.680] base knowledge is is changing so
+[00:11:45.279] quickly. But I would like to call out
+[00:11:46.800] some work. A lot of Kessler gave a a
+[00:11:49.920] fantastic master class yesterday
+[00:11:51.680] morning. Uh she's here in the front row.
+[00:11:54.560] So so so thank you for this. and she has
+[00:11:56.959] an amazing GitHub repository that that
+[00:11:58.959] she and others including the Simon
+[00:12:00.560] Technical Coaching Society have
+[00:12:02.160] contributed to where they're gathering
+[00:12:04.240] here's what we have have learned to do
+[00:12:06.560] to use coding agents in a way that's
+[00:12:08.560] very principled with what we know about
+[00:12:10.560] software engineering as well. This is a
+[00:12:12.959] sampling of her talk from yesterday.
+[00:12:15.200] This is just a map of just the things
+[00:12:17.920] she was able to cover in in the first
+[00:12:20.079] two hours you know with the master
+[00:12:21.839] class. um it's just scratching the
+[00:12:24.160] surface of the workarounds they've
+[00:12:25.680] cataloged. This should tell us something
+[00:12:28.000] about the tools. We could start taking
+[00:12:30.800] lessons from this so that people have to
+[00:12:33.600] memorize fewer workarounds very clearly.
+[00:12:37.839] So these coding agent skills they often
+[00:12:39.920] have to do with managing context,
+[00:12:42.160] managing the risk either using these
+[00:12:44.800] software craft skills or by reducing the
+[00:12:47.519] task size things like this or they're
+[00:12:49.200] customizing how you're using the agents.
+[00:12:51.279] Your agents all have some amount of
+[00:12:52.959] customizability. You should learn how to
+[00:12:54.959] use that. Something we've just announced
+[00:12:57.040] in uh open hands version one is we've
+[00:12:59.440] extracted out the core agent that makes
+[00:13:02.079] the the box tick into something called
+[00:13:03.680] the software agent SDK. So this will
+[00:13:06.000] allow you to start scripting uh how
+[00:13:08.959] you're using the agent with uh actual
+[00:13:11.279] code. You're not limited to only
+[00:13:13.279] prompting. I think this is very
+[00:13:15.120] important for reasons I I hope will
+[00:13:17.040] become uh clear, but generally speaking,
+[00:13:20.000] learn to customize the tools you're
+[00:13:21.360] using because they're they're really not
+[00:13:22.800] a complete experience for the full range
+[00:13:24.800] of tasks you're going to see. Getting
+[00:13:26.959] better as a tool builder then is help
+[00:13:29.680] your users, which I hope would be
+[00:13:32.320] obvious. Help them to apply software
+[00:13:34.079] craft, which is the goal. Also, help
+[00:13:36.639] them understand your tool with clear
+[00:13:39.200] predictable behaviors that they can
+[00:13:41.440] learn and that they can trust.
+[00:13:44.880] Currently, our tools are a little bit
+[00:13:47.360] too much like a magic box. On Legacy
+[00:13:50.639] Mountain, we don't need a magic box. We
+[00:13:53.600] need a wrench. I know what it does, and
+[00:13:56.800] it fits in my hand.
+[00:14:01.440] So, how do we do that? Let's go back to
+[00:14:03.519] this central challenge. I'm arguing
+[00:14:06.240] we're facing that solutions based on
+[00:14:08.959] large language models are illquipped for
+[00:14:10.800] the challenges of existing production
+[00:14:12.639] code. If we take that as not just a
+[00:14:14.959] defeist slogan but it is some
+[00:14:16.880] non-mporary state of affairs to contend
+[00:14:18.880] with. It does suggest solutions right
+[00:14:22.240] perhaps our solutions should not be
+[00:14:24.880] based so much on large language models.
+[00:14:27.360] Perhaps we should just reduce our
+[00:14:28.720] dependence a little bit. Let's talk
+[00:14:30.480] about what that means.
+[00:14:34.000] like to simplify the domain of
+[00:14:36.720] components we can use into two axes.
+[00:14:39.360] Scope, how general they are, and
+[00:14:42.399] confidence, how confident we are in what
+[00:14:44.720] they're doing. Language models, the the
+[00:14:47.360] big ones, the frontier, the foundation
+[00:14:49.360] models, if you like, they are very high
+[00:14:52.959] in the scope of what they can attempt to
+[00:14:55.120] do. That is super interesting. It's
+[00:14:57.680] understandable. We're excited about
+[00:14:58.959] that. algorithms on the other hand as
+[00:15:01.839] well as the old school symbolic AI they
+[00:15:04.399] are we're highly confident in what they
+[00:15:06.880] are doing um within the tiny scope that
+[00:15:09.680] they've been designed for and so if
+[00:15:12.000] you're trying to reach that upper right
+[00:15:13.920] corner where you have a wide scope and
+[00:15:18.079] high confidence then you can try to take
+[00:15:20.880] LLMs and push higher confidence or you
+[00:15:23.120] can take algorithms and try to level up
+[00:15:25.839] in scope um and lot of excitement
+[00:15:29.920] lot of money in this angle, right? Try
+[00:15:33.279] to try to push it all through LLM by
+[00:15:35.760] improving the LLM raises all boats. Uh
+[00:15:38.560] but as engineers,
+[00:15:40.720] we're not limited. We can do both. We
+[00:15:43.279] can use these both together in in kind
+[00:15:45.120] of infinite combinations. So, um that's
+[00:15:48.800] that's the shape of things, you know, in
+[00:15:51.759] in a nutshell. Here are some examples of
+[00:15:54.079] that. Again, what we're trying to do is
+[00:15:56.399] give these tools clear, predictable
+[00:15:58.079] behaviors that people can learn and
+[00:16:00.240] understand and trust, allow our users to
+[00:16:02.720] form a mental model. My first time
+[00:16:05.199] addressing AI native dev, I came to New
+[00:16:07.600] York February and I gave this talk make
+[00:16:10.160] tools that don't break uh about working
+[00:16:13.519] with some code like this and worse using
+[00:16:16.959] refactoring algorithms. There's another
+[00:16:19.680] um talk that's coming on right after
+[00:16:22.079] mine by the CEO of Open Hands, Robert,
+[00:16:25.040] and it's called Managing Fleets of
+[00:16:26.560] Coding Agents with Open Hands. I'll I'll
+[00:16:28.800] mention a taste of what's in that, but
+[00:16:30.959] it talks about our um approach so far on
+[00:16:34.320] these long horizon tasks, we say, these
+[00:16:36.240] these larger code bases that present
+[00:16:37.920] these problems. Another one I'd like to
+[00:16:39.839] call out that's also right after mine,
+[00:16:42.000] so watch one in online and one in
+[00:16:44.240] person, I guess, is DevOps agents that
+[00:16:47.199] can't delete your database by my friend
+[00:16:49.440] George from Stackpack. We, you know, I
+[00:16:51.519] love that premise. So,
+[00:16:54.800] um, the first one of of mine I just
+[00:16:58.000] mentioned, that's refactoring code
+[00:16:59.839] safely by algorithm, not seeing humans
+[00:17:02.240] or LLMs as the things that should
+[00:17:04.319] directly be editing the code. the uh
+[00:17:07.439] Roberts is uh involves breaking down
+[00:17:10.160] tasks by studying the source code and
+[00:17:13.360] making this dependency graph before we
+[00:17:15.679] give tasks to to agents this fleet of
+[00:17:18.160] agents and uh George's is about using a
+[00:17:22.079] policy engine to enforce what uh what
+[00:17:25.760] the agent does or at least that's the
+[00:17:28.240] part of the technology I'm highlighting.
+[00:17:30.320] So if we combine those first two ideas
+[00:17:32.240] as sometimes we do in in some of these
+[00:17:33.919] openends migrations we're looking at
+[00:17:35.840] then we've got static analysis of the
+[00:17:38.559] source code making this dependency tree
+[00:17:40.480] and coming up with then how are we going
+[00:17:43.440] to partition out and order these tasks
+[00:17:46.000] so that we can address them with agents
+[00:17:48.960] in parallel but they're set up so they
+[00:17:51.200] don't crash into each other. They have
+[00:17:53.440] uh responsibilities where they're
+[00:17:55.200] unlikely to kind of overlap. Right? So
+[00:17:57.679] we're setting the task up for success.
+[00:17:59.520] Then we have our little our little
+[00:18:00.880] worker bees, the fleet of agents doing
+[00:18:02.960] what they do. But then on the end when
+[00:18:05.039] we're uh editing the code where
+[00:18:06.960] possible, we can still do that with
+[00:18:08.559] syntax transforms just through agent
+[00:18:10.240] tool use tools like like as GP, Java
+[00:18:14.400] parser, and others. So interesting thing
+[00:18:18.160] there. This is like turning a compiler
+[00:18:20.720] inside out. There's a there's an LLM
+[00:18:22.400] based agent, but the rest of what's
+[00:18:23.840] going on looks like the inside of a
+[00:18:25.280] compiler. That's because compilers are
+[00:18:26.960] really good at thinking about code and
+[00:18:29.360] LLMs, it turns out, are not compilers.
+[00:18:32.400] That's my opinion. Maybe that's the next
+[00:18:34.240] talk. Um, you give me a time check here.
+[00:18:37.440] I'll break down
+[00:18:39.280] >> We good?
+[00:18:41.760] >> Perfect. So, I I'd like to then break
+[00:18:44.960] down a little bit of some of what makes
+[00:18:47.360] uh George's engine tick. And I think
+[00:18:49.440] this will be a little deeper up the
+[00:18:50.960] stack than the things he's going to
+[00:18:52.160] cover in in his talk. But stackback is a
+[00:18:54.320] DevOps flavored coding agent. It has a
+[00:18:56.720] lot of domain specific stuff they're
+[00:18:58.320] targeting for uh for operations uh
+[00:19:01.600] domains and it has internally a
+[00:19:03.520] permission system called Warden that
+[00:19:05.120] uses Cedar policies. Cedar is a
+[00:19:08.799] technology made by Amazon for enforcing
+[00:19:12.160] uh policies in this domain specific
+[00:19:13.760] language. An interesting thing about
+[00:19:15.440] Cedar is Cedar is formally verified u
+[00:19:19.039] meaning there are aspects that are
+[00:19:20.400] mathematically proven which I will show
+[00:19:22.320] you.
+[00:19:24.320] Um to my knowledge this is the first use
+[00:19:27.440] of formal verification in a coding agent
+[00:19:30.160] product and there are many research
+[00:19:33.200] examples. I think this is the first
+[00:19:34.960] example that that went all the way to
+[00:19:36.559] production. Let me know if I've missed
+[00:19:38.240] one because I'm cataloging them in a
+[00:19:40.160] little repo called awesome verified
+[00:19:42.000] coding agents and to kind of track these
+[00:19:44.480] these emerging efforts because I just I
+[00:19:46.480] just want to highlight this really
+[00:19:48.000] advanced use of algorithms together with
+[00:19:50.480] LLMs to you know deliver these these
+[00:19:52.720] high assurance experiences. What does
+[00:19:54.880] this look like up in uh Amazon's Cedar,
+[00:19:57.520] right? It's um an open source library
+[00:20:00.080] that parses this DSL domain specific
+[00:20:03.039] language about what people are allowed
+[00:20:05.200] to access what resources and so on. Um,
+[00:20:08.559] so we've got a forbid there and a permit
+[00:20:11.039] there. And then there's code in that
+[00:20:14.000] engine written in Rust, right? So we say
+[00:20:16.640] we authorize things and it's executing a
+[00:20:19.679] particular bit of logic there like if
+[00:20:22.080] something is marked both that it should
+[00:20:24.160] be forbidden and that it should be
+[00:20:27.440] permitted then forbidden should win.
+[00:20:30.640] Right? This is a a log piece of logic
+[00:20:32.320] they'd call forbid trumps permit. And
+[00:20:35.520] it's very important to them that that
+[00:20:38.000] code does what we've just said. If it
+[00:20:41.120] didn't, it would be a big problem. Um,
+[00:20:44.799] so they want to make extra sure not just
+[00:20:46.640] for the inputs we're going to test on,
+[00:20:48.480] but actually for every conceivable input
+[00:20:51.039] we could have. There are ways of doing
+[00:20:52.960] that. The way they've done it here is
+[00:20:55.200] they've implemented a reference
+[00:20:56.720] implementation of that Cedar engine
+[00:20:58.799] that's in Rust. They've got a parallel
+[00:21:00.799] implementation that's in a language
+[00:21:02.400] called lean which you can do
+[00:21:04.000] mathematical proofs on. Field metalist
+[00:21:06.559] mathematicians use it to to verify their
+[00:21:08.720] results these days. So they've got you
+[00:21:12.240] know a slightly translated kind of
+[00:21:13.760] purely functional version of that is
+[00:21:16.159] authorized method. And then because it's
+[00:21:19.360] in lean they have a theorem about that.
+[00:21:21.919] And there are almost 2,000 such theorems
+[00:21:23.919] in the Cedar Spec codebase
+[00:21:26.400] where that top part is basically code as
+[00:21:28.720] you'd understand it just knowing that
+[00:21:30.240] the uh arrow is an implies arrow. If you
+[00:21:33.280] were to look at it for longer than I'll
+[00:21:34.640] have it up, you'd understand. But the
+[00:21:36.159] rest of it is something that might be
+[00:21:37.760] new to some of you which is called a
+[00:21:39.200] proof script. It's a series of tactics
+[00:21:41.440] that are used to prove that statement.
+[00:21:44.640] This is just one step of that. I won't
+[00:21:46.720] walk you through the whole proof right
+[00:21:48.000] now, but this is this is a short
+[00:21:49.440] understandable one. When you use this in
+[00:21:52.559] an interactive theorem prover, which is
+[00:21:54.159] what I spent a lot of the last year um
+[00:21:56.159] studying,
+[00:21:58.320] there's this thing on the right hand
+[00:22:00.400] side called a proof state. And you look
+[00:22:03.120] at the current state of the goal at the
+[00:22:05.200] bottom you're trying to prove. You'll
+[00:22:06.960] notice it has that is authorized
+[00:22:09.360] function referenced. So there's going to
+[00:22:11.280] be a tactic executed here. Someone has
+[00:22:13.360] looked at that and said, "Ah, what I
+[00:22:14.640] need to do is inline is authorized." I
+[00:22:17.120] need to start explode the definition of
+[00:22:18.960] that into my proof state. using it's
+[00:22:22.080] called unfold in the language of these
+[00:22:23.919] theorem tactics and then I have the
+[00:22:26.240] definition of it there and I can start
+[00:22:27.760] doing further steps manipulating it and
+[00:22:29.760] simplifying it so that I've proven the
+[00:22:32.080] end result. So this is like tests but
+[00:22:35.360] can prove things for all possible inputs
+[00:22:37.679] not just the inputs and the tests. So
+[00:22:40.480] how many of you have seen a tactic
+[00:22:42.880] prover before an interactive theorem
+[00:22:44.480] prover like that? Okay, at least one
+[00:22:46.960] person. So if the rest of you haven't,
+[00:22:48.960] now you have. And there are endless
+[00:22:51.039] possibilities. The entirety of computer
+[00:22:53.360] science, past, present, and future, is
+[00:22:55.440] at our disposal. The one thing we can't
+[00:22:58.400] do is escape old code. Even if we
+[00:23:01.840] escaped all the code that's old today,
+[00:23:05.280] new code becomes old.
+[00:23:08.320] So
+[00:23:10.159] I hope as we climb legacy mountain, we
+[00:23:12.559] can at least agree on this. Whatever
+[00:23:15.520] techniques and magic and models and
+[00:23:17.600] chicainery we use, let us work together
+[00:23:20.480] to make legacy a word we can speak with
+[00:23:24.000] pride instead of fear.
+[00:23:27.679] Let that be our legacy. Thank you.
+[00:23:38.746] [music]
+[00:23:44.641] >> [music]
+[00:23:53.156] [music]

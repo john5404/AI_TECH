@@ -1,0 +1,2353 @@
+[00:00:04.584] [music]
+[00:00:09.760] Um let's get started. So today I wanted
+[00:00:12.559] to talk about um testing and securing AI
+[00:00:15.519] generated code with cursor. Um the main
+[00:00:18.240] theme of the event is that um um we
+[00:00:21.680] generate a lot of code using cursor but
+[00:00:23.359] a lot of times you know um the models
+[00:00:25.439] are hallucinating or they're not doing
+[00:00:27.599] exactly what you intend to do and
+[00:00:29.119] sometimes there's a security issues and
+[00:00:31.599] um a lot of bugs inside of it. So it's
+[00:00:34.239] not really you know u useful in terms of
+[00:00:37.600] deploying apps in production using
+[00:00:39.120] cursor [snorts] or when you're working
+[00:00:41.200] on a real app. uh you don't want uh you
+[00:00:44.239] know any issues or bugs uh going with
+[00:00:46.480] your code. Um um so that's what I'm
+[00:00:48.879] going to talk about today. Um so who am
+[00:00:52.160] I? Uh my name is Trey. I'm a cursor
+[00:00:54.640] ambassador for Canada and a senior AI
+[00:00:56.719] engineer. I'm working at a startup uh
+[00:00:58.800] called Vivven in San Francisco. Um um I
+[00:01:02.320] also run a assisted assisted coding
+[00:01:05.119] workshops on different platforms and
+[00:01:06.560] I've been speaking at various
+[00:01:07.680] conferences about AI coding as well. Um,
+[00:01:10.640] I started using AI to code back in 2020
+[00:01:13.680] uh with GitHub copilot. So, it's been
+[00:01:15.920] about 5 years since I've been coding
+[00:01:17.520] using AI and I've uh try to figure out
+[00:01:20.400] different workflows that allow me to
+[00:01:21.920] move really really fast with AI while
+[00:01:24.159] maintaining the quality and u speed. Um,
+[00:01:29.119] so uh for those of you uh who are not
+[00:01:32.479] aware of cursor uh cursor is uh your AI
+[00:01:35.920] sidekick in your development workflow.
+[00:01:38.000] It acts as your parcoder. It's just a
+[00:01:40.560] fork of VS code. So if you're already
+[00:01:42.960] familiar with VS Code, it's a really
+[00:01:44.720] easy migration to um just work with
+[00:01:46.880] cursor. Um
+[00:01:50.079] now uh what makes cursor different than
+[00:01:53.040] other uh tools that are out there,
+[00:01:55.200] right? Uh so there's like cloud code,
+[00:01:58.240] there's amp code, there's ko, um there's
+[00:02:01.119] all all sort of the different tools that
+[00:02:03.360] uh make uh coding using AI really really
+[00:02:05.920] easy. But what I particularly love about
+[00:02:08.720] cursor is that it it's it makes context
+[00:02:12.000] engineering really really easy. And
+[00:02:14.239] we're going to see how it makes it
+[00:02:16.000] really really easy. And I've never seen
+[00:02:17.520] any other tool um do this more
+[00:02:20.000] efficiently. Um um so I I so I think
+[00:02:23.200] that's the secret sauce behind cursor
+[00:02:24.959] like they just make context engineing
+[00:02:26.800] really really easy. As we know that
+[00:02:28.239] these agents um you know love um um
+[00:02:34.160] love to guess things but if you uh you
+[00:02:36.400] know give it proper context it's not
+[00:02:38.560] going to hallucinate and as a result of
+[00:02:40.160] that you're going to get much better
+[00:02:41.360] output. Um so cursor kind of does a lot
+[00:02:44.239] of context engineering behind the scenes
+[00:02:45.920] for you. Um that's what makes it
+[00:02:48.000] different. It's it's it's not about you
+[00:02:49.680] know um proing different models and the
+[00:02:52.239] UI. Um
+[00:02:55.040] so um how many of you guys um use cursor
+[00:03:01.360] rules uh user rules and project rules
+[00:03:04.560] like I I I wanted to get a sense of like
+[00:03:07.440] how people use cursor in this room so
+[00:03:09.360] that I can tailor the session
+[00:03:11.120] accordingly. Um can you guys raise your
+[00:03:12.800] hands if you are uh using cursor rules?
+[00:03:17.200] All right. And how many of you guys are
+[00:03:19.280] aware of uh project rules and user rules
+[00:03:23.360] and then also bugbot rules and stuff
+[00:03:26.080] like that. Have you guys used those
+[00:03:27.840] extensively or not?
+[00:03:31.360] Okay. So I see very few handresses
+[00:03:34.319] meaning that I think I might need to
+[00:03:36.480] cover the basics of user rules and
+[00:03:39.040] project rules. So I'll probably start
+[00:03:40.400] with that. So user rules is basically
+[00:03:43.599] global to your cursor environment.
+[00:03:45.280] Meaning that it applies to all of your
+[00:03:47.680] project um and it's going to be used by
+[00:03:50.080] all of your agent chats and applies to
+[00:03:51.680] all of the chat threads that you uh
+[00:03:54.319] start with cursor. Meaning that every
+[00:03:55.840] single time you send a message to cursor
+[00:03:58.319] your user rule or your global rule is
+[00:04:00.640] going to apply to that. Um second type
+[00:04:03.840] of rule is project rules. So these are
+[00:04:06.400] scoped for the specific project. Um so
+[00:04:09.599] they can be invoked or used path
+[00:04:12.799] patterns. They can be in invoked
+[00:04:14.799] manually meaning that you have to like
+[00:04:16.400] manually attach the specific rule to the
+[00:04:18.239] context or it could be also based on the
+[00:04:20.959] relevance. Um so this apply
+[00:04:23.680] intelligently part that is right here.
+[00:04:25.919] Um it's kind of like cloud skills. Um
+[00:04:29.759] cursor had it like for over a year at
+[00:04:32.639] this point. So the agent can decide when
+[00:04:35.600] to pull in that context depending on
+[00:04:37.520] what you're doing, right? Um and then it
+[00:04:40.400] can be applied to specific files or it
+[00:04:41.840] can be applied manually and can be
+[00:04:43.280] always applied um as well for the
+[00:04:45.440] specific project. And what most people
+[00:04:48.160] don't know is that um you can actually
+[00:04:52.080] create cursor rules in each module of
+[00:04:55.120] your project. So if you're working in a
+[00:04:57.360] monor repo, if you have like front end
+[00:04:59.520] and back end in the same repository, you
+[00:05:01.199] can actually have uh cursor rules in
+[00:05:04.000] each of the front end and back end and
+[00:05:05.600] then those rules will be applied for
+[00:05:07.520] front end and back end accordingly. So
+[00:05:09.600] that way like you are doing proper
+[00:05:11.600] context engineering. One way I use it is
+[00:05:13.919] actually by giving the agents memory of
+[00:05:16.960] what's inside of that module. every
+[00:05:18.639] single time the agent is going to read
+[00:05:20.880] that read a file or work on that
+[00:05:23.280] specific module it's actually going to
+[00:05:24.960] take a look at the memory for that
+[00:05:26.479] module and then work on that and once
+[00:05:28.800] it's done working it's also going to
+[00:05:30.000] update that memory autonomously to keep
+[00:05:32.320] that up to date as well so that's like
+[00:05:33.919] one of the most powerful uses of using
+[00:05:36.880] cursor rules and uh subdirectories uh in
+[00:05:39.360] cursor um let's actually uh try this out
+[00:05:42.800] um in action so feel free to open any
+[00:05:46.240] project that you have um or you and just
+[00:05:48.320] open cursor um just a regular you know
+[00:05:53.120] empty cursor as well. So I'm probably
+[00:05:54.560] going to do that just for the sake of
+[00:05:56.160] this uh demo. So I'm going to create a
+[00:05:59.199] sample test folder here.
+[00:06:03.199] >> Could you zoom in?
+[00:06:05.600] >> Yeah, I'll actually do a couple of
+[00:06:07.840] things. Uh cursor settings. Let me make
+[00:06:11.360] the theme white.
+[00:06:15.360] Uh
+[00:06:16.880] oh, sorry. It's a
+[00:06:28.080] cursor light.
+[00:06:30.400] So, that should help. And then
+[00:06:33.600] going to zoom in a little bit.
+[00:06:37.680] >> All right. [sighs] Are you guys able to
+[00:06:39.360] see the screen now?
+[00:06:41.600] >> Perfect. All right. So, I'm going to get
+[00:06:44.720] rid of this for now. Um, [clears throat]
+[00:06:47.919] I don't have anything right now.
+[00:06:50.800] If I go and take a look at my user
+[00:06:53.840] rules,
+[00:06:55.600] I'll have something. Um, let me
+[00:07:00.479] So, these are the rules that come with
+[00:07:02.319] all the projects, right? So, for
+[00:07:03.680] example, I work a lot with cloud 4.5
+[00:07:06.880] sonnet and it just likes to create a lot
+[00:07:08.880] of markdown files. Um, I hate it. uh it
+[00:07:12.479] keeps telling me I'm absolutely right
+[00:07:14.160] all the time. I hate it. So that's all
+[00:07:17.360] is going to going into my user rule. So
+[00:07:19.840] it doesn't do that. Um it actually now
+[00:07:22.880] just creates uh text files and not
+[00:07:24.720] markdown files but it still creates
+[00:07:26.800] summary in the files. Uh point is you
+[00:07:30.000] can u be open-ended about what you want
+[00:07:33.120] to um have in
+[00:07:36.720] your cursor your rules. Basically, if
+[00:07:40.080] you have a coding style and you want
+[00:07:41.759] your agent to represent your own coding
+[00:07:43.759] style, those kind of things uh go into
+[00:07:46.479] your user rules, global rules, which is
+[00:07:48.800] going to be uh applied to your specific
+[00:07:50.960] coding workflow, right? Cuz if you're
+[00:07:52.400] working on a team on a production
+[00:07:54.160] project and if you're sharing the rules
+[00:07:55.680] with your entire team, you you can't
+[00:07:58.160] enforce your coding standard to someone
+[00:08:00.240] else, which is why you kind of have this
+[00:08:02.639] user rules. So um that's why those uh
+[00:08:06.080] common u scenarios can go into user
+[00:08:08.879] rules and that's what I have here. This
+[00:08:11.120] is my own personal coding standard or
+[00:08:13.440] coding ster I like. Uh so all of those
+[00:08:16.080] are just going into my user rules here.
+[00:08:18.160] So that's the first thing. So every
+[00:08:20.000] single um chat thread will have this
+[00:08:22.560] user rule. So for example if I just ask
+[00:08:24.319] her sir can you tell me what rules do I
+[00:08:27.919] have um in this project? Uh what are the
+[00:08:30.319] user rules?
+[00:08:33.360] Um, I'm going to [sighs] hit composer
+[00:08:36.159] one. It's really fast. It's going to
+[00:08:37.839] save me some time,
+[00:08:41.760] right? Um, so as you can see, uh, all
+[00:08:46.240] these rules are here. I I could just say
+[00:08:48.640] like, you know, keep it as is, don't
+[00:08:50.240] summarize. Uh but as you can see it
+[00:08:53.120] doesn't have anything in the uh project
+[00:08:55.600] but it it still has all the files
+[00:08:57.120] meaning that cursor by default injects
+[00:08:59.440] all of these rules into every single
+[00:09:01.440] chat request that you're sending to um
+[00:09:04.080] cursor. Um so this is the first thing
+[00:09:06.000] you need to be a aware of because that
+[00:09:07.839] does make a day and night difference in
+[00:09:09.600] how your outputs look like with cursor.
+[00:09:11.760] Um and then um then let's let's talk
+[00:09:15.600] about project rules. Right. So here I'm
+[00:09:18.000] going to create a single rule file
+[00:09:19.760] called um test.m MDC.
+[00:09:24.880] Um it's going to be always applied. Um
+[00:09:27.600] the UI is kind of really hard to work
+[00:09:29.920] with because of the zoom but
+[00:09:33.360] um okay so here um I'm going to create a
+[00:09:36.560] random rule. Um,
+[00:09:39.120] so I'm going to say
+[00:09:41.680] always end your responses with a smiley
+[00:09:43.839] face and the phrase Iron Man.
+[00:09:49.279] I want to say Iron Man.
+[00:09:52.720] And the reason I say Iron Man here uh is
+[00:09:55.200] because I want it to be obvious that it
+[00:09:58.160] actually is, you know, applying my rules
+[00:10:00.800] correctly. And just to show you guys how
+[00:10:02.720] the different rules play into, uh,
+[00:10:04.399] effect. So I can just say hi here now
+[00:10:07.279] and it should in theory reply with end
+[00:10:10.000] the response with parent man but since
+[00:10:13.279] um we are using composer it's not really
+[00:10:15.760] good at following the instructions I'll
+[00:10:18.000] probably switch to 4.5 set and you'll
+[00:10:20.800] see that it's actually gets applied.
+[00:10:29.600] Okay. Uh what's going on here? Um,
+[00:10:34.959] this is always I've not I didn't save
+[00:10:36.959] it. That's why. Um,
+[00:10:49.279] H.
+[00:10:52.560] All right. I don't know why it's not
+[00:10:53.920] working. Let me let me Is it even
+[00:10:56.240] applying the rule to the context?
+[00:11:00.079] There seems to be a bug here.
+[00:11:04.160] I've done this hundreds of times and it
+[00:11:06.240] works every single time. I don't know
+[00:11:07.680] what's happening today. Um
+[00:11:10.480] with uh
+[00:11:14.399] it's iron man.
+[00:11:18.160] Um
+[00:11:22.959] what's the weather?
+[00:11:30.377] >> [snorts]
+[00:11:35.440] >> Oh, my bad. I did not create the file
+[00:11:38.800] under the rules directory. That's why it
+[00:11:40.320] was not applying.
+[00:11:43.360] Now, if I just say simple hi,
+[00:11:53.839] excuse me. So, are you just using
+[00:11:55.519] built-in cursor chat or is that client
+[00:11:57.360] you're using?
+[00:11:58.640] >> It's a built-in cursor chat. I could
+[00:12:00.880] disable client and all the other things.
+[00:12:02.959] >> Oh, okay.
+[00:12:04.000] >> Yeah. So, this is cursor. Uh, it's not
+[00:12:07.360] client. Um, there's definitely something
+[00:12:10.240] going on. Um,
+[00:12:12.320] >> true. What is it true?
+[00:12:18.800] >> Um, I think I might have changed it, but
+[00:12:21.519] yeah.
+[00:12:24.639] So if I just say hi, it should in theory
+[00:12:26.480] work. Uh let me it it is under the rules
+[00:12:29.279] directory. So it should work this time.
+[00:12:31.600] Yeah, it worked. Um
+[00:12:34.880] live demos are always tricky. Uh but
+[00:12:37.680] yeah, so it always apply apply
+[00:12:39.519] intelligently. So here I could say
+[00:12:41.773] >> [snorts]
+[00:12:41.920] >> um
+[00:12:43.600] um so here you could basically like
+[00:12:46.000] apply this rule when a certain condition
+[00:12:48.079] happens. So for example like um I want
+[00:12:52.000] to apply this rule whenever um uh the
+[00:12:55.200] user is greeting me. Um so I could say
+[00:12:58.240] um use this rule whenever the user is
+[00:13:00.480] gre greeting you but do not apply this
+[00:13:02.639] rule in all the other scenarios.
+[00:13:06.880] Um and in production like you can you
+[00:13:09.760] know apply you can think of like cloud
+[00:13:12.959] skills for example like in cloud skills
+[00:13:15.519] you can say like hey if you're working
+[00:13:17.279] with a presentation file or excel file
+[00:13:20.079] then only you apply this rule. So
+[00:13:21.680] similar thing in cursor as well. So this
+[00:13:24.079] is cursor equivalent of clot skills if
+[00:13:26.480] you're aware of cloud skills. Um but
+[00:13:29.519] basically here I'm I'm greeting it. So
+[00:13:31.839] it should reply uh and it should apply
+[00:13:34.079] this rule um and end the response with
+[00:13:36.800] iron man
+[00:13:45.040] did um so it basically exploded the file
+[00:13:48.800] because I greeted it right now. Now if I
+[00:13:50.959] end the response with iron man and I'm
+[00:13:52.959] not going to have this file in the
+[00:13:54.320] context cuz if it's open it's going to
+[00:13:56.240] be in the context and it's going to end
+[00:13:57.839] with iron man. So I could say what's the
+[00:14:00.160] weather
+[00:14:03.040] and here I'm not greeting so it should
+[00:14:05.360] not um it should not end the response
+[00:14:08.320] with iron man. This is a very basic
+[00:14:10.639] foundation before I get started because
+[00:14:13.120] otherwise it's going to be hard for me
+[00:14:14.480] to explain the rest of the session.
+[00:14:18.320] All right so it worked. Um the third
+[00:14:20.959] type of rule is apply to specific files.
+[00:14:23.920] So here I'm just going to say star.tsx
+[00:14:26.399] tsx
+[00:14:28.959] right um
+[00:14:31.920] save so now if I say hi
+[00:14:35.120] it's this rule is not going to be
+[00:14:36.959] applied unless a tsx file is in the
+[00:14:40.160] context so I could create a sample tsx
+[00:14:42.639] file
+[00:14:48.639] right um say pass
+[00:14:51.680] don't do anything
+[00:14:54.639] Um
+[00:14:56.399] and then
+[00:14:58.560] cursor used to have this um context
+[00:15:04.800] ring here that you used to show like
+[00:15:07.600] what's in the context but I think they
+[00:15:09.040] removed it in the recent versions. Um
+[00:15:11.600] they're working on a newer version of it
+[00:15:13.519] but yeah um and now if I just say hi
+[00:15:17.199] again
+[00:15:19.040] it should be applied because now the tsx
+[00:15:20.880] file is in the context. So that I think
+[00:15:23.360] this is the foundation of how the rules
+[00:15:25.040] work in cursor and then if you have
+[00:15:26.880] multiple modules you can have you know
+[00:15:29.199] multiple rules in all those all of those
+[00:15:31.519] different modules and those will be
+[00:15:32.800] applied and those rules can also be
+[00:15:34.480] treated as memory as well if you want
+[00:15:36.000] to. Um so yeah it did end the response
+[00:15:38.800] with iron man because now the tsx file
+[00:15:41.120] is in the context. Okay so that's the
+[00:15:43.600] basics about rules. So now let's get
+[00:15:45.279] back to the slides and um move on to the
+[00:15:48.480] next section. Um
+[00:15:53.440] all right. Um so
+[00:15:56.320] feel free to use your own project if you
+[00:15:58.480] have. If not uh you can uh clone this
+[00:16:01.120] repository in your local um
+[00:16:04.959] you don't have to clone this repository.
+[00:16:06.800] You can also you know work on any of
+[00:16:08.399] your own project if you want to. But if
+[00:16:10.399] you don't have anything to work on, you
+[00:16:12.000] can clone this repository. And that's
+[00:16:13.360] what I'm going to be using.
+[00:16:23.040] I could also just paste this uh that
+[00:16:25.600] link in the Zoom chat. Um
+[00:16:26.959] >> just past Discord. I'll put it in Zoom
+[00:16:28.880] as well.
+[00:16:30.240] >> Yeah, let me just do that.
+[00:16:32.800] >> Just a practical question. Um does this
+[00:16:35.680] assume that we have a paid cursor
+[00:16:37.920] account or no?
+[00:16:39.680] Um,
+[00:16:41.759] I think you can use the free one as
+[00:16:44.320] well, uh, with the auto mode and that
+[00:16:46.399] should work just fine. If you have a
+[00:16:48.560] paid version, that's going to be much
+[00:16:49.839] better. But, uh, if you have a free one,
+[00:16:51.759] that's, uh, fine as well. You can also
+[00:16:54.880] just use your own API key. If you don't
+[00:16:57.120] have the paid account, just like grab an
+[00:16:59.199] open AI key or entropy key and just put
+[00:17:01.680] that in and that should also do the
+[00:17:03.680] trick.
+[00:17:09.120] Um
+[00:17:10.880] yeah, if you don't know, you can
+[00:17:14.240] basically just uh
+[00:17:20.160] so if you go to the models tab and then
+[00:17:22.160] if you go to API keys, you can bring
+[00:17:25.120] your own keys and that way you don't
+[00:17:26.480] have to pay for cursor. Um
+[00:17:31.919] so that's one way to get started. Um
+[00:17:36.559] okay. So now um
+[00:17:40.640] present again.
+[00:17:50.480] All right. Um so before we actually get
+[00:17:53.600] hands-on into testing, we need to
+[00:17:56.320] understand uh some of the new cursor 2.0
+[00:17:58.640] features that we are going to use to um
+[00:18:01.679] to power our workflows. Um so [snorts]
+[00:18:05.600] cursor 2.0 released um uh composer 1
+[00:18:09.760] which is their state-of-the-art model
+[00:18:11.360] for AI coding which is um fine-tuned for
+[00:18:14.799] EI coding. Um and then they also
+[00:18:17.039] released workers meaning that you can
+[00:18:19.280] use uh you can invoke multiple models
+[00:18:22.400] for the same prompt and they all work in
+[00:18:24.640] parallel to get a job done. Um so that's
+[00:18:26.720] going to make your workflows really
+[00:18:28.160] really fast. So I'll show a demo of that
+[00:18:30.320] how we can implement that. Um they also
+[00:18:33.600] uh introduced built-in browser and play
+[00:18:36.080] at MCP which will allow us to kind of um
+[00:18:40.160] work directly inside of cursor for front
+[00:18:42.480] end and kind of uh use play MCP for
+[00:18:44.880] testing and web automation as well. And
+[00:18:47.360] they also introduce hooks uh which I use
+[00:18:50.000] a lot for um for applying reinforcement
+[00:18:54.400] learning techniques to my cursor
+[00:18:55.840] workflows. So treating the cursor
+[00:18:57.840] workflows same as your agents uh and
+[00:19:00.320] applying re re infusement learning
+[00:19:02.320] techniques on top of your cursor
+[00:19:04.080] workflows as well. Um treating them same
+[00:19:06.799] as the agents. Um so um let's actually
+[00:19:11.520] show quick um quick um demo of composer
+[00:19:15.440] one varies and then playright as well.
+[00:19:18.000] Um so I'll switch over to cursor. Um
+[00:19:22.638] [snorts] okay so just to give you guys
+[00:19:25.039] some idea let me first run this app.
+[00:19:29.840] So this is the app that um I wanted to
+[00:19:33.440] demo today. So this is something that I
+[00:19:35.600] built to share the cursor resources or
+[00:19:37.919] you know the rules and MCPS and stuff
+[00:19:39.520] like that uh that I've been collecting
+[00:19:41.120] over the years um collecting and
+[00:19:43.360] building myself. Um you know it has a
+[00:19:46.000] lot of rules and commands that you can
+[00:19:48.400] use to um uh use to work faster and be
+[00:19:53.440] more productive in cursor. Um and you
+[00:19:56.000] can just click on whatever you would
+[00:19:57.440] like and it it should add that to your
+[00:19:59.600] cursor as well. Um so that's the app
+[00:20:03.120] that we are working with. Now as you can
+[00:20:06.000] see there's no easy way to share the
+[00:20:07.919] resource. So I want to add a sharing
+[00:20:10.160] link. Um simple you know feature that I
+[00:20:13.280] want to develop in this application. Um
+[00:20:16.240] so let let me actually open cursor and
+[00:20:18.480] actually let's start to implement that
+[00:20:20.640] um using multiple models. Um, so let's
+[00:20:24.160] say I want to implement this using four
+[00:20:26.080] models. I want to, you know, run with
+[00:20:28.640] composer 1. And by the way, Google just
+[00:20:31.440] released Gemini 3.0 like an hour ago. So
+[00:20:34.640] I'm going to use that um and um set 4.5.
+[00:20:39.520] So I I want to implement this feature
+[00:20:41.280] with all these three models at the same
+[00:20:43.120] time and then see the output of each
+[00:20:45.200] model in real time and see how how well
+[00:20:47.200] each model did. um kind of good test for
+[00:20:50.320] um for uh Geminina 3 here as well. Uh
+[00:20:54.880] gonna make composer one just one um use
+[00:20:58.159] multiple models. So one with one time
+[00:21:00.480] with composer one, one time with
+[00:21:01.760] Geminina 3 and one time with plots onet
+[00:21:04.080] 4.5. Um and then let me paste the
+[00:21:07.280] feature that I wanted to work on. Um
+[00:21:15.760] um yeah. Okay. So the prompt just says
+[00:21:20.159] implement a resource sharing feature and
+[00:21:22.400] keep testing until it works. So here I'm
+[00:21:24.799] doing two things. Um I'm I'm asking you
+[00:21:27.679] to implement a resource sharing feature
+[00:21:30.400] and I I'm also asking you to keep
+[00:21:32.400] testing it until it works. Um here I
+[00:21:35.520] have not defined strict requirements.
+[00:21:37.600] Ideally, I would, you know, create a
+[00:21:39.360] markdown document with the plan and the
+[00:21:41.440] spec, but for the sake of this demo. I
+[00:21:43.840] don't want to stretch it stretch it too
+[00:21:46.080] long, so I'm just going to keep it
+[00:21:47.200] simple. Um, so here I'm simply saying
+[00:21:50.480] keep testing it until it works. Um, so
+[00:21:53.280] it's going to define its own acceptance
+[00:21:55.200] criteria. I could define my own, but for
+[00:21:57.280] the sake of this demo, I'm just going to
+[00:21:58.880] let the model do that. And then test
+[00:22:00.960] both the back end and front end if
+[00:22:02.159] needed. Use the Chrome Dev Tools and
+[00:22:03.679] play at MCP for testing your own work.
+[00:22:06.559] And then I'm going to do add browser. Um
+[00:22:11.120] um
+[00:22:16.880] they removed it again. Okay. Um
+[00:22:20.880] yeah, they they removed add browser. So
+[00:22:23.200] probably I'm going to rely on the model
+[00:22:25.520] to do that. I'm going to enable Chrome
+[00:22:28.159] DevTools MCP. Um
+[00:22:31.760] um you can um grab the Chrome D MCP from
+[00:22:36.559] either the cursor um uh marketplace or
+[00:22:40.320] you can also just go to my app that I
+[00:22:42.159] just shared and uh get it from there. So
+[00:22:44.400] there's also a link. I'm going to copy
+[00:22:47.200] the link address and also share that in
+[00:22:48.720] the Zoom chat. So this is a deployed
+[00:22:50.080] version. It's not like really deployed.
+[00:22:53.120] It's just working in production.
+[00:22:55.360] Um yeah um you can grab that to to grab
+[00:22:58.799] all the MCP servers and all the
+[00:23:00.240] resources that I'm going to be sharing.
+[00:23:02.400] Um so I have chromed MCP server and
+[00:23:05.440] playrite just comes with cursor. So if
+[00:23:07.840] you if you go over here and go to tools
+[00:23:10.240] as you can see um playright is
+[00:23:12.960] configured here. When you see browser
+[00:23:14.640] when you see browser automation here
+[00:23:16.559] it's just simply play mcp. Um so I have
+[00:23:21.440] play mcp and I have chrome dev tools. So
+[00:23:23.520] I'm just asking it to use Chrome Dev
+[00:23:24.960] Tools and play at MCP to test its own
+[00:23:26.799] work. And now uh I have three models
+[00:23:30.400] here. Um so I'm going to 3X
+[00:23:34.320] uh Gemin 3.5 Pro. There's a bug here.
+[00:23:36.640] Now I'm selecting three models and it's
+[00:23:38.240] it's showing four. Anyway, um I'm going
+[00:23:42.400] to hit send. So this should create um
+[00:23:48.880] fail to create kit work tree.
+[00:23:53.360] What's going on?
+[00:24:03.200] So it cancelled the task in all the
+[00:24:04.720] other workies which is weird. There's a
+[00:24:07.760] bug going on here. Um,
+[00:24:11.200] so I'm going to say models. Um, for the
+[00:24:14.559] sake of this, I'm just going to keep two
+[00:24:15.919] models. Um,
+[00:24:20.720] what's going on?
+[00:24:23.840] I'm going to ask to fix this. I don't
+[00:24:26.000] have time to debug myself, so I'm just
+[00:24:27.679] going to say fix this.
+[00:24:34.421] [snorts]
+[00:24:47.440] Except
+[00:24:59.760] I'm just going to say
+[00:25:08.400] Just remove that hook.
+[00:25:17.760] All right. So, that's removed. So, now
+[00:25:19.279] it should work. Um,
+[00:25:24.559] sorry. Uh
+[00:25:31.760] agents editor mode
+[00:25:36.000] chat
+[00:25:42.000] then select multiple models
+[00:25:45.520] composer and sonet 4.5 only one times
+[00:25:49.279] composer.
+[00:25:50.880] Let's actually just comment this
+[00:25:57.120] move.
+[00:26:04.640] All right. And then
+[00:26:07.760] so this should uh run two models in
+[00:26:10.559] parallel as you can see. Sonnet 4.5 and
+[00:26:13.120] composer one um
+[00:26:17.919] side by side.
+[00:26:19.919] So compressor one is actually already uh
+[00:26:23.120] doing a lot of work already.
+[00:26:26.640] Sonet is still figuring out
+[00:27:01.520] It's going to take about 2 minutes for
+[00:27:03.200] it to be done.
+[00:27:26.559] All right. So now it started testing.
+[00:27:29.919] I think the app is not running.
+[00:27:33.039] So it's run that now.
+[00:27:37.120] And now it's starting to test its own
+[00:27:38.960] work.
+[00:27:45.039] And actually, let's actually see what's
+[00:27:46.480] going on.
+[00:27:59.279] So, this is the highle overview of how
+[00:28:02.559] how that works. I don't think we can
+[00:28:04.480] keep waiting for it to finish the entire
+[00:28:07.679] testing work cuz that's probably going
+[00:28:09.120] to take 15 to 20 minutes. Um, but as you
+[00:28:13.039] can see, it would take take a snapshot
+[00:28:14.960] of the page. Take a screenshot if needed
+[00:28:17.440] as well. Um, it's not taking a
+[00:28:19.760] screenshot yet. Um, just trying to
+[00:28:22.240] probably figure out the elements.
+[00:28:25.520] It's listing console message to see
+[00:28:27.520] what's going on inside. Um,
+[00:28:33.600] it's probably stuck here, I think.
+[00:28:40.720] >> Ask a question.
+[00:28:41.600] >> Yep.
+[00:28:42.640] >> Uh, does it have to have the browser in
+[00:28:46.399] the foreground like in front of
+[00:28:48.240] everything to be able to take a
+[00:28:49.120] screenshot or can this all just happen
+[00:28:50.880] in the background? Could I run this
+[00:28:52.720] automated in the cloud somewhere?
+[00:28:55.520] Um so right now the background agents in
+[00:28:59.760] cursor do not have access to MCP
+[00:29:01.520] servers. Um so I don't think you can uh
+[00:29:04.480] you know uh do it. Um you can actually
+[00:29:08.159] use browser based MCP. It it does have
+[00:29:11.840] um remote execution but it'll be your
+[00:29:14.880] own custom workflow. It will probably be
+[00:29:16.640] not something that you can just do out
+[00:29:19.200] of the box. You can set up your own um
+[00:29:22.720] Docker file for the background agent
+[00:29:24.880] that can include everything that you
+[00:29:26.559] want and then that background agent will
+[00:29:28.480] have access to MCP server. It it can
+[00:29:30.640] work that way but out of the box it
+[00:29:33.039] doesn't support that. If you want your
+[00:29:34.480] custom workflow you have to build your
+[00:29:36.080] own docker image to do that basically.
+[00:29:38.559] >> Okay.
+[00:29:39.440] >> Thank you.
+[00:29:40.159] >> Yep. Um so it's taking a screenshot to
+[00:29:44.720] see what's happening. Um,
+[00:29:49.279] sun is still working. It's not done
+[00:29:51.279] implementing. Um, composer one is done.
+[00:29:53.279] It's testing. Um, and then let's say
+[00:29:57.200] let's assume that the testing went well.
+[00:29:59.120] Uh, we we're probably not going to have
+[00:30:01.039] time to go through the entire testing
+[00:30:02.799] ourselves right now. So, I'm going to
+[00:30:04.480] stop this. But let's say you are happy
+[00:30:07.360] with the changes and you want to now
+[00:30:09.360] apply all of this or bring all of this
+[00:30:11.200] to your actual main branch. So you can
+[00:30:13.360] apply all of this and that will bring
+[00:30:16.159] all of the changes in your um in your
+[00:30:19.200] local branch, right? Um and then you can
+[00:30:22.880] actually see how it's going to work in
+[00:30:24.480] your actual um uh application. So you
+[00:30:28.640] can run this again.
+[00:30:33.600] Is it running on 3000? Yeah.
+[00:30:37.919] Um it's getting some errors. You can
+[00:30:39.679] probably fix that. That's not an issue.
+[00:30:42.320] Um yeah so we're not testing this part
+[00:30:45.679] so it's probably fine um it's very small
+[00:30:49.200] u bug um uh but can be fixed so you can
+[00:30:53.840] that's how you can bring the issue bring
+[00:30:55.679] the changes from uh one git vector to
+[00:30:58.480] your current branch and then you can
+[00:31:00.320] undo apply and let's say I I want I
+[00:31:02.960] really like sonet 4.5 changes I could
+[00:31:05.360] probably apply do apply here and then
+[00:31:08.320] it's going to basically apply sonet 4.5
+[00:31:10.720] changes into my branch now. Um so if I
+[00:31:13.760] now um go back to local 3000 as you can
+[00:31:18.799] see um cloud for actually did a good job
+[00:31:22.080] um at implementing that and the share
+[00:31:24.000] feature is there you can um say it's
+[00:31:27.360] going to expire in like one and then
+[00:31:29.520] it's going to yeah I'm not authenticator
+[00:31:32.080] right now so it's not working but that's
+[00:31:34.880] not the point uh the point is like you
+[00:31:36.880] can actually see the changes from both
+[00:31:38.799] the models at the same time so I did not
+[00:31:41.279] have to like ask composer one to fix it
+[00:31:43.200] changes cuz I I ran two models, one 4.5,
+[00:31:47.200] one composer one. One of them did a
+[00:31:48.880] really good job at implementing my
+[00:31:50.159] feature. It worked out of the box. Saved
+[00:31:52.960] me time of you know going back and
+[00:31:54.799] fixing it. It just worked. So that's how
+[00:31:57.120] you can bring bring changes from one G
+[00:31:59.039] work tree to the other and just make
+[00:32:00.480] sure that it just works. Or you can also
+[00:32:02.559] just ask the agent to combine both the
+[00:32:04.640] changes and take the best of them and
+[00:32:06.320] just uh uh you know merge all of those
+[00:32:08.640] into your um your actual branch. So I'm
+[00:32:11.440] going to undo all of this as well. I'm
+[00:32:13.039] don't want to have all of this. So I'm
+[00:32:15.600] going to discard all the files.
+[00:32:18.320] Okay. Um so that's how the composer one
+[00:32:21.760] and get workies with multimodel works in
+[00:32:24.480] cursor. Now so that's a new feature that
+[00:32:26.480] the cursor released in cursor 2.0. We
+[00:32:29.360] also saw the agents invoking playright
+[00:32:31.360] MCP to test to try to test it own work.
+[00:32:34.720] And the last thing I wanted to show was
+[00:32:36.320] hooks. Um so
+[00:32:39.919] there is plenty of ways you can use
+[00:32:41.519] hooks. Um the way I use it is actually
+[00:32:45.440] um
+[00:32:47.279] uh in production. uh what I do is I
+[00:32:51.440] use this hooks to create CSV files out
+[00:32:53.919] of the input and output that I'm getting
+[00:32:55.519] from the models and then I take a few
+[00:32:59.360] samples collect few examples of the
+[00:33:02.480] specific workflow and then apply
+[00:33:04.080] reinforcement learning technique using
+[00:33:05.679] DSPI to improve my prompts to get to
+[00:33:08.559] what I want so that you have
+[00:33:09.919] deterministic workflows. Um, but as you
+[00:33:13.360] can see, I have this audit hook that
+[00:33:15.279] basically um, literally just takes the
+[00:33:18.080] JSON input and then just writes all of
+[00:33:20.159] that into this agent audit log file. So
+[00:33:23.279] everything that I'm doing is being
+[00:33:25.600] logged somewhere. So this is really
+[00:33:26.960] useful for enterprises looking to figure
+[00:33:29.200] out like how their developers are using
+[00:33:31.840] um, cursor. Um, u, but you can use write
+[00:33:35.760] a hook to do almost anything using a
+[00:33:38.399] shell script. Um um and then if I
+[00:33:41.840] actually open my cursor folder, it
+[00:33:43.760] should be able to also show you guys the
+[00:33:47.039] audit log. Um yeah, so that's the log
+[00:33:49.519] file. So it has all the logs um
+[00:33:53.600] everything that I did in cursor um right
+[00:33:55.679] here. Um so you can use this in multiple
+[00:33:58.320] different ways like I mentioned um and
+[00:34:00.559] or or you can write your own hook uh to
+[00:34:02.720] do something. Um you can also write a
+[00:34:04.720] hook to automatically optimize your
+[00:34:06.720] prompts before it gets to the model. Um
+[00:34:09.679] so yeah um
+[00:34:13.040] okay so that's about cursor hooks now
+[00:34:15.280] let's move on to the next uh section
+[00:34:20.000] all right so now I think uh we can talk
+[00:34:22.879] about uh testing the AI generated code
+[00:34:26.159] um so how do you test uh you know the
+[00:34:31.200] code while um the agent is doing it
+[00:34:33.919] right I I think I showed a a quick demo
+[00:34:36.159] of that you can just ask the model to
+[00:34:38.079] test its own to test its own changes
+[00:34:40.879] while it's doing it right. Um you can
+[00:34:43.919] also make it part of implementation
+[00:34:45.520] plan. So normally I do not give it ad
+[00:34:48.480] hoc prompts like this. I would have
+[00:34:49.839] actually a statement of work that would
+[00:34:51.760] actually uh dictate what acceptance
+[00:34:54.879] criteria it needs to have how to test
+[00:34:56.800] the changes and stuff like that and that
+[00:34:58.800] would result in a much more coherent
+[00:35:00.320] response. U so um so you can ask the
+[00:35:04.320] model to test its own changes uh make it
+[00:35:06.560] part of your plan as well. So when
+[00:35:08.320] you're giving the prompt ask the model
+[00:35:10.400] to to test its own changes and if you
+[00:35:12.880] have some scenarios in mind you can also
+[00:35:15.040] just make it part of your prompt um
+[00:35:17.359] during implementation um so that you
+[00:35:19.680] don't have to ask the model to test its
+[00:35:21.200] own changes afterwards or fix itself
+[00:35:22.960] afterwards as it can just see um its
+[00:35:25.760] failures and kind of fix itself while
+[00:35:27.280] it's doing it. Um and then you can also
+[00:35:30.720] test it after building. So I I use this
+[00:35:34.240] uh MCP server called test sprite. Uh and
+[00:35:37.440] along with that I also use Chrome
+[00:35:38.960] DevTools to test the changes after uh
+[00:35:41.520] building um and uh uh you know I have
+[00:35:45.760] also made this reusable workflow and I
+[00:35:48.079] then uh you know reference it as a rule
+[00:35:49.839] as well so that you can invoke the
+[00:35:52.160] workflow as a rule after it's done. So
+[00:35:54.400] I'm also going to show an example of
+[00:35:56.160] that as well. And then the standard way
+[00:35:58.640] of testing is also writing unit test. I
+[00:36:00.560] think all the devs know that already.
+[00:36:02.079] I'm not going to talk about that a lot,
+[00:36:04.240] but um let's actually see how you can uh
+[00:36:08.240] use um uh test sprite to test the
+[00:36:11.760] changes after it's done. Um um so
+[00:36:16.720] I have a few changes that I worked on.
+[00:36:19.200] Um
+[00:36:21.119] um so I'm going to apply the changes
+[00:36:23.200] here.
+[00:36:28.720] All right. So I've got quite a few
+[00:36:31.119] changes here. Um let's say I did not
+[00:36:35.520] write let the agent write this code. Um
+[00:36:38.000] I wrote this code myself and now I want
+[00:36:40.640] to test these changes. Make sure that it
+[00:36:42.160] actually aligns with my product
+[00:36:43.599] requirement documents and everything. Um
+[00:36:46.400] so for this sake of this I'm going to
+[00:36:49.040] use a tool called test sprite.
+[00:36:53.119] Um I'm going to enable test sprite.
+[00:36:57.680] So I have seven tools. Um
+[00:37:02.079] and then I want to give the agent some
+[00:37:04.400] context. So I'm going to say um
+[00:37:08.320] summarize all the stage changes in the
+[00:37:11.599] current repository um and uh format them
+[00:37:14.240] in markdown
+[00:37:21.599] staged changes.
+[00:37:27.680] So by default cursor also um whenever
+[00:37:31.280] the request is relevant cursor is also
+[00:37:33.200] going to put pull in the g changes
+[00:37:36.160] automatically. So you don't have to like
+[00:37:38.320] provide the g diff to the agent. The
+[00:37:39.839] agent kind of already knows unless like
+[00:37:41.520] you you explicitly ask it. Then the
+[00:37:43.760] agent is actually going to you know run
+[00:37:45.680] the command and actually get the current
+[00:37:47.520] diff. Um,
+[00:38:02.320] by the way, you should not run
+[00:38:03.680] everything all the time. I'm just doing
+[00:38:06.400] it for the sake of this demo to to make
+[00:38:08.640] things faster. Um,
+[00:38:21.200] What's going on here?
+[00:38:38.880] All right. So now we have the summary of
+[00:38:40.880] all of the changes.
+[00:38:44.400] You see this context ring here? Uh you
+[00:38:46.480] can actually see the active rules here.
+[00:38:48.480] Um I'm not sure what's going on but I
+[00:38:50.240] was not seeing this context string
+[00:38:51.520] earlier and now I'm seeing it. Um so you
+[00:38:54.079] can actually see all the rules that are
+[00:38:55.599] being applied in this session already.
+[00:38:57.839] Um so we have the TypeScript rule that
+[00:39:01.200] being that's being applied. We have
+[00:39:03.839] sneak rules and then we have commenting
+[00:39:05.680] standards um rule that is being applied
+[00:39:07.920] to this uh chat session right now. Um
+[00:39:11.040] anyway now we have all of this. Um, so I
+[00:39:14.560] created a workflow for testing the the
+[00:39:17.359] changes with test sprite. Um,
+[00:39:20.720] um,
+[00:39:26.079] yeah. So I created this workflow that
+[00:39:29.520] basically um, bootstraps the entire
+[00:39:32.720] testing environment for test sprite. Um,
+[00:39:35.680] and we're also going to see how to
+[00:39:37.040] create re reusable workflows like this
+[00:39:39.359] um, in this session as well. So
+[00:39:41.359] basically I have this workflow that that
+[00:39:43.359] defines how to test the current changes
+[00:39:45.680] with test sprite. Um so I'm I'm I'm
+[00:39:47.920] going to invoke this workflow. Um so I'm
+[00:39:50.880] just going to do slash and test
+[00:39:52.400] application with test sprite and then
+[00:39:54.560] also have a prd file that defines what
+[00:39:58.320] is this product and then I'm just going
+[00:39:59.599] to say to say test the current changes
+[00:40:02.560] with testright.
+[00:40:05.359] Let me make sure that the MCP tools are
+[00:40:08.560] enabled.
+[00:40:10.960] um
+[00:40:13.599] test sprite
+[00:40:17.359] and then if I hit enter
+[00:40:38.560] if you guys have any questions
+[00:40:39.359] questions, feel free to ask them now.
+[00:40:40.880] Um, the agent is probably going to take
+[00:40:42.400] 5 [clears throat] minutes to run.
+[00:40:43.440] >> Any questions at all about cursor its
+[00:40:45.839] use?
+[00:40:49.200] >> Yeah.
+[00:40:51.440] >> Is there other open-source tools for
+[00:40:53.760] testing?
+[00:40:55.599] >> Open-source tools for testing. I would
+[00:40:57.599] say like you can use Playright MCP for
+[00:40:59.680] testing. That's one of the open source
+[00:41:01.040] ones. Um, you can build re reusable
+[00:41:03.920] workflows for playright as well. I can
+[00:41:05.520] probably show that if uh folks are
+[00:41:07.599] interested in doing that. I can uh just
+[00:41:09.760] show that. But um other than that like
+[00:41:13.280] there's no like you know a full-blown
+[00:41:15.599] application uh that's available uh to
+[00:41:19.839] test changes like yeah that's open
+[00:41:22.000] sourced. There's nothing. Yeah.
+[00:41:23.680] >> Thanks.
+[00:41:25.040] >> Um
+[00:41:25.839] >> sounds like an opportunity for someone
+[00:41:27.440] to write one uh you want to pick that
+[00:41:30.560] up. Any other questions at all?
+[00:41:34.079] >> Password for S6. Sorry.
+[00:41:39.760] >> Yeah. Hi. Um I've noticed that there's a
+[00:41:42.720] feature where you can have multiple
+[00:41:44.560] agents um running on one particular
+[00:41:47.599] query like you um well sorry not agents
+[00:41:50.560] LLMs like you can have Gemini um Gemini
+[00:41:54.079] claude
+[00:41:55.599] um you know open AAI whatever right
+[00:41:59.040] what's the usefulness of that like how
+[00:42:01.280] can we get the best usage out of that
+[00:42:04.720] >> um if I'm understanding your question
+[00:42:06.319] correctly you're asking if uh you can
+[00:42:09.040] use multiple different models
+[00:42:11.040] um to run agents in parallel and then
+[00:42:13.280] like what's the use case of that
+[00:42:16.000] um so like I mentioned um you can use
+[00:42:20.079] that uh to
+[00:42:22.560] uh implement an feature in parallel
+[00:42:24.960] right so for example like all the
+[00:42:26.960] different models have different
+[00:42:27.920] strengths right so for example like
+[00:42:31.040] u composer one is really good at you
+[00:42:33.520] know creating front-end code cloud 4.5
+[00:42:36.000] is really good at creating front-end
+[00:42:37.359] code right um and sometimes you you
+[00:42:40.079] know, you might just want to use cloud
+[00:42:41.440] 4.5 like four times to see like uh what
+[00:42:44.560] what kind of different designs it comes
+[00:42:46.240] up with, right? Or um if you're working
+[00:42:49.040] on an architecture solution, um you want
+[00:42:52.400] to see kind of um um
+[00:42:56.560] you want to like run that with different
+[00:42:58.000] models to see what kind of different
+[00:42:59.359] architecture patterns it come up with to
+[00:43:01.040] to help you brainstorm as well, right?
+[00:43:02.800] So you can run the same model with like
+[00:43:04.960] same prompt with four different models
+[00:43:06.480] to help with debugging. That's how I use
+[00:43:09.119] it. Like I I use like four or five
+[00:43:11.760] different models to debug an issue or to
+[00:43:14.160] to review my code. So I get a review
+[00:43:17.359] from Cloud 4.5 Sonnet. I I get a review
+[00:43:19.839] from Codeex. I I get a review from
+[00:43:22.160] Gemini and and then I see all those
+[00:43:24.560] reviews and see if I, you know, spot
+[00:43:27.440] anything interesting there. Or you could
+[00:43:29.760] combine all of them and then ask the
+[00:43:31.760] model to fix all those issues. So you
+[00:43:33.440] can use them in multiple different ways.
+[00:43:35.119] the like the possibilities are like
+[00:43:37.760] infinite. There's like you can almost do
+[00:43:40.000] anything with it, right? It's it's like
+[00:43:42.160] it's going to give you so much time back
+[00:43:44.240] when you're running those in parallel
+[00:43:45.680] cuz you're not not going to have to do
+[00:43:47.359] as much of back and forth to find those
+[00:43:49.599] issues or to implement those features.
+[00:43:52.000] Um
+[00:43:53.520] um so it's probably going to fail. I I'm
+[00:43:57.280] going to ask it to create a test user. U
+[00:44:00.079] but it's basically asking me to um to
+[00:44:03.599] select the scope of testing. So I want
+[00:44:05.760] the scope to be the git diff right now.
+[00:44:08.240] Um I want to test only the front end. Um
+[00:44:11.839] and then it's running on 3000. I'm going
+[00:44:14.640] to give it a PD file. So that's um
+[00:44:22.400] the PD file is right here. So I'm going
+[00:44:24.400] to give it the PD file. It understands
+[00:44:26.079] the codebase. Then I'm going to
+[00:44:28.000] continue.
+[00:44:31.440] Then if I go back
+[00:44:34.160] now, it got
+[00:44:38.079] um the PD. So it's probably going to
+[00:44:40.480] create a bunch of tests for me. Um,
+[00:44:58.880] if you guys want to see any other
+[00:45:00.400] feature in cursor or if you have any
+[00:45:02.160] other confusing question or anything,
+[00:45:04.079] I'm happy to answer that as well cuz
+[00:45:05.839] it's probably going to take a long time
+[00:45:07.119] for the agent to do the whole thing. Uh
+[00:45:09.839] so I normally use this time to take um
+[00:45:12.960] Q&A.
+[00:45:15.040] >> Any questions,
+[00:45:27.839] right? So it it actually creates a code
+[00:45:30.640] summary as well with the features with
+[00:45:33.440] the different features, the endpoints
+[00:45:34.720] and everything itself as well. Um
+[00:45:38.319] um yes please
+[00:45:42.480] go ahead.
+[00:45:44.800] Um so while it's doing that we can also
+[00:45:47.760] probably start start to uh form the
+[00:45:49.920] basis of um securing the code with AI um
+[00:45:54.319] in cursor. Um it's probably going to
+[00:45:56.319] take a long long time.
+[00:45:58.720] Um
+[00:46:02.960] all right. Um
+[00:46:05.520] so
+[00:46:08.319] while it's testing we can also kind of
+[00:46:10.319] talk about security. Um so how do you
+[00:46:13.760] secure AI generated code right? Um so
+[00:46:17.760] first is like
+[00:46:20.400] the best is like you know just create
+[00:46:22.960] secure code from scratch right so
+[00:46:25.520] prevention is always better than cure.
+[00:46:27.680] So use rules with OS standard or
+[00:46:31.040] whatever your standard is for security.
+[00:46:32.880] So use rules from this from the
+[00:46:35.280] beginning and those should be like
+[00:46:36.720] always applied uh so that like you
+[00:46:39.040] always u create secure code right so
+[00:46:42.400] there are tools that allow you to do
+[00:46:44.079] this efficiently but you can also create
+[00:46:45.599] your own rules and workflows for your
+[00:46:47.599] own uh project if you like to um there's
+[00:46:50.880] also a tool called corridor um I was
+[00:46:53.440] going to demo that today but I won't be
+[00:46:54.960] able to they're not they're probably
+[00:46:56.560] down because of the cloud player issue
+[00:46:59.119] um it's not working today but um what
+[00:47:02.800] does is that whenever you give it a
+[00:47:04.400] prompt, um it actually takes a look at
+[00:47:07.119] your prompt, see if there's an issue
+[00:47:09.119] with your prompt or like it's going to
+[00:47:11.599] rewrite your prompt uh to to make it
+[00:47:15.040] more secure so that the agents generate
+[00:47:16.800] secure code from scratch so that you
+[00:47:18.960] don't have to like try to fix it later
+[00:47:20.640] on. You just end up generating a secure
+[00:47:22.240] code from the beginning. Uh so that's
+[00:47:24.240] what it influences. So you can influence
+[00:47:26.079] how the agents write code from the
+[00:47:28.400] beginning. So that's how you you
+[00:47:29.520] generate secure code from the scratch.
+[00:47:31.280] So that's going to help you prevent
+[00:47:33.520] generating code with with issues and
+[00:47:35.520] vulner vulnerabilities. Um and then um
+[00:47:40.400] um the second part is you can also uh
+[00:47:43.119] secure the code after generating. I
+[00:47:44.960] think um sneak is a really good tool. Um
+[00:47:48.400] and then another one that I like is code
+[00:47:50.720] rabbit. Um so sneak has an MCP server.
+[00:47:53.920] So you can actually generate the code
+[00:47:55.359] and after that you can use sneak uh to
+[00:47:58.880] scan the generated code inside of your
+[00:48:01.440] agent. So I know that we have been using
+[00:48:03.440] sneak in GitHub for a long long time uh
+[00:48:06.400] right to to like um to scan the code for
+[00:48:10.160] issues but like what if you could just
+[00:48:12.160] make it part of your coding workflow
+[00:48:13.760] inside of cursor or inside of cloud code
+[00:48:15.760] whatever agent you're using so that
+[00:48:18.079] after it's generating the code it's also
+[00:48:19.839] going to use um sneak to scan your code
+[00:48:22.400] and fix itself before it actually goes
+[00:48:24.319] to GitHub. Um and then the second one is
+[00:48:27.440] code rabbit. Code Rebbit is a code
+[00:48:29.040] review tool, but uh it actually does
+[00:48:31.760] incorporate sneak inside of it. So if
+[00:48:33.760] you're actually using code rabbit, you
+[00:48:35.040] might actually not even need sneak
+[00:48:36.880] because it just has that inside of it. I
+[00:48:39.280] think um there is a really good resource
+[00:48:43.359] of um
+[00:48:45.440] u
+[00:48:47.359] yeah u
+[00:48:51.440] yeah so code rabbit has all of these
+[00:48:53.839] tools in built. So I think sneak is part
+[00:48:56.240] of that.
+[00:48:58.720] Um
+[00:49:02.480] yeah so it is git links OSB scanner
+[00:49:05.119] remnification and a lot of other uh
+[00:49:07.760] security tools here um
+[00:49:11.920] plenty of tools for security um
+[00:49:15.760] so if you're using um u you know yeah
+[00:49:19.839] sam grab is there as well um so I used
+[00:49:22.640] to use sam grab to also you know um scan
+[00:49:25.599] uh code for issues um security wise and
+[00:49:28.480] once I started using code rabbit all of
+[00:49:30.160] that just came with code rabbit so I
+[00:49:32.319] just like now use code rabbit for all of
+[00:49:34.240] that um um but yeah that's that's like
+[00:49:37.680] one way of uh of uh um making sure that
+[00:49:41.680] your gender code is secure and then like
+[00:49:43.920] obviously the standard scan uh the code
+[00:49:47.440] for issues using GitHub actions um um so
+[00:49:50.800] actually let's actually also try to
+[00:49:52.960] review some of the workflows that I have
+[00:49:54.400] created um While you do that, do you
+[00:49:56.960] mind if I I mention another tool uh
+[00:49:59.599] slightly self- serving because I made it
+[00:50:01.680] uh that is similar to that that middle
+[00:50:04.160] column like uh while you're uh while
+[00:50:08.160] you're writing scan for vulnerabilities.
+[00:50:10.400] There's a a tool called Gripe G R Y P.
+[00:50:13.760] It's fully open source vulnerability
+[00:50:15.440] scanner very similar to Sneak. And I
+[00:50:18.800] wrote an MCP server in Python so you can
+[00:50:21.520] have that as part of your development
+[00:50:23.119] process to have it scan for
+[00:50:25.280] vulnerabilities before you push to
+[00:50:26.960] GitHub. Um, it's on GitHub just for gr
+[00:50:31.760] MCP. Um, yeah, I just thought that might
+[00:50:34.559] be useful. It's fully open source, you
+[00:50:36.319] know.
+[00:50:38.640] >> Nice. I didn't know about that. Thank
+[00:50:40.160] you.
+[00:50:41.520] >> Yeah, I didn't write it that that long
+[00:50:43.440] ago. It's not been around very long.
+[00:50:46.160] Um but yeah, let's um getting back to
+[00:50:49.440] security. So basically, if you install
+[00:50:52.559] the sneak MCP, it's going to
+[00:50:54.480] automatically set up the sneak sneak
+[00:50:57.520] extension. It's also going to
+[00:50:59.359] automatically set up the sneak MCP for
+[00:51:01.440] you. And then it's also going to set up
+[00:51:03.760] the sneak rule in your cursor rules
+[00:51:05.359] directory. So right now the sneak rules
+[00:51:08.000] uh that says that always run the sneak
+[00:51:10.640] code scan tool um whenever the code is
+[00:51:13.520] generated and rescan after the code um
+[00:51:16.880] after fixing the issues to make sure
+[00:51:18.400] that there are no issues and then repeat
+[00:51:20.559] this process until new issues are found.
+[00:51:22.400] So it's kind of already doing it for you
+[00:51:24.800] just by installing the extension. So you
+[00:51:26.400] don't have to do anything extra for
+[00:51:27.599] that. Um and then um yeah um maybe I can
+[00:51:33.760] also start security in parallel. Um
+[00:51:38.160] so I have
+[00:51:40.150] >> [snorts]
+[00:51:40.240] >> um
+[00:51:44.160] yeah so I have this workflow that says
+[00:51:48.559] um
+[00:51:50.480] scan get changes with sneak. Let's
+[00:51:53.040] actually also see how we can create
+[00:51:54.960] similar workflows. Right? So, I'm just
+[00:51:57.200] going to say uh I'm just going to get
+[00:51:59.119] rid of this workflow for now. So, it's
+[00:52:00.960] not there.
+[00:52:04.000] Um,
+[00:52:05.680] can you scan the current git changes um
+[00:52:08.960] with sneak for security issues?
+[00:52:13.680] And I want this to be quick. I don't
+[00:52:15.839] want it to take too long. So, I'm just
+[00:52:17.280] going to use composer one. Um,
+[00:52:21.520] do I have sneak MCP enabled? I probably
+[00:52:24.800] disabled that which it's there. Okay.
+[00:52:30.559] Right. Um
+[00:52:33.119] so I have this this workflow called
+[00:52:36.079] create new workflow. Um
+[00:52:40.559] so this asks me um set of questions to
+[00:52:44.640] understand what I'm trying to get out of
+[00:52:47.119] a specific thing. So normally what I do
+[00:52:49.119] is uh whenever I'm working with cursor
+[00:52:51.359] and I see myself doing the same thing or
+[00:52:53.520] giving the same prompt or doing the same
+[00:52:55.280] task more than two to three times I run
+[00:52:58.160] that through this so that it creates
+[00:52:59.680] that a workflow for that and then I save
+[00:53:02.160] that into my cursor commands directory
+[00:53:04.400] so that I can just invoke that the next
+[00:53:06.079] time without writing the prompt myself
+[00:53:08.079] and the result of that I'm actually
+[00:53:10.079] going to get a lot more productive and
+[00:53:11.839] the results are going to be much more uh
+[00:53:13.920] accurate um and to the point. Um so um
+[00:53:17.839] it found three issues. Um it didn't fix
+[00:53:21.280] it automatically but now I can just say
+[00:53:24.400] uh you know uh create new workflow.
+[00:53:26.880] That's the workflow that I want. Create
+[00:53:29.599] a new workflow for sneak that will
+[00:53:31.839] automatically uh scan the current div
+[00:53:34.319] changes uh with sneak and um then it's
+[00:53:37.520] also going to automatically fix those as
+[00:53:39.119] well.
+[00:53:41.280] use the exit names of the sneak MCP uh
+[00:53:44.720] tool.
+[00:53:47.760] So it's important to also mention the
+[00:53:49.520] exact names of the tool. So every single
+[00:53:51.680] tool comes with you know different uh
+[00:53:55.200] tools. So here if you see it's
+[00:53:57.680] mentioning the exact tool name and the
+[00:54:00.000] reason of doing this is because it's
+[00:54:01.599] going to bring determination to the
+[00:54:03.599] workflows and make sure that it's also
+[00:54:05.200] going to call the exact tool that you
+[00:54:07.200] wanted to invoke every single time
+[00:54:08.720] without making a mistake. So if you go
+[00:54:11.520] here to the MCB section and if you hover
+[00:54:13.760] over uh the tool section actually let me
+[00:54:17.680] expand this and then you can actually
+[00:54:20.480] see uh the tool description and the args
+[00:54:23.599] and everything for the specific tool. So
+[00:54:25.599] you can actually use the exact same tool
+[00:54:27.760] name tool name in your workflows to uh
+[00:54:30.640] to make your workflows more
+[00:54:32.960] deterministic and then you can also in
+[00:54:34.800] future like I mentioned like apply
+[00:54:36.400] reinforcement learning techniques to
+[00:54:37.839] these workflows itself. So it does
+[00:54:39.760] exactly what you want, but that's going
+[00:54:42.160] to be a little bit of stretch. Um, so
+[00:54:45.839] yeah, I'm going to And then if I hit
+[00:54:48.240] enter, it's going to ask me a few
+[00:54:49.599] questions. If it has questions, uh, if
+[00:54:52.240] it has all the contexts from the thread,
+[00:54:54.480] then it's probably going to just create
+[00:54:55.520] the workflow. It's asking me a few
+[00:54:56.880] questions probably. Um, yeah. So it's
+[00:54:59.200] asking me the workflow name, it just
+[00:55:01.200] went ahead with it. Um, but now it's
+[00:55:04.079] just creating the workflow for me. Uh so
+[00:55:06.000] the best practice is like whenever you
+[00:55:07.920] are working with something and if you're
+[00:55:10.319] doing the same thing two to three times
+[00:55:11.760] just create a workflow out of that and
+[00:55:13.520] that's going to help you uh save a lot
+[00:55:15.280] of time next time. Um and then you
+[00:55:17.119] manually review the workflow to make
+[00:55:18.480] sure that it actually does what you
+[00:55:20.000] intend it to do. But normally if you
+[00:55:22.559] know that doesn't work like you refine
+[00:55:24.559] the workflow um according to your needs
+[00:55:26.640] or whatever it needs uh to fix. Uh so
+[00:55:29.200] you can do that uh afterwards. So that's
+[00:55:31.119] like how you can create workflow or
+[00:55:33.599] let's say um
+[00:55:36.720] I don't want this security issues to
+[00:55:39.040] happen ever again. So I I can just say I
+[00:55:41.760] can also create new rules. Um um so
+[00:55:49.280] rule generating agent. Yeah. So I also
+[00:55:53.040] have another you know prompt or command
+[00:55:58.160] that helps me generate the rules that
+[00:56:00.720] helps me generate cursor rules. So I'm
+[00:56:02.960] going to say help me generate front end
+[00:56:06.319] specific um security rules so that this
+[00:56:10.720] security issues never happen again and I
+[00:56:12.559] can just uh apply that rule always to um
+[00:56:16.240] all of my chats.
+[00:56:20.240] So now it's just going to create a rule
+[00:56:22.160] for front end. Um so that it's uh going
+[00:56:26.000] to be applied to all the chats all the
+[00:56:28.000] time so that every single time I'm I'm
+[00:56:30.559] generating or rewriting a specific piece
+[00:56:32.480] of code it is going to apply that and
+[00:56:34.799] then as a result of that it's going to
+[00:56:36.160] generate the secure code. Um or you
+[00:56:39.280] could also like make it apply
+[00:56:40.480] intelligently meaning that you can say
+[00:56:42.480] hey just create a rule for uh forms. So
+[00:56:45.920] whenever I'm working on forms this rule
+[00:56:48.000] should automatically be applied and as a
+[00:56:49.680] result of that when whenever the agent
+[00:56:52.079] is creating new forms whenever is
+[00:56:54.240] writing new forms on TypeScript it's
+[00:56:56.799] going to apply this rule automatically
+[00:56:58.480] and then it's going to create secure
+[00:57:00.079] code as a result of that. So you don't
+[00:57:02.079] have to go ahead and go do back and
+[00:57:04.880] forth and fix it fix it with sneak or
+[00:57:08.240] any other tool. So that helps me save a
+[00:57:10.400] lot of time as well. Um so now I can
+[00:57:12.799] actually see that this rule is always
+[00:57:14.880] applied. Um and then it has all the
+[00:57:18.000] rules uh um that that allow the agent to
+[00:57:23.280] avoid these issues in the future when
+[00:57:25.280] generating similar code. Um right um so
+[00:57:28.720] it found the issues and it it gave
+[00:57:31.200] examples and all of that and now I have
+[00:57:33.119] a rule that I I can apply to generate
+[00:57:35.280] secure code. Um all right. Um let's see
+[00:57:39.599] where this is going. I think it's still
+[00:57:41.280] running. So, if I open test sprite, I
+[00:57:44.319] might be able to see what's going on.
+[00:57:51.760] All right.
+[00:57:57.040] Yeah, all the tests are in progress
+[00:57:59.839] still.
+[00:58:06.400] >> Can I ask a question?
+[00:58:07.839] >> Yeah. So, I noticed when you're using um
+[00:58:11.760] curset, you talk to it. You use your
+[00:58:15.040] voice. And I know a lot of people when
+[00:58:17.440] they're using like chatbt, they'll talk
+[00:58:19.440] to it like it's a person kind of thing.
+[00:58:23.280] Is that a thing you're specifically
+[00:58:24.400] doing today or do you always talk to
+[00:58:25.680] your uh agent like that rather than
+[00:58:28.240] typing?
+[00:58:29.440] >> I I barely type. I always talk cuz when
+[00:58:32.720] I'm talking I can give it more relevant
+[00:58:34.640] context. I can, you know, add more
+[00:58:36.880] things to the context and that really
+[00:58:38.160] helps the agent understand my task. So I
+[00:58:42.240] yeah, I almost never type anything. I
+[00:58:44.400] just talk.
+[00:58:45.520] >> Amazes me the little things you pick up
+[00:58:46.960] here. Am I alone? I never talk to my
+[00:58:50.799] agents. You don't or do like I can
+[00:58:54.480] understand from an accessibility point
+[00:58:55.839] of view. Like if typing is hard, but
+[00:58:59.200] that's blown my mind. So thank you for
+[00:59:01.920] that. Yeah, I actually have a list of
+[00:59:03.920] all the open-source tools that available
+[00:59:06.000] that you can use. So, I'm using Whisper
+[00:59:08.480] Flow, but I think there's plenty of apps
+[00:59:10.079] you can actually use to um I think
+[00:59:13.520] there's like voice sync that I used to
+[00:59:15.359] use. Um there's also like yeah, I forgot
+[00:59:19.920] the other one. Whisper real time is
+[00:59:21.359] something that I used to use as well.
+[00:59:22.400] So, you can use all all these tools to
+[00:59:24.160] just like u run text in real time in
+[00:59:28.319] your local um and do it as as well. But
+[00:59:31.520] yeah,
+[00:59:33.119] cursor also has inbuilt voice mode um
+[00:59:37.200] that you can use. I think it's command
+[00:59:38.880] shift um I forgot the exit command
+[00:59:41.920] because I've never used it. Uh
+[00:59:45.599] yeah, it's command shift V. Hey, is it
+[00:59:48.799] working?
+[00:59:51.520] Oops.
+[00:59:54.960] I could just actually voice.
+[00:59:57.839] Yeah, total vers is actually shift
+[01:00:00.480] command space. So shift command space or
+[01:00:04.720] is it shift control?
+[01:00:08.400] So it's shift command space. Yeah. So if
+[01:00:10.400] I do shift command and space
+[01:00:14.240] I can just talk whatever I want and
+[01:00:16.000] cursor should be able to.
+[01:00:18.559] Yeah. Okay. I hear you. Stop.
+[01:00:25.520] Yeah. So that works. I think test sprite
+[01:00:29.520] is still working on the changes on on
+[01:00:31.680] the test. It usually does not take this
+[01:00:34.799] painfully long. Um not sure why it's
+[01:00:37.839] taking so long, but as you can see
+[01:00:40.559] earlier, I ran the same test. Uh and um
+[01:00:44.720] some of them pass, some of them failed.
+[01:00:46.400] I could actually also see um the the
+[01:00:50.480] test that it was doing, what it was
+[01:00:51.920] doing for each test and how it worked.
+[01:00:54.400] Um,
+[01:00:56.240] so there might be something going on.
+[01:00:57.839] Maybe because of Cloudflare they're
+[01:00:59.200] down. I'm not exactly sure, but it's not
+[01:01:02.240] running. I think it's just getting
+[01:01:03.920] stuck. I'm not seeing anything here. So
+[01:01:06.079] there might be that infrastructure is
+[01:01:07.680] down, but you can see from the history
+[01:01:09.760] here that um uh yeah, we can actually
+[01:01:13.680] run the tests using test fight and it
+[01:01:15.200] will actually see give you a report. Um,
+[01:01:20.319] it's supposed to work. I hate live
+[01:01:22.000] demos. Um when when this happens
+[01:01:26.400] ah it's just stuck here.
+[01:01:29.760] Um so normally what this will do is it's
+[01:01:33.119] going to run the tests and it's going to
+[01:01:34.640] give me a report in the end and it's
+[01:01:36.480] also going to fix all the issues that it
+[01:01:37.920] finds in the test itself. Um
+[01:01:41.520] um but it's not working right now. So
+[01:01:44.160] I'm probably going to cancel that and
+[01:01:45.440] not going to wait on that for more than
+[01:01:47.280] a few minutes. Um, maybe I can ask the
+[01:01:51.200] model to use um
+[01:01:56.160] use playright to test the changes. Um,
+[01:01:59.040] cuz I wanted to show this workflow, but
+[01:02:00.720] it's somehow just stuck there. Um,
+[01:02:07.599] yeah, it's
+[01:02:13.200] all right. um
+[01:02:16.000] use playrite and chrome dev tools mcp um
+[01:02:19.200] to test all of your changes. Make sure
+[01:02:21.359] that um all of the acceptance criteria
+[01:02:24.319] is met. Um you can define your own
+[01:02:26.720] acceptance criteria for this scenario. I
+[01:02:28.319] don't have one. Uh but make sure that it
+[01:02:30.400] works as expected.
+[01:02:34.799] The agent generated this code. So there
+[01:02:36.640] might be some issues. So make sure that
+[01:02:38.079] you take screenshots and uh click on the
+[01:02:40.799] buttons and everything to make sure that
+[01:02:42.880] um all the functionality that we just
+[01:02:44.640] implemented is working
+[01:02:50.160] implemented.
+[01:02:53.839] All right. Um
+[01:02:56.559] yeah so we generated a security rule on
+[01:02:59.520] the security side um to make sure that
+[01:03:04.319] um you know it generates secure code all
+[01:03:06.960] the time. Um we also created a workflow
+[01:03:09.599] that helps us uh you know create uh more
+[01:03:12.400] workflows and if you go on the same
+[01:03:16.640] same application that I shared earlier
+[01:03:19.280] you can actually let me just go back
+[01:03:22.000] don't need to
+[01:03:24.400] You can actually scan for that as well.
+[01:03:26.240] So create
+[01:03:29.039] new
+[01:03:31.839] new workflow. So you can actually grab
+[01:03:33.440] that workflow from here. If you want to
+[01:03:36.640] get the rule, you can also just um
+[01:03:40.000] yeah grab the rule generic agent from
+[01:03:42.079] here as well and then apply that to your
+[01:03:43.680] own workflows. So um one advice that I
+[01:03:47.359] give to everyone is that like the only
+[01:03:49.760] way you're going to be more productive
+[01:03:51.280] is if you're automating your work.
+[01:03:53.359] Anything that you're doing repetitively
+[01:03:55.520] on a daily basis, just automate that. So
+[01:03:58.559] for example, I have um you know a
+[01:04:02.000] workflow for addressing PR review
+[01:04:03.760] commands. I have a workflow for um
+[01:04:07.280] automatically reviewing the generated
+[01:04:08.880] code and apply the changes with code
+[01:04:10.559] rabbit. I have a workflow for uh review
+[01:04:13.680] the changes with code rep with uh
+[01:04:15.520] cursorless bugbot. Um I have a workflow
+[01:04:18.240] that allows me to take current changes
+[01:04:21.359] and create a linear ticket out of that.
+[01:04:24.000] Create a branch, put that branch on
+[01:04:26.240] GitHub, create a pull request out of
+[01:04:27.920] that. Uh feel free to read any of these
+[01:04:30.160] workflows on the resource that I shared.
+[01:04:32.720] Um it's all there so you can um you know
+[01:04:36.160] be more detailed and review all of that.
+[01:04:38.480] But basically it's going to allow you to
+[01:04:41.280] uh commit changes to linear and sorry
+[01:04:43.520] commit changes to GitHub create a linear
+[01:04:45.119] to get out of that um create a pull
+[01:04:47.680] request out of that create a pull
+[01:04:49.440] request summary and communicate all of
+[01:04:51.280] that back to the linear or Jira as well.
+[01:04:53.200] Uh so that's going to save you a lot of
+[01:04:54.559] time. Um this feature documentation is
+[01:04:57.599] basically my memory agent. So I I use
+[01:04:59.760] this to create memory for a specific
+[01:05:02.880] model so that the agents uh can
+[01:05:04.640] understand what the specific model is
+[01:05:06.160] doing. if you're working on a humongous
+[01:05:08.160] codebase um and then a lot of other
+[01:05:11.440] workflows like merge resolver review get
+[01:05:15.359] right um and then I have this customized
+[01:05:17.359] rules for this project so if you happen
+[01:05:19.440] to copy one of the rules that I generate
+[01:05:22.799] um um or if you shared and then you want
+[01:05:26.720] to customize those all of those rules
+[01:05:28.880] for your for your own project you can
+[01:05:30.720] just run this workflow it's going to go
+[01:05:33.039] through your context of the project and
+[01:05:34.960] customize those for your project so that
+[01:05:36.799] it is relevant to your project and not
+[01:05:38.799] just something that is uh available out
+[01:05:41.520] there right so um so yeah um I would
+[01:05:45.280] suggest everyone to create their own
+[01:05:47.119] workflows if you're doing it if if
+[01:05:49.039] you're following the session feel free
+[01:05:50.480] to do that now and um try to run that
+[01:05:53.119] again to see how well that works and
+[01:05:54.960] hopefully that will help you move faster
+[01:05:56.799] uh in production applications um but
+[01:06:00.079] yeah um
+[01:06:02.720] let's actually see the agent testing so
+[01:06:05.200] yeah you can use.
+[01:06:07.680] Um, so now it's going through everything
+[01:06:09.680] and making sure that uh the search is
+[01:06:12.559] working beautifully. Um, it's making
+[01:06:15.119] sure that the breadcrumb navigation
+[01:06:16.880] works, the filters button works. This
+[01:06:19.680] doesn't necessarily mean that it's going
+[01:06:21.520] to be foolproof, but it actually is
+[01:06:23.440] going to save you a lot of time uh when
+[01:06:26.079] you are, you know, reviewing the PR. So
+[01:06:28.559] if a colleague is uh you know reviewing
+[01:06:31.760] your it's going to save them so much
+[01:06:33.359] time because um your code is going to
+[01:06:35.680] just end up being a lot more secure. So
+[01:06:38.559] um it tested that everything works. If
+[01:06:40.559] something didn't work it would also
+[01:06:42.000] automatically fix its own u mistakes. Um
+[01:06:46.720] but yeah so so that's how I would go
+[01:06:48.799] about testing um giving the model the
+[01:06:52.960] necessary tools to understand how your
+[01:06:55.599] end to end stack flows. There's also
+[01:06:57.839] Sentry MCP server, Langmith MCP server,
+[01:07:02.319] observe MCP server. So whatever tools
+[01:07:04.240] you're using, it has it probably has an
+[01:07:06.319] MCP server. You can give the models all
+[01:07:09.119] those tools so that the model can
+[01:07:10.559] actually have the full picture of your
+[01:07:11.920] CFD pipeline and everything and kind of
+[01:07:14.400] it can fix itself whenever it makes a
+[01:07:16.240] mistake. Um, so that's how you move
+[01:07:18.160] really really fast. Um, I'm going to
+[01:07:20.079] stop it here because I think the testing
+[01:07:21.440] is done, but it's just creating a
+[01:07:23.359] summary. And as I mentioned, I had a
+[01:07:26.079] strict rule that says do do not create
+[01:07:28.240] markdown files because I didn't want the
+[01:07:29.920] models to use all these tokens to create
+[01:07:32.160] a summary document, but
+[01:07:35.200] it just creates a text file. Now, um
+[01:07:37.920] yeah. Um
+[01:07:40.240] anyway, um so that's that's the testing
+[01:07:43.440] front. Um I'm going to stop the agent.
+[01:07:47.280] We already saw how we can, you know, um
+[01:07:50.079] apply security rules and um generate
+[01:07:52.720] secure code. So for example, if I was
+[01:07:56.000] generating this again, I would actually
+[01:07:57.920] use the rule that I created right here.
+[01:08:00.480] Um if I was working on um a new feature,
+[01:08:03.760] new new front end feature, I probably
+[01:08:05.839] just apply this security rule so that it
+[01:08:07.680] actually generates a secure code and as
+[01:08:09.200] a result of that, we're going to have
+[01:08:10.799] less issues. Um okay, so all of this is
+[01:08:14.079] great, but I'm pretty sure that even
+[01:08:15.760] after scanning all of this, um and
+[01:08:18.239] testing all of this, it still has a ton
+[01:08:20.080] of issues. It's not production ready
+[01:08:21.759] yet, right? it's uh so how do we um make
+[01:08:25.920] sure that the code is reviewed properly
+[01:08:28.560] the the the code um doesn't have any
+[01:08:31.440] issues right so that's where code rabbit
+[01:08:34.080] comes in
+[01:08:36.719] um I'm sure many of you are already
+[01:08:39.040] aware of code rabbit so I have actually
+[01:08:41.759] tested a lot of um
+[01:08:45.520] lot of tools to um
+[01:08:51.120] to review the code. Um,
+[01:08:54.480] let me see what is the
+[01:08:57.600] link this.
+[01:09:00.239] Yeah. So, if I open pull request and I'm
+[01:09:03.359] showing you guys because I wanted to
+[01:09:04.799] understand I wanted to show you guys the
+[01:09:06.560] strengths of different code review AI
+[01:09:09.279] code review tools that are available.
+[01:09:10.880] None of them are perfect. But what I
+[01:09:14.560] really like about Code Rabbit is because
+[01:09:16.719] of the the tools there is access to,
+[01:09:19.199] right? So that's a strength of code
+[01:09:21.199] because it can scan your code from
+[01:09:23.199] multiple different angles from all these
+[01:09:24.880] different tools. Um and as a result of
+[01:09:27.839] that it's it generally like you know um
+[01:09:30.799] uh finds the issues much much better. So
+[01:09:32.719] this is the same changes that I have in
+[01:09:34.799] my local but just created a pull request
+[01:09:37.440] for that and and then as you can see I
+[01:09:40.880] did not create anything. All of this is
+[01:09:42.719] generated by code rabbit. It's it's now
+[01:09:44.719] giving me a summary of all the changes
+[01:09:47.839] what's implemented what file and it's
+[01:09:49.839] also giving me a sequence diagram so I
+[01:09:51.440] can easily understand uh what's
+[01:09:53.199] happening in this specific pull request.
+[01:09:55.360] Um
+[01:09:57.120] um and then if you go down it's also
+[01:09:59.679] giving me code code walkthrough of
+[01:10:01.600] what's exactly happening. So it's going
+[01:10:04.080] to make
+[01:10:05.840] pull requests really really reviewing
+[01:10:08.000] the pull requests really really easily.
+[01:10:10.320] So one of the challenges in my org is
+[01:10:12.560] that like uh we did all of these cursor
+[01:10:15.600] sessions to figure out how to write code
+[01:10:17.360] more securely, how to test it properly.
+[01:10:19.360] As a result of that, we are generating
+[01:10:22.000] code extremely fast. As a team of I
+[01:10:24.159] think eight devs, we opening like more
+[01:10:26.880] than um 100 PRs in a week. Um so we're
+[01:10:32.000] generating code extremely fast. But
+[01:10:34.239] reviewing that is really painful cuz
+[01:10:37.040] generating code is really easy. But like
+[01:10:39.360] with all these tools, but you still have
+[01:10:41.760] to manually, you know, uh review every
+[01:10:43.920] single PR to make sure that nothing goes
+[01:10:46.000] bad in production. Um and then uh you
+[01:10:49.920] know, a lot of issues can just be there
+[01:10:52.080] in um the peers. So by incorporating all
+[01:10:56.560] these tools into the workflow, you're
+[01:10:58.239] just making your job as a peer reviewer
+[01:11:00.080] a lot more easier. Uh and as you all
+[01:11:02.800] know, like the coding agents are working
+[01:11:04.640] really really well these days and
+[01:11:05.840] they're improving day by day. Um so I
+[01:11:08.560] think probably in the next two to three
+[01:11:09.840] years like we we will be writing a lot
+[01:11:11.840] less code but we will be reviewing a lot
+[01:11:14.080] of code because you can't just let
+[01:11:16.080] anything go to production right uh so
+[01:11:18.159] that's where these workflows are really
+[01:11:19.760] really helpful and understanding the
+[01:11:21.600] strengths of each of these tool really
+[01:11:23.600] helps you move faster and
+[01:11:27.199] um approve the peers faster as well. Um
+[01:11:30.480] so um so we already saw that I think
+[01:11:34.560] this is all so generated by code rabbit.
+[01:11:36.960] Um and then if you go down um it's also
+[01:11:40.880] showing me what are the effects and
+[01:11:43.040] stuff. I have another tool configured
+[01:11:45.760] code. Um that's also telling me uh the
+[01:11:50.159] test coverage. So it's not only telling
+[01:11:52.560] me so because I have this code cover
+[01:11:54.320] inside of it as well. It's now telling
+[01:11:57.199] me if there's any test missing for a
+[01:11:58.880] specific module in the code. And as you
+[01:12:01.840] can see, I have really bad code
+[01:12:03.280] coverage. So I need to add that. So this
+[01:12:05.920] is also highlighting that. Um I also
+[01:12:08.400] have Graptile. One thing I like about
+[01:12:10.560] Grappile is that Gravile is another code
+[01:12:13.840] review tool. The reason I have Graptile
+[01:12:16.320] configured here is because Graile
+[01:12:19.120] uh allows me to uh let me open Graile
+[01:12:22.320] here. Uh
+[01:12:26.880] so Gravile also uh includes your cursor
+[01:12:29.760] rules um inside of the review. So it's
+[01:12:33.760] it's not just like using random tools,
+[01:12:36.320] but it's also um
+[01:12:39.120] um
+[01:12:40.719] maybe I am
+[01:12:43.280] where where did my connections go?
+[01:12:46.640] Yeah.
+[01:12:52.560] Yeah, custom context. So, as you can see
+[01:12:55.360] here, all of my cursor rules are also
+[01:12:57.360] part of the code review um in Gravile.
+[01:13:01.040] So, um that's how that's why I love
+[01:13:03.840] Grapile because it also uh you know
+[01:13:05.840] takes another angle and um reviews the
+[01:13:09.679] code with my own standards, not just
+[01:13:12.080] something that's uh defined in the
+[01:13:14.080] tools. So, that's why I have Grapile. It
+[01:13:16.159] also kind of figures out what I like
+[01:13:17.600] versus what I don't like. and um gives
+[01:13:19.760] me that command. And yeah, as you can
+[01:13:21.840] see, code rabbit found quite quite a lot
+[01:13:24.400] of issues here. All of this could have
+[01:13:26.400] been avoided if I ran
+[01:13:30.320] a workflow inside of it that will help
+[01:13:32.719] me um
+[01:13:34.960] um
+[01:13:37.280] help me fix all of these issues right
+[01:13:39.040] inside the ID without actually creating
+[01:13:41.600] a pull request. Cuz if I did it without
+[01:13:43.360] that, whoever is reviewing the code will
+[01:13:46.159] have a hard time figuring out what's
+[01:13:47.760] changed. and then the result of that
+[01:13:49.760] they probably end up spending two to
+[01:13:51.760] three hours just reviewing my PR and
+[01:13:53.360] it's going to waste a lot of time and
+[01:13:54.640] slow us down. So which is why having
+[01:13:56.480] these tools inside of the IDE and fixing
+[01:13:59.440] issues before they go to PR will so will
+[01:14:02.800] save you a ton of time. Um so I I just
+[01:14:06.480] have this workflow. I just invoke that
+[01:14:08.159] and it's now taking um all of my changes
+[01:14:11.679] and um you know it's going to fix the
+[01:14:14.400] genius as well. So it's analyzing is
+[01:14:17.280] probably going to find the same issues
+[01:14:18.320] that it found earlier. One more thing is
+[01:14:21.040] cursor also released their own agent
+[01:14:23.600] review. So it didn't find any issues yet
+[01:14:26.480] but I could also um start the start
+[01:14:28.719] start the review process here. Um and
+[01:14:31.920] this actually can run uh on commit. Um
+[01:14:37.280] so I believe that
+[01:14:41.360] uh let me open the settings here. Yeah.
+[01:14:44.000] So you can start the agent review on
+[01:14:45.600] commit. So every single time you commit
+[01:14:47.280] something, it can automatically start
+[01:14:49.199] the review and this yeah you can
+[01:14:52.800] configure how it works. But um that's
+[01:14:55.120] one way to kind of make sure that uh
+[01:14:56.880] your review works really well. Um and
+[01:14:59.920] then if you have a pro pro account in
+[01:15:03.120] cursor you can also configure bugbot. Um
+[01:15:06.159] I personally like code raid which is why
+[01:15:07.920] I'm not using cursor as bugbot. But uh
+[01:15:10.320] if you have cursor bugbot you can also
+[01:15:13.520] uh define your bugbot rules like this
+[01:15:18.000] simple bugbot. MD file in the root of
+[01:15:21.280] cursor and you can also kind of nest
+[01:15:24.080] that as well so that every single time
+[01:15:26.080] uh it's in a specific module that's
+[01:15:28.000] going to take precedence. So you can
+[01:15:29.360] have um
+[01:15:33.600] so you can have um a bugboard.md in in
+[01:15:37.040] your front end module. You can have
+[01:15:38.960] bugboard.md in your back end in your
+[01:15:40.719] infra and then it's going to take that
+[01:15:43.199] bug file uh in in the context when it's
+[01:15:46.480] reviewing the bugbot locally and also uh
+[01:15:49.280] on your ps when you run run it through
+[01:15:52.320] cursor bugbot. Um so that's that's one
+[01:15:55.280] thing um to note as well. Um and um yeah
+[01:16:01.679] um I think we already
+[01:16:06.800] um any questions from the audience at
+[01:16:09.760] all?
+[01:16:13.120] Everyone's still alive out there. Good.
+[01:16:17.199] >> I have a question.
+[01:16:18.320] >> Yeah.
+[01:16:19.120] >> So, uh I have two questions. One, um
+[01:16:23.600] you've been editing a lot of rules and
+[01:16:26.320] uh
+[01:16:28.800] If you've been uh maintaining one
+[01:16:30.960] project, right? It might have lots of
+[01:16:32.400] modules, front end, back end, lots of
+[01:16:33.840] bits and pieces. If you have lots of
+[01:16:36.480] different projects,
+[01:16:38.640] do you use the same set of rules or do
+[01:16:41.520] you iterate on them and have a
+[01:16:42.800] completely new set for the new project
+[01:16:44.560] and iterate on them and have a new set
+[01:16:46.080] for the new project and then as you go
+[01:16:48.080] on, do you end up with projects that are
+[01:16:51.440] have legacy like rules in them and you
+[01:16:54.080] have to maintain? maintaining the rules
+[01:16:55.600] is as much of a work as maintaining the
+[01:16:58.000] code.
+[01:16:59.280] >> Yeah, really great question. Um, and I
+[01:17:03.199] think this is one of the hardest
+[01:17:04.880] problems to solve like especially like
+[01:17:07.120] when you're working on a codebase or
+[01:17:10.000] with a team of like I don't know 100 200
+[01:17:12.719] devs, right? Cuz every single person has
+[01:17:15.040] their own workflow and um they're
+[01:17:17.280] probably working on different projects.
+[01:17:18.560] So how do you make sure that the rules
+[01:17:20.719] that you have are are relevant for all
+[01:17:24.560] the projects right? So I start with the
+[01:17:27.440] basic which is what I have. So I'll take
+[01:17:29.679] all the rules and then I also have a
+[01:17:31.760] rule for that or I I also have a command
+[01:17:34.640] that helps me customize the rules for
+[01:17:36.800] that specific project. So I I think I
+[01:17:39.120] showed this earlier as well that I have
+[01:17:41.199] this this rule that's going to ask me a
+[01:17:44.000] few questions to understand uh what I
+[01:17:47.040] want to do or what I want to customize
+[01:17:48.719] for that specific project. So it's also
+[01:17:51.440] going to you know go through the
+[01:17:52.560] codebase understand what's happening in
+[01:17:54.480] the specific project and then it's going
+[01:17:56.560] to ask me a few questions. Hey this is
+[01:17:57.920] what I'm noticing. Do you still want to
+[01:18:00.480] you know um uh use this rule or change
+[01:18:03.920] this in a little bit different manner
+[01:18:06.080] stuff like that right? Um and then I
+[01:18:08.560] have workflows for example this linear
+[01:18:10.080] workflow right um um this linear
+[01:18:13.920] workflow where I'm literally mentioning
+[01:18:16.080] the the ticket style like AIC XXX right
+[01:18:19.760] so AIC is the code of the project on
+[01:18:22.480] linear so if you're working on a
+[01:18:24.960] different project the code is going to
+[01:18:26.480] be different right so you need to modify
+[01:18:28.400] all these tools for your new project
+[01:18:31.280] right so you can take a baseline and
+[01:18:33.360] then you can basically run that agent
+[01:18:35.280] that that's going to take all of that
+[01:18:36.880] content text and um customize those for
+[01:18:39.679] that new project. And I would suggest
+[01:18:41.679] using a model like CLET. So I could
+[01:18:44.400] literally just like you know shove the
+[01:18:46.400] entire folder into the context and then
+[01:18:48.640] it can iterate on that cuz it
+[01:18:50.800] understands what rules I have right now
+[01:18:52.480] and what needs to update for the current
+[01:18:54.800] project. Um
+[01:18:56.239] >> okay
+[01:18:58.239] sense
+[01:19:00.239] more maintenance but it's maintenance
+[01:19:02.000] that will accelerate you. Um my next
+[01:19:04.080] question was on um when you were looking
+[01:19:07.199] at GitHub I think it was code rabbit you
+[01:19:09.360] said that code rabbit can also have your
+[01:19:12.080] cursor rules in there and review your
+[01:19:14.640] cursor rules. Was it code rabbit doing
+[01:19:16.080] that or some other tool doing that?
+[01:19:17.760] >> Review your cursor rules or was it
+[01:19:19.440] >> that was grapile.
+[01:19:21.120] >> Which one was that?
+[01:19:22.080] >> Grapile. Um
+[01:19:24.239] >> did I Yeah, here.
+[01:19:26.400] >> So it has custom context. Um, so you can
+[01:19:30.640] bring all of your cursor rules and you
+[01:19:34.400] know that's this is repository scoped.
+[01:19:37.760] So as you can see it's saying that for
+[01:19:40.159] this repository. So when it's going to
+[01:19:42.239] review this project it's going to apply
+[01:19:44.640] these rules when reviewing as well on
+[01:19:46.400] top of what it already has. So my
+[01:19:48.480] question is, and I think you've just
+[01:19:50.480] answered it, is it's reviewing the
+[01:19:53.520] codebase and making sure it complies
+[01:19:56.400] with the guidelines that are set out in
+[01:19:58.800] these custom rules. It's not reviewing
+[01:20:01.040] the rules, it's reviewing the code,
+[01:20:02.800] complies with them.
+[01:20:03.679] >> Yes.
+[01:20:04.080] >> Okay, now I understand. Thank you.
+[01:20:05.600] >> Yes.
+[01:20:06.239] >> Any other questions? I I'm monopolizing
+[01:20:08.480] the questions here.
+[01:20:11.840] And yeah, just to be clear, like I treat
+[01:20:14.640] these rules as my own agents because
+[01:20:18.480] if you're not really testing your rules
+[01:20:21.199] or your workflows, then it just means
+[01:20:23.040] that you can't rely on these models to
+[01:20:25.520] produce something. So to bring that
+[01:20:27.440] determination, I think you need to like
+[01:20:29.199] test these rules and make sure that they
+[01:20:30.480] work as expected and keep tweaking them
+[01:20:32.640] until they work exactly as you ex as you
+[01:20:35.679] want them to. Yeah. Um
+[01:20:40.159] um [snorts]
+[01:20:44.400] yeah. So I think code rabbit is done
+[01:20:45.840] reviewing the code. It does take us take
+[01:20:48.000] a bit of time. So it found some issues
+[01:20:51.840] and it's trying to fix those. It's
+[01:20:53.840] asking me to edit the um get ignore. Um
+[01:21:02.640] so as you can see with just one command
+[01:21:04.960] without me writing any prompt or
+[01:21:07.920] anything it just figured out what it
+[01:21:09.520] needed to do and then it automatically
+[01:21:11.600] fixed all the issues. So so that when I
+[01:21:14.320] create the PI it doesn't have all of
+[01:21:15.840] those issues right or you can also just
+[01:21:17.920] mention your rule files here. So for
+[01:21:20.159] example, I have a rule file that says um
+[01:21:22.719] you know um
+[01:21:25.040] standards that says um no commands or
+[01:21:28.880] minimal commands. So you can also just
+[01:21:31.199] say make sure that make sure
+[01:21:34.480] this standard is followed.
+[01:21:40.560] The benefit of having all of these rules
+[01:21:42.800] and workflows is that if you share this
+[01:21:44.640] across your team, it's it's one thing to
+[01:21:47.440] like do this as an individual, but if
+[01:21:49.360] you want to apply this in your team and
+[01:21:52.800] if you share this with your team and if
+[01:21:54.239] your team collaborates on these tools
+[01:21:56.239] and if they use agents to write code,
+[01:21:58.560] all of the code is going to be really
+[01:22:00.480] standard. It's going to be really easy
+[01:22:01.840] to understand what's happening in the
+[01:22:03.679] entire codebase as a result of that
+[01:22:05.280] because everyone kind of follows the
+[01:22:07.760] same standard, same rules and the output
+[01:22:10.239] that you're getting is going to be
+[01:22:11.280] really really great and it'll be easy
+[01:22:13.120] for other people to understands each
+[01:22:15.920] other's work and really uh move fast as
+[01:22:18.480] a team. Um and it's also great for the
+[01:22:20.719] agents as well because they have to like
+[01:22:22.400] do less brainstorming to figure out
+[01:22:23.840] what's going on where. Um so yeah with
+[01:22:26.800] this workflow um I think it's able to
+[01:22:28.800] figure out um what was wrong and fix all
+[01:22:31.120] the issues and then I have another
+[01:22:33.520] workflow that I can probably use to let
+[01:22:36.080] me first create a linear ticket. Sorry,
+[01:22:38.480] linear MCP. Let me enable that. And the
+[01:22:42.080] reason I keep enabling and disabling all
+[01:22:45.120] these tools because if I had everything
+[01:22:47.120] enabled all at the same time, it's going
+[01:22:49.040] to pollute the context and I'm not going
+[01:22:52.480] to get good results if everything is
+[01:22:54.560] enabled. So, I'm probably going to have
+[01:22:56.719] to just keep working like this.
+[01:23:01.987] [snorts]
+[01:23:06.239] All right. So now I have linear. I also
+[01:23:08.400] need GitHub. Um
+[01:23:12.480] um so now let's say I want to take all
+[01:23:16.400] of these changes and commit this to my
+[01:23:19.280] GitHub. So I'm just going to enable
+[01:23:21.600] invoke the commit changes linear to
+[01:23:23.120] GitHub. And now it's going to create a
+[01:23:25.120] branch for this. I'm on main branch
+[01:23:26.800] right now. So I'm it's going to create a
+[01:23:28.960] branch for me. It's going to create a
+[01:23:30.560] linear ticket for me [snorts] and create
+[01:23:32.639] a pull request for me on GitHub and then
+[01:23:34.239] link that back to the to the linear
+[01:23:36.800] ticket as well for issue management. Um,
+[01:23:41.287] [clears throat]
+[01:23:42.560] right.
+[01:23:45.760] Um,
+[01:23:46.880] >> I have another question.
+[01:23:48.159] >> Yeah,
+[01:23:48.719] >> sorry. Uh, and I don't know if anyone
+[01:23:51.840] else can relate to this, but I have
+[01:23:53.440] certain projects that I contribute to. I
+[01:23:56.719] what you're doing and you're talking
+[01:23:57.840] about there's a lot of um a team working
+[01:24:01.360] on a project like you all know you're
+[01:24:03.520] heading in the same direction. You're
+[01:24:04.960] all using the same tools mostly using
+[01:24:06.800] the same rules, right? If you contribute
+[01:24:09.040] to a another project like an open source
+[01:24:11.440] project, there's sometimes some
+[01:24:13.120] reluctance to take contributions
+[01:24:17.280] that are obviously AI generated, right?
+[01:24:20.320] Um,
+[01:24:22.000] something I've used and I don't know how
+[01:24:23.920] ethical this is and I'd be interested to
+[01:24:25.679] hear people's point of view is I fed an
+[01:24:28.320] AI all of my written work and told it
+[01:24:32.800] write a pull request like I would write
+[01:24:34.800] it. And when I submitted that, it was
+[01:24:37.600] more successful at getting past people
+[01:24:39.760] who don't like AI because it was written
+[01:24:42.320] like I wrote it. Um, and I know that's
+[01:24:44.800] kind of cheating. Um, do you do you ever
+[01:24:48.000] get resistance to the these kind of like
+[01:24:51.760] tools outside of the sphere of your
+[01:24:54.400] organization or is that just not
+[01:24:56.880] >> um I'm not sure I fully understand your
+[01:24:58.960] question. Can you maybe rephrase a
+[01:25:00.400] little bit?
+[01:25:02.080] >> Boil it down to um do you ever have
+[01:25:05.280] reluctance from other people
+[01:25:08.080] >> taking AI generated code?
+[01:25:12.000] >> Yeah. Um almost all the time. Um
+[01:25:16.800] because developers, you know, like it
+[01:25:20.639] was hard for me to as well like to
+[01:25:22.480] change how I work or change, you know,
+[01:25:24.800] how I produce code cuz um yeah, I didn't
+[01:25:28.400] like the AI making so many mistakes and
+[01:25:30.639] stuff like that. But if I never started
+[01:25:33.199] doing this, I would have never improved.
+[01:25:35.920] Um so the way I tackle that is like
+[01:25:39.040] asking the developer, hey, like okay,
+[01:25:40.560] that's okay if you don't like it. what
+[01:25:42.480] it is that you hate doing on a daily
+[01:25:44.239] basis. What it is that you don't like
+[01:25:46.159] doing as part of your daily job, let's
+[01:25:48.480] first automate that. So that's how I get
+[01:25:50.960] them on board and I I have them create a
+[01:25:54.080] workflow that solves their problem. Once
+[01:25:56.960] they create a workflow that solves their
+[01:25:58.719] problem and saves them some some time
+[01:26:02.080] if they don't like doing that task for
+[01:26:04.080] me it was exactly this workflow commit
+[01:26:06.159] changes linear to GitHub because I work
+[01:26:08.159] at a startup. So sometimes, you know, I
+[01:26:10.080] don't have a specific ticket to work on.
+[01:26:12.239] I'm just told, hey, this is an issue. We
+[01:26:13.840] just have to fix. So I'm on a main
+[01:26:15.520] branch. I just work on the fix. The fix
+[01:26:18.639] is there. I don't want to go to Jira and
+[01:26:20.960] create a ticket, go to GitHub and put
+[01:26:24.159] the PR summary, review the code, all of
+[01:26:26.400] that's painful, right? For me at least.
+[01:26:29.040] Um so I created this workflow that
+[01:26:31.280] literally just takes my commit takes my
+[01:26:33.440] current changes that I would have
+[01:26:34.800] implemented and then creates a linear
+[01:26:38.400] ticket for that and it basically just
+[01:26:40.480] creates a pull request for that as well
+[01:26:41.679] and saves me so much time. So that's how
+[01:26:43.920] I get the developers on board once they
+[01:26:46.719] start using it because now now they have
+[01:26:49.040] a workflow and they're using it in
+[01:26:50.560] cursor or cloud core they're going to
+[01:26:53.679] start to do it more and more and I think
+[01:26:55.840] that's how they they will eventually see
+[01:26:58.320] the value of AI generated code and
+[01:27:00.159] that's how they will start using it and
+[01:27:02.639] that was one of the biggest challenge
+[01:27:03.840] that I had to solve at my or because
+[01:27:05.679] people didn't want to use cursor code
+[01:27:07.760] they didn't trust it
+[01:27:09.840] >> brilliant thank
+[01:27:24.639] Composer [snorts]
+[01:27:25.199] one is really not great at doing
+[01:27:27.920] anything other than coding. Um, let me
+[01:27:30.400] actually try Gemini 3 here.
+[01:27:33.520] Um,
+[01:28:11.040] incoming. So it now created an issue
+[01:28:13.679] RC6. So if I go back to my linear now, I
+[01:28:16.800] should see that issue here. Um
+[01:28:26.000] RC6, right?
+[01:28:28.960] It takes a while for linear to update.
+[01:28:31.360] So I'm just going to force it.
+[01:28:33.920] Yeah. So it's there. So I have the
+[01:28:36.080] linear issue now. Um it assigned that to
+[01:28:40.239] me as well. Um and um
+[01:29:09.040] It's really slow.
+[01:29:19.120] Yep. It so it created a new branch and
+[01:29:21.679] then it's um creating the commits for
+[01:29:25.280] that and in the end I think it's also
+[01:29:26.880] going to create the PR,
+[01:29:29.199] right? It It's Yeah.
+[01:29:34.991] [snorts]
+[01:29:45.760] It's also grouping all the changes
+[01:29:47.760] according to their usage and the
+[01:29:49.280] functionality. So which which uh creates
+[01:29:51.840] a really nice git commit history. I I I
+[01:29:55.199] would have probably just staged
+[01:29:56.239] everything all all at once and just
+[01:29:58.639] wrote a you know really shitty um commit
+[01:30:01.520] message, but doing it through the agent
+[01:30:04.560] is going to give you a lot more
+[01:30:05.840] flexibility and it's going to look much
+[01:30:08.719] better as a result of that.
+[01:30:12.480] >> Can I ask a question?
+[01:30:17.679] >> Can I ask a question?
+[01:30:19.360] >> Yep.
+[01:30:20.239] >> Uh so what would you say are the main
+[01:30:22.960] differences between between uh Reptile,
+[01:30:26.800] Code Rabbit, and Bugbot. And how useful
+[01:30:31.440] do you think is having
+[01:30:34.080] like many tools reviewing your code?
+[01:30:38.320] >> Yeah, great question. So, um, Bugbot is,
+[01:30:42.560] you know, cursor's inbuilt, um, agent.
+[01:30:46.639] The main benefit of using Bugbot is that
+[01:30:48.960] it's, you know, it's part of the cursor
+[01:30:51.280] ecosystem. So if you're already using
+[01:30:53.040] cursor right you can uh use bugbot to
+[01:30:56.800] review your code. The additional benefit
+[01:30:59.679] that I think bugbot has is that it can
+[01:31:02.800] have module specific review rules. No
+[01:31:05.920] other tools give you that. So for
+[01:31:08.159] example I have this for example I don't
+[01:31:10.960] know this is rules directory where I
+[01:31:13.120] have have all the markdown files. Let's
+[01:31:15.520] say I wanted to have a rule here in this
+[01:31:17.600] directory for this specific module,
+[01:31:19.679] right? Or
+[01:31:21.760] I I want a rule for some other module
+[01:31:24.080] like back end and front end module. So
+[01:31:25.920] you can have your own custom bugbot um
+[01:31:29.360] MD file in that specific module and
+[01:31:31.679] that's going to be applied when the
+[01:31:33.120] agent starts to review the code um on
+[01:31:35.360] git. Right? So that's the main
+[01:31:37.360] difference. However,
+[01:31:40.320] the quality of the output or the issues
+[01:31:42.400] that it catches, it's not going to be as
+[01:31:44.159] great as Code Rabbit. I've tried uh
+[01:31:46.560] Graile. I've tried Graphite. I've tried
+[01:31:49.120] Code Rabbit. I've tried um
+[01:31:52.639] um Guitar. I've tried uh Cursus Bugbot.
+[01:31:55.920] I've tried to use my own cloud
+[01:31:58.239] extensions to review code um you know
+[01:32:00.560] with my own standard. So, I've tried all
+[01:32:02.800] these tools to figure out what gives me
+[01:32:05.120] the best review, right? what catches the
+[01:32:08.639] most issues like actual relevant issues
+[01:32:11.040] and not hallucinations and so far I've
+[01:32:13.360] just been impressed with code driver it
+[01:32:15.120] catches everything correctly there's
+[01:32:16.400] like less hallucinations
+[01:32:18.400] um cursor still sometimes catches issues
+[01:32:21.360] that are you know not really an issue
+[01:32:23.920] and just hallucination um so out of all
+[01:32:28.239] of that I used to use bugbot I'm not
+[01:32:30.719] using it anymore um I mainly use code
+[01:32:35.040] rabbit uh because it works really really
+[01:32:37.199] Well, and then I use Gravile as well. Um
+[01:32:40.400] because Graile also reviews the code
+[01:32:42.400] from my coding standard. So this is
+[01:32:44.560] something that I had to do manually
+[01:32:46.080] before meaning that once I generate the
+[01:32:48.480] code I had to like manually invoke the
+[01:32:50.719] command to make sure that hey did the
+[01:32:53.040] generated code follow my standards or
+[01:32:54.719] not and then if not it would fix that.
+[01:32:56.880] Um but you know um if you don't want to
+[01:32:59.840] do that I do that but let's like someone
+[01:33:03.199] in my team doesn't do that all the time.
+[01:33:05.840] So how do you make sure that they also
+[01:33:07.440] follow the same standard? So Grappile
+[01:33:09.360] will catch that. So if if you don't, you
+[01:33:11.440] know, follow the workflow that I've
+[01:33:12.719] defined to catch the issues, well,
+[01:33:14.560] you're going to be forced to do that.
+[01:33:16.239] Um, so Graile does that for you. Uh, so
+[01:33:18.480] that's the strength of Graile. Um, Core
+[01:33:20.800] Rabbit is just like really good
+[01:33:23.040] overalls. It catches the issues from
+[01:33:25.760] multiple different angles, which is what
+[01:33:27.520] I really really like. Um, so so I think
+[01:33:30.560] that's the strength of uh, code rabbit.
+[01:33:33.120] Um, I hope that that answers your
+[01:33:36.159] question.
+[01:33:42.320] Why is it keep just do it?
+[01:33:59.199] Geminina 3.3 Pro is seems to be really
+[01:34:03.840] um interactive. It it wants to ask me a
+[01:34:06.719] lot of questions before it does
+[01:34:07.760] anything. Sorry, I'm just trying this
+[01:34:09.280] live. I've never tried this model. It
+[01:34:10.800] just got released some an hour ago.
+[01:34:26.080] So, my tool is not working. Use CLI. I'm
+[01:34:29.520] just going to ask it to use the CLI. Um,
+[01:34:33.440] use cursor composite one.
+[01:34:40.560] And let's see what's what's left in the
+[01:34:44.560] presentation. I think after this is
+[01:34:46.639] done, we are done.
+[01:34:50.000] >> I have another question.
+[01:34:51.360] >> Yeah.
+[01:34:51.679] >> Um I noticed you switch models uh and
+[01:34:54.880] providers quite frequently like you
+[01:34:57.199] know, oh this one's a bit slow or that
+[01:34:58.639] one doesn't do what I want. Is that
+[01:35:00.960] common? Do you like not like stick with
+[01:35:03.040] one from the start to finish? you're
+[01:35:04.639] just like flip-flop or is that just the
+[01:35:06.639] environment that we're in that you're
+[01:35:08.320] doing that? Is that common thing?
+[01:35:10.000] >> Yeah. So I there's two things that I do
+[01:35:13.040] very frequently. One is like switching
+[01:35:16.159] on and off the MCP servers because if I
+[01:35:19.120] have everything enabled so for example
+[01:35:21.120] like for this specific task linear to
+[01:35:22.880] GitHub I only wanted linear and the G
+[01:35:26.239] MCP tool. And the reason is because if I
+[01:35:28.639] had everything else enabled the models
+[01:35:30.719] can get confused um because it might be
+[01:35:33.600] just like all all of these tools are
+[01:35:36.080] taking a lot of context right so all of
+[01:35:38.560] these tool descriptions and args I think
+[01:35:40.880] they're all going into the models
+[01:35:42.400] context window right so if you enable
+[01:35:44.880] all the tools it's going to fill up the
+[01:35:46.239] context window um and then I switch a
+[01:35:49.120] lot of models as well frequently based
+[01:35:52.560] on the task the reason I just switched
+[01:35:54.400] to composer one right now is because um
+[01:35:57.760] Gemini was just really really slow. Uh
+[01:36:00.000] and I didn't need a lot of uh accuracy
+[01:36:03.600] here because the the most of the work
+[01:36:06.159] was already done. Uh so that's why I
+[01:36:08.320] used um uh composer one and also I saw
+[01:36:12.560] the ring here and that told me that hey
+[01:36:14.719] for composer I'm only at 50% context. So
+[01:36:17.360] if it's more than 70% I would not have
+[01:36:19.360] used composer. I I would have probably
+[01:36:21.280] used 4.5 sonnet or gemini because it has
+[01:36:24.159] a million tokens. Um but that's the
+[01:36:27.120] workflow that I would always speak for
+[01:36:28.800] like keep looking at the context window
+[01:36:31.520] to make sure that you're under 50% or
+[01:36:33.440] 70% at least. Um and then um yeah change
+[01:36:37.600] the models based on the task. So if I'm
+[01:36:40.560] reviewing any code, I always actually
+[01:36:43.040] use GP 5.1 codeex or GPD5 codecs because
+[01:36:46.159] it's extremely good at uh reviewing
+[01:36:48.239] code. Or like I mentioned earlier, uh
+[01:36:50.480] you could actually just say uh you know
+[01:36:54.080] um um use different models. I'm going to
+[01:36:57.440] use tox composer 5.1 codex and so on.
+[01:37:00.159] and then say um review the current git
+[01:37:03.040] diff uh for issues and make sure that
+[01:37:05.440] they follow the coding standard
+[01:37:09.280] >> and then question to that. So in auto
+[01:37:12.719] mode um isn't it supposed to be doing
+[01:37:15.199] that kind of optimization in the back
+[01:37:16.800] background you know between the
+[01:37:18.719] different models and providers is that
+[01:37:20.960] not what's happening um and then second
+[01:37:23.920] question is if you're using one model
+[01:37:25.760] versus the other like you can quickly
+[01:37:27.920] run out of tokens and right so how do
+[01:37:31.199] you prevent that right it so where
+[01:37:34.239] what's the point of auto mode if we're
+[01:37:36.239] we're switching back and forth
+[01:37:38.320] >> um
+[01:37:40.080] so there's because of the echo, it's
+[01:37:41.840] it's really hard to hear.
+[01:37:43.199] >> Uh so
+[01:37:45.600] what is the point of auto does auto mode
+[01:37:49.679] um not do that for you?
+[01:37:53.199] And if it does, isn't that making manual
+[01:37:57.440] switching pointless? Yes.
+[01:38:00.239] >> Yeah. Um I never use auto mode because I
+[01:38:03.600] want to be very selective about what
+[01:38:05.280] model I'm using. when you use the auto
+[01:38:07.440] mode, it's going to pick the best model
+[01:38:09.679] it thinks is for the task. Um, but
+[01:38:12.800] that's not what I want to do. I just
+[01:38:15.440] want to be selective about what model
+[01:38:17.199] I'm using because for complicated tasks,
+[01:38:19.679] for implementation, I always use 4.5
+[01:38:22.639] sonnet. For creating the plan, I use
+[01:38:26.239] GPT5 CEX, right? Um, for reviewing, I
+[01:38:29.760] use GP5 Codex. uh and if I've have the
+[01:38:32.560] plan and I would implement in parallel I
+[01:38:35.040] use composer and 4.5 song. So it depends
+[01:38:37.600] on the task you're doing but I never use
+[01:38:40.239] automatically because what I've realized
+[01:38:42.880] is that if it makes mistakes you're
+[01:38:45.920] actually going to end up spending way
+[01:38:47.760] more tokens to fix those things. So I
+[01:38:50.159] want to use an expensive model from the
+[01:38:51.760] start. So it just oneshots whatever I
+[01:38:54.159] want to do and then um then you end up
+[01:38:58.320] you're going to end up saving more time
+[01:38:59.840] and tokens. Um
+[01:39:03.119] >> okay great. Thank you.
+[01:39:04.960] >> I normally like start with the planning
+[01:39:06.800] mode. I have my own planning mode. Um so
+[01:39:10.480] just to give you some context on this
+[01:39:12.080] question like I spend about 80% of my
+[01:39:14.400] time in planning and only 20% with
+[01:39:16.239] implementation. And in planning, I
+[01:39:18.239] create a document that outlines every
+[01:39:20.239] single task. So it's it is a specdriven
+[01:39:22.960] dev, but I have my own mode that asks me
+[01:39:25.920] relevant questions every single time
+[01:39:27.440] before it does anything. So basically my
+[01:39:30.159] planning document is the exact replica
+[01:39:32.960] of what's going to be implemented in
+[01:39:34.960] code and then the model just work really
+[01:39:37.119] well. So that's why you need to have
+[01:39:38.480] different models do different things. Um
+[01:39:41.040] and you can basically oneshot whatever
+[01:39:42.800] you you want to develop. Um,
+[01:39:46.239] >> we have another question down the back.
+[01:39:48.080] >> Yep.
+[01:39:49.679] >> Hi, thank you. Uh, I I appreciate the
+[01:39:53.920] the the sharing of the models and how
+[01:39:56.239] the models that you're choosing models
+[01:39:58.000] and there's considerations about speed
+[01:40:00.080] as well and uh, of course token
+[01:40:03.360] generation and how fast these tokens are
+[01:40:05.440] coming through and just kind of hitting
+[01:40:06.880] us and you know it just kind of speeds
+[01:40:10.239] up development. But I'm wondering is
+[01:40:12.000] there is there do you have any thoughts
+[01:40:14.320] on um having it optimized for like
+[01:40:17.440] particular chips or systems specifically
+[01:40:20.239] like the M5 that just came out uh or
+[01:40:23.280] even like other uh types of like systems
+[01:40:26.719] or chips where where things are just
+[01:40:28.639] going to like really be moving around
+[01:40:30.159] speedily uh locally. Um, of course we're
+[01:40:34.000] limited to whatever the speed is online
+[01:40:37.600] um with with with models that are
+[01:40:40.320] existing um over the air, but um I was
+[01:40:44.239] just wondering if you had any thoughts
+[01:40:45.360] about um the the speed of the chips and
+[01:40:48.719] uh if there was any optimizations
+[01:40:50.239] happening behind the scenes
+[01:40:52.080] considerations. Thank you.
+[01:40:53.920] >> Um so if I'm understanding your question
+[01:40:56.080] correctly, you're asking if there is any
+[01:40:57.920] optimization on the chips that can help
+[01:41:00.400] uh generate tokens faster. Yeah, I think
+[01:41:03.199] in summary, uh you're thinking of uh
+[01:41:07.280] optimizing based on your experience.
+[01:41:09.600] >> Yeah.
+[01:41:10.000] >> What about optimizing for the silicon
+[01:41:13.280] that it's being run on? Is that right?
+[01:41:16.320] >> Yeah. issue.
+[01:41:17.840] >> Um
+[01:41:19.520] well, so basically if I'm understanding
+[01:41:22.239] your question correctly, like how do I
+[01:41:24.080] optimize the prompts or optimizes
+[01:41:26.960] workflows so that they're like more
+[01:41:29.040] optimized for that specific um model uh
+[01:41:33.520] or the specific chip that the model is
+[01:41:35.920] running on. Is that correct?
+[01:41:37.280] >> I think the capabilities like like GPUs
+[01:41:40.800] these days, they're moving so fast. the
+[01:41:42.560] hardware is moving fast and so is the
+[01:41:44.480] software and drivers and you know all of
+[01:41:47.679] that. Like is there scope for us to do
+[01:41:51.040] that to switch model because this works
+[01:41:53.920] better on Nvidia or that one works
+[01:41:56.239] better on AMD but only this chipset and
+[01:41:58.560] only with this driver that kind of stuff
+[01:42:00.639] which may be hard for you to see.
+[01:42:04.159] >> Yeah, I think it's definitely possible.
+[01:42:06.400] We can absolutely do do that. I can
+[01:42:08.800] probably u talk to him um afterwards and
+[01:42:12.960] explain to me explain to him like how to
+[01:42:15.600] achieve that but I think it's definitely
+[01:42:17.360] possible. Yeah.
+[01:42:29.520] >> Yeah.
+[01:42:31.280] >> Hey, sorry. Do you have any
+[01:42:33.600] recommendations for like refactoring
+[01:42:35.679] large code bases when you don't have all
+[01:42:38.000] the
+[01:42:38.400] >> Can you speak a little?
+[01:42:39.600] >> Do you have any recommendations for like
+[01:42:42.000] refactoring a large code base or you
+[01:42:45.440] know applying similar rule sets to a
+[01:42:47.920] large codebase?
+[01:42:49.600] Um you know working with legacy code as
+[01:42:52.639] opposed to building new features. Do you
+[01:42:54.000] have any recommendations?
+[01:42:55.920] >> Yeah. um refactoring legacy code and
+[01:43:00.080] kind of you know refactoring a large
+[01:43:01.679] code base is um a massive task and it's
+[01:43:04.719] really difficult um so I would normally
+[01:43:08.480] do it in phases so first of all I would
+[01:43:11.600] create a detailed plan about a specific
+[01:43:14.480] module on like how to refactor that
+[01:43:16.639] specific module and then have that that
+[01:43:19.360] file on the module level so kind of like
+[01:43:21.840] a memory or knowledge transfer file on
+[01:43:24.480] that specific module that tells hey this
+[01:43:26.159] is what this module is doing. Once you
+[01:43:28.159] have that, then you can basically also
+[01:43:30.960] try to create cursor rules for that
+[01:43:33.119] specific module. So that lives inside of
+[01:43:35.040] that module itself. And then you can
+[01:43:37.760] basically gradually start to work on uh
+[01:43:40.320] you know um each of those modules and uh
+[01:43:43.199] have these models test its own work as
+[01:43:45.199] well. And like if it's not done like it
+[01:43:47.520] cannot be done in one shot, right? So
+[01:43:49.119] you might have to like first create or
+[01:43:51.119] migrate everything and then have the
+[01:43:53.199] models tested. And the reason I said
+[01:43:55.600] like you have to have that knowledge
+[01:43:57.520] transfer file at the model level is
+[01:43:59.679] because it's going to tell the model
+[01:44:01.679] later on this is what the legacy code
+[01:44:04.239] was doing. This was the function and
+[01:44:06.239] this is how you're supposed to work. So
+[01:44:07.920] in the new modules as well you're going
+[01:44:10.239] to have the same files that that's going
+[01:44:11.920] to describe what that model is supposed
+[01:44:14.159] to do. And then when you combine all
+[01:44:16.320] those files and ask the mo the models to
+[01:44:19.119] test its own work or test the module
+[01:44:22.080] once the entire app is migrated it's
+[01:44:24.480] going to be able to figure out that hey
+[01:44:25.600] this was the existing feature and now
+[01:44:27.760] this is it does it work and you also
+[01:44:29.840] have to give it the context that hey
+[01:44:31.199] like I'm migrating or I have migrated
+[01:44:34.480] the old cobalt code into python or
+[01:44:36.960] something like that right so it knows
+[01:44:38.560] that hey this was a cobalt codebase and
+[01:44:41.360] now I'm running this now I'm seeing this
+[01:44:44.000] in python form form and this was the
+[01:44:46.400] feature before. it can understand that
+[01:44:49.119] hey this like I have to take care of
+[01:44:52.000] these things the models are smart enough
+[01:44:53.840] to understand that hey if I'm doing this
+[01:44:55.600] migration these are the issues that can
+[01:44:57.679] happen and it will probably help you fix
+[01:44:59.679] that and then creating reusable
+[01:45:02.000] workflows along the way to speed up the
+[01:45:04.000] process it's really going to help you
+[01:45:06.320] cuz if you're not going to create the
+[01:45:07.679] workflows you're going to have to like
+[01:45:09.040] manually prompt every single time and
+[01:45:11.119] that's not going to be consistent across
+[01:45:13.440] your entire migration and and as a
+[01:45:15.600] result of that you're not going to have
+[01:45:16.960] consistent codebase and you might
+[01:45:18.639] actually end up having more mistakes in
+[01:45:20.239] the codebase. So I think that's what I
+[01:45:21.679] would probably do to migrate a legacy
+[01:45:23.520] codebase. I hope that answers your
+[01:45:25.920] question.
+[01:45:27.600] >> It's a big project.
+[01:45:32.560] >> Any more final questions as we get close
+[01:45:35.199] to the end?
+[01:45:48.080] Yeah. So I think
+[01:45:50.400] if no more questions I think um yeah
+[01:45:53.040] this will be the end of um my work
+[01:45:56.239] workshop.
+[01:45:57.280] >> Thank you so much. Uh round of applause
+[01:46:00.000] please for
+[01:46:02.719] sh I I I [applause]
+[01:46:04.719] think I've learned a lot about uh cursor
+[01:46:07.280] today more than I have about anything
+[01:46:08.960] else having seen it in action for a good
+[01:46:11.280] couple of hours now. It's fantastic.
+[01:46:12.960] Thank you so much. And the other thing I
+[01:46:14.400] want to say is the Git repo that you've
+[01:46:16.480] been showing that's got your rules in a
+[01:46:19.760] lot of your rules in that's like public.
+[01:46:22.159] People can share that. People can use
+[01:46:23.679] that, learn from that. Wonderful. And we
+[01:46:26.400] put the link in the Zoom. It's also been
+[01:46:29.199] posted in our Discord. If you're not on
+[01:46:32.639] either of those platforms, then uh fair
+[01:46:35.520] enough. I won't judge you. Uh but if you
+[01:46:37.840] want to come and find either of us, we
+[01:46:39.360] can uh show you where to find uh that
+[01:46:41.920] replay. Actually, if you put it up
+[01:46:43.199] there, then people could take a photo of
+[01:46:44.480] it. Uh, if you want to put the git repo
+[01:46:47.199] up there, then we could um people would
+[01:46:49.040] take photos as they go away or
+[01:46:50.320] something. Uh, thank you once again. Uh,
+[01:46:53.600] next session starts at 3:00. Uh, stretch
+[01:46:57.119] your legs, get a drink. We'll see you at
+[01:46:59.360] the next one. Thank you so much.
+[01:47:03.658] [music]
+[01:47:11.519] >> [music]
+[01:47:17.414] [music]

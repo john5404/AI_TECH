@@ -1,0 +1,1537 @@
+[00:00:00.040] to deeply understand the code basee no
+[00:00:02.159] matter what you're using so you could be
+[00:00:04.799] you could be trying to call a function
+[00:00:06.919] and so you you want to get a completion
+[00:00:08.559] at your cursor that just fills in the
+[00:00:11.000] fields for that function correctly
+[00:00:12.759] pulling them in from all kinds of places
+[00:00:14.679] in your code or you could be again
+[00:00:17.720] diving into a new repository right and
+[00:00:19.880] so you want to understand what is this
+[00:00:21.920] repository about give me the high LEL
+[00:00:23.760] structure how do the components talk to
+[00:00:26.039] each other what's going on here I don't
+[00:00:27.679] want to bother reading documentation
+[00:00:30.359] which often is missing or out of date I
+[00:00:32.599] just want to know what the current state
+[00:00:34.000] of the code is or maybe I'm looking uh
+[00:00:37.559] for a component that I know I wrote six
+[00:00:39.520] months ago but I I can't figure out
+[00:00:41.399] where it is I just want to ask chat tell
+[00:00:43.920] me where this thing is and it should go
+[00:00:45.719] and and find it for me you're listening
+[00:00:48.920] to the AI native Dev brought to you by
+[00:00:51.360] Tesla
+[00:00:53.140] [Music]
+[00:01:01.960] hello everyone welcome back to the AI
+[00:01:04.080] native Dev today we have a really fun
+[00:01:06.400] episode we're going to dig into what
+[00:01:08.799] does it mean to build you know a coding
+[00:01:10.520] assistant a coding analysis and we'll
+[00:01:12.600] have a better explanation of what it is
+[00:01:15.520] here to make developers more more
+[00:01:17.479] productive as they build with AI and to
+[00:01:19.600] do that we have guy gurari who is the
+[00:01:21.759] co-founder of augment guy thanks for
+[00:01:24.479] joining us here on the podcast yeah very
+[00:01:26.840] glad to be here thanks for inviting me
+[00:01:28.400] on and we have a slightly unique episode
+[00:01:30.400] here in which we have two half hosts
+[00:01:32.680] here where we have Dion hey Dion hey
+[00:01:35.079] good to be here it's really fun to be
+[00:01:36.840] with my favorite Founders who happen to
+[00:01:38.880] both be Israeli guys it's world yeah so
+[00:01:43.799] guy and I are both guy yeah actually
+[00:01:46.159] there's a bit of a story behind that
+[00:01:47.479] right we were both in the same group
+[00:01:49.439] many years ago not to say so we don't
+[00:01:51.320] sound too old but many years ago and
+[00:01:53.640] there were four guys named guy and so
+[00:01:55.600] none of us were named guy at least for
+[00:01:56.799] me I I stayed with Geo on it as the
+[00:01:58.960] hashtag but the guy us you managed to
+[00:02:00.680] retain just the first name piece yes I
+[00:02:02.920] was guer back then but that somehow did
+[00:02:05.280] not stick maybe because I didn't try to
+[00:02:07.560] propagate it much yes yeah you likeed
+[00:02:10.520] the vowel guo at least had that extra o
+[00:02:12.640] but you were a guy clearly all a bunch
+[00:02:14.680] of nerds it was all about the username
+[00:02:16.720] that we happen to have on the on the
+[00:02:19.040] Unix system that we Solaris sort of
+[00:02:22.319] system cool so we're going to dig into
+[00:02:24.400] indeed uh what is to end code if you
+[00:02:26.519] will code development on it maybe to get
+[00:02:28.280] us started can you tell us guy just a
+[00:02:29.599] littleit about augment and what you do
+[00:02:31.800] and then we'll go from there yeah
+[00:02:33.680] augment is an AI coding assistant that
+[00:02:36.760] gives you the whole code based at your
+[00:02:38.879] fingertips essentially every way you
+[00:02:41.159] interact with augment we try to make it
+[00:02:43.480] seem like uh the models really
+[00:02:45.599] understand your full code base and so
+[00:02:47.720] what that means is that then you can go
+[00:02:49.640] and make changes to the code write new
+[00:02:51.840] code and do that all with confidence
+[00:02:54.360] without having to retain the whole code
+[00:02:56.080] base in your head so just to give I
+[00:02:58.080] think we'll go more deeply into it but
+[00:02:59.720] just just to give one example where we
+[00:03:01.239] see this help a lot if I need to go into
+[00:03:03.840] a new part of the code base for example
+[00:03:05.599] that I've never touched before with
+[00:03:07.799] augment I can get up to speed and start
+[00:03:10.840] making changes with confidence usually
+[00:03:14.239] within a few hours to a day versus
+[00:03:17.000] something that would take me sometimes a
+[00:03:19.000] week or longer just to get up to speed
+[00:03:20.799] on what's happening in that part of the
+[00:03:22.200] code base or in a new repository I'm
+[00:03:24.599] looking at and so that's maybe a way to
+[00:03:26.879] summarize it's for us it's about the
+[00:03:29.239] context making the context from the
+[00:03:31.000] codebase available to the model leads to
+[00:03:33.640] much better results as far as we can
+[00:03:35.360] tell cool super interesting and yeah
+[00:03:37.120] we're going to dig a lot more into that
+[00:03:38.840] and I guess maybe veering a little bit
+[00:03:40.959] backwards from augment you've had one of
+[00:03:43.400] the earlier exposures to llm still in
+[00:03:46.000] your role in Google can you tell us a
+[00:03:47.159] little bit about the I guess how you
+[00:03:48.720] found out about llms you started
+[00:03:50.080] building them and I guess maybe when is
+[00:03:51.640] it that you learned to appreciate their
+[00:03:52.959] power yeah so I joined Google this was 6
+[00:03:56.159] years ago very excited about machine
+[00:03:58.480] learning I thought this was a a
+[00:04:00.400] scientific revolution that was happening
+[00:04:02.560] of a once in a-lifetime thing and I was
+[00:04:04.760] very excited to be part of it back then
+[00:04:07.799] the discussion was really centered a lot
+[00:04:10.519] more from my perspective on Vision
+[00:04:12.480] models convolutional neural networks
+[00:04:14.799] through all the rage and so I was doing
+[00:04:17.320] a lot of research work on that and then
+[00:04:20.280] when gpt3 came out for me that was a
+[00:04:23.120] pivotal moment because it became clear
+[00:04:25.120] that there's something very special
+[00:04:27.520] about language models based on
+[00:04:29.120] Transformers
+[00:04:30.520] where suddenly instead of having to
+[00:04:33.560] fine-tune the model to do something that
+[00:04:35.759] you like you can prompt it you can do F
+[00:04:38.039] shot prompting which really cut down on
+[00:04:40.479] the amount of time you had to spend with
+[00:04:42.120] the model uh to get something out of it
+[00:04:45.160] uh and so me and the the team at Google
+[00:04:47.400] we we really pivoted our work toward
+[00:04:49.600] language models and we started
+[00:04:51.800] evaluating them we started being more
+[00:04:53.600] involved in training the large language
+[00:04:55.360] models I was involved in some of the
+[00:04:57.039] training of the large models at Google
+[00:04:59.400] uh and kind of through that work I
+[00:05:01.240] became convinced that yes this is it
+[00:05:03.880] this is really the new heart I would say
+[00:05:06.479] of the AI Revolution is these generative
+[00:05:08.840] models that are very general and can
+[00:05:10.759] generate a lot of text for you and I
+[00:05:12.960] guess how quickly did it become a parent
+[00:05:15.240] that not only are they powerful these
+[00:05:16.960] llms but they can actually help with
+[00:05:18.600] code they can help with software
+[00:05:20.360] development yeah so I think that
+[00:05:22.720] certainly took some time I think that to
+[00:05:26.240] me and to to folks I at least interacted
+[00:05:29.039] with that was not obvious from the
+[00:05:30.639] beginning and I think maybe the reason
+[00:05:33.319] why is that there was something about
+[00:05:35.759] reasoning heavy tasks that seemed more
+[00:05:39.880] remote or more Out Of Reach or harder
+[00:05:43.000] there are uh many people who've done
+[00:05:45.479] very good work on reasoning tasks uh for
+[00:05:48.280] many years trying to do a lot of
+[00:05:53.120] sometimes you might call it feature
+[00:05:54.360] engineering sometimes you might call it
+[00:05:56.000] find architectures to solve heart
+[00:05:57.960] reasoning tasks a lot of symbolic work
+[00:06:01.039] semantic analysis on code and on math
+[00:06:03.600] and so on and still that work is I would
+[00:06:06.039] say a lot of it is still relevant but I
+[00:06:08.479] think it was the big surprise certainly
+[00:06:11.360] to me and I think also to many others is
+[00:06:14.199] the the degree to which you can apply
+[00:06:16.400] scale of compute and scale of data and
+[00:06:19.160] solve hard reasoning tasks and so code
+[00:06:21.639] is an example of that other examples of
+[00:06:23.759] that are math and science I think
+[00:06:26.199] probably most people were surprised by
+[00:06:29.280] how good you can make these models using
+[00:06:32.400] very general techniques the same
+[00:06:34.160] techniques that you use to get them to
+[00:06:35.680] write poetry to get them to edit law
+[00:06:38.400] documents and so on and help them solve
+[00:06:40.560] reasoning tasks I think code was a part
+[00:06:42.639] of that I think one of the earliest
+[00:06:44.240] indications that there was something
+[00:06:45.560] interesting happening was the Codex
+[00:06:47.319] model and then at Google we had our own
+[00:06:49.960] code models where we saw some success
+[00:06:52.639] but the rate of progress on code has
+[00:06:54.759] been surprising would say but also these
+[00:06:56.639] other models they were not buil on
+[00:06:58.440] language right like they were bu on more
+[00:07:00.759] I don't know what the terms is it the
+[00:07:02.039] neuros symbolic or is like I don't know
+[00:07:03.759] like I'm I'm probably abusing the terms
+[00:07:05.280] but they were understanding the code
+[00:07:06.960] breaking it down into some sort of
+[00:07:08.400] symbolic representation of the code and
+[00:07:10.680] then analyzing on those and and the llms
+[00:07:12.759] as I my kind of layman data science
+[00:07:14.960] understanding here like they were very
+[00:07:16.720] different they jumped into completing
+[00:07:18.479] treating code AS text is is that a
+[00:07:20.720] correct kind of representation here
+[00:07:22.720] that's exactly right this is part of so
+[00:07:25.360] people I think widely in the community
+[00:07:28.400] thought that yes you need to do
+[00:07:29.759] something special to deal with code and
+[00:07:31.879] also to deal with math and other hard
+[00:07:33.599] reasoning tasks neuros symbolic
+[00:07:35.599] approaches were that was one big
+[00:07:37.240] approach there were also purely symbolic
+[00:07:39.599] approaches and yes the surprise is that
+[00:07:42.440] when you take a large language models
+[00:07:43.960] and you just use the same general
+[00:07:45.599] techniques the same architecture the
+[00:07:47.199] same methods of training that you use on
+[00:07:49.599] other text domains you get excellent
+[00:07:51.919] results if you scale it up yes so that
+[00:07:54.479] was I I agree with that description yeah
+[00:07:56.919] and you worked on the research that went
+[00:07:58.840] into the another paper around reasoning
+[00:08:01.159] is that correct yes so we worked on
+[00:08:04.000] another hard reasoning domain solving
+[00:08:06.479] math and science questions and for us
+[00:08:09.080] that was the Eureka moment in that
+[00:08:11.720] domain which was yes we the work
+[00:08:14.280] involved again scaling up the data
+[00:08:16.560] downloading all of the archive papers
+[00:08:18.800] all the research papers we could find
+[00:08:21.000] scanning the internet for all the papers
+[00:08:23.560] that had something to do with
+[00:08:24.720] mathematics which at Google all the
+[00:08:27.280] infrastructure makes that
+[00:08:28.720] straightforward to do and then train the
+[00:08:31.159] largest model we could put our hands on
+[00:08:33.320] back then it was the Paul model from
+[00:08:35.039] Google train it on all that data and see
+[00:08:38.080] what it can do in terms of math and we
+[00:08:40.320] were blown away by the quality you can
+[00:08:43.599] extract from these very general models
+[00:08:46.200] train in a very general way we got these
+[00:08:48.839] models to pass University entrance exams
+[00:08:51.800] based on these techniques and so for me
+[00:08:54.720] that was the point where I thought oh if
+[00:08:56.560] we can do this on reasoning you can do
+[00:08:58.720] this probably on code and on many other
+[00:09:00.720] domains it's it's not that reasoning
+[00:09:02.480] it's this uh special thing the general
+[00:09:05.040] techniques are really powerful enough to
+[00:09:06.760] address those problems as well very cool
+[00:09:08.680] and I realized you know that I skipped
+[00:09:10.200] the part in which I explained your
+[00:09:11.640] connection to augment on it so listeners
+[00:09:14.040] may be aware that Dion is recently
+[00:09:15.640] joined and you're a Phil CTO and you're
+[00:09:17.200] doing uh a whole bunch of good things
+[00:09:18.760] over here and before that you were at
+[00:09:21.079] augment and you were leading a lot of
+[00:09:22.680] the product over there so you end up
+[00:09:24.399] being here knowing all sorts of
+[00:09:26.240] perspectives about this domain exactly
+[00:09:28.480] and when guy was talk about at the high
+[00:09:30.640] level the importance of context and the
+[00:09:32.519] like I just want to highlight that the
+[00:09:34.600] proof is in the pudding with all of
+[00:09:36.040] these things when I first met with the
+[00:09:37.880] augment team and seeing the product even
+[00:09:41.000] back then and it's just gotten obviously
+[00:09:43.399] uh increasingly better over time the
+[00:09:45.959] feel of using that product compared to
+[00:09:48.360] other coding assistants that are out
+[00:09:50.920] there is just a very different
+[00:09:52.360] experience and I noticed that as of
+[00:09:54.800] today Friday January 17th you can selfs
+[00:09:58.279] serve and actually try it out yourself
+[00:10:00.399] and I just really recommend downloading
+[00:10:02.360] it running on a real repo and doing a
+[00:10:04.839] real task and that's where you get to
+[00:10:06.959] feel the difference right it's the
+[00:10:08.320] analogy I always give is there were lots
+[00:10:10.440] of search engines and then Google came
+[00:10:12.320] along and it felt a little bit different
+[00:10:14.640] and that was my even early experience
+[00:10:16.600] with augment and that's where I get to
+[00:10:18.519] meet up with guy and Igor the other
+[00:10:20.800] co-founder and then the amazing research
+[00:10:22.920] team that they' built to pull this off
+[00:10:24.920] that you know that we'll get into more
+[00:10:26.839] detail yeah it's a pleasure to to be
+[00:10:28.920] here with both guys so I guess I think
+[00:10:31.360] we've been attempting this topic for
+[00:10:32.839] long enough on it let's dig into the
+[00:10:34.480] context give context on context so what
+[00:10:36.360] is this special sauce like when you talk
+[00:10:37.720] about context matters you talk about
+[00:10:39.920] that being you know something that
+[00:10:41.160] provides sort of different level of
+[00:10:43.120] magic when you use it tell us a bit more
+[00:10:45.000] about what that means and and maybe how
+[00:10:47.079] it defers than maybe the normal way in
+[00:10:49.480] which Els might operate yeah system
+[00:10:52.200] might operate yeah so I'd say the there
+[00:10:55.519] are few things that go into it uh one is
+[00:10:58.160] just the basic ability to deeply
+[00:11:00.959] understand the code base no matter what
+[00:11:02.760] you're using so you could be trying to
+[00:11:05.000] call a function and so you want to get a
+[00:11:07.079] completion at your cursor that just
+[00:11:09.320] fills in the fields for that function
+[00:11:11.200] correctly pulling them in from all kinds
+[00:11:13.120] of places in your code or you could be
+[00:11:16.440] again diving into a new repository right
+[00:11:18.720] and so you want to understand what is
+[00:11:20.680] this repository about give me the high
+[00:11:22.519] level structure how do the components
+[00:11:24.600] talk to each other what's going on here
+[00:11:26.440] I don't want to bother reading
+[00:11:28.079] documentation which often is missing or
+[00:11:30.839] out of date I just want to know what the
+[00:11:32.480] current state of the code is or maybe
+[00:11:35.240] I'm looking uh for a component that I
+[00:11:37.639] know I wrote six months ago but I I
+[00:11:39.680] can't figure out where it is I just want
+[00:11:41.440] to ask chat tell me where this thing is
+[00:11:44.120] and it should go and and find it for me
+[00:11:46.120] so all these things require context all
+[00:11:49.920] these things require analyzing the full
+[00:11:52.560] code base and being able to do that in a
+[00:11:55.240] way to correctly answer questions and
+[00:11:57.920] write generate code BAS based on it you
+[00:12:00.399] have to have the code whole code base in
+[00:12:02.200] there and we know that the models
+[00:12:04.920] context Windows today and probably in
+[00:12:07.320] the foreseeable future are not large
+[00:12:09.600] enough to fit real large scale complex
+[00:12:13.560] code bases in there and so we have to
+[00:12:17.040] use other techniques in order to make
+[00:12:19.399] the models aware of all that context so
+[00:12:22.920] one side of it is yes how can we pull in
+[00:12:26.279] the correct context from the repository
+[00:12:28.399] to answer the particular query to
+[00:12:30.160] address the particular completion I'd
+[00:12:32.000] say the other side of it that we found
+[00:12:34.639] also very important is in the
+[00:12:37.480] interactivity so that means first of all
+[00:12:39.440] it has to be really fast if it's not
+[00:12:41.480] fast it it quickly gets annoying even if
+[00:12:43.839] the quality is good and so there's a lot
+[00:12:45.920] of engineering and research effort that
+[00:12:47.639] goes into that and there's also a real
+[00:12:51.040] time aspect to it if I'm typing away a
+[00:12:54.079] function in one file and I switch to my
+[00:12:56.800] unitest file and I want to write the
+[00:12:58.920] test for that I don't want to have to
+[00:13:00.720] tell the model I just wrote this
+[00:13:03.079] function please write the test for me it
+[00:13:05.440] should know that function is something I
+[00:13:07.839] just wrote it should follow me along as
+[00:13:10.040] I'm editing and so the codebase
+[00:13:12.480] awareness should also be aware of what
+[00:13:14.519] I'm doing it should be aware of the real
+[00:13:16.720] time nature of the work getting that all
+[00:13:19.760] to work together and folks who have
+[00:13:21.839] worked on rag they know that you need to
+[00:13:23.880] an indexing step and that indexing step
+[00:13:26.040] can be challenging and can take a while
+[00:13:28.320] getting all that to to work together and
+[00:13:30.040] getting it to work within hundreds of
+[00:13:31.760] milliseconds and getting that whole
+[00:13:33.519] thing to come together as a kind of
+[00:13:35.360] delightful user experience this is where
+[00:13:38.000] the challenge is it's like get the
+[00:13:39.480] quality right get the speed right get
+[00:13:41.600] the real time aspect of it and all these
+[00:13:43.440] things have to come together on any
+[00:13:45.920] possible task a developer might want to
+[00:13:47.760] do in their code base yeah yeah so I
+[00:13:50.199] guess this is super interesting and a
+[00:13:51.880] few clarifying questions one is does the
+[00:13:54.480] context also make you a better developer
+[00:13:56.519] or just a better developer in this
+[00:13:57.959] environment is it
+[00:13:59.600] I can understand or easy to understand
+[00:14:01.440] how if I'm a super skill developer and I
+[00:14:03.839] go into a brand new organization I've
+[00:14:05.440] never written code in their codebase
+[00:14:07.240] then I would be at a certain level maybe
+[00:14:09.600] after five years working in this code
+[00:14:11.160] base on it I will know how to write
+[00:14:12.759] better code in this company I wouldn't
+[00:14:14.120] be a better developer maybe minus what
+[00:14:15.800] I've learned in these five years but I
+[00:14:17.519] would be better tuned in better tune my
+[00:14:20.240] with my surrounding but is the the same
+[00:14:22.959] is that the way to think about this
+[00:14:25.399] context analysis it's more about
+[00:14:27.920] understanding like being a better
+[00:14:29.959] developer in this organization or are
+[00:14:32.120] there elements of it that that you feel
+[00:14:33.800] have the promise of actually just being
+[00:14:35.279] a better developer almost like the
+[00:14:36.839] context of the world my natural thinking
+[00:14:39.160] is like the context of the world gets
+[00:14:40.480] encoded into the llms that's what they
+[00:14:42.040] bring with it and you're talking about
+[00:14:44.519] understanding the
+[00:14:45.920] org is that right yes that's right so I
+[00:14:49.639] would say at this point we're starting
+[00:14:52.160] with code based awareness which is what
+[00:14:53.880] I've I've been describing there are a
+[00:14:55.440] lot of other sources of information for
+[00:14:57.320] that organization that can be relevant
+[00:14:59.320] we can talk about them too but yes it is
+[00:15:01.639] about aligning the model in some sense
+[00:15:03.920] to the organization's knowledge
+[00:15:06.240] everything else that's about the world
+[00:15:08.639] usually is already baked into the model
+[00:15:11.399] I would say the way I've seen this make
+[00:15:14.000] me a better developer is by making my
+[00:15:16.720] learning process faster and so often the
+[00:15:20.000] model will notice or pick up on certain
+[00:15:22.480] useful patterns or tricks or just good
+[00:15:25.800] things that people have done around the
+[00:15:27.839] code base and will surface them through
+[00:15:29.759] these suggestions this process I think
+[00:15:32.600] happens naturally right you talk to your
+[00:15:34.440] co-workers you read other people's code
+[00:15:36.399] you learn I would say that the context
+[00:15:38.880] awareness accelerates that process uh
+[00:15:41.600] and of course in any organization there
+[00:15:43.839] are things that are specific to that
+[00:15:45.959] organization but then there are also
+[00:15:47.519] many useful patterns right whenever we
+[00:15:49.360] work at a company we learn things that
+[00:15:51.279] we then take with us to our next role I
+[00:15:54.240] would say this accelerates that process
+[00:15:57.199] but it it's it's less about yes this
+[00:15:59.319] will the context awareness will help me
+[00:16:01.319] learn what the latest methods are in my
+[00:16:03.959] field it's it's less about that and I
+[00:16:05.839] definitely saw that with customers right
+[00:16:07.680] where I remember one developer us an
+[00:16:09.839] arugment was like I heard that
+[00:16:11.920] JavaScript had added sets and I kept
+[00:16:14.120] thinking like I want to use this
+[00:16:15.759] sometime and I never did I never got
+[00:16:18.079] around to it because it wasn't outside
+[00:16:20.160] of when I was actually doing things but
+[00:16:22.440] then all of a sudden as I'm writing code
+[00:16:25.480] that set apply it's suggesting that and
+[00:16:28.639] yes that's baked into the overall piece
+[00:16:30.440] but also a lot of your co-workers are
+[00:16:32.120] pretty smart and do interesting things
+[00:16:34.279] and so it does pick up on those things
+[00:16:36.160] as well and bring that across I
+[00:16:38.399] definitely agree with guy on just like
+[00:16:40.720] the the whole kind of accelerating your
+[00:16:42.360] learning and I definitely felt that even
+[00:16:44.079] things that I thought I had some
+[00:16:45.920] expertise in like typescript and the
+[00:16:48.360] like it was just teaching me things that
+[00:16:50.880] felt like if I was pair programming with
+[00:16:53.360] colleagues and in this case it's like a
+[00:16:54.959] mesh of the intelligence of all of my
+[00:16:56.920] colleagues all at once to to help about
+[00:16:59.920] yeah it's interesting I guess the
+[00:17:01.399] picture that comes to mind is more about
+[00:17:03.040] Focus if you know everything in the
+[00:17:04.679] world and you might have there's all the
+[00:17:06.799] craft of software development but then
+[00:17:09.079] there's a a focusing element of looking
+[00:17:11.079] at the aspects of The Craft of software
+[00:17:12.720] development that matter more in in this
+[00:17:15.079] specific organization in the specific
+[00:17:16.640] setting and so maybe you now understand
+[00:17:19.439] or or the system is now able to
+[00:17:22.360] understand that that is the type of
+[00:17:23.880] specialization that you might want to
+[00:17:25.600] bring to four it does though very much
+[00:17:27.959] beg yeah never organization you take a
+[00:17:29.679] bunch of things that you want to take
+[00:17:31.240] with you to the next organization and
+[00:17:32.919] there's a whole pile of things that you
+[00:17:34.559] learn to not do in the next organization
+[00:17:37.840] how how do you existing codebase
+[00:17:40.039] existing Enterprise scale 20 year old
+[00:17:43.160] code bases on it have a lot of stuff in
+[00:17:45.440] it that you absolutely do not want new
+[00:17:47.799] codes to replicate how do you clean this
+[00:17:51.120] cont how do you deal with that yeah and
+[00:17:53.240] so that is the kind of thing where to me
+[00:17:55.880] it falls under the bucket of lightweight
+[00:17:58.240] steering it's a bit like self-driving
+[00:18:00.720] where there there actually a lot of
+[00:18:02.640] analogies here to self-driving where
+[00:18:05.640] solving the full thing autonomously will
+[00:18:08.360] take a while I believe we'll get there
+[00:18:10.320] eventually but it will take a while it
+[00:18:11.880] will take years probably is my sense and
+[00:18:14.440] so something like how can we figure out
+[00:18:18.120] automatically which parts of the code
+[00:18:20.320] base are more relevant to the kind of
+[00:18:22.559] thing we're doing now and which parts
+[00:18:24.200] are relevant but we actually want to
+[00:18:25.799] avoid them understanding that
+[00:18:27.679] automatically will will take time I
+[00:18:30.320] think a thing that can help with that is
+[00:18:33.080] to go beyond the code base because often
+[00:18:35.120] that knowledge is not stored in the code
+[00:18:36.919] based right it's stored in slack
+[00:18:38.559] conversations it's stored in Google Docs
+[00:18:41.320] and all kinds of design documents and so
+[00:18:43.280] on so certainly the more context we can
+[00:18:45.880] show the model the better it will get at
+[00:18:48.520] that but also with these kinds of
+[00:18:51.240] questions some lightweight steering
+[00:18:52.960] helps and so with augment you can give
+[00:18:55.360] the model General guidelines that are
+[00:18:57.400] always in effect where you can tell it
+[00:19:00.200] when you're doing work for example in
+[00:19:02.840] this directory or in this module or in
+[00:19:04.919] this component pay less attention to uh
+[00:19:08.360] this area of the code because that's old
+[00:19:10.760] and of course that's not foolproof just
+[00:19:12.600] like everything with AI it will keep
+[00:19:14.320] making mistakes but it at least steers
+[00:19:17.600] the model more toward that direction so
+[00:19:20.159] I think currently it's some combination
+[00:19:22.760] of showing them all as much context as
+[00:19:24.640] we can plus human steering to translate
+[00:19:27.799] into just better better generated code
+[00:19:29.720] that follows the organization's patterns
+[00:19:32.200] had a bit of a crazy thought jumped to
+[00:19:33.480] mind that I wonder if you can take like
+[00:19:35.440] I think in the world of whatever in the
+[00:19:37.320] tech World some engineering
+[00:19:39.480] organizations are perceived as better at
+[00:19:41.159] their craft than others there might be
+[00:19:43.400] whatever like Netflix used to be very
+[00:19:44.880] much at the top of that okay and I
+[00:19:46.480] wonder if you can have Netflix sell the
+[00:19:48.320] context of their code so say hey this is
+[00:19:50.360] what go good code looks like and then I
+[00:19:53.000] think there will be quite a few buyers
+[00:19:54.240] to say have your autoc completion work
+[00:19:56.679] to that tier
+[00:19:59.039] even that a little bit too wild and
+[00:20:00.600] nobody would ever do that in sharing
+[00:20:02.320] that data but yeah even within the
+[00:20:04.679] organization right you have that
+[00:20:06.480] particular teams where it's or even
+[00:20:08.640] people where I just want to be like hey
+[00:20:10.320] any PR from Wendy like like prioritize
+[00:20:14.000] that more and there was this one of our
+[00:20:16.280] the favorite customers who publicly
+[00:20:19.080] spoken about this guy Merrick from
+[00:20:20.720] webflow who's like a principal engineer
+[00:20:23.320] and like deeply understands front end
+[00:20:25.880] and runs the front end craft there right
+[00:20:28.440] he able to steer things within the
+[00:20:31.240] company right and for him it was a huge
+[00:20:33.760] aha moment like we talk a lot about like
+[00:20:35.799] Junior devs and what it means for them
+[00:20:37.640] and learning codebases and then as as
+[00:20:40.000] someone like him as a principal engineer
+[00:20:42.559] he's able to steer in it's wow this is
+[00:20:44.559] I'm virtually paired programming with
+[00:20:46.799] all of the new developers of the company
+[00:20:49.320] right like he can be going in there okay
+[00:20:51.200] when you're using react now this is how
+[00:20:53.640] we want you to do things we're using
+[00:20:55.120] hooks we're doing it in this certain way
+[00:20:57.480] and so given the other the humans the
+[00:20:59.679] ability steer what the system is doing I
+[00:21:02.320] think is huge and this is if I reflect
+[00:21:05.039] this back a little bit what what is
+[00:21:06.799] fairly common although quite
+[00:21:08.559] painstakingly takes a lot of effort and
+[00:21:10.480] so people don't do that as much has been
+[00:21:12.760] to try and build all sorts of uh linting
+[00:21:15.880] or other roles that might inspect post
+[00:21:18.320] writing the code that hey that code that
+[00:21:21.279] is written matches our standards matches
+[00:21:23.360] our new Norms uh you can do all sorts of
+[00:21:25.960] things like that those are old practices
+[00:21:28.200] again
+[00:21:29.039] not done as often because they're just
+[00:21:31.240] hard it's just effort also it's very
+[00:21:33.120] annoying to write code and then
+[00:21:34.760] afterwards get these 50 aesthetic
+[00:21:37.679] differences that changes that you need
+[00:21:39.480] to do and so maybe a way to think it
+[00:21:42.320] sounds like a way to think about this is
+[00:21:43.799] can you reverse that can you take what
+[00:21:45.440] you would have written in linting and in
+[00:21:47.159] others think about where they come later
+[00:21:49.840] in assessments to actually inject them
+[00:21:51.720] into the writing process at least to the
+[00:21:53.480] extent that the writing process was done
+[00:21:55.840] by the coding assistant by augment in
+[00:21:57.880] this case to build those out so it's
+[00:21:59.960] interesting it's very how again maybe a
+[00:22:01.840] silly question from a data center
+[00:22:03.559] perspective but you talk about rag I
+[00:22:05.640] think people understand fine you Chunk
+[00:22:07.080] Up the code in a super super smart
+[00:22:08.640] Fashion on it and you make the right
+[00:22:09.840] code available at the right time so the
+[00:22:11.520] system can make decisions the counter to
+[00:22:13.720] that is to train on actual customer code
+[00:22:16.880] so that everything is just in the model
+[00:22:19.159] why choose Rag and maybe I'll even cremp
+[00:22:22.400] I know like part of it is customers
+[00:22:23.799] don't like you training on their code
+[00:22:25.600] but technologically let's say people did
+[00:22:27.559] allow you to train on
+[00:22:29.039] their code is there is there a technical
+[00:22:31.000] reason to prefer do some real-time
+[00:22:33.679] fetching on it over actually taking that
+[00:22:36.159] code and lumping it in so the model
+[00:22:37.880] knows both the world and yourself yeah
+[00:22:40.080] there are a few reasons and early on we
+[00:22:42.200] actually did some experiments comparing
+[00:22:44.520] the two approaches we found that rag
+[00:22:47.679] across the board gave us better results
+[00:22:52.279] and there were a few reasons for that so
+[00:22:54.799] I think one mental model I've seen that
+[00:22:57.440] people have about fine-tuning and this
+[00:22:59.840] could be fine-tuning on code or
+[00:23:01.440] fine-tuning on your um documents or fine
+[00:23:04.480] tuning on anything is that I think
+[00:23:07.039] sometimes people imagine that
+[00:23:08.320] fine-tuning is a bit like a human
+[00:23:10.679] reading the text and learning from it
+[00:23:12.559] because when we read a book there's a
+[00:23:14.480] lot we get out of that book even if we
+[00:23:17.080] just read it once the models when you
+[00:23:19.480] fine-tune them on a a corpus of data
+[00:23:22.159] let's say code they will scan through it
+[00:23:24.120] they might scan through it multiple
+[00:23:25.440] times they don't learn things
+[00:23:29.240] as deeply as humans do when they just
+[00:23:31.400] read it once they will pick up on common
+[00:23:34.240] patterns very easily for example if
+[00:23:36.760] there's a certain way you like to write
+[00:23:38.159] your dock strings and uh most of your
+[00:23:40.559] functions have dock strings like that
+[00:23:42.200] and then you fine tune on it the model
+[00:23:44.080] will be very good at generating the
+[00:23:46.440] exact format of dog string that you have
+[00:23:48.240] because that's a very common pattern but
+[00:23:51.159] fine-tuning the model on your API does
+[00:23:54.440] not mean that the mall can now correctly
+[00:23:56.279] call your API because that's not what
+[00:23:58.440] fine tuning does fine tuning just gets
+[00:24:01.320] them all to try to predict the next
+[00:24:03.039] token at a time it doesn't teach it
+[00:24:04.720] these solving these higher level
+[00:24:06.400] reasoning tasks of oh I was trained on
+[00:24:08.320] this function and therefore I know how
+[00:24:09.679] to call this function just as a simple
+[00:24:11.559] example with rag we can actually get to
+[00:24:14.640] that we can actually train them all to
+[00:24:17.400] understand that when we show it a
+[00:24:19.840] function it needs to do a good job when
+[00:24:22.520] we try to call that function so
+[00:24:25.440] quality-wise we get better results but
+[00:24:27.360] then there are also operation
+[00:24:28.720] differences this goes back to the real
+[00:24:30.440] time nature that I I discussed and to
+[00:24:32.919] expand on that a little bit again in a
+[00:24:35.919] real large organization every developer
+[00:24:38.600] will work on their own branch and every
+[00:24:40.799] developer's version of the codebase will
+[00:24:42.960] be slightly different and will be
+[00:24:44.760] slightly different with my new
+[00:24:46.279] differences that they just worked on a
+[00:24:47.760] minute ago and to give them the best
+[00:24:50.440] possible experience we need the models
+[00:24:52.840] to adapt to every developer's Branch at
+[00:24:55.600] the state is at currently that if you
+[00:24:58.440] want to get that to work well with
+[00:25:00.240] fine-tuning that would be difficult that
+[00:25:02.799] would require more than normal fine
+[00:25:05.360] tuning on the fight training of some
+[00:25:07.080] sort which doesn't quite work yeah yeah
+[00:25:10.520] maybe you have to do something like
+[00:25:11.960] Laura something like parameter efficient
+[00:25:14.080] fine tuning where you give every
+[00:25:15.600] developer their own small adaptation of
+[00:25:18.320] the model but then you're sacrificing
+[00:25:20.440] quality based on that because you don't
+[00:25:22.559] have as many weights to adapt to the
+[00:25:24.600] task so I would say the more you think
+[00:25:26.520] about if we saw large quality Gam from
+[00:25:28.720] fine-tuning I'd say this the story would
+[00:25:31.399] be different but because we didn't see
+[00:25:33.880] those and operationally it's a lot
+[00:25:36.440] harder to achieve this per user
+[00:25:39.240] customization we felt that rag is just a
+[00:25:41.840] much better fit for what we were trying
+[00:25:43.200] to do yeah yeah interesting yeah we had
+[00:25:46.039] Simon last on the podcast the co-founder
+[00:25:48.240] of notion talking about notion Ai and
+[00:25:50.559] give a different lens on how fine tuning
+[00:25:52.799] is tricky it was generally disillusioned
+[00:25:54.679] if you will by fine tuning it's really
+[00:25:56.640] interesting what you talk about almost
+[00:25:58.320] like they become a bit of a drop in the
+[00:25:59.559] ocean right and that's the way that I'm
+[00:26:01.120] interpreting what you're saying is you
+[00:26:02.320] have a lot of information you just added
+[00:26:03.679] more information it has a certain amount
+[00:26:05.399] of priority over what you've learned
+[00:26:06.880] before but it's not a lot of priority
+[00:26:08.919] versus rag in which it gets a lot of
+[00:26:10.480] priority it was pointing out a different
+[00:26:12.360] problem with fine tuning which is it's
+[00:26:14.200] very hard to debug have this magic box
+[00:26:16.480] you ask it to do something and hopefully
+[00:26:18.840] if you gave it a whole bunch of good
+[00:26:19.960] examples on it you keep your fingers
+[00:26:21.640] crossed and you hope that the magic box
+[00:26:23.279] spits out the right answer when you ask
+[00:26:25.200] it and maybe it does it statistically
+[00:26:26.480] more but when it doesn't you're a bit of
+[00:26:28.600] a loss like why didn't you get that
+[00:26:30.399] correctly which I found very insightful
+[00:26:32.919] in that conversation he was comparing it
+[00:26:34.720] to agentic processes and agentic
+[00:26:36.440] processes it's easy for me to see how
+[00:26:38.679] fine-tuning is much harder to debug than
+[00:26:40.520] agentic process because agentic process
+[00:26:42.720] it's still a process as a developer it's
+[00:26:44.559] easy to relate to say hey this step in
+[00:26:47.240] this workflow phase there failed there's
+[00:26:49.399] some sequence of steps there's some
+[00:26:51.720] terminal output that I can look at and
+[00:26:53.799] say hey here it failed when you're using
+[00:26:55.960] the product and you're using rag can you
+[00:26:58.720] debug is this something that is within
+[00:27:00.360] the realm of someone using augment maybe
+[00:27:02.960] even not the developer but the owner
+[00:27:04.399] whatever it is the admin in the
+[00:27:06.000] organization that owns it are they able
+[00:27:07.960] to debug when the wrong data gets pulled
+[00:27:11.360] in at the wrong time or is that more hey
+[00:27:14.039] the the product should take care of this
+[00:27:16.559] this should be outside of like the
+[00:27:17.880] customers needs yeah we feel like this
+[00:27:20.279] is on us to solve and so we love all
+[00:27:22.799] feedback that we get from customers
+[00:27:24.760] especially when people say hey in this
+[00:27:26.559] request I had this completion I had this
+[00:27:28.919] chat it got it wrong uh and so then we
+[00:27:31.880] will dig in and we will the first
+[00:27:33.960] question typically will be was this a
+[00:27:36.480] retrieval failure or was this a
+[00:27:38.039] generation failure and so it's a bit
+[00:27:40.120] like the agents where you can go and
+[00:27:42.080] figure out which Step failed you can go
+[00:27:44.600] and check did did the retrieval pull in
+[00:27:46.720] the right thing and if it didn't then
+[00:27:48.799] the failure is there and if it did then
+[00:27:50.640] the failure is at the next step where
+[00:27:52.360] the model couldn't figure out what to do
+[00:27:53.840] with that information that's the most
+[00:27:55.480] basic triage um of a bag system yeah um
+[00:28:00.600] and so we have all the tooling to do
+[00:28:01.960] that yeah we don't generally ask the the
+[00:28:03.679] users to do that I have not heard that
+[00:28:05.720] idea before that's an interesting one we
+[00:28:07.440] haven't gotten requests for that but
+[00:28:09.440] generally we try to make users lives as
+[00:28:12.320] easy as possible uh still need to
+[00:28:14.200] provide the magic on the exactly yeah so
+[00:28:16.440] I guess the the market question though
+[00:28:18.720] when you look forward it seems very
+[00:28:20.320] clear to me and also the product chose
+[00:28:22.360] it that indexing your your code base and
+[00:28:26.880] extracting it with Rag and a lot of
+[00:28:28.399] other smarts uh produces good results uh
+[00:28:31.200] however you're not the only one in the
+[00:28:32.840] market that claims to be indexing the
+[00:28:35.159] database and bringing in those rag
+[00:28:36.559] results and we hear it from a lot of
+[00:28:38.440] other players and and I guess I I wonder
+[00:28:41.559] like how do you see the future of this
+[00:28:44.399] do you think the approaches in it
+[00:28:46.960] thinking about your own specifically are
+[00:28:49.679] sufficiently different in how you would
+[00:28:51.600] approach rag how would would do it that
+[00:28:54.120] that really there would be one path that
+[00:28:56.000] would be very hard to mimic and this
+[00:28:57.440] might win it then would be a breakout
+[00:28:59.799] level like Dion you mentioned Google as
+[00:29:02.039] the example it was massively hard to
+[00:29:04.399] mimic what Google has done and yeah
+[00:29:06.919] everybody did search some did it
+[00:29:08.799] correctly or is this a momentary next
+[00:29:11.559] two three five years you have those
+[00:29:14.120] opportunities but over time we should
+[00:29:15.440] expect rag is fundamentally a good
+[00:29:17.760] enough search uh of your code base and
+[00:29:20.600] retrieval of it and that really you see
+[00:29:22.760] that as an entry point and you would
+[00:29:24.399] build Powers elsewhere to be able to
+[00:29:27.240] build out from them what do you think we
+[00:29:29.000] should expect as an industry yeah to me
+[00:29:31.360] it's definitely more of an entry point I
+[00:29:33.399] think it's an area where we have an edge
+[00:29:35.559] right now as far as we can see from what
+[00:29:37.320] we're testing and from what customers
+[00:29:39.000] are telling us the feedback we're
+[00:29:40.880] getting on even just this week I know we
+[00:29:43.200] are in an eval in a customer where we're
+[00:29:45.399] being compared and the the the thing I'm
+[00:29:48.039] hearing is yes augment is in a different
+[00:29:49.960] league in terms of the productivity we
+[00:29:52.679] get out of it thanks to the context
+[00:29:54.000] ofwar so these are things we we are
+[00:29:55.760] hearing regularly uh but my guess is
+[00:29:58.519] that yes this is probably temporary
+[00:30:00.799] because just the the speed of progress
+[00:30:04.399] the rate of progress in this field how
+[00:30:06.840] fast things are moving how fast models
+[00:30:08.600] are getting faster honestly I'll be
+[00:30:10.640] pretty surprised if in a year or two rag
+[00:30:13.159] is the thing that differentiates I think
+[00:30:15.399] it'll be other things to give one
+[00:30:17.120] example of something that we are
+[00:30:19.279] preparing to roll out soon this is the
+[00:30:22.360] sort of the other side of rag so the
+[00:30:25.120] side of rag we talked about is as the
+[00:30:26.840] input to the models to give you better
+[00:30:28.519] predictions right but the other side of
+[00:30:30.799] it which is as important is the ability
+[00:30:33.360] of the models to actually go and and
+[00:30:36.640] take actions across the code base right
+[00:30:39.200] so we're not talking about or your
+[00:30:41.200] cursor is right here give me a few lines
+[00:30:43.440] of code anymore and also this is users's
+[00:30:45.480] expectations at this point please make
+[00:30:47.360] the changes for me across the code base
+[00:30:49.760] and so that's now a different prediction
+[00:30:51.559] task where you need to understand based
+[00:30:54.039] on the task in front of me not just what
+[00:30:55.760] do I pull in to do a good job
+[00:30:58.440] but where do I go in this large complex
+[00:31:00.880] codas to make these changes so that's an
+[00:31:03.279] example I would say of a component and a
+[00:31:06.000] feature will be rolling out soon which
+[00:31:08.880] again requires a whole lot of research
+[00:31:10.919] to get to work and is not something you
+[00:31:12.679] can get with offthe shelf retrievers or
+[00:31:16.080] even as far as I know the best
+[00:31:17.320] retrievers you can get right now and so
+[00:31:19.960] I believe there will be many of these
+[00:31:22.840] things many extra pieces many extra
+[00:31:25.840] models that will combine into one system
+[00:31:27.960] system that provides the best possible
+[00:31:30.279] user experience we haven't figured out
+[00:31:32.720] what all these things are yet but there
+[00:31:34.360] are clearly these other components that
+[00:31:36.279] are needed to automate to get the most
+[00:31:38.840] value we can out of AI for code cool
+[00:31:41.480] super interesting I I think you veered
+[00:31:43.399] into models on it so I think that's an
+[00:31:45.559] interesting question so you're not
+[00:31:47.000] training the model you're doing rag
+[00:31:49.200] again simplistically put you can do rag
+[00:31:50.840] on top of any model and pull it out
+[00:31:53.360] maybe tell us a little bit about what is
+[00:31:55.000] your approach to models and and why you
+[00:31:58.120] building your own models and I think you
+[00:32:00.039] have a bit of a history over here
+[00:32:01.480] learning kind of so it just be
+[00:32:03.039] interesting to hear how your perspective
+[00:32:04.840] has evolved uh over time yeah so first
+[00:32:08.519] at a high level it it's a mix we are
+[00:32:10.760] also actually training models because it
+[00:32:13.399] it depends on the feature and what model
+[00:32:15.760] is driving it but for most of the
+[00:32:18.240] features we do end up having to both
+[00:32:21.440] train models and do the retrieval for it
+[00:32:24.240] all to work together so there's actually
+[00:32:25.840] a substantial amount of training that
+[00:32:27.480] happens
+[00:32:28.480] the thing we don't do though is we don't
+[00:32:30.559] train models from scratch we don't do
+[00:32:32.399] pre-training and that was a bet we made
+[00:32:35.639] very early on when we started open-
+[00:32:39.120] Source models were nowhere near what
+[00:32:42.039] they are now the best even the best open
+[00:32:44.240] source code models were quite bad
+[00:32:46.639] compared to what we have now but we made
+[00:32:48.880] the bet that they will catch up and they
+[00:32:51.360] will become excellent and the reason we
+[00:32:53.760] made that bet is because I guess one
+[00:32:56.399] reason is at Google I saw what goes into
+[00:32:59.760] pre-training models and at that point
+[00:33:02.679] there was almost a Playbook you had to
+[00:33:05.000] go get data you have to clean it D
+[00:33:07.080] duplicate it you need a bunch of gpus
+[00:33:10.039] and need to train on them and you need
+[00:33:11.600] to watch out for GPU failures and
+[00:33:13.240] there's a whole list of things you have
+[00:33:14.440] to do and it's very challenging but
+[00:33:16.559] there is a Playbook and if you follow
+[00:33:18.799] the Playbook you will get a good model
+[00:33:20.840] out of it and then the game becomes okay
+[00:33:23.159] how can I squeeze more out of the model
+[00:33:24.840] how can I improve a little bit more on
+[00:33:27.120] data quality and all these things matter
+[00:33:28.880] a lot but I'd say based on that the BET
+[00:33:31.720] was open source can do that it's
+[00:33:34.159] happened much faster than I expected and
+[00:33:36.799] to a greater degree than I expected that
+[00:33:38.679] seems to be a recurring pattern in the
+[00:33:40.480] world of AI is always faster than we
+[00:33:42.200] think absolutely so open source is like
+[00:33:44.840] that as well we've fairly quickly got
+[00:33:47.399] access to extremely good base models for
+[00:33:50.720] code so these are not models that you
+[00:33:53.360] can take and put in your product as is
+[00:33:56.799] and they will drive your completions so
+[00:33:58.639] just to give an example or completions
+[00:34:00.600] or any other feature to give an example
+[00:34:03.480] besides rag there are other things that
+[00:34:05.080] are important if I'm getting a
+[00:34:06.679] completion around the cursor the model
+[00:34:08.919] needs to take in into account what's
+[00:34:10.839] before the cursor what's after the
+[00:34:12.200] cursor it needs to give me a completion
+[00:34:13.879] that stops at the right point this is
+[00:34:16.000] not something that any off-the-shelf
+[00:34:17.919] model that I've seen can do well
+[00:34:20.119] currently and so there are things like
+[00:34:22.520] that that we need to train the models to
+[00:34:25.000] do well which go beyond rag rag is of
+[00:34:27.919] course like a big piece of it but the
+[00:34:30.040] thing is the better the base model you
+[00:34:31.720] start with the better the pre-train
+[00:34:33.119] model you start with you can put that
+[00:34:35.679] extra training on top and you can get uh
+[00:34:38.399] a much better model at the end and so
+[00:34:40.839] our approach is that we keep up with the
+[00:34:42.879] best open source models they still are
+[00:34:44.839] coming out regularly and it's very nice
+[00:34:47.440] to see that after the general purpose
+[00:34:49.639] models the next thing you get are the
+[00:34:52.000] code specific models this still seems to
+[00:34:54.520] be happening which is great for us and
+[00:34:57.440] so we will do a lot of training on top
+[00:34:59.520] of Open Source models but we don't do
+[00:35:01.240] our own uh pre-training and then we will
+[00:35:03.800] do rag yeah yeah I'm curious this is a
+[00:35:06.599] bit of a philosophical question I think
+[00:35:08.280] to both of you got the own I guess the
+[00:35:10.359] in in the world of of true open source
+[00:35:12.720] because we say open source models I
+[00:35:14.079] think like probably open weights models
+[00:35:15.800] have often times been been described now
+[00:35:18.440] like this but in open source there's a
+[00:35:20.440] way to contribute back so as an
+[00:35:22.040] ecosystem you can talk about some piece
+[00:35:23.400] of software that is open source that
+[00:35:25.320] becomes better and better because once
+[00:35:28.000] it gets kubernetes or Linux or something
+[00:35:30.400] like that because a bunch of interested
+[00:35:32.320] parties that are all sharing the use of
+[00:35:34.119] this they come in and they contribute
+[00:35:35.800] back in these open weights models as far
+[00:35:38.599] as I understand it's very hard to
+[00:35:40.520] contribute back you can report bugs you
+[00:35:42.400] can do things but it's not actually open
+[00:35:44.640] source you don't typically orever
+[00:35:47.280] actually see the data set just available
+[00:35:49.520] to you and say hey I'm going to correct
+[00:35:51.079] this data or add to this data how do you
+[00:35:54.800] maybe two in one types question is like
+[00:35:56.920] one is what would make these open source
+[00:35:59.319] models win in the long run at the moment
+[00:36:01.760] feels a little bit like they're the
+[00:36:03.720] Goodwill of business strategy of certain
+[00:36:06.640] organizations that are publishing them
+[00:36:08.760] and hosting it and then related to that
+[00:36:10.880] if you do want to engage and tweak bug
+[00:36:13.119] fix or contribute back to the open waste
+[00:36:15.839] models is that possible yeah this good
+[00:36:18.560] question so I'd say what will make them
+[00:36:20.720] win so to me this is more of course it's
+[00:36:23.040] it's competitive in some sense but the
+[00:36:24.839] way I think about it is more as an
+[00:36:26.240] ecosystem of models
+[00:36:28.200] we have different models driving our
+[00:36:30.280] different features there's a whole
+[00:36:32.400] Spectrum in terms of the size of the
+[00:36:34.440] model the latency you get and how do you
+[00:36:36.520] match that to the appropriate feature
+[00:36:38.200] and how specific is the feature how
+[00:36:39.839] General is it and sometimes we use
+[00:36:42.240] closed Source closed models sometimes we
+[00:36:44.119] use open weights models I think it's a
+[00:36:45.960] good distinction open source versus open
+[00:36:48.640] weights because indeed we don't for
+[00:36:50.960] almost all these models we don't have
+[00:36:52.680] access to the full training recipe so I
+[00:36:55.280] would say in terms of who wins
+[00:36:58.040] yes the reality is that overall staying
+[00:37:02.160] at the frontier or being close to the
+[00:37:04.760] frontier requires more and more compute
+[00:37:07.760] resources and so more Capital over time
+[00:37:10.480] we keep seeing optimizations which is
+[00:37:12.800] natural because once something works and
+[00:37:15.359] the quality is good usually you go back
+[00:37:17.520] and you find like a whole list of things
+[00:37:19.560] you can improve to do better and that
+[00:37:21.040] includes training and so we are
+[00:37:23.040] regularly seeing small models coming out
+[00:37:25.839] that are performing as well as models
+[00:37:27.920] that were 10x larger before and so that
+[00:37:31.880] still often takes us back to the regime
+[00:37:34.359] where oh this task that used to be Out
+[00:37:36.599] Of Reach for many groups because they
+[00:37:38.000] didn't have a lot of compute now you can
+[00:37:40.200] get that with a smaller model we saw
+[00:37:41.960] that again and again it happened with
+[00:37:43.319] Lama I would say it happened with quen
+[00:37:45.400] more recently it's still happening there
+[00:37:47.680] seems to be still a lot of room for
+[00:37:49.400] optimization but overall yes I think
+[00:37:51.839] it's true that to stay close to the
+[00:37:53.839] frontier it's going to require more and
+[00:37:55.640] more capital resources yeah on the
+[00:37:57.839] smaller side of the models I don't
+[00:38:00.599] really see a reason why folks can't stay
+[00:38:04.440] on the frontier because if your latency
+[00:38:07.079] requirements are fairly strict then for
+[00:38:10.160] a while I I believe we will stay on
+[00:38:12.200] smaller models and so then it also is
+[00:38:14.520] less effort to train them also the
+[00:38:16.599] smaller models don't benefit as you can
+[00:38:18.520] throw 100x more data at them but it's
+[00:38:20.800] not like they can learn all that data
+[00:38:22.319] anyway so overall the computer sources
+[00:38:23.960] are but to challenge that a little bit
+[00:38:26.000] guys like all of those are the reasons
+[00:38:27.680] why if I'm building a model and then I'm
+[00:38:30.640] opening it or sharing the weights of it
+[00:38:32.760] it is less expensive for me to to do it
+[00:38:35.880] but it's still expensive for me to do it
+[00:38:37.680] like I I'm still opening it and so I'm
+[00:38:39.839] curious about the sort of the second
+[00:38:40.880] part of the question which is how do you
+[00:38:42.920] contribute how do you benefit from a
+[00:38:45.160] community using an open weights model
+[00:38:48.520] and maybe it's a question even like
+[00:38:49.599] specifically a augment like how do you
+[00:38:50.960] contribute back to those models when you
+[00:38:54.119] decide to do it I'm not asking how often
+[00:38:55.560] you're doing it that's a sort of a
+[00:38:56.760] business choice but when you do it what
+[00:38:59.040] are even your options yeah the options
+[00:39:01.680] I'd say we I think we'd love to
+[00:39:03.560] contribute back because we've benefited
+[00:39:05.200] a lot from the open weights models but
+[00:39:07.119] it it's fairly limited our our options
+[00:39:09.359] are very limited I think it's more of a
+[00:39:11.440] research to me it's more of a research
+[00:39:13.560] problem once you're handed the weights
+[00:39:16.319] you can push them forward by continuing
+[00:39:19.079] to fine-tune and making the model better
+[00:39:21.680] on more specific tasks that you care
+[00:39:23.319] about so you can do that but going in
+[00:39:26.480] fixing things let's say I found that the
+[00:39:29.359] model makes a mistake right and it's a
+[00:39:32.520] recurring pattern and whenever I show it
+[00:39:34.640] certain kinds of inputs it makes that
+[00:39:36.319] mistake if this was an open source
+[00:39:38.440] program I could go I could fix it I
+[00:39:40.760] could submit a poll request right it's
+[00:39:43.240] easy but with models we don't have that
+[00:39:46.960] level of control over the models at the
+[00:39:48.880] end there's still a black box and
+[00:39:51.560] there's research certainly on
+[00:39:52.800] interpretability and I think some of
+[00:39:55.280] that research is aimed at can we go in
+[00:39:58.079] there and figure out which neurons
+[00:39:59.839] control which inputs and which outputs
+[00:40:02.599] and when there is a problem can we go
+[00:40:04.200] change those particular neurons and fix
+[00:40:06.160] them that research is still at an
+[00:40:08.640] earlier stage than just our ability to
+[00:40:11.240] train a blackbox model the best path I
+[00:40:13.560] see for us to be able to contribute back
+[00:40:16.079] is if that research pans out and we get
+[00:40:18.119] a set of tools where we can start
+[00:40:20.119] submitting patches to models right would
+[00:40:23.040] be great if we had the weights we could
+[00:40:24.760] fix a problem and then we go and submit
+[00:40:26.560] a patch now it's not a source patch it's
+[00:40:28.839] some patch to the weights but just apply
+[00:40:31.319] this patch and your model will get
+[00:40:32.680] slightly better on these problems that
+[00:40:34.680] would be analogous to what we see with
+[00:40:36.359] open source we don't have that ability
+[00:40:38.200] right now because we're limited on
+[00:40:39.760] Research yeah indeed D do you have any
+[00:40:41.880] views on this yeah I think I'm very
+[00:40:43.720] happy that we don't call non-open Source
+[00:40:46.040] models even when some companies try and
+[00:40:48.079] sneak that into their releases but
+[00:40:51.359] there's tons of value in the open weight
+[00:40:53.240] models so I don't want to dissuade that
+[00:40:55.599] from happening and you do see things
+[00:40:57.960] where people just more into the are able
+[00:41:00.880] into the overall ecosystem of
+[00:41:02.880] contributing various Tools around these
+[00:41:04.880] things because they feel like in general
+[00:41:07.040] there's more openness and availability
+[00:41:09.319] there so there there's Nuance right
+[00:41:11.240] there's a bunch of Open Source projects
+[00:41:12.839] where I know that if I put a PR in it's
+[00:41:15.760] not going to be accepted never be it's
+[00:41:18.680] open source but it doesn't actually
+[00:41:20.720] matter in that case right so I think
+[00:41:21.920] there is a bunch of open Nuance to to
+[00:41:24.640] all of these things but it's been nice
+[00:41:26.480] to see the the direction that we're
+[00:41:28.480] going in just the raw competition in
+[00:41:31.240] this space is the thing that matters I
+[00:41:33.440] think more than anything else so we're
+[00:41:35.440] not locked in yeah yeah we definitely
+[00:41:37.920] benefit as a community from open weights
+[00:41:39.720] models including hment like a good
+[00:41:41.960] example of that and so I'm happy they're
+[00:41:43.920] doing it there's open research
+[00:41:45.240] collaboration on it but that ironically
+[00:41:47.680] also happens with the closed models on
+[00:41:49.960] it I don't know if it's more or less
+[00:41:51.760] common amidst open weights models than
+[00:41:54.000] than the closed ones but it's just
+[00:41:56.000] interesting like I I find myself
+[00:41:57.440] pondering the especially when we do call
+[00:41:59.280] it open source which is unnatural I'm
+[00:42:00.960] not fuss about the fact that people you
+[00:42:03.280] know whatever use the sort of the
+[00:42:04.560] slightly inaccurate term for it uh but I
+[00:42:07.480] more think if you call it open source
+[00:42:08.920] the reason we keep saying open source
+[00:42:10.319] will win is because the community will
+[00:42:11.720] come together and this is actually a
+[00:42:13.240] place in which the community cannot
+[00:42:15.119] fully come together they can encourage
+[00:42:17.319] they can support an organization uh but
+[00:42:19.440] eventually there's some amount of if
+[00:42:20.839] you're using Cod LMA or three whatever
+[00:42:23.400] you're at the mirror SE a bit of the
+[00:42:25.960] continued strategy of meta to publish
+[00:42:28.480] the next version after they've spend
+[00:42:30.440] whatever many million dollars on yeah
+[00:42:33.200] maybe to add one comment to this let's
+[00:42:35.920] say there are open source mod there are
+[00:42:37.760] models that are completely open source
+[00:42:39.920] you have access to the training scripts
+[00:42:41.880] you can see their training logs and W DB
+[00:42:44.280] you see all their training data and how
+[00:42:46.040] they collected it it's all there right
+[00:42:48.240] they're fully open source but still if I
+[00:42:52.079] find a problem with that model and I
+[00:42:54.280] want to fix it the only thing I can do
+[00:42:57.280] do is go back to the training data and
+[00:43:00.079] change it assuming I understand this is
+[00:43:02.160] the same problem you mentioned before
+[00:43:03.559] with fine tuning if you see a problem
+[00:43:05.480] you have to go back to the data and
+[00:43:07.079] change it to fine tune and it's all very
+[00:43:08.720] indirect and then I have to spend all
+[00:43:11.640] the time and effort to train them all
+[00:43:13.359] again and check if I fix the problem
+[00:43:15.680] yeah so even if I have access to
+[00:43:17.720] everything I still am very limited in
+[00:43:20.160] what I can contribute it's a huge
+[00:43:22.200] project to submit like a bug fix to the
+[00:43:24.119] model yeah so that to me is really what
+[00:43:26.319] it boils down to it's wonderful when
+[00:43:28.079] people and we benefit from that as well
+[00:43:29.720] it's wonderful when people open source
+[00:43:31.280] everything very useful but we're really
+[00:43:33.599] gated on our ability to to go and patch
+[00:43:36.440] and fix these models yeah yeah it's a
+[00:43:37.960] good point open weights versus source is
+[00:43:39.800] one Delta but there's also just the
+[00:43:41.280] sheer scale and
+[00:43:43.480] interpretability that get in the way as
+[00:43:45.480] well so guys this conversation been
+[00:43:47.200] great on it flying through time over
+[00:43:49.280] here and conversations it clearly the
+[00:43:51.640] augment is a very powerful product today
+[00:43:53.839] and it goes in and it helps a human
+[00:43:55.880] developer uh write code in the IDE and
+[00:43:58.800] today I believe it does autoc completion
+[00:44:00.319] it also does chat based generation on it
+[00:44:02.359] and a lot of these patterns are emerging
+[00:44:04.640] amidst coding assistants and amidst
+[00:44:06.920] users of coding assistants who learn
+[00:44:08.559] what to expect let's cast our eyes a
+[00:44:10.680] little bit to the Future and I guess for
+[00:44:13.079] starters do you think people will still
+[00:44:15.480] need an ID completion Solution on it in
+[00:44:18.880] call it five years time like when you
+[00:44:20.839] think about indeed the journey towards
+[00:44:22.920] more autonomous coding yeah that's an
+[00:44:25.240] interesting question five years in this
+[00:44:27.640] space is like eternity so everything I a
+[00:44:30.319] century roughly a century yeah feels
+[00:44:32.319] like that and so this is completely
+[00:44:34.760] speculative let's say it like this I
+[00:44:36.359] think on it depends on the task you're
+[00:44:38.480] trying to solve right if you're trying
+[00:44:40.359] to solve something that's on the simpler
+[00:44:42.760] side let's say in five years some
+[00:44:45.400] percent of issues coming into a a
+[00:44:47.599] workspace are they going to be
+[00:44:49.119] automatically fixed unpatched by models
+[00:44:52.720] yes I I think that's essentially a
+[00:44:54.480] guarantee but now the question is of
+[00:44:56.839] these issues that are coming in what is
+[00:44:58.559] it going to be is it going to be like
+[00:44:59.720] 20% 50% probably depends on the project
+[00:45:02.680] is there going to be uh still a good
+[00:45:05.079] amount of of issues that developers will
+[00:45:08.359] have to go in and dig in and fix
+[00:45:10.359] themselves I would say again I really
+[00:45:12.559] like the self-driving analogy because
+[00:45:15.280] it's not that it's a simpler task but at
+[00:45:17.000] least the action space is is a lot
+[00:45:18.800] simpler right you have your steering
+[00:45:20.240] wheel you have your pedals we still have
+[00:45:22.480] not solved full self-driving but we're
+[00:45:24.359] getting a lot of value along the way
+[00:45:26.319] from more and more more automation
+[00:45:28.359] coding is a richer task in terms of at
+[00:45:30.440] least the action space the reasoning is
+[00:45:32.880] different there's definitely different
+[00:45:34.040] kinds of reasoning that go into it what
+[00:45:36.640] I expect my guess is that yes I think
+[00:45:39.280] completions will still be relevant from
+[00:45:41.839] what I'm seeing so far the better the
+[00:45:44.599] tools become it's not that I end up just
+[00:45:48.559] doing the same work that I did before
+[00:45:51.720] faster using these tools and so using
+[00:45:54.559] less completions or less next edit or
+[00:45:57.520] whatever it is I'm using what ends up
+[00:45:59.680] happening is that I actually end up
+[00:46:01.520] accomplishing a lot more and I end up
+[00:46:04.680] using yeah I use some amount of time
+[00:46:06.559] let's say in chat I use some of amount
+[00:46:08.079] of time in other features I still use
+[00:46:10.839] completions a lot because it's still
+[00:46:13.079] happens a lot that I need to go in and
+[00:46:15.880] make changes manually and when I do that
+[00:46:18.800] sometimes it's a lot of code and when I
+[00:46:20.240] do that I really want to have
+[00:46:21.640] completions there with me and I want
+[00:46:23.119] them to be context aware and I think
+[00:46:25.319] that's especially true in the larger
+[00:46:27.400] more complex code bases because those
+[00:46:29.359] are the ones that are going to get
+[00:46:31.000] automated the slowest because those are
+[00:46:33.079] the hardest to deal with so five years
+[00:46:35.319] is a long time but I still expect these
+[00:46:37.880] tools to be around for a while even as
+[00:46:41.000] we add more and more Automation and let
+[00:46:43.880] people write more and more code using
+[00:46:45.359] natural language which is like very
+[00:46:47.000] clearly the trend I expect these tools
+[00:46:49.240] to all live together I guess though if I
+[00:46:51.480] let me try to attempt at trying slightly
+[00:46:53.400] longer timelines so if you're a software
+[00:46:55.920] developer today Junior to mid-level
+[00:46:58.200] software developer what skills do you
+[00:47:00.839] need to build out to be successful in
+[00:47:04.400] your career given Evolution given the
+[00:47:06.680] anticipated growth in ability of
+[00:47:09.280] solutions such as augment yes so I think
+[00:47:12.200] I would point to two things that seem to
+[00:47:14.800] me to be essential will continue to be
+[00:47:17.920] essential for the foreseeable future
+[00:47:19.599] first I think for the foreseeable future
+[00:47:21.920] these models will keep making a lot of
+[00:47:23.640] mistakes the software systems that we
+[00:47:25.680] have are already incredibly complex and
+[00:47:29.000] the more AI automation we have they will
+[00:47:30.920] just get more and more complex and they
+[00:47:33.160] mess up the AI systems mess up a lot and
+[00:47:36.640] when that happens there's no replacement
+[00:47:39.960] to having a deep understanding of how
+[00:47:41.920] the system works I don't think that's I
+[00:47:44.640] I don't think that's going to go away
+[00:47:46.640] and so in my experience I can use
+[00:47:49.280] augment to crank out hundreds thousands
+[00:47:51.559] of lines of code sometimes it all works
+[00:47:54.119] great it all works fine for a while and
+[00:47:57.000] then something goes wrong and when
+[00:47:58.480] something goes wrong I still need to
+[00:48:00.319] have the understanding of how the system
+[00:48:02.000] works what is it built on full stack
+[00:48:04.880] understanding often of what things are
+[00:48:06.280] for me to be able to go and and fix
+[00:48:08.200] things when augment can't fix it for me
+[00:48:11.000] so I don't think that depth of knowledge
+[00:48:13.000] of course has always been important in
+[00:48:14.680] programming I don't think that's going
+[00:48:16.240] to go away on the totally other end of
+[00:48:18.480] the spectrum it has become very
+[00:48:20.319] important I I'd say to understand these
+[00:48:22.800] models and understand how to prompt them
+[00:48:25.400] to get the most value out of them we are
+[00:48:28.119] still at a point where the thing cannot
+[00:48:30.680] read your mind and so there's certainly
+[00:48:32.880] a lot of tricks into it's it's a whole
+[00:48:35.920] skill set how do you get the most value
+[00:48:38.119] out of these models at this point and of
+[00:48:40.040] course us and everyone else are are
+[00:48:42.000] constantly trying to make that less of a
+[00:48:43.920] challenge and make it as seamless as
+[00:48:46.040] possible but still the models the more
+[00:48:48.160] you learn about the models and how they
+[00:48:50.200] work and how to get the more value out
+[00:48:51.680] of them that skill set will I believe
+[00:48:54.160] for now just become more valuable over
+[00:48:56.040] time so these are like two very extreme
+[00:48:58.319] ends of the spectrum that I think a
+[00:49:00.400] developer entering the field would
+[00:49:02.079] benefit from yeah we might be nitpicking
+[00:49:04.160] a little bit on timelines but I think
+[00:49:05.920] both of those things while I 100% agree
+[00:49:07.960] with them today I guess the question is
+[00:49:10.400] what's their longevity like the models
+[00:49:12.440] and the tools around them should really
+[00:49:14.000] get better at the prompting like they
+[00:49:15.599] they're never going to read your mind
+[00:49:17.280] they better understand the context they
+[00:49:18.839] better understand the surrounding and so
+[00:49:20.760] it should be easier to prompt and so
+[00:49:23.319] it's almost like if you invest right now
+[00:49:24.520] in prompt engineering a lot of these
+[00:49:25.760] things you're going to need to learn
+[00:49:27.599] this has already been proven right if
+[00:49:28.680] you were really proficient at I know in
+[00:49:30.880] image models it's easy right like if you
+[00:49:32.280] got into your diffusion models and into
+[00:49:34.079] your stability words and then you got
+[00:49:36.359] into me journey and just used English
+[00:49:37.960] today but and I think on the other side
+[00:49:40.040] like the system wouldn't augment to be
+[00:49:41.839] dramatically smarter in five years time
+[00:49:43.720] and its understanding of the ecosystem
+[00:49:45.880] like how many people on the team would
+[00:49:47.640] really have a better understanding don't
+[00:49:50.680] you need to break down systems and know
+[00:49:53.359] how to elaborate and that's always going
+[00:49:56.319] to be true right is just you get to
+[00:49:59.520] understand not so much remember the
+[00:50:00.720] whole system but rather know how to
+[00:50:02.880] engage with some presented knowledge of
+[00:50:05.680] the system exactly I guess the extreme
+[00:50:07.480] question that I have that I like maybe
+[00:50:09.240] literally a bunch of us parents would be
+[00:50:11.839] facing is would you recommend to your
+[00:50:14.079] kid right now to go do a CS degree
+[00:50:16.400] that's a hard question I think my answer
+[00:50:19.119] to that question changes at this point
+[00:50:21.440] almost on a monthly basis at this point
+[00:50:25.040] I am not sure I am not sure it's really
+[00:50:27.440] hard to predict because on the one hand
+[00:50:29.319] yes I I agree with everything you said
+[00:50:31.240] it it it it will of course get easier
+[00:50:33.280] that is what I'm working on every day
+[00:50:35.520] right it's just we're in this industry
+[00:50:37.200] and it's a good thing like more people
+[00:50:39.119] will create more things more easily it's
+[00:50:41.680] a good thing it just has impacts on the
+[00:50:43.440] profession that's right yes exactly it's
+[00:50:45.720] it's all good for society uh also just
+[00:50:47.960] on the comment on prompt engineering
+[00:50:49.720] just to clarify yes I I don't think
+[00:50:51.960] people should go and study to become
+[00:50:53.559] prompt Engineers I guess maybe to
+[00:50:55.720] summarize that point Point what I'm
+[00:50:57.079] trying to say is just I think what
+[00:50:59.160] happens a lot is people will try the
+[00:51:00.839] models and get something out of them
+[00:51:03.400] sometimes it's good sometimes it's not
+[00:51:04.760] good and they will assume that yeah this
+[00:51:07.599] is the value we can get from the model
+[00:51:09.960] there is more out there that that's
+[00:51:11.520] really my message P it try try to push
+[00:51:13.720] it in all kinds of directions to learn
+[00:51:16.520] what the limits are I think often people
+[00:51:18.440] would try it out and they say okay this
+[00:51:20.040] is it this is where the level of of
+[00:51:22.040] quality is and yes that will become
+[00:51:23.799] easier over time but you can get a lot
+[00:51:25.440] out of these models if you try to push
+[00:51:27.440] them on the question of the Cs degree so
+[00:51:30.920] first of all I I I do believe in
+[00:51:33.000] humanity and I think getting a CS degree
+[00:51:35.040] for the purpose of learning deep things
+[00:51:37.440] about the world is still a valuable
+[00:51:39.079] thing to do I think in terms of a career
+[00:51:41.240] choice I have to say I'm on the
+[00:51:43.440] optimistic side here because I think
+[00:51:45.559] implicit in these discussions is this
+[00:51:49.240] thought that there is there's this
+[00:51:51.160] assumption maybe implicit assumption
+[00:51:52.920] that there is a finite amount of things
+[00:51:55.079] we were going to want to build
+[00:51:57.240] and with AI we're going to automate it
+[00:51:59.599] and there's going to be nothing left to
+[00:52:01.240] build if I look back at the history of
+[00:52:03.680] programming every time a new programming
+[00:52:05.640] language came out the whole point of it
+[00:52:07.440] was to automate away the chores and the
+[00:52:09.359] toil of the previous language make it
+[00:52:11.440] easier to write software right but at
+[00:52:14.359] the same time the amount of software we
+[00:52:16.079] write and the complexity has just
+[00:52:18.000] skyrocketed it's it's not that the new
+[00:52:20.000] languages have made us like allow us to
+[00:52:23.000] just do our job in five minutes and go
+[00:52:24.680] to the beach no we just build more and
+[00:52:26.720] bigger things so this is complete
+[00:52:29.880] speculation but my belief is that what
+[00:52:32.680] we will see is just far more advanced
+[00:52:36.319] complex and useful systems that will
+[00:52:38.720] come out of AI and that there will still
+[00:52:40.359] be room for humans to to steer these
+[00:52:43.000] systems and yes that I do believe you
+[00:52:45.839] will still need a deep understanding of
+[00:52:47.720] what happens now I think one data point
+[00:52:50.280] that will make me rethink that is if we
+[00:52:52.200] manage to actually solve self-driving
+[00:52:54.640] end to end and completely get rid of
+[00:52:56.640] that task fully then maybe yes maybe I
+[00:52:59.880] can see how other real world tasks
+[00:53:01.920] succumb to that as well and maybe it
+[00:53:03.920] will happen but overall example would
+[00:53:06.760] you want someone would you invest in
+[00:53:09.319] whatever becoming a taxi driver right
+[00:53:10.920] now or a professional driver I think the
+[00:53:13.319] spectrum of developers is so different
+[00:53:15.480] than driver though there's certain
+[00:53:18.079] developers who I would trust to
+[00:53:20.119] contribute to the chromium or the Linux
+[00:53:22.720] kernel it's like a small subset compared
+[00:53:26.040] to the one I would trust to build a web
+[00:53:27.920] app they're not the same things right
+[00:53:30.160] there's very different levels of things
+[00:53:32.160] that are going on so what does my kid
+[00:53:34.480] want to do what layer of abstraction do
+[00:53:36.799] they want to live in for this right what
+[00:53:38.839] kind of Cs degree are they actually
+[00:53:41.119] getting right there's many different
+[00:53:43.119] types now right so I think there's I
+[00:53:45.440] definitely would love my kids to make
+[00:53:48.520] that choice if depending on what they
+[00:53:50.640] wanted to do and I want to democratize
+[00:53:53.480] this for them and I want them to be
+[00:53:55.040] focused on solving real problems s and
+[00:53:56.839] so being able to live at higher level
+[00:53:58.280] abstractions to build bigger things like
+[00:54:00.440] that sounds great to me it doesn't seem
+[00:54:02.520] like the worst degree to get yeah yeah
+[00:54:05.559] I'm inan uh just not that I'm in the
+[00:54:07.799] optimistic camp in terms of there will
+[00:54:09.599] be things to build and I think being a
+[00:54:11.720] software creator is something that we
+[00:54:13.880] will need in a decade in two decades in
+[00:54:15.799] five decades or whatever solution
+[00:54:18.599] Creator on it with software I have a lot
+[00:54:21.240] less conviction around the computer
+[00:54:22.720] science degree being able to keep up
+[00:54:25.119] with the pace of change there I'm like a
+[00:54:28.280] very very much a short seller I am not
+[00:54:30.599] optimistic about that being the correct
+[00:54:32.920] training even today I'd say it's dubious
+[00:54:35.280] yeah if you're going to go and do a PhD
+[00:54:36.839] in machine learning then somewhere in
+[00:54:38.200] computer science and and math is is
+[00:54:40.160] probably a good place to be uh if you're
+[00:54:42.040] going to go build even contribute to the
+[00:54:44.960] Linux kernel or the equivalent future
+[00:54:46.960] crazy world of AI power development even
+[00:54:50.200] then I'm not certain that that a
+[00:54:53.520] computer science degree would give you
+[00:54:54.760] the tools that you need to be doing that
+[00:54:56.400] type of work in a decade or two so I
+[00:54:58.240] guess we won't know but it's a very real
+[00:54:59.720] question right because our kids will be
+[00:55:01.240] grappling with that it's a real question
+[00:55:02.960] I think it's trying to predict both like
+[00:55:05.520] the the technology advances and the the
+[00:55:07.559] the job in some sense you're trying to
+[00:55:09.240] predict the job market situation which
+[00:55:11.480] depends on the technology depends on how
+[00:55:13.319] much stuff we'll need to build the
+[00:55:15.640] competition uh maybe if I stay on the
+[00:55:17.839] optimistic side I would expect CS
+[00:55:20.640] degrees to evolve let's say because if
+[00:55:23.079] there's room for people to create
+[00:55:24.559] software and it does require a deep
+[00:55:26.599] understanding of systems then I would
+[00:55:28.720] hope that the degrees do evolve to to
+[00:55:30.760] match that but yes we're going to find
+[00:55:32.400] out we'll find out gu this has been
+[00:55:34.400] excellent the conversation on it I feel
+[00:55:36.039] like we can continue it on but I think
+[00:55:37.440] we're starting to really stretch the
+[00:55:39.000] attention span of the listeners for a
+[00:55:41.200] single episode maybe guy just one bit if
+[00:55:43.280] people want to check out augment or try
+[00:55:45.680] out what's like a one call to action
+[00:55:47.079] you'd give them yeah go to augment
+[00:55:49.599] code.com click get augment and start
+[00:55:51.960] coding reach out to us with any feedback
+[00:55:54.680] good or bad if you want to talk to us if
+[00:55:56.799] you have feature requests if you see
+[00:55:58.160] things that you see you would love to
+[00:56:00.079] have in the product if you just want to
+[00:56:01.520] chat about AI for code reach out we'll
+[00:56:03.599] be happy to chat we love talking to our
+[00:56:05.280] users sounds good awesome this was great
+[00:56:08.720] thanks thanks again for coming on to
+[00:56:10.400] both of you and thanks everybody for
+[00:56:12.720] tuning in and I hope you join us for the
+[00:56:14.400] next one Cheers
+[00:56:22.920] Cheers thanks for tuning in join us next
+[00:56:25.680] time on the AI native Dev brought to you
+[00:56:28.079] by Tesla
+[00:56:30.530] [Music]

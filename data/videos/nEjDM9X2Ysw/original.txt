@@ -1,0 +1,2740 @@
+[00:00:04.584] [music]
+[00:00:09.200] So memories is a bad name. Uh it's a
+[00:00:13.120] it's a it's a joke. I was trying to
+[00:00:15.280] prove a point and I was trying to be
+[00:00:17.199] cool. I was trying to prove a point to
+[00:00:18.800] some of my colleagues and uh teammate
+[00:00:21.920] >> teammates on where the space of agent
+[00:00:23.920] memory is going and is that I created a
+[00:00:26.800] library around about a year ago and I
+[00:00:29.439] created it so that I can essentially
+[00:00:32.880] communicate in code where I see a lot of
+[00:00:36.640] um agentic engineering going towards. So
+[00:00:41.280] most pe some most of you will
+[00:00:44.399] know
+[00:00:45.920] at a high level what I'm talking about.
+[00:00:47.600] Some of you might have already heard
+[00:00:48.879] some tools like mem zero. Anyone heard
+[00:00:50.879] of me zero hair? Put your hand up. Two.
+[00:00:53.760] That's good. Like 0.1% or something. Um
+[00:00:58.000] anyone heard of uh Langme?
+[00:01:01.280] No. Lang graph. Anyone heard of
+[00:01:02.719] langraph? Yes. Anyone heard of lang
+[00:01:04.479] chain? Yes. Okay. So, Langme is the
+[00:01:07.680] memory management uh layer for built by
+[00:01:10.799] the team at Langchain. So, you can check
+[00:01:12.720] it out. Um, so everything I'm talking
+[00:01:14.799] about today, there are teams in the
+[00:01:16.159] front line that are exploring how to
+[00:01:19.360] really make agent memory work. So, the
+[00:01:23.360] maybe the reason why you've not heard of
+[00:01:24.720] Lang MEM is because it's still in in
+[00:01:26.720] development, but a lot of people have
+[00:01:27.920] heard of me zero. They just raised
+[00:01:29.600] another big round recently. Um, anyone
+[00:01:32.320] heard of me GPT?
+[00:01:34.720] Yeah, that's good. Letter is is the
+[00:01:36.799] commercial name. That's excellent. So,
+[00:01:40.000] my name is Richmond Richmond and today
+[00:01:42.479] I'm going to be talking to you about
+[00:01:43.759] memory engineering and I'm going to be
+[00:01:45.680] talking to you about memory engineering
+[00:01:47.280] through uh the library that I built
+[00:01:49.119] called memories. So, the way we're going
+[00:01:50.799] to split this workshop is uh hopefully
+[00:01:53.040] um the time and work works. We're going
+[00:01:55.280] to use 30 minutes to talk about memory
+[00:01:58.240] engineering agent memory. We'll start
+[00:02:00.079] from high level then we'll work our way
+[00:02:01.759] down into the technicalities of it. Then
+[00:02:04.479] we'll spend the rest 1 hour 30 minutes
+[00:02:06.880] really going through some code and
+[00:02:09.119] hopefully the code works as well and you
+[00:02:11.599] guys can also follow along. Um there's a
+[00:02:14.080] bunch of instructions. The repo is open
+[00:02:16.480] source and I will show you the notebooks
+[00:02:18.400] where you can follow along and if things
+[00:02:20.720] don't work you can I can come over and
+[00:02:22.879] help you and guide you or you can do
+[00:02:25.280] this in your free time and reach out to
+[00:02:27.040] me on LinkedIn and we can talk about
+[00:02:28.959] agent memory and memory engineering and
+[00:02:31.440] pancakes. I'm a big fan of pancakes. Um,
+[00:02:34.959] I know the best I know the best pancake
+[00:02:36.959] spot in the UK if you ever visit and I'm
+[00:02:40.800] I'm open to recommendations for New
+[00:02:42.959] York. So, let's start. What are you
+[00:02:45.920] going to learn from this workshop? Uh, a
+[00:02:47.920] lot of it is my propaganda which is
+[00:02:50.879] fair. Um, well, it was propaganda last
+[00:02:53.519] year. This year is uh people are
+[00:02:55.280] starting to see where the space is
+[00:02:56.800] going. So, we're going to understand the
+[00:02:58.879] architecture of agent memory. We're
+[00:03:00.720] going to understand different types of
+[00:03:02.640] memory. We're going to really bring this
+[00:03:05.280] high level concept of memory that we've
+[00:03:07.200] been hearing a lot. Um,
+[00:03:10.560] uh, folks at Google recently put out a
+[00:03:13.200] paper called context engineering session
+[00:03:15.360] in memory, but most of it was memory
+[00:03:17.840] engineering and not a lot of context
+[00:03:19.519] engineering there. So, this is really
+[00:03:22.480] topical and it's really good to
+[00:03:24.560] understand why agent memory and what
+[00:03:27.519] it's actually trying to solve. Then
+[00:03:29.280] we'll talk about the data to memory
+[00:03:31.200] pipeline. When does data become memory
+[00:03:33.280] is a question that a lot of people have
+[00:03:35.120] asked me. We'll talk about the different
+[00:03:37.519] memory types. So long-term memory,
+[00:03:39.840] short-term, episodic, semantic,
+[00:03:42.319] conversational, and we'll also talk
+[00:03:44.959] about how we can implement some of these
+[00:03:47.519] memory engineering patterns. We'll talk
+[00:03:49.360] about it at high level. Then we'll look
+[00:03:50.720] at the code and see what we've been able
+[00:03:52.720] to do with memories. and we'll build an
+[00:03:56.239] agent architecture by uh backed by a
+[00:03:58.959] memory core. And when I say memory core,
+[00:04:01.360] the memory core that we're using today
+[00:04:02.959] is going to be Oracle. It's going to be
+[00:04:04.640] Oracle AI database. So there's a bunch
+[00:04:08.319] there's a lot of information here today.
+[00:04:10.480] And I want to get to the code section.
+[00:04:13.200] In the code, we're going to see a single
+[00:04:14.720] agent that we're going to augment with
+[00:04:16.720] memory. Then there's another second
+[00:04:18.720] coding session where we'll look at like
+[00:04:20.320] a deep research use case where we will
+[00:04:22.720] get an agent that can do a that can
+[00:04:25.040] generate a bunch of reports and spawn
+[00:04:27.360] other agents. So we'll go through this
+[00:04:29.520] and there is one worry. Can I show you
+[00:04:32.320] can I share with you the one worry that
+[00:04:33.759] I have? I am going to be running through
+[00:04:36.400] the code but I feel like this was this
+[00:04:38.080] is too small for you guys to see. So
+[00:04:40.639] hopefully we'll we'll we'll figure
+[00:04:42.080] something that works. If not, um, all
+[00:04:45.680] the code is online and you can follow
+[00:04:47.840] along. So, let's get started. Number
+[00:04:50.560] one, AI agents. What's an AI agent? And
+[00:04:53.040] has everyone heard about AI agents,
+[00:04:55.040] right? Hands up if you heard of AI
+[00:04:57.280] agents.
+[00:04:58.800] Excellent. And I I'll guess the ones
+[00:05:00.479] that didn't put your hands up, you're
+[00:05:01.840] just too lazy to put your hands up. Um,
+[00:05:04.560] cuz agent this year is like what this
+[00:05:07.600] the who said this word? Um, it's the
+[00:05:10.320] decade of AI agents. Who said it? uh I
+[00:05:13.680] think Andre Kapathy said it in a in a
+[00:05:16.080] podcast um is the decade of AI agents
+[00:05:18.800] and I agree. So what's an AI agent?
+[00:05:21.360] Well, an AI agent is a computational
+[00:05:23.520] entity that basically can act
+[00:05:26.320] independently. Uh that's the that's the
+[00:05:28.960] goal. It has uh it is backed by some
+[00:05:32.320] form of LLM and the LLM helps it with
+[00:05:34.400] its cognitive abilities which would
+[00:05:36.880] involve include reasoning. It also can
+[00:05:39.759] take um actions through tool use or
+[00:05:41.840] function calling and it's al it also can
+[00:05:45.120] take um it also can perceive his
+[00:05:47.199] environment right but the most important
+[00:05:49.759] part of an agent is it can it is
+[00:05:54.240] augmented by memory it has a form of
+[00:05:57.520] memory now um I'm biased I work in a I
+[00:06:00.720] work in a database division within
+[00:06:02.320] Oracle and I've worked in different
+[00:06:04.400] other database companies but my bias My
+[00:06:09.120] my opinion is you can't have an agent
+[00:06:12.960] without memory. It's like the the way I
+[00:06:16.160] try to describe it, it's like how many
+[00:06:19.039] of you have ever bought a house before
+[00:06:21.199] or even just rented one? Hands up.
+[00:06:23.840] Great. So imagine you're like a estate
+[00:06:26.319] agent and you were telling them um it's
+[00:06:29.520] Monday and told them the type of house
+[00:06:30.960] you wanted, the budget, where you'd like
+[00:06:33.039] to live, your family size, what you
+[00:06:35.600] would like to avoid and all the good
+[00:06:37.919] stuff. Then this this is on Monday. Then
+[00:06:40.319] you get to Tuesday and you meet the same
+[00:06:42.560] estate agent and they forget who you
+[00:06:44.880] are. You have to reintroduce yourself
+[00:06:47.520] and you have to tell them your budget,
+[00:06:49.280] where you like to live and your family
+[00:06:51.919] size and things you like to avoid. And
+[00:06:55.360] then you get to Wednesday, you meet the
+[00:06:57.360] same estate agent and they forget who
+[00:06:59.280] you are and you have to repeat the same
+[00:07:00.960] thing over and over again. That gets
+[00:07:02.639] annoying, right? You're not going to use
+[00:07:04.000] that estate agent. Well, the same goes
+[00:07:06.400] for this computational form of agents.
+[00:07:08.720] They're meant to act independently,
+[00:07:10.720] eventually act on our behalf. So we need
+[00:07:13.280] to make them more reliable, believable
+[00:07:15.120] and capable. So we need to make them
+[00:07:17.919] actually um perform in in production.
+[00:07:20.479] And the way that I think we should be
+[00:07:22.240] able to do that is by um obviously by
+[00:07:25.120] having better models but also by having
+[00:07:28.080] a form of memory uh augmented memory
+[00:07:32.000] that is uh connected to the agent. Okay.
+[00:07:35.840] So that is what's an agent. Um a
+[00:07:39.120] computational entity backed by memory
+[00:07:42.080] has perception of its environment can
+[00:07:44.639] take tools and has reasonabilities that
+[00:07:47.919] um that is uh provided by an LLM. Does
+[00:07:51.840] anyone There was once a time where we
+[00:07:54.639] couldn't agree on the definition of an
+[00:07:56.560] agent. Does anyone disagree with my
+[00:07:59.599] definition of an what an agent is? And
+[00:08:02.639] don't be shy. It's fine. This is a
+[00:08:04.560] conversation. You disagree. Why do you
+[00:08:06.319] disagree, sir? That's not really your
+[00:08:08.080] definition, but do you really believe
+[00:08:09.919] that they can reason?
+[00:08:11.840] >> Do I agree that they can reason?
+[00:08:13.599] >> Yeah.
+[00:08:15.280] Or is it just something that kind of
+[00:08:16.400] looks like
+[00:08:17.280] >> it? It kind of looks like reason. It's
+[00:08:18.720] mimicking reason. But let me ask you
+[00:08:20.080] another question. How do humans reason?
+[00:08:25.680] >> Poorly. Yeah. Especially me. But how do
+[00:08:27.759] human reason? Like, can you explain it
+[00:08:29.280] to me?
+[00:08:29.919] >> Evaluating like alternatives
+[00:08:32.240] like thinking in the sense of like
+[00:08:34.560] compare comparing preparing concepts
+[00:08:38.320] >> then that that's good. A better question
+[00:08:40.719] is do I need to do I need to stay so the
+[00:08:43.039] camera can see me?
+[00:08:43.919] >> No.
+[00:08:44.560] >> Okay. Oh, the m exc um a better question
+[00:08:48.240] um do you think humans understand how
+[00:08:51.440] the the human brain works 100%.
+[00:08:54.959] We don't. Neuroscience is still an
+[00:08:56.800] active field of development. We don't
+[00:08:58.959] essentially know how our brain works
+[00:09:02.720] uh uh as well as we know other parts of
+[00:09:04.800] our body. But I do agree with you. LLMs
+[00:09:07.040] are just mimicking. It's just next token
+[00:09:09.440] prediction. But hey, mimicry is the best
+[00:09:13.200] form of a flattery. So, um, okay. But
+[00:09:16.640] yeah, fair enough. And but that's not uh
+[00:09:18.880] that's that's if I was an open AI, maybe
+[00:09:21.120] I'll be able to rebutle that a little
+[00:09:24.000] bit better, but I'm an Oracle, so let's
+[00:09:26.640] go. Use cases for AI agent. Um, workflow
+[00:09:30.240] automation is the most popular one. uh
+[00:09:32.640] there's a bunch of processes that we
+[00:09:34.480] have in some of the systems and uh
+[00:09:37.360] pipelines or some of the tools we use
+[00:09:39.279] today and some of them can be very
+[00:09:41.360] manual.
+[00:09:42.880] One thing that we have agents and we've
+[00:09:45.120] used agents for is to automate
+[00:09:47.279] workflows.
+[00:09:48.880] So the agents can essentially take
+[00:09:50.560] decisions that based on some heristics
+[00:09:53.440] or some guard drills or something that
+[00:09:55.839] it's internal to it that has been
+[00:09:57.360] provided by a human to then make the
+[00:09:59.279] right decision. Then we have research
+[00:10:01.200] and analysis agent. So within uh chat
+[00:10:03.839] GPT and within Gemini you can go into
+[00:10:06.560] deep research mode and you can give it
+[00:10:09.839] some instructions and it will ask you
+[00:10:11.519] for some clarifications and then it will
+[00:10:13.440] go off to the internet and it will do a
+[00:10:16.800] bunch of research and analysis and be
+[00:10:19.120] able to give you a final report. So deep
+[00:10:22.399] research is a very research and analysis
+[00:10:24.880] agents are very common and it's a very
+[00:10:27.680] useful um use case for AI agents. Then
+[00:10:31.600] you have data knowledge retrieval. You
+[00:10:33.440] have coding and software engineering
+[00:10:35.440] agents. I'm a big fan of cursor. I I use
+[00:10:37.760] cursor. So that could be an example of
+[00:10:40.079] uh coding agents. Um then there are
+[00:10:42.480] customer supports and service agents
+[00:10:44.480] that we have in most of the customer um
+[00:10:47.600] facing industry or applications that we
+[00:10:49.839] have today. So again, personal
+[00:10:52.240] productivity agents. I use notion as
+[00:10:54.480] well, and they have this little AI
+[00:10:56.240] assistance that they try to get me to
+[00:10:58.240] use that I don't really use, but it's it
+[00:11:01.200] it's there. But um so there are
+[00:11:03.440] different types of agents, there are
+[00:11:05.279] different types of use cases for AI
+[00:11:06.959] agents, but in all of the variations of
+[00:11:10.959] AI agents, there are some common
+[00:11:13.600] patterns or common use cases and I call
+[00:11:16.079] them application modes. So they're
+[00:11:17.360] common application modes in AI agent.
+[00:11:20.240] The first one is assistant, right? Back
+[00:11:22.399] and forth conversational um assistant AI
+[00:11:25.680] agent and it would typically respond to
+[00:11:28.240] your query and it doesn't need to have a
+[00:11:31.200] robust um uh knowledge base and you can
+[00:11:34.160] think of um this as chat GPT chat is a
+[00:11:38.399] good example of an assistant. The next
+[00:11:40.800] one is workflow workflow agents. Um the
+[00:11:43.760] best way I can describe this is uh how
+[00:11:45.839] many of you have used uh the tool NA10?
+[00:11:49.519] So NA10 is used to like construct a
+[00:11:51.920] bunch of workflow then you can automate
+[00:11:53.519] it but you can actually do most of this
+[00:11:56.000] programmatically. So you can actually
+[00:11:57.680] have typical um you can use lang graph
+[00:12:00.800] to build a workflow to construct a
+[00:12:03.440] workflow and have um have it be LLM
+[00:12:06.639] driven essentially and it would have
+[00:12:09.120] sequential steps or processes that would
+[00:12:11.200] execute either sequentially or in
+[00:12:13.120] parallel. So that's workflow.
+[00:12:16.160] Then we spoke about deep research,
+[00:12:18.639] right? Uh deep research, I've explained
+[00:12:20.639] it already. So these are the three um
+[00:12:24.000] common application modes I'm seeing.
+[00:12:26.480] Assistant, workflow, deep research.
+[00:12:30.480] Assistant, workflow, deep research. So
+[00:12:32.800] again, does anyone disagree with me or
+[00:12:35.839] can anyone add sort of application modes
+[00:12:39.120] that you're seeing?
+[00:12:43.440] Do you all agree that this is this
+[00:12:45.279] captures a general pattern? Then
+[00:12:48.399] >> hands up if you agree.
+[00:12:50.639] >> Question.
+[00:12:51.200] >> Go on.
+[00:12:51.839] >> Where would you put coding?
+[00:12:56.079] >> I'll put
+[00:12:57.279] >> Oh.
+[00:12:57.920] >> Uh, where would you put coding
+[00:12:59.519] assistance into that? Because it feels
+[00:13:01.360] deeper than workflow, but not quite
+[00:13:03.920] research.
+[00:13:05.279] >> Yeah.
+[00:13:05.600] >> Um, it it sits between.
+[00:13:08.000] >> So, what was the start of your question?
+[00:13:09.920] Repeat it. Where would you put coding
+[00:13:12.399] agents? Yeah.
+[00:13:13.600] >> Into this taxonomy.
+[00:13:15.120] >> Okay. So, I would put coding agents into
+[00:13:17.839] the assistant column. So, earlier this
+[00:13:20.720] year, I used to think you're either one
+[00:13:23.200] or the other. You're either an assistant
+[00:13:25.440] or you're either a workflow or you're
+[00:13:26.959] either deep researched. And I sat with a
+[00:13:29.360] professor based there in uh New York. it
+[00:13:32.000] came to London and we're having
+[00:13:33.680] conversation in in the UK um in about
+[00:13:36.880] data and agents and over pancakes
+[00:13:39.519] obviously is how I have all my
+[00:13:41.279] conversations and he changed my mind he
+[00:13:44.000] said Richmond you shouldn't see so
+[00:13:45.920] binary right um an agent can fall within
+[00:13:49.120] a spectrum of these application mode so
+[00:13:52.399] it's just the the level of um the
+[00:13:55.920] application mode it has and it got me
+[00:13:58.720] thinking is it you can almost imagine it
+[00:14:01.040] as Uh, does anyone know the Maya Briggs
+[00:14:03.600] personalities? Do you guys know it?
+[00:14:05.920] Yeah. Good. So, I am a INTJ, which is
+[00:14:09.680] like the architect, rightfully so. Um,
+[00:14:12.959] but human personality, you're not just
+[00:14:15.440] one or the other. There's a there's a
+[00:14:17.360] scale of different characteristics, and
+[00:14:19.519] that's why I looked at it. So, earlier
+[00:14:21.279] this year, you're either one or the
+[00:14:23.360] other. Now, it's a spectrum, right? It's
+[00:14:26.480] different um characteristics of this. So
+[00:14:28.639] to answer your question, where would you
+[00:14:30.399] put a coding agent? Well, a coding agent
+[00:14:32.160] is going to have it. It's not going to
+[00:14:33.839] have deep research for sure. It's going
+[00:14:35.120] to have a bit of the spectrum of
+[00:14:36.880] assistant and workflow. A coding agent
+[00:14:39.120] can traverse through a bunch of files
+[00:14:42.000] and can search the internet, but deep
+[00:14:44.240] research is extensive. It it goes into
+[00:14:47.120] different online sources, then goes
+[00:14:49.519] within nested links and all all the site
+[00:14:52.800] cited links within the initial source
+[00:14:54.639] link. So I wouldn't put a coding agent
+[00:14:57.279] within the deep research um column. So I
+[00:14:59.680] would say it has a a balance between
+[00:15:01.519] assistant and maybe some workflows as
+[00:15:03.680] well.
+[00:15:05.839] Again, this is a conversation. I love it
+[00:15:07.680] when people disagree with me. Um this is
+[00:15:10.079] how I know I'm doing a a bad job. If
+[00:15:13.920] everyone agrees with me, that means I'm
+[00:15:16.000] doing a very terrible job. So please
+[00:15:18.800] let's let's learn together and grow
+[00:15:20.480] together. Um agent memory. So, we're
+[00:15:22.720] here at the key part and I'll try to uh
+[00:15:26.079] be on time here. So, 10:25. And I can
+[00:15:28.639] see my internet has died. So, I'll have
+[00:15:31.839] to connect to the one that um Alan told
+[00:15:33.920] us to connect to. But I'll do that when
+[00:15:36.160] we get into the code, not now cuz the
+[00:15:38.240] slides are loaded. They work offline.
+[00:15:39.760] Yay, Google. Um so, agent memory. So,
+[00:15:43.519] I'm going to define in this section. I'm
+[00:15:45.199] going to define what agent memory is. a
+[00:15:47.199] agent memory is we're also going to talk
+[00:15:49.360] about the different types of agent
+[00:15:51.360] memory and I'll give some very high
+[00:15:53.680] level description but when we get to the
+[00:15:55.759] code it's going to make sense.
+[00:15:58.079] So I want to start with humans. Um
+[00:16:00.480] humans are a very good example and it
+[00:16:02.800] makes it easy to understand what I'm
+[00:16:05.040] talking about when we get to the
+[00:16:06.320] computational form of all of the memory
+[00:16:08.639] types we're going to be talking about.
+[00:16:10.160] So humans have a very good ability some
+[00:16:13.360] anyway have good abilities to retain
+[00:16:15.600] reuse and recall information and humans
+[00:16:19.279] are nature is a very great architect of
+[00:16:22.480] intelligence and we've used nature as a
+[00:16:26.000] blueprint for technology. So if you look
+[00:16:29.120] at the airplanes the earlier um attempts
+[00:16:32.240] at building airplanes took inspirations
+[00:16:34.720] from um uh birds of flight right and
+[00:16:38.720] insects. So the first iterations were uh
+[00:16:42.480] devices that mimicked flapping. Again,
+[00:16:45.440] mimicry is the best form of flattery.
+[00:16:47.360] We're mimicking um the way uh birds were
+[00:16:50.399] flying. We didn't end up with airplanes
+[00:16:52.880] that that flat. The the plane that took
+[00:16:55.199] over here didn't flap its wings. It was
+[00:16:57.120] a turbulent um air air uh it was a
+[00:17:00.720] turbulent flight. There was a lot of
+[00:17:01.759] turbulence, but it didn't flap its
+[00:17:03.440] wings. Thank god. Um but the key thing
+[00:17:06.319] is even within agent memory we can also
+[00:17:10.000] look to humans to the human brain in
+[00:17:12.480] particular how it works how it function
+[00:17:14.160] and take inspiration from it to actually
+[00:17:17.439] understand how can we augment our agents
+[00:17:20.799] with computational form of memory. So
+[00:17:23.120] these are examples of memory in humans.
+[00:17:26.000] So we have working memory, we have
+[00:17:27.760] long-term memory, we have short-term
+[00:17:29.120] memory. So I could tell you my phone
+[00:17:30.400] number now. I'm not going to do that.
+[00:17:32.320] But I could tell you now, but you would
+[00:17:33.679] have remember by the end of this um uh
+[00:17:36.640] talk or we do you wouldn't remember the
+[00:17:38.480] next two hours except if you wrote it
+[00:17:40.080] down. Uh but if you were to repeat it to
+[00:17:42.559] yourself maybe 10 20 times then it will
+[00:17:45.120] probably go into a more longer form of
+[00:17:47.280] memory within your brain and then you
+[00:17:49.280] probably able to remember. Uh we have
+[00:17:51.120] episodic memory. Uh we have semantic
+[00:17:53.360] memory. So um we have associative
+[00:17:55.440] memory. So if I tell you to think about
+[00:17:57.280] the color red, think about the color
+[00:17:59.440] red.
+[00:18:01.039] Okay, I'm going to assume you thought
+[00:18:02.640] about it. So, some of you would have
+[00:18:04.000] thought about blood, maybe roses, um, or
+[00:18:07.120] other things associated with the color
+[00:18:08.880] red, associative memory. Some of you
+[00:18:10.799] might have good recollections of
+[00:18:12.799] birthdays that you've had. Um, that is a
+[00:18:15.200] form of episodic memory as well. Um, my
+[00:18:17.919] ones are are good, all good, thank god.
+[00:18:20.000] Um, okay. So, this can help inspire
+[00:18:24.720] agent memory. And when I used to do this
+[00:18:27.760] talk, I used to have a bunch of image
+[00:18:30.480] explaining what agent memory is and I
+[00:18:33.280] used to just go straight into it. But
+[00:18:35.679] now uh the past couple months I've I've
+[00:18:38.240] realized that I need to explain what is
+[00:18:40.799] agent memory uh very clear and agent
+[00:18:44.640] memory is has different components to
+[00:18:47.600] it. So it needs to have an external
+[00:18:51.840] store, right? Agent memory needs to have
+[00:18:54.400] an external store. So this is going to
+[00:18:55.919] be like a database or a file system. Um
+[00:18:59.360] well a database cuz I'm biased. So you
+[00:19:01.840] need to have a database. You also need
+[00:19:04.080] to have um agent memory also consists of
+[00:19:07.679] the context window of the LLM that is
+[00:19:10.000] part of the agent's memory because
+[00:19:11.600] remember an agent as an LLM that
+[00:19:13.840] provides the reasoning and cognitive
+[00:19:15.760] abilities. Then the parametric the
+[00:19:19.039] parametric memory of the LLM that is
+[00:19:21.600] static which means it doesn't change
+[00:19:23.919] that's also agent memory as well. So an
+[00:19:27.520] agent has this external database
+[00:19:32.080] um that could be dynamic form of memory
+[00:19:34.720] has this working memory with in the form
+[00:19:37.679] of it context window then has this
+[00:19:40.320] parametric memory in the in the weights
+[00:19:43.440] and parameters of the model itself. So
+[00:19:45.840] those are the main components of agent
+[00:19:48.320] memory and memory engineering is all of
+[00:19:52.240] the code that we write to move
+[00:19:56.080] information through this component.
+[00:19:58.559] That's what memory engineering is. So I
+[00:20:02.320] hope that's very clear and I've kind of
+[00:20:04.400] just summarized all the talk in that one
+[00:20:06.960] sentence. So we're going to go through
+[00:20:08.799] the slides. Um, but this is a much uh
+[00:20:11.919] better definition of what agent memory
+[00:20:14.240] is. And agent memory is and the one the
+[00:20:18.960] the phrase I find that explains it is is
+[00:20:22.080] that it's a computational exocortex for
+[00:20:25.200] AI agents. That's how I is best to
+[00:20:28.480] explain it. And also the way I explained
+[00:20:30.559] it is also a good way to explain it. And
+[00:20:32.960] the key thing about agent memory and the
+[00:20:34.960] aim where we're trying to get to is we
+[00:20:36.799] want to make AI agents more reliable,
+[00:20:39.840] believable, and capable. So, everyone
+[00:20:42.240] understands reliability, right? You want
+[00:20:43.760] to be able to use the same a AI agents
+[00:20:45.840] over and over again, and you can rely on
+[00:20:48.159] it to give you the right answer the same
+[00:20:49.840] way you would go to your doctor and you
+[00:20:52.400] rely on them to give you the best
+[00:20:53.840] medicine um for certain disease.
+[00:20:56.480] Sometimes um but yeah, capability as
+[00:20:59.919] well. Uh you want your AI agents to be
+[00:21:02.240] capable. You want them to be robust and
+[00:21:04.000] be able to do uh you expect them to do
+[00:21:06.240] what you ask them to do. And you want
+[00:21:08.400] them to be you want them to be
+[00:21:10.080] believable as well. Now the is quick
+[00:21:13.679] question. Is believability a word? I
+[00:21:16.480] should have Googled this before I
+[00:21:17.600] started this talk. It's a word, right?
+[00:21:19.039] Hands up if it's a word. Nice. Thank
+[00:21:21.360] you. So the believability of a an agent
+[00:21:25.520] is actually quite important especially
+[00:21:27.039] if you have one that is meant to be an
+[00:21:28.320] assistant, one that is meant to interact
+[00:21:30.320] with humans. So the la the latest update
+[00:21:33.360] from chat really honed in on that
+[00:21:36.880] believability factor, right? Because now
+[00:21:39.679] you can change the personality of you
+[00:21:43.200] could change the personas within chat
+[00:21:45.280] GPT. Now has anyone tried that out yet?
+[00:21:48.480] Yeah, I haven't tried it out either, but
+[00:21:50.080] you can change the personality of chat
+[00:21:52.880] GPT now. So that's a bit the
+[00:21:55.120] believability factor and we're going to
+[00:21:56.799] look at the memory types that help each
+[00:21:59.280] of these factor actually work in AI
+[00:22:01.840] agent. So we're going to go into type of
+[00:22:04.159] agent memory. So there are three main
+[00:22:06.960] type short-term, long-term and
+[00:22:08.960] coordination. coordination is actually
+[00:22:10.960] quite special because we need it during
+[00:22:13.760] um multi- aent um multi- aent
+[00:22:16.400] architectures as as we are going to see
+[00:22:18.480] in deep research mode.
+[00:22:21.280] So the first uh the first aspect of this
+[00:22:23.600] are the different types of short-term
+[00:22:26.000] and long-term and shared memory. So
+[00:22:28.640] working memory is very obvious right is
+[00:22:30.559] this short-term uh short-term form of
+[00:22:33.360] memory. Uh so is semantic cache as well.
+[00:22:36.480] semantic hash. We're going to look at
+[00:22:37.919] all of this in code examples as well.
+[00:22:40.240] There is proc procedural memory which is
+[00:22:42.480] essentially skills and routines. Um you
+[00:22:45.760] can think of information as to what MCP
+[00:22:48.400] to use if you were to store that
+[00:22:49.760] information in a database. That would be
+[00:22:51.200] a form of procedural memory. Um you
+[00:22:53.679] could think about storing all the JSON
+[00:22:56.000] schema of like REST APIs and all the
+[00:22:59.280] functions you have that you want your
+[00:23:00.720] your AI agents to call. That's a form of
+[00:23:03.039] procedural memory. Workflow memory. So
+[00:23:05.760] remember I mentioned that you could
+[00:23:07.440] there free application mode and one of
+[00:23:09.200] them was workflow. So you can actually
+[00:23:12.559] have the steps that an AI agent takes
+[00:23:15.760] when executing a task you can store that
+[00:23:18.720] into a database or some form of external
+[00:23:21.840] memory store and in the next iteration
+[00:23:24.240] whether the task was successful or it
+[00:23:26.400] was a failure that's experience for the
+[00:23:29.039] next iteration of the agent. So it can
+[00:23:32.480] call it it can actually use the steps
+[00:23:35.360] that were successful or have reasons for
+[00:23:38.159] failures and try to avoid that path or
+[00:23:40.559] take a different um path. So that's
+[00:23:42.240] workflow memory. Uh we're going to go uh
+[00:23:44.880] through each of this in more detail. Now
+[00:23:48.320] this is going to get annoying because I
+[00:23:49.760] have animations here that are necessary.
+[00:23:52.000] Uh but we I'll click through very
+[00:23:54.480] quickly. So short-term memory.
+[00:23:56.880] Short-term memory is this the there are
+[00:23:59.200] different types of short-term memory.
+[00:24:00.799] But the key thing here is they don't
+[00:24:02.640] last long. They're not for long arriving
+[00:24:05.280] task. The the information stored in
+[00:24:07.760] short-term memory is meant to be cleared
+[00:24:09.840] after a certain time or maybe when there
+[00:24:12.640] is seems to be some lack of activity,
+[00:24:14.799] you would remove the information within
+[00:24:16.960] the short-term memory. So a very common
+[00:24:20.400] uh short-term memory is working memory.
+[00:24:22.720] So then we have long-term memory.
+[00:24:24.559] Long-term memory, as obvious, is meant
+[00:24:26.080] to persist through sessions. It's meant
+[00:24:28.240] to persist through act um in activity in
+[00:24:31.200] within your application. And you
+[00:24:33.039] actually want to you could use long-term
+[00:24:34.640] memory across sessions as well. And then
+[00:24:37.360] for coordination, which is particularly
+[00:24:39.679] shared memory, there's a special type of
+[00:24:41.679] memory that you need within multi- aent
+[00:24:44.640] um architectures or agents where you
+[00:24:47.039] have multiple agents working together.
+[00:24:49.200] And it's just a way to say, hey, I have
+[00:24:51.600] this external store that is just going
+[00:24:54.080] to be used for information that is
+[00:24:57.039] involved within multiple agents talking
+[00:24:59.279] and all of multiple agents working
+[00:25:01.279] together. And all of these agents can
+[00:25:03.200] work within the same memory space in a
+[00:25:06.480] sense. So it's usually called as a
+[00:25:09.279] blackboard is what you would call it.
+[00:25:11.200] And you have all of the agents
+[00:25:13.039] communicating and pulling information in
+[00:25:14.880] and out of this memory space. Now there
+[00:25:16.960] are different ways you can architect
+[00:25:18.799] communication in mult multi- aent
+[00:25:21.440] architectures but one of the common ways
+[00:25:23.520] to have them share context which
+[00:25:25.679] obviously for obvious reasons it can uh
+[00:25:28.240] cause a lot of problems that will lead
+[00:25:30.000] you into the path of context engineering
+[00:25:31.760] techniques or you can have them just
+[00:25:34.240] share instructions. So you have a root
+[00:25:36.799] agent giving only instructions to the
+[00:25:39.200] sub aents as opposed to sharing all the
+[00:25:41.440] context and back back and forth as well.
+[00:25:45.120] So there are again unnecessary
+[00:25:47.600] animations. I apologize for that. We're
+[00:25:50.000] just going to go over to the just click
+[00:25:52.240] through. Excellent. So working in
+[00:25:53.679] memory. Work in memory are again
+[00:25:56.000] temporary. They usually you can think of
+[00:25:58.640] it as the agent scratchpad. And a good
+[00:26:01.360] example of working in memory is uh the
+[00:26:03.840] LLM context window. Right? That is a a
+[00:26:06.640] good example of working in memory. We're
+[00:26:08.720] using that we're using that context
+[00:26:10.559] window in the moment as this agent
+[00:26:12.960] scratchbad to do things like um chain uh
+[00:26:16.880] chain of thought right uh that's being
+[00:26:19.039] done in the agent's working memory then
+[00:26:21.279] session memory so if you go through and
+[00:26:24.240] this is where I guess this is how you
+[00:26:26.400] know the field is still developing uh
+[00:26:28.559] when Google put out their technical
+[00:26:30.799] white paper there it was it was very
+[00:26:33.279] good I read it on the flight hair um it
+[00:26:35.919] was very good it covered a lot of
+[00:26:37.520] information. It also expanded my
+[00:26:40.640] thinking into some aspect of agent
+[00:26:42.480] memory that I've not yet considered. But
+[00:26:44.480] one thing I didn't agree with is they
+[00:26:47.360] saw session and memory as two different
+[00:26:51.318] [clears throat] two distinct things. Um
+[00:26:53.360] and they they they defined it and to me
+[00:26:56.640] that was weird because session is a type
+[00:26:59.520] of memory. You store information within
+[00:27:02.080] a session. It is short-term memory. And
+[00:27:05.520] uh in the paper when you uh read maybe
+[00:27:08.960] uh several pages down they do clarify
+[00:27:11.440] that a lot of people call session as
+[00:27:13.840] part of uh short-term memory. But I
+[00:27:16.240] think so the one place where I disagreed
+[00:27:18.400] with the white paper was you don't need
+[00:27:20.159] to actually separate the two. Session is
+[00:27:22.880] a type of short-term memory and then you
+[00:27:24.960] have other
+[00:27:26.720] forms of memory. So again the space is
+[00:27:29.200] still developing. A lot of people are
+[00:27:31.279] the best thing about this uh I guess
+[00:27:33.919] this era of AI and just AI in general is
+[00:27:37.520] everyone's learning and everyone is
+[00:27:39.440] sharing knowledge. So a lot of folks in
+[00:27:42.400] anthropic lang chain manus
+[00:27:46.240] Google and and wherever I am we share
+[00:27:50.880] the information that we're coming across
+[00:27:53.120] when we're trying to make this AI agent
+[00:27:56.159] uh AI agents more reliable believable
+[00:27:58.320] and capable. And I have to apologize. I
+[00:28:00.240] have a slight cough. [cough]
+[00:28:03.200] So I'll be coughing occasionally. Uh let
+[00:28:05.760] me skip over to semantic cache.
+[00:28:08.960] So does has anyone heard of caching?
+[00:28:11.840] Hands up. Hands down. Okay, that's
+[00:28:15.520] a decent enough you understand caching
+[00:28:17.360] while I explain semantic cache. And
+[00:28:18.960] we're going to see semantic cache in
+[00:28:20.320] action as well. Essentially, it's a way
+[00:28:23.039] to reduce the operational cost of your
+[00:28:25.760] AI agent. So generally
+[00:28:29.039] the way semantic cache works is it's a
+[00:28:32.080] form of short-term memory because you
+[00:28:33.840] can actually state the time to live for
+[00:28:37.120] information within a semantic cache
+[00:28:39.120] store. Um but essentially how it works
+[00:28:41.600] is you make within an iteration your
+[00:28:45.520] user or application
+[00:28:48.159] >> sorry what's it
+[00:28:48.880] >> cough cough. Oh
+[00:28:51.520] thank you very much. Um,
+[00:28:54.720] that's Am I that bad?
+[00:28:58.880] >> This free bottles of water. Excellent.
+[00:29:04.000] Okay, this is good. Um, all right.
+[00:29:07.560] [clears throat] I feel like I feel
+[00:29:08.960] better now. Um, okay. So, let's talk
+[00:29:11.200] about semantic cache very quickly. So,
+[00:29:13.279] when you make a call to uh LLM, you
+[00:29:16.080] would typically uh incur some charge on
+[00:29:18.880] the API side, right? On the inference
+[00:29:20.720] side. So you make your call to the LLM,
+[00:29:23.120] you get your user query, you make the
+[00:29:24.960] call to the LLM and you get some
+[00:29:27.440] response back. But what semantic cache
+[00:29:30.799] does is it actually stores the query and
+[00:29:35.200] it stores an embedding of the query and
+[00:29:37.360] also stores the response from the LLM
+[00:29:39.360] because when the user makes let's say in
+[00:29:42.080] the next execution the user makes a
+[00:29:44.320] similar question for example um I forgot
+[00:29:48.480] my password and I can't remember my
+[00:29:50.880] password are the same they would have
+[00:29:53.039] the same answer right and what you would
+[00:29:55.279] want is you don't want to go to an LLM
+[00:29:57.360] to like do the whole work again if
+[00:29:59.360] you've done it previously. What you want
+[00:30:01.120] to do is use the cache response because
+[00:30:03.919] there is this semantic similarity that
+[00:30:06.320] you've used techniques like vector
+[00:30:08.240] search to calculate the similarity
+[00:30:10.159] between the two queries and you've
+[00:30:11.840] noticed that they're quite similar. So
+[00:30:13.200] you use a a cached response. That's
+[00:30:16.240] that's a semantic um aspect of semantic
+[00:30:19.200] cache. So
+[00:30:22.080] next is um procedural memory. Right?
+[00:30:24.799] We've spoken about this. I'm not going
+[00:30:26.240] to go over it, but it's skills and
+[00:30:28.080] routines essentially, and we're going to
+[00:30:29.919] see examples of this as well. Episodic
+[00:30:32.159] memory is an interesting one, right? So,
+[00:30:34.559] the back and forth interactions that you
+[00:30:36.799] have with AI agents, that's a form of
+[00:30:40.080] episodic memory, right? Especially when
+[00:30:42.159] you add a time stamp to it. So, it means
+[00:30:44.799] that I can retrieve this aspect of
+[00:30:47.039] memory using some form of maybe um
+[00:30:49.679] timebased uh retrieval query or
+[00:30:51.840] something, right? Or it can also mean
+[00:30:54.559] that this memory component or memory
+[00:30:57.120] unit has a form of um a subject to it.
+[00:31:00.799] So summarization is a form of episodic
+[00:31:03.360] memory. Um so summarization is a context
+[00:31:06.640] engineering technique. Uh it's when you
+[00:31:09.440] have this context window uh the context
+[00:31:12.000] windows are bounded by token length and
+[00:31:14.720] so there's a context window limit. So
+[00:31:16.720] whenever you're approaching the context
+[00:31:18.640] window threshold, typically a technique
+[00:31:20.880] is to summarize um the existing content
+[00:31:24.320] within the context window and then pass
+[00:31:27.120] that into a clean context window and you
+[00:31:30.159] just have the summary then and you just
+[00:31:31.520] carry on the conversation. Now you would
+[00:31:33.919] notice a lot of uh cursor does this
+[00:31:36.640] because on the interface you can see the
+[00:31:38.640] percentage of your context window
+[00:31:40.880] utilization and in memories the library
+[00:31:43.600] that I created we actually calculate
+[00:31:45.360] this in every iteration as well uh
+[00:31:47.600] because it's it's useful for both the
+[00:31:50.240] human and it's also useful for the agent
+[00:31:53.600] as well because agents can you want to
+[00:31:56.240] be able to allow them to summarize their
+[00:31:59.120] own context um when doing execution so
+[00:32:02.320] you don't have uh context bloat
+[00:32:04.799] essentially. So within memories the
+[00:32:06.880] library uh the agents can actually
+[00:32:09.279] summarize their context as well
+[00:32:11.440] especially when you run them in deep
+[00:32:13.120] research mode.
+[00:32:15.039] So uh then we move on to semantic.
+[00:32:17.679] Semantic essentially types of semantic
+[00:32:19.919] memory are knowledge bases or entity
+[00:32:22.320] memory or personal memory. So knowledge
+[00:32:24.640] basis is uh knowledge base is
+[00:32:26.559] essentially um information that you have
+[00:32:29.200] about the world that is stored in an
+[00:32:30.799] external store. So for those of you that
+[00:32:32.880] have implemented retrieval augmented
+[00:32:34.720] generation or uh rack pipelines, you
+[00:32:37.279] would have used a form of knowledge base
+[00:32:39.200] to ground the response of the LLM in
+[00:32:41.760] some form of uh um uh relevant data.
+[00:32:45.200] That's that's an example of semantic
+[00:32:47.519] memory. Entity memory basically when
+[00:32:50.320] agents interact with other entities
+[00:32:52.399] within the environments that they
+[00:32:53.760] executing, you can store that
+[00:32:56.159] information in a memory store. So for
+[00:32:58.640] example, if I have an AI agent uh that
+[00:33:02.320] uh gaming is a good example for this. So
+[00:33:04.480] imagine you have a character in a game
+[00:33:06.159] and they interact with different
+[00:33:07.440] entities in the game. You can store the
+[00:33:09.679] information in a form in in your entity
+[00:33:12.880] memory store and update it as that uh as
+[00:33:16.080] your agent interacts with the same
+[00:33:17.679] character over time. Humans do this all
+[00:33:20.000] the time. So um we have information of
+[00:33:22.960] other people within our brain and their
+[00:33:25.039] characteristics.
+[00:33:27.360] So I've already explained shared memory
+[00:33:29.919] and I've explained most of the different
+[00:33:31.760] forms of um LLM context window and
+[00:33:34.480] different forms of memory. So allow me
+[00:33:36.960] to do something weird which is just skip
+[00:33:39.919] through all of this because the
+[00:33:42.080] animation order is not uh I could have
+[00:33:45.840] just closed this and skipped the slides.
+[00:33:47.840] The animation order is not right. So now
+[00:33:50.480] we can go into memory engineering. Now
+[00:33:52.480] this is the part where
+[00:33:54.799] this is a part where I would like us to
+[00:33:57.519] if we can discuss if we can discuss if
+[00:34:02.000] the things I'm saying to you sound more
+[00:34:03.840] like context engineering or does it
+[00:34:06.080] sound like do we need a new discipline
+[00:34:08.000] to define the work that we're doing. So
+[00:34:10.480] very quickly, I work with a lot of AI
+[00:34:12.960] teams and I've seen the things folks are
+[00:34:15.200] building and I've seen how they are
+[00:34:17.040] optimizing them and context engineering
+[00:34:20.079] is one of the tasks that I see a lot of
+[00:34:21.839] engineers doing. But then to improve the
+[00:34:25.919] latency of your retrieval pipelines,
+[00:34:29.359] you're going into things that look like
+[00:34:31.359] search optimization or if you're a
+[00:34:33.599] database engineer, right? you would know
+[00:34:35.440] things like prefiltering or post
+[00:34:38.079] filtering or you're just uh modifying
+[00:34:40.639] the query just to improve the latency
+[00:34:42.480] because eventually we want this AI
+[00:34:44.079] agents to work in real time and in
+[00:34:46.639] production environment. So you're going
+[00:34:48.399] to look at things like quantization of
+[00:34:50.800] your embedding models and making sure
+[00:34:52.879] you're using quantis indexes. So a lot
+[00:34:55.599] of the work I saw a lot of um engineers
+[00:34:58.480] doing were around more memory type
+[00:35:02.480] activities. In fact, a very large
+[00:35:04.720] company, recruiting company, um, they
+[00:35:07.680] have a specific AI memory team. The How
+[00:35:11.680] many people use cursor here?
+[00:35:14.320] That's good. A lot of people. The There
+[00:35:17.119] is I don't know if it's still the case,
+[00:35:19.040] but at some point this year, there was
+[00:35:20.480] only one person responsible for making
+[00:35:23.599] sure cursor is able to retain, recall,
+[00:35:25.760] and reuse information. And that person
+[00:35:28.320] on LinkedIn defines themselves it
+[00:35:31.040] defines himself as a memory engineer. So
+[00:35:34.320] again, still early days. It was early
+[00:35:37.040] days last year. We're still getting to
+[00:35:39.599] the point where people are beginning to
+[00:35:41.119] understand the job to be done. I already
+[00:35:44.000] defined what memory engineering was
+[00:35:45.599] earlier, but I'll do it again. So memory
+[00:35:48.560] engineering is the is the scaffolding
+[00:35:50.880] that we have to write to move
+[00:35:53.119] information from the components of agent
+[00:35:56.480] memory which is this external memory
+[00:35:58.400] store that could be a database or a file
+[00:36:00.160] system. It could be the LLM context
+[00:36:02.400] window and the parametric memory within
+[00:36:05.119] the LLM itself. So memory engineering is
+[00:36:08.240] all the harness and scaffolding that we
+[00:36:10.079] use to move data which I call memories
+[00:36:13.040] between these components. And there's
+[00:36:17.119] going to be a lot more content coming
+[00:36:18.960] out on memory engineering. And I like
+[00:36:20.800] talking about memory engineering because
+[00:36:22.480] it's sort of it's a it's an area of
+[00:36:26.240] agent engineering that feels like
+[00:36:29.040] everyone can participate in. Right? So
+[00:36:31.920] you can have one engineer at cursor or
+[00:36:35.359] like myself building these libraries and
+[00:36:38.720] frameworks or you can have a 100
+[00:36:40.720] engineers working on chatt or on claude
+[00:36:44.480] to make memory work but because it's not
+[00:36:47.599] yet solved. It's it's a place where you
+[00:36:50.640] can be creative
+[00:36:52.800] but also you can just constantly learn
+[00:36:55.520] and participate in
+[00:36:58.240] ideally getting us to what we can
+[00:37:00.240] describe as AGI. So
+[00:37:03.839] that's what memory engineering is. It's
+[00:37:06.560] the job to be done to me. it's the last
+[00:37:09.839] job to be done because once once we
+[00:37:11.599] solve memory um I think we're we're
+[00:37:15.520] going to be on a very uh uh exponential
+[00:37:18.000] path to a exponential trajectory to AGI
+[00:37:21.200] once our agents are able to remember
+[00:37:23.200] effectively well and they're reliable
+[00:37:25.200] believable and capable they would it
+[00:37:28.320] would give us a good path to to AGI so I
+[00:37:32.320] want to touch on prompt engineering and
+[00:37:34.560] context engineering and memory
+[00:37:36.560] engineering Now again, I like to be
+[00:37:40.800] interactive. I like to have
+[00:37:41.839] conversations. So I'm going to ask it
+[00:37:43.599] I'm going to ask a question and I'm
+[00:37:44.960] going to ask it now and I'm going to ask
+[00:37:46.560] it later on during at the end. Does
+[00:37:50.320] anyone put your hands up if you agree
+[00:37:52.800] with the distinction between memory
+[00:37:55.200] engineering and context engineering?
+[00:37:59.359] Are we getting there? We're getting
+[00:38:00.720] there. I see three people. Okay, put
+[00:38:03.599] your hands up if you agree with the
+[00:38:05.040] distinction between prompt engineering
+[00:38:06.640] and context engineering.
+[00:38:09.440] More people. That's good. This is good.
+[00:38:11.680] All right. So, prompt engineering, I see
+[00:38:14.960] it as, and I'll just go through this.
+[00:38:16.560] So, my aim is not to get everyone to put
+[00:38:19.200] their end their hand up after I'm done.
+[00:38:21.680] Um, I would like to get a few more hands
+[00:38:25.040] thin free. So, let's go. Uh, prompt
+[00:38:28.160] prompt engineering is very simple. Uh,
+[00:38:30.079] in fact, I could skip this this slide.
+[00:38:32.160] Actually, I'll just go straight to this
+[00:38:33.440] one. Prompt engineering is a
+[00:38:35.520] maximization technique, right? Because
+[00:38:37.760] what we're trying to do is get more
+[00:38:39.200] tokens into the context window to ensure
+[00:38:41.680] that the LLM gave us the right answer in
+[00:38:44.880] the right format. So, we had things like
+[00:38:47.119] few shot um few shot prompting, right?
+[00:38:49.760] Because then what we did there was give
+[00:38:51.520] the the LLM examples of outputs that we
+[00:38:54.720] expected and we also gave it examples of
+[00:38:56.960] inputs. And the more inputs and output
+[00:38:59.280] you gave it, the more uh essentially the
+[00:39:01.920] more it was able to um adear to whatever
+[00:39:04.880] format you expecting. So it's a
+[00:39:06.640] maximization technique, right? There was
+[00:39:08.720] this chain of thought um approach and
+[00:39:11.440] there is in context learning as well.
+[00:39:13.760] But the key thing is here we were we're
+[00:39:15.920] frontloading cognition.
+[00:39:18.560] So the LLMs we gave them more data, more
+[00:39:21.760] compute and they grew a lot bigger,
+[00:39:25.280] right? We increased the number of
+[00:39:26.720] parameters within this LLM and it
+[00:39:28.880] reduced the amount of prompt engineering
+[00:39:30.560] that we had to do to get what we wanted.
+[00:39:33.119] But then we found out that even though
+[00:39:35.599] we were increasing the context window of
+[00:39:38.000] these LLMs,
+[00:39:39.839] stuffing information in there going
+[00:39:41.920] using that maximization approach didn't
+[00:39:44.560] work. It didn't give you the I guess
+[00:39:46.960] what we can loosely describe as this
+[00:39:49.119] promise performance performance gain
+[00:39:51.440] because we had things issues like uh
+[00:39:53.760] needle in the hstack or loss in the
+[00:39:55.280] middle problem, right? So the more
+[00:39:57.280] information you gave this LLM, the
+[00:39:59.680] harder it was for them to remember
+[00:40:01.680] certain key information.
+[00:40:03.920] So um and you go into things like
+[00:40:06.560] context rot, you go you have context
+[00:40:08.560] bloating, confusion, all of this key
+[00:40:11.359] buzzwords. So context engineering and
+[00:40:14.560] anthropic define it best.
+[00:40:17.760] Essentially what context engineering is
+[00:40:20.240] is finding the configuration of the
+[00:40:22.400] optimal tokens to put into the context
+[00:40:24.720] window. Right? You it it's not putting
+[00:40:27.680] everything you can. It's just putting
+[00:40:30.000] the right thing. Essentially you're
+[00:40:32.400] trying to get the most bang for your
+[00:40:33.920] buck. Right? So it's an optimization
+[00:40:37.359] engineering. It's optimizing. Right? So
+[00:40:39.680] prompt engineering maximization context
+[00:40:42.640] engineering optimization. Now memory
+[00:40:45.599] engineering because we have this free
+[00:40:48.160] components that we're working with
+[00:40:49.839] within an agent within an agent and
+[00:40:52.000] we're trying to move information through
+[00:40:54.880] these um three components we actually
+[00:40:57.040] have to do a bit of optimization and
+[00:41:01.040] maximization.
+[00:41:02.720] So prompt uh memory engineering is
+[00:41:04.800] continuation and it's continuation
+[00:41:06.400] because what we're essentially doing is
+[00:41:09.040] uh the maximization aspect will come
+[00:41:10.720] into where you're taking things out of
+[00:41:12.480] the um out of the context window.
+[00:41:15.599] Sometimes you can augment this
+[00:41:17.040] information so you can enrich this
+[00:41:19.280] information so in the next iteration you
+[00:41:21.839] can actually have more I guess more
+[00:41:24.400] information to play with or more context
+[00:41:26.480] to play with to get your desired output.
+[00:41:28.720] But in the same aspect it's optimizing
+[00:41:32.400] because we have summarization technique
+[00:41:34.800] from context engineering that you can
+[00:41:36.560] store in uh in your memory uh store as
+[00:41:40.240] well. So you have to use some of this
+[00:41:42.000] summarization aspect is optimization as
+[00:41:44.960] well because we have to optimize the
+[00:41:46.400] retrieval pipelines. We have to think
+[00:41:48.240] about quantization. We have to do things
+[00:41:49.920] like um prefiltering, post filtering,
+[00:41:52.400] optimizing all the queries that we're
+[00:41:54.079] actually putting into that we're using
+[00:41:56.160] to retrieve information. So it's both
+[00:41:59.040] optimization and maximization
+[00:42:02.560] leading to continuation because we want
+[00:42:04.960] memory to persist and improve and
+[00:42:08.000] eventually our agents to learn and adapt
+[00:42:09.920] over time. So that's why prompt
+[00:42:11.920] engineering is maximization, context
+[00:42:14.319] engineering is optimization, memory
+[00:42:16.560] engineering is continuation.
+[00:42:19.520] I think you guys would get the slides um
+[00:42:22.079] as part of the question.
+[00:42:27.040] >> We need to use the mic.
+[00:42:28.079] >> Is it possible to put the slides in the
+[00:42:29.520] Google Drive for the workshop because
+[00:42:31.359] the font's really small?
+[00:42:32.880] >> Is it possible for
+[00:42:33.920] >> Can you just drop the slides in the
+[00:42:35.440] Google Drive for the workshop so we can
+[00:42:37.440] follow along on the screen?
+[00:42:39.359] >> Yeah. Yeah. So, you want me to do that
+[00:42:40.640] now?
+[00:42:41.200] >> Uh yeah, if you wouldn't mind though.
+[00:42:43.119] >> So, where is the Google Drive for the
+[00:42:44.720] workshop? Uh so the other is
+[00:42:48.480] >> uh are you going to share a link in uh
+[00:42:53.760] >> is it too small to see?
+[00:42:55.520] >> Yeah. Okay. Apologies. Uh
+[00:42:58.079] >> if you send it to me via airplane.
+[00:43:00.560] >> Yeah. First thing I need to do is
+[00:43:02.400] connect to the Wi-Fi.
+[00:43:03.760] >> I use AI.
+[00:43:06.560] >> Do you have the password?
+[00:43:07.520] >> AIT.
+[00:43:08.480] >> Oh
+[00:43:11.520] >> security. Yeah, we've done it.
+[00:43:13.174] [laughter]
+[00:43:15.140] [clears throat]
+[00:43:22.000] >> And I think it's connected. Okay, cool.
+[00:43:24.720] And
+[00:43:26.400] >> I think I'm
+[00:43:30.800] >> There we go.
+[00:43:36.720] >> I am a noob at this. So, let's see.
+[00:43:44.960] Uh yeah, if you want to share with me
+[00:43:48.400] Alan Tesla
+[00:43:52.480] or
+[00:43:53.119] >> Oh, contact only.
+[00:43:54.880] >> Okay. How do I find someone on this? I
+[00:43:57.280] don't usually use this.
+[00:43:58.079] >> Or if you if you want to share that. Is
+[00:43:59.599] that
+[00:44:00.000] >> share the link?
+[00:44:00.720] >> Yeah.
+[00:44:00.960] >> Yeah, this is fine.
+[00:44:01.599] >> Or just hit hit my
+[00:44:03.520] >> Ah, yeah. Let's go.
+[00:44:04.640] >> Al
+[00:44:08.000] tsl.io.
+[00:44:10.960] Excellent.
+[00:44:12.880] >> That's me. Came up.
+[00:44:16.800] >> There you go. And I'll drop it in
+[00:44:18.880] >> drop in the thing.
+[00:44:23.680] >> I will drop the link in the discord.
+[00:44:28.960] >> Okay, that's a good like five minute
+[00:44:30.960] break. Um,
+[00:44:34.160] thanks a lot for mentioning that as
+[00:44:35.440] well. The fellow that actually mentioned
+[00:44:36.880] that and that is my worry for the for
+[00:44:39.280] the workshop. It might be the screen
+[00:44:40.880] might be too small to see all the cool
+[00:44:42.800] logs and whatnot, but we'll try our
+[00:44:45.359] best. Um, okay. Very quickly, uh, very
+[00:44:49.599] quick question. Are you guys having fun?
+[00:44:53.040] >> That's good. And got a question. Alan,
+[00:44:56.079] we got to use Mac. Let's go. No, no,
+[00:44:58.000] it's good. It's good.
+[00:45:00.160] >> Hello. Uh, quick question. Um, uh, I
+[00:45:02.400] know we're talking about memory
+[00:45:03.359] engineering. the more I hear about it,
+[00:45:05.599] it's part of a cost issue, but if costs
+[00:45:07.839] aside, is that not just building or
+[00:45:10.960] expanding upon the model itself, like
+[00:45:13.520] training, you're almost like training
+[00:45:15.040] the model, but not it's just like, you
+[00:45:18.079] know, outside of it is
+[00:45:20.160] >> Yeah. So,
+[00:45:22.000] because obviously building a model is
+[00:45:23.599] very expensive. Is this
+[00:45:25.119] >> Yeah. So, what you're saying is is
+[00:45:27.359] memory engineering just training the
+[00:45:29.839] model like fine-tuning? Yeah, I guess
+[00:45:33.040] because you could all the memory here
+[00:45:35.040] you could take that data right and then
+[00:45:37.280] >> exactly you can use
+[00:45:38.880] >> put it in the model itself. So memory
+[00:45:41.359] engineering is one thing is this space
+[00:45:43.599] is still developing and you're you're
+[00:45:45.200] spot on which is eventually where it's
+[00:45:47.119] going to get to is
+[00:45:49.920] continuous learning right we we had this
+[00:45:53.280] already in machine learning so it's not
+[00:45:54.880] new right um back in the day I say back
+[00:45:57.200] in the day I'm not old I'm actually
+[00:45:58.560] quite young I think um I'm I'm I'm in my
+[00:46:01.359] 30s um back in the day we used to have
+[00:46:04.160] these things called feature stores right
+[00:46:06.480] and they allowed for online learning
+[00:46:08.400] where you could uh solve issues is like
+[00:46:10.720] model drift right so we used to have
+[00:46:13.359] this for traditional machine learning
+[00:46:14.880] model we're going to have that in in um
+[00:46:18.079] LLM right in generative models very soon
+[00:46:20.560] they're large and the latency in is
+[00:46:23.359] quite huge and there's a lot of compute
+[00:46:25.119] required to actually retrain them but we
+[00:46:27.599] are going to get there today the memory
+[00:46:30.079] engineering I'm presenting to you is
+[00:46:32.079] actually half of the job to be done
+[00:46:34.880] because what we're doing is very simple
+[00:46:37.280] we have this three components of agent
+[00:46:39.040] memory we have the external memory. We
+[00:46:42.079] have the um we have the context window
+[00:46:44.240] of the LLM and we have the parametric
+[00:46:46.640] memory within the LLM itself. But we're
+[00:46:49.760] not modifying the static parametric
+[00:46:52.000] memory within this memory engineering
+[00:46:54.079] scaffolding. Right? But eventually we
+[00:46:56.800] are going to get there and when I do
+[00:46:58.480] this talk next year we're going to be
+[00:47:00.400] talking about that you could you could
+[00:47:03.040] fine-tune now actually but it's just the
+[00:47:05.520] time it takes right the amount of data
+[00:47:07.520] you need. But one thing cursor put out a
+[00:47:10.480] good blog last week that talk about um
+[00:47:13.359] that they're using the agent traces and
+[00:47:15.920] they're using that to fine-tune their
+[00:47:17.520] embedding models and they see uh
+[00:47:19.760] improvements in their semantic search.
+[00:47:21.760] So again obviously they have loads of
+[00:47:24.480] money to be able to do this but we can't
+[00:47:26.880] do this well I can but not your average
+[00:47:30.480] AI developer can't do this um on a
+[00:47:33.440] Jupyter notebook per se but we are going
+[00:47:35.680] to get there.
+[00:47:37.680] Good question.
+[00:47:40.160] >> The link is in the discord.
+[00:47:44.079] >> Excellent. Um, okay, let's go. So,
+[00:47:46.880] prompt engineering is
+[00:47:49.680] it's words about well, let me just
+[00:47:52.240] recap. So, we sp we said prompt
+[00:47:53.839] engineering is maximization. Context
+[00:47:55.920] engineering is optimization. Memory
+[00:47:57.839] engineering is both maximization and
+[00:48:00.160] optimization leading to continuation.
+[00:48:02.720] So, prompt engineering was words about
+[00:48:05.920] the world. And the reason why I have
+[00:48:07.760] this here is when I was creating the
+[00:48:11.280] slides and thinking about this topic
+[00:48:13.200] more in depth. I was really thinking
+[00:48:15.119] about how to distinguish how to how to
+[00:48:17.680] distinguish the differences between this
+[00:48:19.359] engineering disciplines, right? Um and
+[00:48:22.640] sometimes simplicity is the best way to
+[00:48:25.280] approach things. Uh I do have like an
+[00:48:27.680] over 10,000 word uh uh 10,000word essay
+[00:48:32.400] that I'm writing but this three lines
+[00:48:34.480] probably summarize the 10,000 words
+[00:48:36.079] essay which is prompt engineering is
+[00:48:38.160] words about the world right context
+[00:48:40.800] engineering is about world building and
+[00:48:43.280] then memory engineering is about world
+[00:48:45.280] persistence and the continuity of this
+[00:48:47.359] world that we're building for the LLM to
+[00:48:49.680] understand. So prompt engineering is
+[00:48:52.319] just about the words that we're using to
+[00:48:54.000] describe the word. The description is
+[00:48:55.599] key because if you change a bit of the
+[00:48:58.079] words, we found if you were if you were
+[00:48:59.760] to change certain words in your prompt,
+[00:49:02.079] um it changed the behavior of the LLM
+[00:49:04.319] and you change the output. So the
+[00:49:06.640] description aspect is key. Knowing what
+[00:49:09.119] linguistic patterns will actually get
+[00:49:11.040] you the right behavior from your LLM is
+[00:49:13.839] part of this whole evaluation um LLM
+[00:49:17.280] evaluation discipline as well. Then
+[00:49:19.520] context engineering is about not just
+[00:49:21.680] using the world about building the
+[00:49:24.160] context efficiently so your LLM could
+[00:49:26.640] understand this world that you're
+[00:49:29.440] building this problem domain then memory
+[00:49:32.079] engineering is the work that we are
+[00:49:33.839] going to do to make sure that the LLM is
+[00:49:37.040] the the world is persistent and it's
+[00:49:40.160] constantly persistent through all the
+[00:49:42.400] iterations. So let me ask the question
+[00:49:46.000] again.
+[00:49:48.160] How many of you agree with me on the
+[00:49:50.400] distinction between context engineering
+[00:49:52.400] and memory engineering?
+[00:49:55.119] Put your hands up if you agree with me.
+[00:49:58.160] Okay, we're increasing. That's good.
+[00:50:00.400] We're making progress. Again, I fail if
+[00:50:03.280] no one agrees with me. I also fail if
+[00:50:06.160] you all agree with me. So, I'm going to
+[00:50:09.200] ask it a couple more times. Um, people
+[00:50:12.000] always used to ask me, Rachel, when does
+[00:50:13.520] data become memory? And I have this line
+[00:50:16.559] in the next slide.
+[00:50:19.119] I this line didn't start off here. It
+[00:50:21.760] started off way here. But eventually as
+[00:50:24.880] I began to understand more and more, I
+[00:50:27.599] moved it further and I began to see the
+[00:50:30.480] capabilities of the infrastructure that
+[00:50:32.400] we have today. Let me explain. So there
+[00:50:35.119] is this memory engineering life cycle.
+[00:50:37.040] If you read any white paper on sessions
+[00:50:39.040] or memory or context engineering,
+[00:50:41.119] they're going to talk about this life
+[00:50:42.240] cycle. and is is I don't want to say
+[00:50:44.960] simple but it's easy to understand right
+[00:50:47.119] so we have data sources um external data
+[00:50:49.920] sources we're going to collect them
+[00:50:51.520] ingest them clean them do all the data
+[00:50:53.280] science stuff we used to do back in the
+[00:50:54.800] day then the next aspect of things that
+[00:50:57.359] we tend to do is we create different
+[00:50:59.200] representation of this data and the most
+[00:51:01.440] common one that we have within
+[00:51:03.040] generative AI today is embeddings vector
+[00:51:05.440] embeddings we take data pass it through
+[00:51:07.839] an embedded model and we get the
+[00:51:09.200] numerical representation of that data
+[00:51:11.839] and the numerical representation has
+[00:51:13.599] captured the semantics of the data. So
+[00:51:16.240] we have embeddings that you can couple
+[00:51:18.240] with the data and you can then ingest
+[00:51:20.559] that into a database like Oracle AI
+[00:51:22.880] database where you'll be able to do
+[00:51:24.480] things like semantic search using vector
+[00:51:26.720] search or you can do hybrid search which
+[00:51:28.800] is a combination of vector search with
+[00:51:30.880] any of the other search that we enable
+[00:51:33.280] within a database. Then another aspect
+[00:51:36.880] and this is the part where we start to
+[00:51:39.359] see why memory engineering is important.
+[00:51:41.359] Another aspect is the organization of
+[00:51:43.520] information. Data modeling is a topic I
+[00:51:46.720] should have paid more attention to when
+[00:51:48.240] I was at university because it's
+[00:51:50.559] important now. How you structure
+[00:51:52.559] information is actually important to
+[00:51:54.960] both the understanding of data and to
+[00:51:57.599] the LLM itself. Organization is
+[00:52:02.160] organization of information does
+[00:52:05.440] improves the performance of an LLM if
+[00:52:08.000] you actually think about it. Right? So
+[00:52:10.160] we'll talk more about this organization
+[00:52:11.839] factor of of um of the context window
+[00:52:15.200] but organization of information which
+[00:52:17.680] can be data modeling the information
+[00:52:19.280] that you put in your database
+[00:52:20.720] organization of information that you're
+[00:52:22.400] putting in the context window as well.
+[00:52:24.480] um Anthropic's piece which is titled
+[00:52:27.359] context engineering and I don't remember
+[00:52:29.599] the rest of it but type in anthropic
+[00:52:31.680] context engineering they have a good
+[00:52:33.839] image that shows the ideal organization
+[00:52:36.960] of the context window maybe for their
+[00:52:39.200] models and the piece that uh Google just
+[00:52:41.680] put out last week called context
+[00:52:43.839] engineering as well um sessions and
+[00:52:46.240] memory they also have like uh uh
+[00:52:48.800] explanation of the ordering of items
+[00:52:51.280] within a context window the key thing
+[00:52:52.960] here is organization is important.
+[00:52:56.000] Retrieval retrieval is then in the
+[00:52:58.079] pipeline as well. How do we get the
+[00:52:59.680] information out of the the database,
+[00:53:02.319] right? Again, there are two things which
+[00:53:05.200] is vector search is not all you need,
+[00:53:07.680] right? Uh vector search is a good
+[00:53:09.680] technique and you should use it, but you
+[00:53:12.000] shouldn't rely on it or think is the
+[00:53:13.599] sole way of retrieving information. Um,
+[00:53:16.240] I know there was the rave about vector
+[00:53:18.559] search and vector databases, but we
+[00:53:21.119] quickly realized that we needed robust
+[00:53:23.520] retrieval mechanisms to make our our AI
+[00:53:26.640] agents and the LLM accurate, which
+[00:53:28.880] essentially means reduce elucination
+[00:53:31.040] essentially. And one thing and one thing
+[00:53:33.680] is it's becoming very obvious but
+[00:53:36.640] another another thing that happened this
+[00:53:38.880] year and late last year was um
+[00:53:42.480] especially with coding assistance using
+[00:53:44.800] tools like like searching through files
+[00:53:47.119] using GP or using bash command to just
+[00:53:50.160] search for keywords within certain file
+[00:53:52.480] became almost seen as a replacement for
+[00:53:55.440] doing forms of database retrieval. But
+[00:53:58.480] again, the best one, I don't want to say
+[00:54:00.960] the best, but one of the companies in
+[00:54:03.359] the front line of coding assistants,
+[00:54:05.760] they put out a blog last week saying,
+[00:54:07.520] "Hey, we're not just using uh searching
+[00:54:10.480] through files, right? Using typical uh
+[00:54:13.119] search tools, we're actually using
+[00:54:14.800] semantic search enabled by database as
+[00:54:17.359] well." And this this and semantic search
+[00:54:19.839] and using a combination of both performs
+[00:54:22.160] better. Retrieval is a key aspect. Then
+[00:54:25.920] you have this you have this part over
+[00:54:28.160] here serialization whatever we want to
+[00:54:30.000] call it. But the key thing here is we're
+[00:54:31.839] taking the information from the context
+[00:54:33.359] window and putting it back into our data
+[00:54:37.280] store essentially to repeat this loop
+[00:54:40.880] here again. But that's the key thing.
+[00:54:43.359] This is like the memory engineering life
+[00:54:45.119] cycle. You call it the memory life cycle
+[00:54:47.280] but this is what what I'm seeing. Then
+[00:54:49.359] eventually we're going to put the whole
+[00:54:51.359] aspect of retraining the model uh the
+[00:54:54.559] LLM itself or even retraining the
+[00:54:56.480] embedded model within this life cycle as
+[00:54:58.960] well. I'm going to update the slides in
+[00:55:00.880] a few months. So the the question was
+[00:55:03.520] Richmond when does data become memory?
+[00:55:05.680] Because you've used the word memory a
+[00:55:07.200] lot right that's what a lot of people
+[00:55:08.400] used to say um earlier on when I used to
+[00:55:10.559] talk about this topic back when it
+[00:55:12.640] wasn't accepted propaganda like it is
+[00:55:14.720] today. Um people used to say Richmond
+[00:55:17.920] yeah when when does data become memory
+[00:55:19.520] or what's the difference between data
+[00:55:20.720] and memory? Um spoiler alert memory is
+[00:55:23.599] data and the point where we start to see
+[00:55:26.880] data becoming memory is usually when you
+[00:55:30.640] see the information being transformed
+[00:55:34.000] and represented in a different format.
+[00:55:36.880] That's when you begin the understanding
+[00:55:39.599] of it as memory. It helps when you're
+[00:55:42.880] building an AI agent. If you think about
+[00:55:46.880] information as something that is to be
+[00:55:48.640] remembered but also something that is
+[00:55:51.520] meant to be forgotten um it helps when
+[00:55:54.640] it helps when you're building the agent
+[00:55:56.480] this agentic systems okay so prompt
+[00:55:59.440] engineering maximization context
+[00:56:02.079] engineering optimization memory
+[00:56:04.400] engineering continuation I am not going
+[00:56:06.720] to say that those paragraphs there I
+[00:56:09.200] can't remember them and they're too
+[00:56:10.240] extensive okay so this is the this is
+[00:56:13.280] the journey we're on right prompt
+[00:56:14.720] engineering, context engineering, memory
+[00:56:16.160] engineering. We've mentioned a bunch of
+[00:56:17.839] keywords and I think I hope have hit on
+[00:56:20.880] those keywords. So if you look at them
+[00:56:23.119] when you have the slides, they'll become
+[00:56:24.880] very obvious to you. Now we can go into
+[00:56:27.040] the workshop in code. And that took
+[00:56:29.920] about 45 minutes to explain. So the key
+[00:56:32.880] thing is not what what I'm trying to get
+[00:56:34.880] across to you today is not to give you a
+[00:56:38.160] solved solution but to give you
+[00:56:41.200] essentially the scaffolding of thinking
+[00:56:43.119] of a scaffolding of thinking um a
+[00:56:47.520] scaffolding for thinking about what is
+[00:56:49.280] going to be one of the most relevant
+[00:56:50.880] aspects of aging engineering or AI
+[00:56:52.960] engineering or software engineering
+[00:56:54.880] within the next six to one year 6 months
+[00:56:57.920] to one year. And it's six months to one
+[00:56:59.839] year because I'm hoping everyone is
+[00:57:02.000] doing their job right because we need to
+[00:57:03.520] solve memory very quickly and I think
+[00:57:05.359] within the next year we'll have very
+[00:57:07.680] very solid solution to agent memory. So
+[00:57:12.799] you can call me when I did a talk um
+[00:57:16.799] about agent memory. The first one I did
+[00:57:18.960] it was
+[00:57:20.799] I think it was earlier this year. It was
+[00:57:22.480] in Greece and I I tried to make it cool
+[00:57:25.280] and I I I told a story about Prometheus.
+[00:57:29.440] Does anyone know the Greek mythology of
+[00:57:31.440] Prometheus? Put your hands up if you
+[00:57:33.680] know. That's a lot of people. That's
+[00:57:36.240] crazy. [laughter] Um so yeah, I was in
+[00:57:38.480] Greece. I was like, "Oh yeah, let me be
+[00:57:40.079] cool and talk about Greek mythology."
+[00:57:42.079] Prometheus obviously um Prometheus
+[00:57:44.559] essentially gave man fire and he got
+[00:57:47.280] punished for that for eternity, I think.
+[00:57:49.119] Correct me if I'm wrong. Um, but we got
+[00:57:50.960] punished for giving man fire. And fire
+[00:57:52.799] in the sense of intelligence to be able
+[00:57:55.040] to build tools and obviously flourish.
+[00:57:58.640] I'm not saying I'm Prometheus,
+[00:58:01.119] but [laughter]
+[00:58:02.640] anyway, so we're going to talk going
+[00:58:04.480] into the workshop and code and hopefully
+[00:58:06.160] I don't get punished for it. That's
+[00:58:07.520] weird. Um, we're going to talk about
+[00:58:09.760] memories. Again, it's a the name is a
+[00:58:12.319] joke. It's not like the official name.
+[00:58:14.559] Um, we're going to talk about the agent
+[00:58:16.640] stack. We're going to talk about
+[00:58:17.839] keywords like memory core and memory
+[00:58:20.480] layer um or memory provider as well. So
+[00:58:24.640] to find the code and this is small I
+[00:58:27.119] apologize but I hope you have the slides
+[00:58:29.119] you can type in memoriz GitHub on Google
+[00:58:33.040] and I hope the library comes up as the
+[00:58:35.440] first link. When you go into this repo,
+[00:58:38.160] you'll be able to see go into the
+[00:58:39.760] examples folder and you're able going
+[00:58:41.839] you're going to be able to see a single
+[00:58:43.680] agent um folder within the examples
+[00:58:45.920] folder and then you guys can click on
+[00:58:48.400] the local one and go through the process
+[00:58:51.920] of building an uh agent augmented with
+[00:58:56.160] memory. I'll take a pause there. Do we
+[00:58:57.839] have any questions?
+[00:59:00.799] >> Should we grab a quick coffee? And I
+[00:59:02.400] also need to mention lunch is at 12 over
+[00:59:05.280] at the 52A. Just like in case your
+[00:59:09.280] tummies are rumbling, that's where lunch
+[00:59:11.920] will be at 12. But if you want to grab a
+[00:59:13.440] coffee while we're doing this.
+[00:59:15.359] >> Yeah, dude.
+[00:59:17.040] >> I don't drink coffee, but I have water.
+[00:59:19.280] So,
+[00:59:19.680] >> you're good.
+[00:59:20.400] >> Yeah, [laughter]
+[00:59:21.680] >> the smell of coffee makes me want to
+[00:59:22.880] throw.
+[00:59:24.400] >> Uh, but yeah, dive in. And if anyone has
+[00:59:26.799] any difficulty getting hold of uh the
+[00:59:29.680] slides or Clooney the Reaper or anything
+[00:59:32.319] like that, just grab me or Richard and
+[00:59:34.559] we can point you in the right direction.
+[00:59:36.960] >> Excellent. So,
+[00:59:38.240] >> thanks.
+[00:59:38.720] >> I'll go over some propaganda. I'm
+[00:59:40.240] joking. I'll go over some of the some of
+[00:59:42.079] the slides and then we can get an
+[00:59:44.160] understanding of the repo and we can get
+[00:59:46.079] I'll go through some of the code as
+[00:59:47.440] well. Um, okay. So, the key thing here
+[00:59:50.319] is we're all learn to learn. So, you can
+[00:59:52.880] ask me questions. If you disagree with
+[00:59:54.559] me, say you disagree with me. I don't
+[00:59:56.160] mind. I won't cry. Um, but you can also
+[00:59:58.880] reach out to me on LinkedIn. Um, I'm
+[01:00:00.559] responsive sometimes. Uh, and uh, we can
+[01:00:03.920] have a good chat of agent memory and
+[01:00:05.440] memory engineering. And if you reach out
+[01:00:07.440] to me on LinkedIn and I ignore you is
+[01:00:09.359] because I'm probably doing a talk like
+[01:00:10.880] this. I'm preparing for it as well,
+[01:00:12.880] which usually takes a couple weeks, but
+[01:00:15.599] do reach out on LinkedIn. So, this is
+[01:00:17.760] again small to see. I apologize, but if
+[01:00:20.160] you have the slides in front of you, you
+[01:00:21.760] can go for it. Let's talk about the
+[01:00:23.359] agent stack. So there are a couple
+[01:00:25.599] components within agent memory that are
+[01:00:28.079] just staple, right? And you have a bunch
+[01:00:30.960] of people that operate within the this
+[01:00:33.440] the layers of agent stack. Um the key
+[01:00:37.040] I'm just I'm not going to go through
+[01:00:38.319] each one, but I'll just talk about the
+[01:00:39.599] key one. So we have the communication
+[01:00:42.160] and protocol layer, right? This is your
+[01:00:44.400] MCPs, A2A, uh what's the one from IBM
+[01:00:49.440] called? Is it called ACP?
+[01:00:52.000] I think so. I'm not sure.
+[01:00:54.160] >> What number are you on?
+[01:00:55.760] >> Uh I'm on slide number 46.
+[01:01:01.440] >> Oh, you guys are on the slides. Wow. Um
+[01:01:03.760] okay. Uh there was another question.
+[01:01:09.280] >> No, my inner thoughts. Okay, so we have
+[01:01:12.960] the communication and protocol layer,
+[01:01:14.960] right? This is where your protocols A2A
+[01:01:17.920] um MCP actually stay reside within. But
+[01:01:22.160] one thing we're doing in Oracle is we
+[01:01:24.319] saw the emergence of loads of different
+[01:01:26.720] frameworks and the engineering team at
+[01:01:29.839] Oracle
+[01:01:31.839] actually looked at a key thing which is
+[01:01:35.200] how can we standardize agents across all
+[01:01:38.720] of this framework so that you can take
+[01:01:40.480] an agent built in like Cai and move it
+[01:01:44.480] port it over to Langraph. The best way
+[01:01:47.359] that they describe this is um the onyx
+[01:01:50.000] framework which we used back in the day
+[01:01:52.559] to use the same model built in PyTorch.
+[01:01:55.359] You could use that same model using the
+[01:01:57.440] onyx model within um uh TensorFlow once
+[01:02:02.000] upon a time. Um but again um I joined
+[01:02:06.559] Oracle
+[01:02:08.799] two weeks ago
+[01:02:10.799] and I could see like there was this
+[01:02:13.280] amazing engineering um effort to try to
+[01:02:17.119] standardize and really bring agent
+[01:02:20.480] engineering to the forefront of AI
+[01:02:22.640] developers.
+[01:02:24.319] Hence why I'm here. Hence why I'm at
+[01:02:26.000] Oracle. And the open agent spec is very
+[01:02:29.920] interesting to me because I knew we we
+[01:02:33.680] had to I've worked in other database
+[01:02:35.280] companies and I knew that the way we
+[01:02:38.880] solve a lot of the different attempts at
+[01:02:43.119] making agents work in production is to
+[01:02:46.240] think about how we can standardize it
+[01:02:48.319] standardize this. So Enthropic did it
+[01:02:50.160] well with MCP and Oracle. They're trying
+[01:02:53.440] to figure out how to standardize the
+[01:02:55.040] porting of agents across frameworks.
+[01:02:57.839] So that's the communication on protocol
+[01:02:59.599] layer. You can check it out the open
+[01:03:01.040] agent spec. There's a paper that we
+[01:03:03.200] wrote and you can check it out there. So
+[01:03:06.240] there is this orchestration layer,
+[01:03:07.680] right? That is where your frameworks and
+[01:03:10.079] library live. Langraph um you have folks
+[01:03:13.520] like uh hstack that operate within this
+[01:03:16.079] layer as well. Then there's the
+[01:03:17.920] reasoning layer which is the LLM. This
+[01:03:20.319] is the model provider. This is where
+[01:03:21.760] they live. Then you have the memory
+[01:03:23.920] layer. So I'm going to explain the
+[01:03:25.200] memory layer. It's going to it sounds
+[01:03:27.200] weird but the memory layer is
+[01:03:30.400] the scaffolding that we do in memory
+[01:03:32.720] engineering but a bunch of very helpful
+[01:03:36.240] engineers have abstracted away a lot of
+[01:03:38.720] this common techniques and process. So
+[01:03:41.839] example of that like I saw a lot of
+[01:03:43.599] hands up is mezero right mem zero is a
+[01:03:46.880] memory management layer. Langme, check
+[01:03:49.599] it out from the team at Langchain.
+[01:03:51.760] That's a memory management layer. Um,
+[01:03:53.920] Cognney is another one. Meg GPT is
+[01:03:56.240] another one. And a couple of them are
+[01:03:58.240] popping up. There's one that I saw that
+[01:04:00.480] raised a crazy amount and it's called
+[01:04:02.640] Super Memory, right? Anyone did anyone
+[01:04:04.960] hear about Super Memory? Hands up if you
+[01:04:06.799] did. Some hands up. Just one. But yeah,
+[01:04:11.520] more are popping up. I think we're going
+[01:04:13.839] to see more from maybe the model
+[01:04:17.039] providers pop up uh as we go through uh
+[01:04:19.920] the year as well. Then the memory core
+[01:04:23.280] is different from the memory layer. So
+[01:04:25.280] the memory core essentially is the
+[01:04:27.599] database itself is the store where the
+[01:04:30.160] information is stored, right? It gives
+[01:04:32.160] you all the retrieval mechanisms for
+[01:04:34.319] really pulling information out. And what
+[01:04:36.480] memory layers typically do is they help
+[01:04:39.520] you engineer all of the different memory
+[01:04:41.520] types that we've spoken about. The way
+[01:04:43.520] that the data is modeled and the way
+[01:04:45.680] data is retrieved as well. They abstract
+[01:04:47.920] this away from you. So Zep is a popular
+[01:04:50.160] one as well. Has anyone heard about Zep?
+[01:04:52.720] Hands up if you've heard about Zep.
+[01:04:55.039] Nice. They they're very big on the
+[01:04:57.119] knowledge graph space. So
+[01:05:00.319] they those tools abstract this
+[01:05:02.319] complexity of understanding the memory
+[01:05:05.039] types and understanding how to retrieve
+[01:05:07.119] information. They abstract that so that
+[01:05:09.760] you guys can get to production very
+[01:05:11.520] quickly. Um which is obviously a good
+[01:05:14.240] way to go and it's the same thing I'm
+[01:05:15.760] trying to do with memories. memories
+[01:05:18.319] like I said at the beginning of this is
+[01:05:20.799] it was a way to prove a point as to
+[01:05:22.960] where this field is going in terms of
+[01:05:25.119] the work that we have to do as AI
+[01:05:27.039] engineers or AI memory engineers um and
+[01:05:31.119] you should not use it in production
+[01:05:33.200] actually I actually have that in the
+[01:05:35.119] read me don't use in production but it's
+[01:05:37.280] a learning tool so you can look for the
+[01:05:38.960] code and learn from it okay so that is
+[01:05:41.680] the difference between memory layer a
+[01:05:43.680] bunch of engineering um and programmatic
+[01:05:47.280] code to actually move information and
+[01:05:49.359] model data. Then you have the memory
+[01:05:51.119] core which is your database that will
+[01:05:52.960] give you all the retrieval methods and
+[01:05:55.520] storage and all the compute you need.
+[01:05:57.839] Then there's the obvious infrastructure
+[01:05:59.680] layer as well which is the agile compute
+[01:06:01.920] and inference and all the good stuff. So
+[01:06:04.480] that is the agent stack. I'm going to
+[01:06:06.319] update this a bit. I feel like we can
+[01:06:08.480] consolidate some of these layers as
+[01:06:10.079] well. This is memoriz. Uh you could type
+[01:06:14.160] in memoriz at GitHub or you could just
+[01:06:16.240] go into the link on the next slide.
+[01:06:19.680] Let's see. Oh, that was the last slide.
+[01:06:22.240] You go to the link on the previous
+[01:06:23.680] slide, this slide over here. Go into the
+[01:06:26.079] examples and into the local folder and
+[01:06:28.160] you'll be able to go through the
+[01:06:29.839] notebook there. Okay,
+[01:06:33.599] let's go into some code. And it's going
+[01:06:36.000] to be small. Can you guys see this?
+[01:06:38.400] Let's see.
+[01:06:40.319] Uh let's try this.
+[01:06:44.160] Tell me you guys can see this. No. Okay.
+[01:06:48.720] Just a little bit.
+[01:06:51.599] >> There's no local folder.
+[01:06:53.280] >> There's no what?
+[01:06:54.079] >> No local folder in examples.
+[01:06:56.506] [clears throat]
+[01:06:56.720] >> Let me verify that.
+[01:07:01.200] >> I see deep research.
+[01:07:02.880] >> Yeah. Single agent.
+[01:07:04.000] >> There's a single agent and there's a me
+[01:07:05.839] agent
+[01:07:07.359] local. There you go. So you can just run
+[01:07:10.319] that and what that would do is um you
+[01:07:13.359] guys can't see the code. A part of me
+[01:07:15.119] want wants to do something which is
+[01:07:17.440] bring you guys all up to the front and
+[01:07:20.240] watch me execute this and I think you'll
+[01:07:22.480] be able to see it.
+[01:07:26.319] >> Yeah. So those of you who want are very
+[01:07:29.039] interested, you can come up to the
+[01:07:30.880] front. Um are there pillows? I'm joking.
+[01:07:33.520] Um but we can like just sit down here or
+[01:07:36.240] just stand here and just watch me. It's
+[01:07:37.839] going to be fun.
+[01:07:39.280] You just bring your chairs to the front.
+[01:07:41.440] >> Nah, you need to sit on the floor.
+[01:07:43.666] [laughter]
+[01:07:44.480] You got to make it like cozy, man. No,
+[01:07:46.960] I'm joking. Bring your chairs to the
+[01:07:48.240] front. That was a better suggestion than
+[01:07:49.680] I had. I was going for pillows.
+[01:07:52.836] [laughter]
+[01:07:55.119] Okay. Um, cool. Don't be shy, guys.
+[01:07:59.680] This is going to be the best workshop.
+[01:08:04.480] >> All right, let's go. So if you run
+[01:08:07.039] through this notebook, I'm going to show
+[01:08:08.319] you two notebooks and we could go
+[01:08:09.599] through it very quickly. If you go
+[01:08:11.119] through this notebook, you're actually
+[01:08:12.400] going to have you're actually going to
+[01:08:14.079] install the Oracle AI database on your
+[01:08:16.640] local and you'll be able to run through
+[01:08:18.319] the step. So you can install this using
+[01:08:20.960] Docker and I've kept as much instruction
+[01:08:23.359] as possible to make sure this is a
+[01:08:26.000] seamless I hate using the word seamless
+[01:08:27.759] because Chachet loves that word, but
+[01:08:29.759] this is a seamless experience for you.
+[01:08:33.040] Um feel free to go to the link. The key
+[01:08:35.759] thing is and let me just start this. We
+[01:08:38.799] could start with the first.
+[01:08:41.679] So again you can there are two ways you
+[01:08:44.080] can do this within the memories library
+[01:08:45.759] there's a CLI. So when you actually in
+[01:08:48.799] pip install the package pip install
+[01:08:50.960] memories you actually get a CLI with it
+[01:08:53.440] and you can use a CLI within your own
+[01:08:56.960] particular within your own setup your
+[01:08:58.960] own environment. So let's start with
+[01:09:01.920] this. So you're going to pip install.
+[01:09:03.920] Let me increase this again until it gets
+[01:09:05.679] uncomfortable. Okay, we're going to
+[01:09:07.279] install uh pip install memories and
+[01:09:09.600] we're going to also install Oracle DB.
+[01:09:11.759] That's going to be our memory core. Then
+[01:09:13.440] we're going to use open AI as well. I do
+[01:09:15.520] have some examples that show how to use
+[01:09:17.040] some of the models from hugging face uh
+[01:09:19.520] with the memories library. So we're
+[01:09:21.199] going to start running this and there's
+[01:09:23.120] nothing exciting happening here. We're
+[01:09:24.960] just running a bunch of stuff. So
+[01:09:29.120] that's good. So part one part one of
+[01:09:31.279] this notebook is just the setting up of
+[01:09:33.040] Oracle AI database. And the key thing
+[01:09:35.440] we're doing here is we're just going to
+[01:09:37.279] be I have a Docker container running.
+[01:09:39.279] Let me clear all this outputs actually
+[01:09:40.880] so we can Yeah. So this is what the a
+[01:09:44.000] CLI command is going to look like. So
+[01:09:45.759] memories install Oracle. I'm going to
+[01:09:48.000] add more memory providers um as I'm
+[01:09:51.279] permitted to. Then you would just run
+[01:09:54.320] maybe uh let's see when you run this
+[01:09:58.320] very quickly it's if you don't have um
+[01:10:00.480] docker run it's going to tell you docker
+[01:10:01.840] is not running but it will also just
+[01:10:03.920] install the Oracle um image for Oracle
+[01:10:07.520] AI database image which should take
+[01:10:09.360] around 1 GB within your local memory.
+[01:10:12.800] There is a full version of the Oracle AI
+[01:10:14.960] database that takes around 9 GB but it
+[01:10:17.600] takes longer to install. If you would
+[01:10:19.520] like to install the full one, I uh you
+[01:10:22.880] just actually just do this uh d-4 and
+[01:10:26.640] that will install the full version for
+[01:10:29.679] Oracle AI database. But the light one is
+[01:10:33.120] enough. So once you actually run this
+[01:10:35.520] command in the output, you're going to
+[01:10:36.960] see a bunch of information for your
+[01:10:39.440] environment variables. Question.
+[01:10:41.280] >> Uh so you mentioned 9 GB for the the
+[01:10:43.920] database size. um is that you found that
+[01:10:47.120] be plenty for for all the agent work
+[01:10:48.719] you've been doing or does it need to be
+[01:10:50.400] expanded out much larger or anything
+[01:10:51.840] like that?
+[01:10:52.320] >> So the the local installation the light
+[01:10:55.280] version is just for you to get started.
+[01:10:57.520] It's not meant to be used particularly
+[01:10:58.880] in production.
+[01:11:00.080] >> Again the thing about Oracle database is
+[01:11:02.640] the enterprisegrade security. We work
+[01:11:04.560] with a lot of Fortune 500 company and
+[01:11:07.040] the full one has a bunch of these
+[01:11:09.600] enterprise grade securities right but to
+[01:11:11.679] get started quickly we created a light
+[01:11:14.159] version. So you could just install it
+[01:11:15.840] less time to download
+[01:11:18.560] but check out Oracle cloud for if you
+[01:11:20.640] want if you actually have production
+[01:11:22.000] workload and you can just follow the
+[01:11:24.400] same steps. That's why within the same
+[01:11:27.280] notebook there's a mem agent remote
+[01:11:29.760] where you just put in your connection um
+[01:11:32.480] details and it just connects to Oracle
+[01:11:34.320] cloud database.
+[01:11:37.280] Any questions? So is 9 GB on the hard
+[01:11:40.560] drive or just like in the docker
+[01:11:43.040] >> you said 9 GB of memory
+[01:11:45.440] >> pardon 9 gigs of memory
+[01:11:47.040] >> nine gigs of memory for the full one
+[01:11:48.640] around 9 gigs don't
+[01:11:50.239] >> but for this workshop it's not going to
+[01:11:52.080] take up that much
+[01:11:53.040] >> it's not going to take up that yeah yeah
+[01:11:55.199] it's not
+[01:11:55.760] >> good clarification [laughter]
+[01:11:57.920] >> okay so when you actually run this
+[01:12:00.080] you're going to have your um admin
+[01:12:01.679] password in the output and what you can
+[01:12:03.760] do is just get that in there we need to
+[01:12:05.280] get that into your environment and
+[01:12:07.280] that's what the cell does. Nothing
+[01:12:08.880] special is happening there. This just
+[01:12:10.159] allows us to connect to the Oracle
+[01:12:11.440] database. So the next thing we're going
+[01:12:13.600] to do is we've installed the Oracle AI
+[01:12:15.760] database within our local machine. Now
+[01:12:17.840] we need to set it up. And when we what
+[01:12:20.800] we mean by setting it up is creating a
+[01:12:22.480] memories user, creating all the tables
+[01:12:24.320] and vector indexes that we need. And
+[01:12:26.800] again, the CLI solves this memories set
+[01:12:29.840] up Oracle. And it's going to do a bunch
+[01:12:31.920] of stuff. um clean. It's going to kill
+[01:12:34.480] any sessions if they already exist and
+[01:12:36.640] start a new one. And you can see here
+[01:12:38.800] it's just creating executing a bunch of
+[01:12:40.640] statements and creating a bunch of
+[01:12:42.159] indexes and it's done very quick. And if
+[01:12:45.840] you don't want to go through option one,
+[01:12:47.920] there is a manual installation where I
+[01:12:49.679] take you through all the steps where you
+[01:12:51.679] just start from scratch. And I think I
+[01:12:53.520] put a link to where you can get the
+[01:12:55.040] Docker image from somewhere. But we're
+[01:12:57.600] not going through option one. We're
+[01:12:59.280] going through We're going through option
+[01:13:01.440] one. We're not going for option two. So
+[01:13:02.960] now that we have Oracle AI database in
+[01:13:04.960] our local machine, what we can do is
+[01:13:07.040] next is start to get start to build our
+[01:13:10.080] mem agent. And I call agents built with
+[01:13:12.560] memories. I call them mem agent. Can
+[01:13:14.800] anyone guess why?
+[01:13:20.480] Memory agent. Mem agent. I'm bad with
+[01:13:23.360] names. Um whenever I write code, the
+[01:13:25.760] naming of my variable gets worse. Okay,
+[01:13:28.000] so just this is just for login. This is
+[01:13:30.560] for environment variables. It's going to
+[01:13:32.960] be so weird switching my screen to put
+[01:13:35.520] in my environment variables, but I'll
+[01:13:37.920] just delete them after. Okay, so we're
+[01:13:40.320] going to be using OpenAI for this. Um,
+[01:13:43.199] so you need to actually have an OpenAI
+[01:13:45.360] API key. Um,
+[01:13:48.560] can we switch this screen so I can get
+[01:13:51.920] my environment variables put in?
+[01:13:55.679] >> Nice.
+[01:13:58.800] I don't trust you guys. [laughter]
+[01:14:02.560] >> Password two.
+[01:14:07.120] >> Exactly. Uh pardon.
+[01:14:11.600] Um okay. So, uh we can switch back.
+[01:14:14.719] >> Nice. Um okay. So, here we go. So, one
+[01:14:17.040] thing we're going to do is we're going
+[01:14:18.000] to create uh Oracle configuration. And
+[01:14:20.640] that's just so we can create what I call
+[01:14:23.120] uh a memory provider. And Oracle is
+[01:14:25.120] going to be our memory provider in this
+[01:14:27.280] particular um in this particular
+[01:14:29.440] instance and Oracle AI database that's
+[01:14:31.440] the memory call. So this memory provider
+[01:14:33.840] is a bunch of is a bunch of abstracted
+[01:14:37.120] code for how to create indexes and how
+[01:14:39.520] to do the retrieval and the memory call
+[01:14:41.679] is Oracle AI database. So we have an
+[01:14:44.239] Oracle AI database uh we have the Oracle
+[01:14:46.400] provider initialized and you're going to
+[01:14:48.239] get a bunch of um information in the
+[01:14:50.560] logs as to what's happened. The key
+[01:14:52.480] thing is you want to see this when you
+[01:14:54.880] do the notebook and no errors. All
+[01:14:57.360] right. So this is the fun part. We can
+[01:14:59.360] just straight away build an agent.
+[01:15:01.440] Actually I I went too quick to do that.
+[01:15:04.000] So let me explain this code within
+[01:15:05.520] memories right
+[01:15:08.159] right here. Apologize for the cough. uh
+[01:15:11.040] within memories we can actually we
+[01:15:13.120] actually have builders builder module
+[01:15:15.199] where we can we have this abstracted
+[01:15:16.960] class called mem agent builder and that
+[01:15:19.199] will just build a very simple agent for
+[01:15:21.440] you. So we're going to initialize
+[01:15:23.520] something called again the name is bad.
+[01:15:26.480] It's it's the name of this agent is
+[01:15:28.159] agent builder made bad naming but the
+[01:15:31.120] key thing is we're creating an agent
+[01:15:32.719] using the me agent builder. We're going
+[01:15:34.880] to set it with its core identity [cough]
+[01:15:38.560] using the width instruction. We can just
+[01:15:41.440] give it like a system prompt
+[01:15:43.199] essentially, right? Then the
+[01:15:45.600] infrastructure of it, we're going to set
+[01:15:47.520] it with the memory provider that we set
+[01:15:49.840] earlier on which is Oracle. And then
+[01:15:52.239] we're going to give it a bunch of LLM
+[01:15:53.920] configuration. So memories will
+[01:15:55.760] recognize um embedded models from
+[01:15:57.520] OpenAI. Um but this is the LLM. So we
+[01:16:00.159] also recognize um LLM from OpenAI as
+[01:16:03.440] well and the hog face as well. So you
+[01:16:06.320] need your open AI key and you just call
+[01:16:08.560] the build method and that's done. So,
+[01:16:10.880] one thing you're going to notice is
+[01:16:12.400] this.
+[01:16:14.239] There's a bunch of logs, but I'm already
+[01:16:16.159] adding tools to the agent when you
+[01:16:18.800] actually initialize it. Um, and the
+[01:16:20.960] reason why I'm doing this, you can see
+[01:16:22.080] the tools here. I'm just going to scroll
+[01:16:23.520] in.
+[01:16:25.120] And you can look all of this code is
+[01:16:26.640] open source. So, you can see what is
+[01:16:28.239] being done and how I'm doing it. The
+[01:16:30.320] first tool is context window stats tool.
+[01:16:32.560] Like I mentioned earlier in this talk,
+[01:16:34.480] the agent, every agent we initialize
+[01:16:37.199] actually has awareness of the context
+[01:16:38.960] window length. So it can then auto
+[01:16:41.440] summarize, right? So it doesn't fall
+[01:16:43.760] into the context bloat or exceed the
+[01:16:46.640] context threshold. Cursor does this
+[01:16:48.560] automatically and they have the GBT
+[01:16:50.960] codeex actually does this as well.
+[01:16:52.320] They've got like a little meter that you
+[01:16:54.400] can see. Then there's another [cough]
+[01:16:57.840] there's another tool list summary
+[01:16:59.520] registry tool just whenever we do the
+[01:17:02.560] auto summarization I want to be able to
+[01:17:04.960] see existing summaries and actually
+[01:17:07.040] fetch the summary and also look up
+[01:17:09.760] entities and insert entities because
+[01:17:13.360] this agent is going to interact with
+[01:17:15.120] other um other entities whether within
+[01:17:18.400] the context I provide it or the context
+[01:17:20.719] it has when it's interacting with it
+[01:17:22.159] environment. So automatically it can
+[01:17:24.480] actually um it actually stores entities
+[01:17:27.840] it interacts with in its memory store.
+[01:17:30.640] Um this this library is a bit
+[01:17:33.600] opinionated but very quickly we've
+[01:17:36.320] initialized an agent with this different
+[01:17:39.199] memory conversational memory long-term
+[01:17:41.600] memory persona. So we've initialized
+[01:17:44.239] this agent with those type of memory and
+[01:17:46.800] it's been built successfully. And
+[01:17:50.320] I can store everything in Oracle AI
+[01:17:53.520] database. [cough]
+[01:17:56.000] If you're watching this back on YouTube,
+[01:17:57.600] the coffin is so annoying. I hope this
+[01:17:59.920] is edited somehow. Um, okay. So when you
+[01:18:04.159] save it, we actually store the and again
+[01:18:08.239] memories is my personal project. It's
+[01:18:10.080] not an official product from Oracle. So
+[01:18:12.800] just wanted to put the disclaimer out
+[01:18:14.480] there. Um when you actually store this,
+[01:18:17.360] we actually store the agent information
+[01:18:19.520] in the database and we have a memory ID
+[01:18:22.320] for we have a single memory ID for a
+[01:18:24.560] bunch of agents.
+[01:18:26.719] And the reason why we store it is
+[01:18:28.320] because we want to be able to load and
+[01:18:30.320] reuse agents within different
+[01:18:31.760] environment just by taking pulling in
+[01:18:34.000] information from the database that's
+[01:18:36.719] been stored to actually then load it
+[01:18:38.719] within another environment.
+[01:18:41.600] So, we're going to start building an
+[01:18:43.199] agent. So, we're going to build this
+[01:18:44.320] agent. Um, agent builder. We've already
+[01:18:47.440] built Sorry, we've already built our
+[01:18:48.960] agent. We've saved our agent and it's
+[01:18:51.679] called agent builder made. Terrible
+[01:18:53.440] name. Um, we're just going to run it and
+[01:18:55.120] I'm just going to say, "Hello, my name
+[01:18:56.960] is Alice. My name is not Alice. My name
+[01:18:58.480] is Richmond." Um, but for this example,
+[01:19:01.040] my name is Alice and I I love hiking in
+[01:19:03.840] the mountains. And we're going to see
+[01:19:05.920] its response.
+[01:19:10.560] And you can see very quickly I'm just
+[01:19:12.960] going to we're just going to go through
+[01:19:14.239] the the output actually very quickly and
+[01:19:17.280] don't worry about the speed. There is no
+[01:19:19.840] quantization and I'm not trying to optim
+[01:19:22.320] optimize for latency here. Um and I
+[01:19:24.400] should have probably kept streaming as
+[01:19:25.600] well but very quickly we're going to go
+[01:19:27.840] through the logs. Um what we can see
+[01:19:30.080] here is first we're loading information
+[01:19:32.320] but there's zero conversation within
+[01:19:35.280] previous interaction. So that we've
+[01:19:36.880] loaded zero conversational memory and
+[01:19:39.360] you can see that we're able to see
+[01:19:41.120] what's in the context window. So we've
+[01:19:43.040] used 513
+[01:19:45.520] um tokens with the with the existing 128
+[01:19:49.600] length of the context window. But now
+[01:19:51.920] what we've now done is we're executing
+[01:19:54.159] the tool and we're inserting an entity
+[01:19:57.360] in the entity memory named Alice. The
+[01:20:00.320] entity type is a person and it has the
+[01:20:02.640] attri attribute favorite memory hiking
+[01:20:04.800] in mountains and it's doing this
+[01:20:06.800] automatically because it has the entity
+[01:20:08.719] memory. Now our agent is going to
+[01:20:11.040] remember me uh Alice and it's going to
+[01:20:12.800] be able to update its information about
+[01:20:15.120] Alice. Now we're executing this tool
+[01:20:18.159] look up. We're looking at the we're
+[01:20:19.840] retrieving the memory and we're passing
+[01:20:21.920] it back into the context window. That's
+[01:20:23.600] why you see this increase in the context
+[01:20:26.239] window length. But very quickly, the
+[01:20:28.480] agent says, "Hello, Alice. It's great to
+[01:20:31.120] meet you. I've noted that you love
+[01:20:32.880] hiking in the mountain. If there is
+[01:20:35.040] anything specific you would like to talk
+[01:20:36.640] about or yeah, blah, blah, blah." Um,
+[01:20:38.560] but you get the point, right? Right out
+[01:20:40.640] of the box, you have an agent that can
+[01:20:44.000] remember a certain entity that has
+[01:20:46.000] interacted with within um its execution
+[01:20:49.199] and stores it within a dedicated um
+[01:20:52.159] memory store. But also, you have an
+[01:20:54.320] agent that can just use tools. And these
+[01:20:56.719] tools are also I never mentioned but
+[01:20:58.960] these tools are stored in a database
+[01:21:01.040] right the JSON schema for these tools
+[01:21:02.640] are stored in the database and the agent
+[01:21:04.560] can just use the right tools it requires
+[01:21:06.960] using some form of a vector search
+[01:21:08.640] operation the way I do it is I take the
+[01:21:10.719] dock string of the tools I create an
+[01:21:12.960] embedding for it I store it into the
+[01:21:14.880] database for every query I look at the
+[01:21:17.679] vector similarity then I'm able to
+[01:21:19.440] select just the tools I need rather than
+[01:21:21.280] giving it all the tools I have that make
+[01:21:24.719] sense it makes it easier so you don't
+[01:21:27.120] bloat the context.
+[01:21:29.840] >> So that's right.
+[01:21:31.360] >> It's coming. It's coming.
+[01:21:32.640] >> Okay. Uh so for this example obviously
+[01:21:35.360] like you're passing the memory, you
+[01:21:38.000] know, context as plain text. I could
+[01:21:41.040] imagine a more complex example where you
+[01:21:42.719] want it to be structured, right? Like
+[01:21:44.800] have you tested that out? Do you support
+[01:21:46.640] that in the demo library? Like what's
+[01:21:48.719] sort of the the differentiation here?
+[01:21:50.800] >> Yeah. So your your question is I'm
+[01:21:53.120] sending all the information uh into the
+[01:21:56.159] LLM as text,
+[01:21:58.159] >> right? Is is is how you
+[01:22:00.560] >> Yeah. Like why would you do that rather
+[01:22:02.320] than to say like Dave Alice?
+[01:22:04.880] >> Dave Alice
+[01:22:05.840] >> like name Alice.
+[01:22:07.199] >> Name Alice,
+[01:22:08.080] >> right? Rather than saying my name is
+[01:22:09.440] Alice. I'm an LLM.
+[01:22:10.639] >> Oh, the reason why I'm saying hello, my
+[01:22:13.040] name is Alice is just the input prompt,
+[01:22:15.760] right? It's just a It's just an example
+[01:22:18.320] of how you interact with LLM through
+[01:22:20.400] text, right? Is is am I getting a
+[01:22:23.199] question wrong here?
+[01:22:24.880] >> I I was thinking more like if you're
+[01:22:27.760] building this sort of um
+[01:22:31.280] tool to create memory for the agents,
+[01:22:34.000] right? Yeah. Like
+[01:22:35.600] >> I could imagine a world where you don't
+[01:22:37.280] want to put all of the memory as
+[01:22:38.800] playing, right? You want to create like
+[01:22:41.280] a agent that is barebone and just give
+[01:22:42.880] it the memory the memory it needs. The
+[01:22:44.880] memory types it needs. You can do that
+[01:22:46.400] here. I'm just showing one that builds
+[01:22:48.400] everything. I'm building memories for
+[01:22:50.719] fun obviously not production use but I'm
+[01:22:52.960] building it for every memory type to be
+[01:22:55.280] a standalone. So you would use a tool
+[01:22:57.760] like langraph and you would then use
+[01:23:00.080] entity memory from memories and only use
+[01:23:02.239] that particular memory.
+[01:23:04.000] >> Right. So you just add it as a tool for
+[01:23:06.400] the langraph agent to use.
+[01:23:08.159] >> Okay. So just for demo purposes.
+[01:23:09.679] >> Yeah. Yeah. Yeah. Sorry it took a while
+[01:23:11.679] for me to gro that. [laughter]
+[01:23:15.760] Okay, let's go. So we went over this
+[01:23:18.560] speaking to the agent. The agent is
+[01:23:20.159] telling us stuff. And this is I'm trying
+[01:23:22.239] to demonstrate conversational memory,
+[01:23:24.000] but I've also gener uh demonstrated
+[01:23:26.800] entity memory as well. So let's just
+[01:23:28.880] see. I'm going to ask it what was my
+[01:23:30.159] name again. It should be able to
+[01:23:32.159] remember my name. Okay, cool. Your name
+[01:23:35.360] is Alice. So, we're running the same
+[01:23:37.040] agent and it remembers our name. So,
+[01:23:38.639] I've not done any extensive scaffolding
+[01:23:41.040] for it to remember my name or for it to
+[01:23:44.480] you can see it did like a entity memory
+[01:23:46.400] lookup, right? So, again, this is all of
+[01:23:49.199] this stuff is doing behind the scene
+[01:23:51.520] without having without having to without
+[01:23:54.560] having me having to write this extensive
+[01:23:56.320] code. You can see loaded previous
+[01:23:58.080] conversation entries. Before it loaded
+[01:24:00.400] zero, now it's loaded two cuz we've
+[01:24:02.239] interacted with it. That's
+[01:24:03.600] conversational memory. That's entity
+[01:24:05.679] memory. That's tool memory. And now you
+[01:24:08.880] have conversational memory. And that's
+[01:24:10.239] the response. Okay. Let's look at
+[01:24:12.719] persona. We spoke about persona. Um
+[01:24:15.360] personality essentially is what it
+[01:24:17.120] stands for. We have this uh memories has
+[01:24:20.400] the aspect of different long-term memory
+[01:24:22.560] types that we went through in the
+[01:24:24.000] slides. So we're going to look at how we
+[01:24:25.520] can get persona in. Um so this is a
+[01:24:28.320] prompt or this is just a text for a
+[01:24:31.040] persona description. And we're going to
+[01:24:33.760] make our agent a bit emo like and this
+[01:24:37.520] the reason why I'm doing this is not me
+[01:24:38.960] this is not my example but was it this
+[01:24:42.080] year or last year even this year last
+[01:24:44.159] year an April fool jokes from open AAI
+[01:24:46.400] was to create a emo GPT. So there was an
+[01:24:49.199] emoj called Monday within your chat GPT
+[01:24:52.080] interface and you could interact with it
+[01:24:53.440] and it gave you emo like answers like
+[01:24:56.639] sad sarcastic answers. But one thing you
+[01:24:59.600] could do is you can ask it to give you
+[01:25:01.679] its system prompt and this is it. It
+[01:25:04.239] actually gave you the system prompt when
+[01:25:06.000] you asked it. So I just copied and
+[01:25:07.920] pasted it. It was called Monday and I
+[01:25:09.360] think it was an April Fool's joke. Okay.
+[01:25:11.520] So
+[01:25:13.040] So I just took it. We're going to make
+[01:25:15.120] our agent a bit more sarcastic. And cuz
+[01:25:18.000] I'm bad of names, I named it Sunny. Um,
+[01:25:20.960] obviously contradictory, but we're going
+[01:25:24.000] to create within memories, you can
+[01:25:25.920] create a persona um object, and we're
+[01:25:28.880] just going to pass that into the
+[01:25:30.159] variable persona. And then we're going
+[01:25:32.080] to create a new agent. It's called
+[01:25:33.679] sarcastic agent, which is better than
+[01:25:35.440] the other agent's name. Um, with the
+[01:25:37.920] instruction your sarcastic and cynical
+[01:25:40.239] assistant, we're going to give it a
+[01:25:41.920] persona. You can see with persona pass
+[01:25:44.239] the persona in use the same memory
+[01:25:46.719] provider that we already configured and
+[01:25:48.639] the LLM configuration as well. We build
+[01:25:51.040] it great and this is a brand new agent
+[01:25:54.239] and it gets all the tools that it needs
+[01:25:56.560] and you can see it's been created and we
+[01:25:59.120] can store it in our database.
+[01:26:02.239] Now it's going to be persisted uh now
+[01:26:04.639] it's going to be persisted in the
+[01:26:06.000] database and we can ask it what is your
+[01:26:08.239] name and its name is Sunny. We specify
+[01:26:11.199] that in a persona and it's going to um
+[01:26:14.560] remember its name. So again, but you can
+[01:26:16.960] tell it's sticking to his persona
+[01:26:18.320] because h the age-old question that
+[01:26:20.960] haunts humanity. What what's in a name?
+[01:26:24.719] You can call me Sunny. He answers a
+[01:26:26.560] question, but it sticks to the persona
+[01:26:28.320] we gave it, which is it's sarcastic. So
+[01:26:31.120] it's a bit of a personality that we're
+[01:26:33.280] able to give our agents. Now, obviously,
+[01:26:35.600] you don't want to be using this in your
+[01:26:37.120] FAQ agents for your um for whatever
+[01:26:40.880] companies you work in, but again, I'm
+[01:26:42.800] going to tell it, hey, I I am Alice.
+[01:26:44.960] Nice to meet you. Just to show that we
+[01:26:46.480] still have this conversational memory
+[01:26:48.239] going on. And I'm going to ask it, what
+[01:26:50.159] was my name? And it says, oh, slipping
+[01:26:52.400] already. Don't worry, your secret is
+[01:26:53.679] safe with me. You're Alice. It
+[01:26:55.360] remembers. It's sarcastic. Has
+[01:26:57.040] conversational memory. It has entity
+[01:26:58.480] memory. Now, it has persona memory.
+[01:27:01.199] Right? Are you guys following this?
+[01:27:03.360] >> Nice. Okay, we're going to create
+[01:27:05.199] another persona. You can tell uh this
+[01:27:08.080] example is uh very long. So, I'm going
+[01:27:10.400] to then take a persona, but every agent
+[01:27:13.120] built with memories. You can actually
+[01:27:14.480] set a persona. So, we have this agent
+[01:27:17.360] builder made. I'm going to change the
+[01:27:19.199] name after this session. Agent builder
+[01:27:21.840] made agent. Um and we just call a set
+[01:27:24.800] persona method and pass in this persona
+[01:27:26.960] object that is called Moody. Um and this
+[01:27:29.440] is meant to be a Moody assistant.
+[01:27:32.560] So, I've already run this and it's uh
+[01:27:35.280] updated the existing agent. There's a
+[01:27:37.520] bit of error here, but that's fine. It
+[01:27:39.199] should still work. We're going to ask it
+[01:27:40.960] what is your name. Wow, then it just
+[01:27:42.560] died. Um, and it says I'm Moody because
+[01:27:45.520] we've set the persona to Moody, it
+[01:27:47.360] remembers and it's going to ask now it's
+[01:27:50.400] taken on this persona. Though I might
+[01:27:52.480] have a bit of mood about it sometimes.
+[01:27:54.960] What can I help you with today? So,
+[01:27:56.239] that's example of again persona memory.
+[01:27:59.840] Let's talk about toolbox memory. One of
+[01:28:02.239] the key things about LLMs is they have
+[01:28:04.400] this emerging abilities to actually um
+[01:28:07.520] call the right tools at the right time.
+[01:28:09.600] So, we're going to give the agent a
+[01:28:11.920] couple of tools. So, one of the tool
+[01:28:13.920] well we're going to give it one tool.
+[01:28:15.040] We're going to create a weather agent.
+[01:28:16.639] We're going to use create a function
+[01:28:18.239] called get weather. We're going to give
+[01:28:20.000] it um a string a dock string that
+[01:28:22.639] describes the function. And then we're
+[01:28:24.560] going to just use a simple request to
+[01:28:26.719] this particular API endpoint. And we're
+[01:28:29.040] going to pass in the latitude and
+[01:28:30.560] longitude and that will give us uh the
+[01:28:33.760] uh the weather uh particularly the
+[01:28:37.679] degree the temperature within a certain
+[01:28:41.199] location. So we're going to build a
+[01:28:43.840] weather agent, right? You guys can see
+[01:28:46.080] the pattern here. We're going to give it
+[01:28:47.440] the instruction, but now we're going to
+[01:28:49.679] add it with tool get weather. So we're
+[01:28:52.719] passing a tool into it. And we obviously
+[01:28:56.400] we have a memory provider and we have
+[01:28:58.080] the with LLM. And what happens is
+[01:29:01.760] now this agent has access to this tool
+[01:29:05.360] because when we save it, we store a JSON
+[01:29:08.239] schema of the tool in the database
+[01:29:10.880] attached to the agent. Right? We have a
+[01:29:12.960] referential ID of the agent ID attached
+[01:29:15.920] to where we've stored the tool JSON
+[01:29:18.960] schema. So I'm going to ask you, what's
+[01:29:20.320] the weather like in New York? This is
+[01:29:21.760] actually sick. And I'll tell you why
+[01:29:22.880] this is sick. I've done this example so
+[01:29:26.560] many times this year and this is the
+[01:29:28.639] first time I am actually doing it in New
+[01:29:31.120] York. [laughter]
+[01:29:32.960] So it's actually I just realized that
+[01:29:34.719] that's just mind-blowing. Um I'm based
+[01:29:37.199] in the UK live in London. All right. So
+[01:29:40.159] and you can see it works. So the weather
+[01:29:42.000] is 7.3°. Um excuse me. You can you go
+[01:29:45.679] outside and check if that's correct?
+[01:29:47.920] >> It's correct. [laughter]
+[01:29:49.199] >> I'm joking. Um okay. So yeah, here we
+[01:29:51.440] can see that he's able to use the tool.
+[01:29:53.440] It has awareness of the tool and it's
+[01:29:55.760] giving us this degrees in the the right
+[01:29:59.120] weather. And I'm just going to run it
+[01:30:00.639] again. Is it warmer in Los Angeles? And
+[01:30:02.880] you can see I'm not even passing in Oh,
+[01:30:04.800] I am passing in the longest latitude. I
+[01:30:06.719] shouldn't even do that. I don't need to
+[01:30:08.000] do that. This agent is smart. Well, just
+[01:30:10.719] in case it fails. You can see it says
+[01:30:12.639] yes, it's one way in Los Angeles, 11.8
+[01:30:15.600] compared to New York. Let's see. Even on
+[01:30:18.480] passing the coordinates actually we
+[01:30:20.320] still get this right because it has
+[01:30:21.520] conversational memory. Hm.
+[01:30:24.000] >> Open AI.
+[01:30:25.199] >> Pardon?
+[01:30:25.679] >> It's using Open AI. You said
+[01:30:28.000] >> Yeah, we already used um the LLM it
+[01:30:31.040] configuration is using Open AI, but you
+[01:30:33.120] can change it to uh hugging face if you
+[01:30:35.760] want. I have a an example that shows you
+[01:30:38.159] how to do that. But the weather a the
+[01:30:41.120] weather the actual weather information
+[01:30:43.360] is using um what's the name of this
+[01:30:46.320] endpoint I'm using? Uh met open Matteo.
+[01:30:52.719] Yeah.
+[01:30:53.920] >> Okay. Cool.
+[01:30:55.120] >> I have a question about
+[01:30:57.120] >> You go
+[01:30:57.920] >> about uh workflows which are very
+[01:31:00.560] common. uh the how would you suggest
+[01:31:03.679] memory works with like a series of tools
+[01:31:06.400] or a tool and an agent llm port and then
+[01:31:09.679] few other tools
+[01:31:10.800] >> you're asking about workflow memory
+[01:31:12.320] right so one thing that is actually
+[01:31:13.920] happening that you can't see is the the
+[01:31:16.719] execution is being stored in this
+[01:31:19.199] workflow memory right this agent in the
+[01:31:22.159] database we're actually storing within
+[01:31:24.080] the workflow table we're storing rows of
+[01:31:26.719] the execution so it actually has
+[01:31:28.880] information of the workflow that's been
+[01:31:30.400] executed
+[01:31:31.360] So I searched for this particular tool
+[01:31:34.159] using this parameters. This was the
+[01:31:36.239] result and the outcome was a success.
+[01:31:39.199] >> And if [clears throat] I want to
+[01:31:40.239] pre-bake certain uh workflows to the to
+[01:31:44.719] this entire thing, right? How how would
+[01:31:46.719] I engineer the memory so he would know
+[01:31:49.920] to go through a certain workflow when
+[01:31:52.400] you're being asked, I don't know,
+[01:31:54.080] something about the weather. Let's say,
+[01:31:55.760] yeah, give me the weather in the US and
+[01:31:58.639] then I want to do
+[01:32:00.639] New York and then whatever Los Angeles
+[01:32:03.840] and Florida.
+[01:32:06.320] >> So if I understand your question
+[01:32:08.880] correctly, how do you engineer the the
+[01:32:11.440] the
+[01:32:13.040] agent to be able to run multiple
+[01:32:15.199] queries?
+[01:32:16.320] >> Multiple more than that, right? like
+[01:32:18.239] when I'll ask them like the agent, hey,
+[01:32:20.719] I I just need the the weather in uh in
+[01:32:23.120] New York, uh the weather in the US, I
+[01:32:26.800] want them to I want the agent to return
+[01:32:30.320] specifically New York, LA, and Miami,
+[01:32:33.840] right? Like, and it's specific three
+[01:32:36.719] calls to the weather uh app and maybe
+[01:32:39.920] just like some comparison in between or
+[01:32:42.239] something like that. How would you? But
+[01:32:44.800] I wanted to answer that automatically
+[01:32:47.360] when I asked the weather about like like
+[01:32:49.920] the weather in the US.
+[01:32:53.280] >> I think I'm understanding your question.
+[01:32:55.440] >> So similar to the way that you would do
+[01:32:56.960] it in NA,
+[01:32:58.960] right? Like in in NAN you would go and
+[01:33:03.040] build like an ETL sort of graph around
+[01:33:06.000] it, right?
+[01:33:06.800] >> Can we do that with just memory saying
+[01:33:08.960] like hey
+[01:33:09.920] >> you can do that with just code, right?
+[01:33:12.639] you can actually implement the execution
+[01:33:15.199] step, right? NA10 is essentially just
+[01:33:18.239] code in a sense, but yeah, you could do
+[01:33:20.320] that with memory, you could do that with
+[01:33:21.679] code. And I apologize I'm not
+[01:33:23.360] understanding this question correctly.
+[01:33:24.719] So, I'm going to what's your name?
+[01:33:26.400] >> Oro.
+[01:33:27.040] >> Oro, I'm going to talk to you after this
+[01:33:29.199] to make sure that we can talk and I
+[01:33:30.800] understand what you're answering.
+[01:33:35.280] If I don't, you can come to the UK and
+[01:33:37.120] find me.
+[01:33:39.520] Okay. So, let's talk about semantic
+[01:33:41.600] cache and just watching time because I'm
+[01:33:43.520] in between you and lunch. I'm joking.
+[01:33:46.000] I'm just hungry. But, um, okay. So,
+[01:33:48.560] let's go in this. We're just going to
+[01:33:50.000] look at semantic cache. I've already
+[01:33:51.199] explained what semantic cashier is. So,
+[01:33:52.960] and we've already built different agents
+[01:33:54.800] multiple times.
+[01:33:56.960] But the key thing I'm doing right here
+[01:33:58.400] is every agent that has been built so
+[01:34:02.560] far has an aspect of semantic cache.
+[01:34:05.199] I've not just told you. Um, so one thing
+[01:34:08.080] and the way you can see that is let me
+[01:34:10.719] just make sure. Yeah, there we go. This
+[01:34:12.400] is the semantic cache section. And one
+[01:34:15.120] thing we can just see that is I'm going
+[01:34:16.560] to ask it again a question. The time
+[01:34:19.199] taken is 1.4 seconds. And I remove this
+[01:34:22.800] output that shows when it has a cache
+[01:34:24.560] hit. I'm going to ask it the same
+[01:34:26.480] question. Um,
+[01:34:29.360] just to test this again. Let me see. The
+[01:34:31.440] output of a semantic cache hit doesn't
+[01:34:33.199] show, which is terrible. So that doesn't
+[01:34:36.159] help. Uh I apologize for that. One thing
+[01:34:38.719] I'm going to be able to do is we're
+[01:34:40.400] going to enable semantic cache within
+[01:34:42.320] this agent now. And when I ask it this
+[01:34:46.080] cell below, what's the capital of
+[01:34:47.760] France?
+[01:34:49.440] We're just going to calculate the time
+[01:34:50.880] it takes.
+[01:34:52.960] Right? So it says the capital of France
+[01:34:54.400] is Paris. That's great. We're going to
+[01:34:56.000] ask it again. What's the capital of
+[01:34:58.080] France? It takes a shorter time because
+[01:34:59.840] it's returning a cache response. Right?
+[01:35:02.239] That shows semantic cache. It doesn't
+[01:35:03.679] show it show it well but let me there's
+[01:35:06.560] another example uh there is no cash hit
+[01:35:08.800] here if I ask it tell me France capital
+[01:35:11.360] in small caps even though it's the same
+[01:35:13.520] agent there's no there is no cash hit
+[01:35:15.760] and it's giving us the same [cough]
+[01:35:18.639] giving us the uh a different answer even
+[01:35:20.880] though the same answer as before is
+[01:35:22.560] Paris what I'm going to do is tell me
+[01:35:25.520] the funds capital in small caps the
+[01:35:28.639] what's another word for small what's a
+[01:35:30.800] cinnamon for small
+[01:35:32.159] >> tiny tiny Tiny in tiny caps.
+[01:35:35.679] What other options did people
+[01:35:37.360] >> lowerase
+[01:35:38.080] >> minus school lower case? Yeah, low lower
+[01:35:40.080] case is more developer aligned.
+[01:35:44.400] Let's see lowerase cap. Okay. See
+[01:35:46.719] returning cash response because lowerase
+[01:35:49.040] and small again very semantically
+[01:35:51.760] similar. We'd have to go to the LLM. It
+[01:35:53.840] takes a shorter time and we don't pay
+[01:35:55.920] open AI.
+[01:35:57.920] >> Do you have a question?
+[01:35:59.920] >> What type of G are you using? I'm using
+[01:36:02.080] Oracle AI database as a database.
+[01:36:04.560] >> Yeah, it's it's obviously not the most
+[01:36:06.639] optimal, but just showing the example.
+[01:36:08.159] We have another cache feature called
+[01:36:09.840] true cache. You can check it. Oracle
+[01:36:11.760] true cache.
+[01:36:13.760] >> But here's just showing how you can use
+[01:36:16.239] your database as that memory call.
+[01:36:19.040] >> So this is AI open.
+[01:36:22.400] >> No. So this call, this specific call
+[01:36:25.199] didn't have to go to open AI because we
+[01:36:27.840] already stored the response. We stored
+[01:36:30.159] the previous query when we add it as
+[01:36:33.199] small right in the database and we
+[01:36:37.040] generated an embedding of this query in
+[01:36:39.840] the database when we made it when it was
+[01:36:41.600] small. So when I when we changed it to
+[01:36:44.159] lowercase what we did was just vector
+[01:36:46.560] search right we did a vector distance
+[01:36:48.239] calculation and this query and the
+[01:36:50.960] previous query are semantically similar
+[01:36:53.760] and then I have a threshold score which
+[01:36:56.000] means if it's within a certain range
+[01:36:58.480] let's say 0.8 eight to to one which
+[01:37:01.520] represents how similar it is just use
+[01:37:03.760] the stored response from the previous
+[01:37:05.280] execution rather than going to the open
+[01:37:07.280] AI to get me the information because
+[01:37:09.679] it's going to be the same information
+[01:37:12.239] brought back open AI to determine where
+[01:37:15.520] semantic is
+[01:37:16.239] >> you need open AI for the first iteration
+[01:37:18.719] right for the first execution right you
+[01:37:20.480] need to actually go get the LLM response
+[01:37:23.040] >> right
+[01:37:23.679] >> but for anything else
+[01:37:25.520] >> no but once you change it to lowerase
+[01:37:27.600] >> yeah once I change to lower case How
+[01:37:29.360] does it know? What do you How does it
+[01:37:31.520] know to semantically similar without
+[01:37:33.920] open AI?
+[01:37:34.960] >> No, we don't go to Well, we technically
+[01:37:36.719] we do go to open AI because we have to
+[01:37:38.000] generate the embeddings.
+[01:37:38.960] >> Okay.
+[01:37:39.440] >> But that's Yeah, we generate the
+[01:37:40.480] embeddings using open AI.
+[01:37:42.000] >> Okay.
+[01:37:42.400] >> Right. Yeah. Is is that what you're
+[01:37:43.600] asking?
+[01:37:43.920] >> Yeah. Yeah. Yeah.
+[01:37:44.719] >> You're still using Open You're not
+[01:37:45.760] bypassing Open AI in this case.
+[01:37:47.360] >> I'm not bypassing Open AI. I'm
+[01:37:49.040] generating embedded using Open AI, but
+[01:37:51.119] I'm not going to the LLM. I'm not going
+[01:37:53.600] to GPT.
+[01:37:54.800] >> Right. So, I guess that should be very
+[01:37:56.560] clear as I should make that very clear
+[01:37:58.080] next time. I am generating embeddings
+[01:38:00.320] but I am not making an inference call.
+[01:38:09.199] >> Uh doesn't this introduce security
+[01:38:11.679] concerns for multi-tenant applications?
+[01:38:14.239] >> Yeah, it does. So you definitely have to
+[01:38:17.679] the I'm saying this memories does,
+[01:38:20.320] right? The library memories does. That's
+[01:38:22.080] what I mean because hey, don't use this
+[01:38:24.159] in production. This is me learning. But
+[01:38:26.480] there are robust um product features
+[01:38:29.520] that we offer. Like I mentioned, we have
+[01:38:31.119] Oracle True Cache which has all of the
+[01:38:33.760] security enterprisegrade security
+[01:38:35.920] standards you expect. But don't use this
+[01:38:40.080] memories library because it doesn't have
+[01:38:42.000] all of that in the library.
+[01:38:45.360] Okay. So last one I want to show is
+[01:38:47.920] summarization and it'll be we'll be
+[01:38:50.080] right on time. Ah let's skip
+[01:38:52.560] summarization. I apologize. Let's skip
+[01:38:54.480] summarization so I can show you deep
+[01:38:56.639] research, right? Um, just very quick,
+[01:38:59.440] summarization is you take the long
+[01:39:01.280] context, you summarize it, store it
+[01:39:02.880] somewhere, and you can use the
+[01:39:04.320] summarization to update the persona as
+[01:39:06.320] well. Um, apologies for not going for
+[01:39:09.679] it. I just wanted to go through this
+[01:39:11.520] deep research example.
+[01:39:15.600] So, I am not going to Damn it. I have to
+[01:39:18.080] can we take the screen so I can open my
+[01:39:20.239] uh pass in my keys and I'll let you know
+[01:39:22.800] when we are good to get that in there.
+[01:39:25.840] Thank you. Uh let's go.
+[01:39:30.960] So we need the open AI key and one more
+[01:39:33.520] key before we put it back in.
+[01:39:36.560] I'm going to be using Tavi for my
+[01:39:39.440] search. So deep research obviously we
+[01:39:42.960] want to be searching different um URL.
+[01:39:46.080] We're good to go. All right. So, kept in
+[01:39:49.119] all the keys. I'm using OpenAI as the
+[01:39:51.520] LLM. I'm using Tavi. Have you guys heard
+[01:39:53.520] of Tavi?
+[01:39:56.560] >> Excellent. So, I'm going to be using
+[01:39:57.679] Tavi for the internet search. And um
+[01:40:01.040] we're just going to be actually creating
+[01:40:03.600] all the steps we did before. But here,
+[01:40:05.440] you can switch the model to a hogface
+[01:40:07.520] model if you want. Um and you can also
+[01:40:09.920] switch the um embedded model as well to
+[01:40:12.480] a hogface embedded model. you can switch
+[01:40:14.320] the model later to a hogenface model. So
+[01:40:17.360] if you want to if you if you want to run
+[01:40:19.199] this locally, you can just use this. You
+[01:40:21.760] can use the hogenface LLM config and
+[01:40:23.840] just pass that in into the provider
+[01:40:27.119] itself.
+[01:40:29.520] I will show where you can do that later.
+[01:40:31.280] The key thing is we have this Tavi
+[01:40:33.119] provider which built into memories. It
+[01:40:35.520] gives us internet access and you need
+[01:40:38.159] that for deep research because deep
+[01:40:39.600] research is basically you have a prompt
+[01:40:42.719] that maybe initializes an agent that can
+[01:40:45.119] do a bunch of extensive uh analysis and
+[01:40:48.560] one of that could be going into a link
+[01:40:50.719] right and then you want to go into
+[01:40:52.159] another link that maybe citation within
+[01:40:53.840] the other link and embed as deep as you
+[01:40:56.000] want to go but I have some configuration
+[01:40:57.840] to just set max results from the search
+[01:41:00.800] that we do. I'm using tably to do web
+[01:41:03.119] crawling and also searching um searching
+[01:41:06.000] the internet as well. I have this boiler
+[01:41:08.639] function called build agent and we can
+[01:41:10.480] create this deep research agent specify
+[01:41:13.600] tavity as the internet provider and
+[01:41:16.080] create all the other configuration
+[01:41:18.480] and now is the part I actually want to
+[01:41:20.159] get to is what agents are we going to
+[01:41:22.080] build. We're going to this is a multi-
+[01:41:23.360] aent system right so we're going to have
+[01:41:25.760] the root agent. The root agent is the
+[01:41:28.480] where the query comes in. Um, and the
+[01:41:31.760] query is going to be an Apple Apple.
+[01:41:33.600] This is a um analyst uh agent. So, we're
+[01:41:37.280] going to use the build agent uh code
+[01:41:39.440] that we wrote earlier. We're going to
+[01:41:41.520] pass in the instruction that we want to
+[01:41:43.119] give it and we're going to give it more
+[01:41:44.960] specific details about what we expect it
+[01:41:46.800] to do. Assign task, monitor progress,
+[01:41:49.040] and coordinate symphysis. Then, we're
+[01:41:51.360] going to have this uh delegate. We're
+[01:41:53.600] going to have a root agent has delegate.
+[01:41:55.920] So the way I call multi- aent it will
+[01:41:58.080] make sense later is we have a root agent
+[01:42:00.239] and we have delegates and delegates are
+[01:42:02.560] other agents that report to the root
+[01:42:05.440] agent. So we have three delegates. So we
+[01:42:10.000] have this financial delegate, market
+[01:42:12.000] delegate and a risk delegate and they
+[01:42:14.159] each have their own responsibility and
+[01:42:16.320] then we have a synthesis agent which
+[01:42:18.320] will essentially synthesize all the
+[01:42:20.560] reports and get back to the user. So we
+[01:42:23.360] save all of these agents in our
+[01:42:24.560] database. we've done in the previous
+[01:42:25.679] notebook several times, you guys know it
+[01:42:27.360] now. So, we're just going to do this and
+[01:42:29.119] you can look at the logs. It's adding
+[01:42:30.880] all the function and the tools. So, all
+[01:42:32.880] of these agents have their own tools,
+[01:42:35.199] their own their own um capabilities as
+[01:42:37.440] well and their own memory um stores as
+[01:42:40.239] well. Now, we have this deep research
+[01:42:42.480] orchestrator where we set the root agent
+[01:42:44.880] to the root agent we specified the
+[01:42:47.440] delegates to the free delegates that we
+[01:42:49.360] have over here and the symphysis
+[01:42:52.239] agent such a difficult word. Um, and we
+[01:42:55.280] just pass in the symphysis agent. And
+[01:42:57.600] then we run this. And I'm just going to
+[01:43:00.239] pass in this query to provide a freeear
+[01:43:02.080] stock analysis for Apple. Um,
+[01:43:04.560] highlighting financial trends, market
+[01:43:06.800] dynamics, and key risk. And that's the
+[01:43:09.360] prompt. And we can put it in deep
+[01:43:11.440] research mode. You can see the output.
+[01:43:13.440] Spoiler alert. Um, spoiler alert. But
+[01:43:15.920] there's a bunch of logs just showing
+[01:43:17.920] what's going on here. Um you can see it
+[01:43:20.880] knows the number of delegates that it
+[01:43:22.480] has and it's analyzing the delegates
+[01:43:24.800] capability so it can give the right
+[01:43:26.400] delegates the right queries to execute
+[01:43:29.360] and it's just it might take a bit of
+[01:43:31.360] time but you can see here we're using
+[01:43:32.560] Tavali to search the internet for a
+[01:43:34.719] particular query and we're looking at
+[01:43:36.719] the results of that query we're storing
+[01:43:39.360] it passing that into the context window
+[01:43:41.040] of the LLM saying hey here is the
+[01:43:42.880] results from the search result and it's
+[01:43:44.560] just going to carry on the work at the
+[01:43:46.560] end of this when all the roots all the
+[01:43:48.880] deleg ates are done. So the job of the
+[01:43:50.960] root agent is to understand the query
+[01:43:52.719] and then delegate it to the right agent,
+[01:43:54.880] right? Parts of the query to the right
+[01:43:56.320] agent. Then when the delegate agents are
+[01:43:58.719] done, they go into the symphysis agent
+[01:44:00.800] and say, "Hey, here's my work." The job
+[01:44:02.800] of the symphysis agent is to compile all
+[01:44:04.960] of this and give us the output. It's
+[01:44:07.040] still running. Um, deep research can be
+[01:44:09.679] extensive. Um but yeah it's extensive
+[01:44:13.119] because it's traversing through a bunch
+[01:44:14.480] of links and conducting a bunch of
+[01:44:16.719] searches and the report looks something
+[01:44:19.440] like this just for the sake of time you
+[01:44:21.440] will get oh it's done. So
+[01:44:24.480] yeah, so we just got the report and it's
+[01:44:27.440] just like a like an essay essentially.
+[01:44:30.000] Not an essay, a short essay covering all
+[01:44:32.159] what we wanted. It's given us all the
+[01:44:34.400] right information. Gone to the internet
+[01:44:36.320] to search for this information. I was
+[01:44:38.320] asking for the financial information of
+[01:44:40.480] each quarters of Apple and it's just
+[01:44:43.040] gotten me the right information from
+[01:44:45.119] internet search. Deep research.
+[01:44:47.920] Okay. Was that fun?
+[01:44:52.320] Yeah.
+[01:44:53.119] >> Was it boring or was it fun? It
+[01:44:54.880] >> was good.
+[01:44:55.280] >> It was good. Yeah, you guys. Okay. I'm
+[01:44:57.440] about to change it up. We would do maybe
+[01:44:58.800] workflow agent next. All right. So, I
+[01:45:00.560] want to ask a question one last time.
+[01:45:02.480] Um, you guys can guess the question I'm
+[01:45:04.320] going to ask, right? Do you guys
+[01:45:07.679] agree with me on the clear distinction
+[01:45:09.840] between context engineering and memory
+[01:45:12.480] engineering? Put your hands up if you
+[01:45:14.320] agree with me.
+[01:45:17.600] Yes, that's good. I I'll take that. I'll
+[01:45:19.600] take that. That's better than what we
+[01:45:20.800] started off with. We started off with
+[01:45:22.000] three. Now we're I would say maybe 15 or
+[01:45:25.040] so. Um that's it guys. That's all I got
+[01:45:28.000] for you. Thank you for spending two
+[01:45:29.679] hours of me. [applause]
+[01:45:34.880] >> Any final questions? Anyone?
+[01:45:36.800] >> Final final questions before we leap out
+[01:45:39.600] the room.
+[01:45:40.159] >> Final question right down there.
+[01:45:42.800] >> This might be a little orthogonal to
+[01:45:44.639] something demo, but I wonder.
+[01:45:48.960] >> Sorry. This might be a little bit more
+[01:45:50.239] orthogonal to uh the demo and what you
+[01:45:52.880] were presenting, but uh you mentioned
+[01:45:54.480] episodic memory. What's a good use case
+[01:45:56.960] for actually using episodic memory if
+[01:45:59.760] you can synthesize all of the other
+[01:46:01.520] information using the other different
+[01:46:02.960] types of memory? I'm assuming that
+[01:46:04.480] you're the orchestration and the actual
+[01:46:06.880] methodology in which you arrived at the
+[01:46:08.560] answer allows you to generalize the task
+[01:46:11.520] the agent, but I'm wondering like how
+[01:46:14.239] you use it.
+[01:46:15.760] >> How do I use episodic memory? So sorry
+[01:46:18.239] say the last bit again.
+[01:46:19.040] >> Uh what use cases?
+[01:46:20.320] >> What use cases would you use episodic
+[01:46:22.000] memory
+[01:46:22.960] >> right? Generally when you have
+[01:46:24.880] assistance
+[01:46:26.639] uh I don't know if you were here at the
+[01:46:28.239] beginning by identified free application
+[01:46:30.320] mode you you were at the beginning so
+[01:46:32.159] when you have an assistant agent right
+[01:46:33.920] you want to use episodic memory there
+[01:46:35.440] are different type of episodic memory.
+[01:46:37.440] Of course you could generalize you could
+[01:46:38.960] summarize that's what you mean by
+[01:46:40.239] generalize right you could summarize a
+[01:46:41.600] context window and store that somewhere.
+[01:46:43.760] Is that what you mean? Yeah, because if
+[01:46:46.159] you use I'm again I'm assuming right
+[01:46:48.639] like if you're using uh episodic memory
+[01:46:50.719] you're basically because you're storing
+[01:46:52.400] the entire process you're effectively
+[01:46:54.400] adding a lot more context that has to be
+[01:46:56.159] loaded into the model right but if you
+[01:46:58.320] synthesize it I'm assuming that you can
+[01:47:00.719] like you can basically deliver that
+[01:47:02.800] information faster without using uh like
+[01:47:06.159] some of that token
+[01:47:08.000] >> context so what do you mean by symph
+[01:47:11.440] >> um I was hoping this would be a short
+[01:47:13.119] question no it's
+[01:47:14.639] No, you might want to take this.
+[01:47:15.840] >> Yeah, I mean, I can just talk.
+[01:47:17.840] >> We're just nerding out here. We're just
+[01:47:19.679] going to
+[01:47:20.159] >> I I worry that the few everyone's going
+[01:47:22.719] to get restless.
+[01:47:23.440] >> We can we can carry on and I still got
+[01:47:24.960] to talk to Aro over there. So,
+[01:47:27.679] >> uh we we can turn off the mic. The the
+[01:47:29.760] session
+[01:47:30.719] >> the session is done.
+[01:47:31.679] >> I really appreciate this. Uh thank you
+[01:47:33.280] for sharing your slides and all the
+[01:47:34.880] information in the GitHub. Uh pounce on
+[01:47:37.840] Richard. He has a lot of experience and
+[01:47:39.600] a lot of interesting uh topics to talk
+[01:47:42.000] about. So, uh, pounce on Richard before
+[01:47:43.840] he leaves on a flight. You're here for
+[01:47:45.600] the rest of the day, are you not?
+[01:47:46.800] >> Yes, I'm here for the rest of the day.
+[01:47:48.400] >> So, uh, yeah, once again, thank you so
+[01:47:50.320] much, Richard, uh, Richmond for, uh,
+[01:47:53.119] joining us. And don't know what I'm
+[01:47:55.679] talking about. Uh, yeah, go on. I just
+[01:47:58.400] wanted to mention lunches that way, uh,
+[01:48:00.639] in 52A. Uh, and we'll start again after
+[01:48:03.520] lunch. Thank you so much,
+[01:48:28.155] >> [music]

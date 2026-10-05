@@ -1,0 +1,952 @@
+[00:00:00.060] [Music]
+[00:00:01.760] you're listening to the AI native Dev
+[00:00:03.760] brought to you by
+[00:00:16.160] Tesla on today's episode we're going to
+[00:00:19.080] be talking about ai's role in testing
+[00:00:22.160] and joining me today is James Ward
+[00:00:24.480] developer Advocate at AWS at previously
+[00:00:27.599] Google and James is I just realized
+[00:00:30.279] actually I'm wearing my Java Champion
+[00:00:31.640] shirt as well James is also a Java
+[00:00:34.280] Champion a test containers champion and
+[00:00:36.960] you're currently a developer Advocate
+[00:00:38.559] AWS tell us a little bit about that
+[00:00:40.239] James yeah thanks Simon for having me so
+[00:00:42.719] this is super fun yeah so I'm I'm pretty
+[00:00:44.960] new into AWS I've been using it for a
+[00:00:47.920] very long time uh because I've had
+[00:00:50.960] servers uh in a Data Center and would
+[00:00:53.840] have to go in the middle of the night
+[00:00:55.079] and work on those servers and as soon as
+[00:00:56.760] AWS came out I was like oh thank God so
+[00:00:59.440] I've started using AWS a long time ago
+[00:01:01.760] but but yeah so I'm pretty new into AWS
+[00:01:04.000] and still learning a lot of things there
+[00:01:06.080] and and I'm a developer Advocate and
+[00:01:08.400] working on I don't know how do
+[00:01:10.080] Enterprise developers be more productive
+[00:01:12.759] using AWS and obviously with Java and
+[00:01:15.960] scholin cotland and my background get to
+[00:01:19.040] still use those languages and yeah so
+[00:01:21.880] back to the cloud after a couple years
+[00:01:23.960] as a product manager on the cotlin
+[00:01:26.640] language at Google so amazing exciting
+[00:01:29.200] change yeah welcome to the podcast James
+[00:01:31.479] it's it's a and we've known each other
+[00:01:33.079] for a fair amount of time from the Java
+[00:01:34.799] space as well so it's a pleasure to do
+[00:01:36.560] this this episode with you now one of
+[00:01:39.840] the one of the things that caught my eye
+[00:01:41.399] on should we call it x no let's not
+[00:01:43.880] let's on Twitter I still call it Twitter
+[00:01:45.880] just yeah let's let's call it Twitter
+[00:01:47.439] for reasonable denial denial of the
+[00:01:49.880] inevitable
+[00:01:51.079] future so one of the things that caught
+[00:01:53.360] my eye on Twitter was a tweet of yours
+[00:01:56.600] and I'm going to read this tweet out if
+[00:01:58.520] the AI can write the code iteratively
+[00:02:01.159] until it passes my tests why do I need
+[00:02:03.840] the actual code if it has bugs write
+[00:02:06.799] better tests future compilers will just
+[00:02:09.759] have all this integrated humans will
+[00:02:12.480] have to get good at writing the tests
+[00:02:14.760] which convey the business and operating
+[00:02:17.360] requirements now James I am well aware
+[00:02:21.080] that Twitter is one of these places that
+[00:02:23.160] has a lot of sense a lot of people
+[00:02:25.400] trolling uh a lot of people who have
+[00:02:27.840] many different opinions
+[00:02:30.440] serious on all of this was some of it
+[00:02:32.640] guessing to the Future some of it poking
+[00:02:34.560] fun at AI folks where do you sit on this
+[00:02:38.280] yeah I mean Twitter's Twitter's fun
+[00:02:40.319] because you can have these conversations
+[00:02:42.040] with people you don't know and who knows
+[00:02:45.040] where they're going to lead and all the
+[00:02:46.400] different perspectives that you see
+[00:02:48.400] along the way so yeah it's fun to to be
+[00:02:51.200] able to throw out a crazy idea and then
+[00:02:54.440] get some interesting responses and
+[00:02:56.120] that's what happened with that tweet was
+[00:02:58.440] I don't know I've been using these AI
+[00:03:00.280] tools more and trying to see how they
+[00:03:03.560] fit into the work that I do and the code
+[00:03:05.720] that I write and so one of the I think
+[00:03:08.680] we don't really know like how these
+[00:03:10.319] tools are going to be used in five 10
+[00:03:12.239] years and there's probably lots of
+[00:03:13.920] different ways that they'll be used but
+[00:03:16.080] one of the things that thought about is
+[00:03:18.080] the AIS are getting pretty good at
+[00:03:20.280] writing code for us why if the code that
+[00:03:23.959] it can write is just the right code why
+[00:03:26.640] do I even need to see the code why is
+[00:03:28.439] that even part of my code face and so
+[00:03:31.799] there after tweeting that this idea
+[00:03:34.480] popped into my head I'm like I think
+[00:03:36.400] I've heard about something like this
+[00:03:39.280] before and if you'll remember 4G
+[00:03:42.280] languages were this idea that you'd have
+[00:03:45.439] these like that you would I don't maybe
+[00:03:48.560] was like low code is the like 4gl
+[00:03:51.120] movement and so I was like somebody has
+[00:03:54.159] to have come up with what 5gl is and so
+[00:03:57.840] of course I went to Wikipedia and was
+[00:03:59.439] like was like Hey fifth generation
+[00:04:01.400] language and of course it was basically
+[00:04:04.360] describing what my tweet was about is
+[00:04:06.159] the AI is gonna you're gonna write your
+[00:04:07.959] tests or they in kind of more futuristic
+[00:04:11.920] languages you don't necessarily write
+[00:04:13.519] tests you write like proofs and so so
+[00:04:17.880] yeah so I was like oh like people have
+[00:04:19.840] obviously ever already thought about
+[00:04:21.759] this my my idea is not novel is always
+[00:04:25.160] so but one interesting thing of course
+[00:04:26.960] is the reaction that it gets and I think
+[00:04:29.000] it's interesting because we're in that
+[00:04:30.840] we're in that funny state with AI right
+[00:04:33.039] whereby A lot of people are using a lot
+[00:04:35.360] of very assisted tools today so it's
+[00:04:37.960] very interactive and it tends to be very
+[00:04:40.400] good at doing kind of like small jobs
+[00:04:42.000] and and and people are getting used to
+[00:04:43.639] that and enabling or or bringing in AI
+[00:04:47.160] into existing workflows in fact a great
+[00:04:49.360] example of that is I was chatting with
+[00:04:51.400] you earlier talking about AWS code
+[00:04:53.080] Whisperer which has now been rebranded
+[00:04:54.919] to AWS developer and that does a lot of
+[00:04:57.840] these kind of things right when we think
+[00:04:59.320] about
+[00:05:00.520] writing code ourselves it's there step
+[00:05:02.440] by step line by line helping us as an
+[00:05:05.160] assistant to to get us to The Next Step
+[00:05:08.039] which is here's the line of code I think
+[00:05:09.600] you wanted to write or here's the test
+[00:05:11.120] case that I think you want to create for
+[00:05:13.280] this the the Tweet however takes that to
+[00:05:16.039] it's extreme and there's a lot of people
+[00:05:17.400] who are still uh maybe a little bit
+[00:05:19.800] unsure of today's the the present
+[00:05:22.400] reality and I think you always find
+[00:05:25.240] people who want to truly believe in and
+[00:05:26.759] see the future of where this is going to
+[00:05:29.319] lead us and others that are very
+[00:05:31.280] skeptical about whether this is the true
+[00:05:33.319] path yeah that's for good reason we've
+[00:05:35.360] we've been through so many hype cycles
+[00:05:37.400] and I I have a funny story kind of
+[00:05:39.919] related to this there was a long time
+[00:05:42.560] ago I was at the Denver Java user group
+[00:05:45.479] and the presenter didn't show up and so
+[00:05:48.960] the organizer asked hey does anybody
+[00:05:50.560] have anything they can present on and
+[00:05:53.080] this this gray bearded man who I I
+[00:05:56.360] didn't know gets up and I got something
+[00:05:58.400] that I can talk about he's I'm gonna
+[00:06:00.479] tell you about something that's gonna
+[00:06:01.880] change the world and we were like oh
+[00:06:04.520] interesting he's like
+[00:06:06.919] XML none of us had even heard of XML at
+[00:06:10.440] the time and he's this is XML is GNA
+[00:06:12.919] completely change everything and then he
+[00:06:15.840] went on and talked about his crystal
+[00:06:17.639] ball gazing of all the ways that he
+[00:06:19.800] thought XML was going to change the
+[00:06:21.080] world and XML certainly did change the
+[00:06:24.000] world in many ways but looking back at
+[00:06:27.039] that the ways that it changed the world
+[00:06:29.039] were very different from what we thought
+[00:06:31.039] at the time for how it was going to
+[00:06:32.240] change the world and we went through all
+[00:06:33.960] the like soap stuff and all the Ws Splat
+[00:06:37.800] stuff and I don't know if you remember
+[00:06:39.160] all that but there was all these
+[00:06:40.639] attempts at like how is this how does
+[00:06:42.720] this actually get integrated into daily
+[00:06:45.960] work and getting our jobs done faster
+[00:06:48.039] and more efficiently and certainly XML
+[00:06:50.919] has changed many things and now we see
+[00:06:53.680] it in Json and other formats and Proto
+[00:06:56.639] Buffs and all sorts of stuff but yeah so
+[00:06:58.919] there was something very significant in
+[00:07:01.039] what XML was shifting but no one really
+[00:07:04.160] knew what that would be like 10 20 years
+[00:07:07.160] down the road and so I think we're at
+[00:07:09.199] the same point with AI we see AI being
+[00:07:11.879] used in all sorts of places we see the
+[00:07:13.639] people that are resistant to to the
+[00:07:16.160] change and I think that it's just we
+[00:07:18.639] don't know like how the what this is
+[00:07:20.440] going to look like in in 10 years and
+[00:07:22.840] there's people that are like oh
+[00:07:24.280] developers are going to be no longer
+[00:07:25.759] needed and there's people who are on the
+[00:07:27.759] other side of the spectrum and so yeah
+[00:07:29.560] it's that wild time where there's this
+[00:07:31.319] huge hypee cycle lots of change lots of
+[00:07:34.800] crystal ball gazing and if anyone
+[00:07:37.759] actually knew like going back to the XML
+[00:07:40.240] thing like no one actually knew like
+[00:07:42.400] what the future would look like and in
+[00:07:44.199] part because it's iterative right and
+[00:07:46.360] like we try things we make some changes
+[00:07:48.840] based on those things and then we try
+[00:07:50.400] new things and so it's just you can't
+[00:07:52.159] imagine how all the iterations are going
+[00:07:53.960] to play out so I think that's exactly
+[00:07:56.120] where we're at with AI yeah absolutely
+[00:07:58.680] so what I'd love to do is actually go
+[00:08:00.159] through somewh we've grouped some of the
+[00:08:01.720] replies to this tweet and we'd love to
+[00:08:03.759] go through them do we before we do that
+[00:08:05.440] do we need to expand on this idea a
+[00:08:07.759] little bit or do you think let's let's
+[00:08:10.440] let's talk a little bit about it I think
+[00:08:12.520] yeah what you in fact whyn't you rather
+[00:08:14.080] than me describe your Tweet what why
+[00:08:16.479] don't you take us through it yeah so I
+[00:08:18.960] think today what some developers are
+[00:08:21.319] doing is they start writing some code
+[00:08:24.080] and then maybe you're using a code
+[00:08:25.479] assistant to fill in the boiler plate
+[00:08:28.680] almost or the in bits and that's great
+[00:08:31.159] that's okay that's nice that a lot of
+[00:08:32.839] times I can spend less time thinking
+[00:08:35.680] about about the code that I need to
+[00:08:37.399] write because the AI has been able to
+[00:08:39.719] come up with something just based on
+[00:08:41.640] what I started typing and I think that's
+[00:08:44.080] a good step but for me I'm wondering why
+[00:08:48.080] does that code actually need to exist in
+[00:08:50.800] a human readable form if the AI can
+[00:08:53.560] actually get it right so if the AI if
+[00:08:56.320] all that I need is some form of way to
+[00:08:59.079] express add what I'm trying to get to
+[00:09:01.839] then why does the code need to be
+[00:09:03.320] readable maybe it does for debugging
+[00:09:05.880] maybe it does for other reasons but if
+[00:09:09.240] we could get to a point with the AIS
+[00:09:11.760] where the code has been sufficiently or
+[00:09:14.680] the specification of the code what it
+[00:09:16.240] needs to do has been sufficiently
+[00:09:18.440] defined then why does there need to
+[00:09:20.760] actually be human readable code and I
+[00:09:24.320] think there's a few challenging aspects
+[00:09:26.000] to that one I mentioned both of them in
+[00:09:28.519] the the Tweet there I'll expand on them
+[00:09:30.519] one is it this requires our
+[00:09:32.800] specifications to be sufficient to know
+[00:09:36.320] that the functionality is what I would
+[00:09:39.440] need and there's all sorts of
+[00:09:41.880] complexities to doing that because a lot
+[00:09:44.399] of times the code that we actually are
+[00:09:46.320] working on has some kind of
+[00:09:49.200] intangible aspects to it that need to be
+[00:09:51.360] covered especially on the operational
+[00:09:53.640] side so on the operational side you may
+[00:09:56.600] know that this particular function is
+[00:09:59.040] going to be called a million times in
+[00:10:02.920] 100 milliseconds or whatever you you may
+[00:10:04.680] have some ideas around the performance
+[00:10:06.959] characteristics that you need this
+[00:10:08.360] function to have and so you as a
+[00:10:10.440] developer generally would optimize that
+[00:10:12.800] particular function for those
+[00:10:14.079] operational production requirements but
+[00:10:17.440] why don't why aren't those production
+[00:10:19.279] requirements specified in our tests and
+[00:10:22.880] I think generally our testing Frameworks
+[00:10:24.560] don't get into the operational
+[00:10:26.720] requirements of a system the security
+[00:10:28.600] requirements of a a system and part of
+[00:10:30.880] what I'm saying would need to happen is
+[00:10:32.880] we would need to be able to specify not
+[00:10:35.079] just the functional requirements of
+[00:10:36.760] something but also the kind of
+[00:10:38.040] production characteristics that we need
+[00:10:40.519] to get to like the in a test would have
+[00:10:43.480] to say I expect this thing to return in
+[00:10:47.480] 0.5 milliseconds or something like that
+[00:10:49.560] and I'd expect it to use this much
+[00:10:51.399] memory or like we generally just do that
+[00:10:54.360] those requirements on the development
+[00:10:57.000] side not on the testing side but we
+[00:10:58.720] would need to then be able to move those
+[00:11:00.800] requirements to our specification and
+[00:11:03.639] not just have that be something that we
+[00:11:05.800] iterated to the production requirements
+[00:11:08.720] that that we thought were the right ones
+[00:11:10.920] yeah and we covered a lot there because
+[00:11:12.120] then the specification becomes quite
+[00:11:13.440] broad then right because if you look at
+[00:11:14.760] the specification you mentioned things
+[00:11:16.040] like the behavior of the app um which I
+[00:11:18.600] guess can be defined in a couple of ways
+[00:11:20.160] one through the tests the the assertions
+[00:11:22.839] that the that the behavior needs to meet
+[00:11:24.959] the other could just be the the behavior
+[00:11:27.959] you want to see through function
+[00:11:29.920] functionality description so I need this
+[00:11:32.320] calculator to add these two numbers
+[00:11:34.079] together and then a test or an assertion
+[00:11:36.000] that follows to say if I provide two and
+[00:11:38.000] two I need it to give me the answer for
+[00:11:40.000] and so forth then the nonfunctional part
+[00:11:43.279] of that as well that you mentioned the
+[00:11:44.839] security the performance maybe
+[00:11:47.000] architecture style requirements you
+[00:11:49.240] might have yeah it's quite a big
+[00:11:50.920] document right yeah yeah and it it's the
+[00:11:54.279] way that I look at it is I love type
+[00:11:56.560] systems and so you as the developer
+[00:11:59.560] probably should be specifying the the
+[00:12:01.600] actual types of the thing and so you're
+[00:12:03.600] going to write your class definitions
+[00:12:05.240] out and then you're going to write out
+[00:12:06.839] the interface that that is going to be
+[00:12:10.720] used and then what I'm proposing is that
+[00:12:15.199] you've written your classes you've
+[00:12:16.839] written your interface and you've
+[00:12:18.680] written your tests and then the actual
+[00:12:21.440] implementation is what could be filled
+[00:12:23.360] in by the AI because I still do want to
+[00:12:26.079] have my types I do want to have the
+[00:12:28.680] interface the function definitions to
+[00:12:30.920] interact with that that those objects
+[00:12:33.560] and then I want to have the tests that
+[00:12:35.040] validate the functionality and then the
+[00:12:37.399] production aspects to it so you
+[00:12:39.480] mentioned interfaces classes types and
+[00:12:42.240] and
+[00:12:43.199] objects how deep into the
+[00:12:46.320] implementation the or or rather even the
+[00:12:48.600] ecosystem we're assuming here probably
+[00:12:51.040] more like a a Java or a skyar light
+[00:12:53.480] language with some of the verbiage that
+[00:12:54.920] we're using does that matter could I is
+[00:12:57.600] it possible just to say look this is
+[00:12:58.959] what I want use the best language I that
+[00:13:01.480] you think is going to work for this
+[00:13:03.279] rather than a language that I am most
+[00:13:05.120] familiar with because if I'm not going
+[00:13:06.440] to read it as much as other tools does
+[00:13:09.000] it need to be more familiar with me yeah
+[00:13:12.040] it's a good question I do think that we
+[00:13:15.199] have seen many different kind of testing
+[00:13:17.440] dsls and so there's a huge variety of
+[00:13:21.240] ways that you can describe your tests
+[00:13:23.560] and yeah there it's going to be
+[00:13:25.360] interesting to see how that space
+[00:13:26.560] evolves there's a cucumber The Groovy
+[00:13:28.680] one and anyways people have used all
+[00:13:30.279] sorts of different like dsls for
+[00:13:31.920] describing their tests I have some
+[00:13:33.839] personal preferences in this direction
+[00:13:36.519] where I've moved to the place where I
+[00:13:39.040] actually like to write my tests as just
+[00:13:41.399] regular code no special dsls no no
+[00:13:46.120] assertion libraries that have all these
+[00:13:49.079] fancy things on them I like to just do
+[00:13:51.320] assert true and then that means that my
+[00:13:54.199] code in my test actually is normal code
+[00:13:57.600] it's not some weird d cell and so maybe
+[00:14:00.920] that's part of this is like the way that
+[00:14:02.759] I have written my test isn't some
+[00:14:05.680] bespoke thing only for testing it's just
+[00:14:08.800] the normal code that I write elsewhere
+[00:14:11.800] yeah so I don't know if that would be a
+[00:14:14.079] kind of requirement for this AI thing
+[00:14:16.600] actually working but maybe we see new
+[00:14:19.120] test testing specification languages
+[00:14:22.160] evolved as part of this and I think
+[00:14:24.600] that's the 5gl description is actually
+[00:14:27.000] saying that there will be new languages
+[00:14:29.120] that evolve in this space that are more
+[00:14:31.480] targeted at this kind of view yeah it'll
+[00:14:34.199] be interesting to see how that happens I
+[00:14:36.560] think you you could theoretically do
+[00:14:39.399] this in any language but I like to have
+[00:14:43.959] there's a few things that I like to have
+[00:14:45.199] in this space that I think are useful
+[00:14:47.079] one is a good type system so you can
+[00:14:49.680] specify your types because I think that
+[00:14:52.199] that is part of your specification and
+[00:14:54.600] then as part of when some when somebody
+[00:14:56.759] becomes a consumer of your your API than
+[00:15:01.560] having the types and the functions
+[00:15:03.959] defined in a very specific way is is
+[00:15:07.800] helpful so you know I don't know how
+[00:15:10.320] this would work in like Dynamic
+[00:15:11.680] languages yeah absolutely one of the one
+[00:15:14.480] of the themes of answers that people
+[00:15:17.160] replied and people did reply in droves
+[00:15:19.199] to your Tweet was that tests aren't good
+[00:15:21.360] enough one person said they only capture
+[00:15:23.680] a fraction of what code is capable of
+[00:15:26.240] and some things are very hard to test
+[00:15:28.440] another person said no someone has to
+[00:15:30.759] still maintain the thing um and work out
+[00:15:33.720] why if it's behaving in an unexpected
+[00:15:36.000] way why this is the case another person
+[00:15:38.480] says not sure that tests will be enough
+[00:15:41.079] want to as you mentioned just now want
+[00:15:42.480] to be able to specify types constraints
+[00:15:44.800] and things like that as well so are
+[00:15:47.720] people like conflating a little bit too
+[00:15:49.560] much of the today versus The Vision here
+[00:15:51.839] James or is there a point here yeah I I
+[00:15:54.839] think it's some good feedback and I
+[00:15:57.040] think that that yeah generally
+[00:15:59.440] our tests today are insufficient to be
+[00:16:02.360] able to do this and but my my
+[00:16:06.880] perspective is that maybe our tests
+[00:16:09.040] should be more sufficient to cover these
+[00:16:11.279] sorts of things maybe our tests are not
+[00:16:14.319] enough like for me tests the usefulness
+[00:16:16.880] of tests is that it makes me as a
+[00:16:19.160] developer more productive in the moment
+[00:16:21.680] that I'm writing the code and then also
+[00:16:24.880] in the future when things are changing
+[00:16:26.800] to verify that I don't have regression
+[00:16:29.040] and that sorts of thing so I don't yeah
+[00:16:31.759] for me it's like if you see mature
+[00:16:34.560] projects what generally they do is if
+[00:16:37.480] somebody finds a bug then you go and
+[00:16:40.519] write the test first to validate that
+[00:16:43.920] that the bug does exist and you can
+[00:16:46.000] reproduce it and then you come out with
+[00:16:48.720] the fix and then verify that your test
+[00:16:51.040] pass and that to me is just a good way
+[00:16:54.639] to work because then you verify that one
+[00:16:56.279] you've actually fixed the bug and two
+[00:16:58.639] that you're not going to break that
+[00:16:59.839] functionality in the future because then
+[00:17:01.519] your CI is going to break and so for
+[00:17:04.439] yeah for me a big part of is our test
+[00:17:06.240] should be sufficient to handle all this
+[00:17:09.360] and and one of the things that you
+[00:17:10.640] mentioned there at the at the very top
+[00:17:12.799] was maybe we're not in the right place
+[00:17:15.039] today with the the quantity of tests or
+[00:17:17.520] the quality of tests that we have if we
+[00:17:19.679] look at how AI could help us there today
+[00:17:23.280] this is a wonderful Vision or an very
+[00:17:24.919] interesting Vision that that one day we
+[00:17:27.000] could quite easily see us getting to but
+[00:17:29.480] in the interim there are still things
+[00:17:32.360] like awq developer as a great example
+[00:17:34.880] tools that can help us actually build
+[00:17:37.000] the test Suite that we should have today
+[00:17:40.200] we'll do actually a nice little demo and
+[00:17:42.280] talk through a little bit of that in the
+[00:17:43.840] episode literally straight after which
+[00:17:45.280] will be which will be being published on
+[00:17:47.039] the same day as this one but yeah talk
+[00:17:49.480] us through what developers in an ideal
+[00:17:52.720] world today what the workflow should be
+[00:17:54.880] to use AI in the testing space yeah I
+[00:17:59.000] think some people are using AIS to take
+[00:18:02.400] some code and then say write the test
+[00:18:04.799] for me and I I think maybe if you have
+[00:18:08.760] existing functionality that's that is a
+[00:18:12.240] viable way to go like you you haven't
+[00:18:14.320] written a test yet but you've written
+[00:18:16.440] the functionality I think the AIS are
+[00:18:18.840] getting pretty good at coming up with
+[00:18:20.520] the test for your existing functionality
+[00:18:23.520] I'm not like a strict tdd person but I
+[00:18:27.000] do tend to write test first or I I write
+[00:18:32.120] and I guess there's different levels of
+[00:18:33.559] it I write my types I write my function
+[00:18:35.919] signatures and then if maybe if the
+[00:18:39.640] logic that I need to build is complex
+[00:18:42.760] some level of complexity then I do
+[00:18:45.039] actually start writing the test because
+[00:18:46.559] I don't really understand what I need to
+[00:18:49.120] build and the functionality that needs
+[00:18:50.679] to be validated until I've described it
+[00:18:53.080] in a test so I'm not like a totally and
+[00:18:56.000] sometimes there's going back and forth
+[00:18:57.720] between okay I'm going to write some
+[00:18:59.120] functionality I'm going to modify my
+[00:19:00.919] test and so it's a little iterative for
+[00:19:03.240] me in different ways depending on the
+[00:19:04.880] functionality that I'm writing and
+[00:19:06.960] sometimes I don't write test at all
+[00:19:08.280] because the logic is either really hard
+[00:19:10.799] to test or very test doesn't add a whole
+[00:19:13.679] lot of value and yeah I think there's
+[00:19:15.840] this whole spectrum of what where and
+[00:19:19.039] when and how you write your tests but
+[00:19:21.320] for me in most of the way that I write
+[00:19:23.039] code I've not done the thing where I
+[00:19:25.360] highlight some existing functionality
+[00:19:26.880] and say now write the test but certainly
+[00:19:29.240] there are people who worked differently
+[00:19:31.080] in that that approach could have value
+[00:19:33.919] so so I think there's there there's that
+[00:19:37.640] use case where people want to use it to
+[00:19:39.360] help them write their tests um the ways
+[00:19:42.000] that I've been using uh the AI assistant
+[00:19:46.159] stuff is when I'm diving into areas that
+[00:19:49.600] I don't understand um new I've been
+[00:19:52.799] working with new languages I've been
+[00:19:54.480] working with rust for example or or yeah
+[00:19:57.919] just domains I'm not as familiar with
+[00:20:00.720] the typical way that I would work is I
+[00:20:02.640] would go to Google and ask a question
+[00:20:05.080] and then I would open like 300 tabs with
+[00:20:07.919] all the stack Overflow answers all the
+[00:20:10.400] blogs that I can find all the Reddit
+[00:20:12.559] Pages whatever and then I'd have to read
+[00:20:15.120] through all those things and start to
+[00:20:17.240] get an understanding of I'm like
+[00:20:19.159] manually assembling this knowledge
+[00:20:21.679] structure in my head and now what I
+[00:20:24.080] generally do is instead of doing that
+[00:20:26.559] process I just go into my case Q
+[00:20:29.200] developer and I just start asking
+[00:20:31.360] questions and I think that the benefit
+[00:20:33.880] of that is that it's already done the
+[00:20:35.799] 300 tab thing and assembled its
+[00:20:38.760] knowledge and then I can start to cater
+[00:20:41.240] the response and and start to ask
+[00:20:43.080] follow-up questions and so for me that's
+[00:20:45.600] been the one of the primary use cases is
+[00:20:47.799] just the asking questions and I know
+[00:20:49.919] people use chat GPT and I think co-pilot
+[00:20:52.919] and or you can use Claud from anthropic
+[00:20:55.200] there's lots of different ways that that
+[00:20:57.360] have these knowledge bases essentially
+[00:20:59.000] you can go start asking questions too
+[00:21:01.360] yeah so I think that's the first way
+[00:21:03.640] that I've gained a lot of value from the
+[00:21:06.919] AIS I'll pause there and see if you have
+[00:21:08.960] anything broke on yeah know and I I hear
+[00:21:11.159] that a lot actually people in fact I saw
+[00:21:12.840] a really interesting video the other day
+[00:21:14.799] where someone I think they were using
+[00:21:16.000] Claude or something like that and it was
+[00:21:18.600] actually around a podcast guest and what
+[00:21:20.799] they said they did was they would upload
+[00:21:22.400] entire books as well as previous
+[00:21:24.840] episodes or videos that they' done and
+[00:21:26.400] push scripts into there and it would
+[00:21:28.640] create you know large amounts of flow
+[00:21:30.960] and questions and things like that and
+[00:21:33.000] that's what AI is amazing at right it's
+[00:21:35.080] about make me much much more effective
+[00:21:37.799] by learning all this information in a
+[00:21:39.799] second or or using all this context in a
+[00:21:41.720] second and then give me that summary of
+[00:21:43.840] what is useful and what is most
+[00:21:45.039] important for me to know now and that
+[00:21:47.120] efficiency boost is simply quite
+[00:21:49.159] incredible today A lot of times it's
+[00:21:52.240] pretty accurate on those kinds of
+[00:21:54.200] answers and but there are times that you
+[00:21:56.679] get the hallucinations and
+[00:21:59.080] I think that one of the challenging
+[00:22:01.679] things is how to identify when something
+[00:22:04.720] feels off and so there's I think it for
+[00:22:07.200] people that are very experienced they
+[00:22:09.200] get a spidey sense tingly sense oh that
+[00:22:11.760] doesn't feel quite right that doesn't
+[00:22:13.320] align with how I understand the world
+[00:22:15.640] and so I think that's something that
+[00:22:17.320] still is a gap is for people that aren't
+[00:22:20.520] experienced enough to be able to get
+[00:22:22.400] that like spidey sense on something like
+[00:22:25.520] they can go down some pretty serious
+[00:22:27.840] rabbit holes and then find out way too
+[00:22:30.960] late that oh this was I was completely
+[00:22:33.760] misled in this direction and so I don't
+[00:22:36.159] know how maybe the models just keep it
+[00:22:37.919] getting better and eventually fewer
+[00:22:40.240] hallucinations or is there a way to get
+[00:22:42.840] the community to help check those
+[00:22:45.480] answers or help be like H this doesn't
+[00:22:47.679] feel right and run it through a human
+[00:22:50.240] that has a a brain and experience and
+[00:22:52.240] can help identify the the things that
+[00:22:54.840] may be wrong and yeah I think that's
+[00:22:56.679] still an open problem I was talking to
+[00:22:59.039] someone just this week actually on the
+[00:23:00.279] podcast who talked a little bit about
+[00:23:02.559] the confidence level because because LMS
+[00:23:05.200] tend not to want to say no they they
+[00:23:07.720] want to provide an answer somewhere even
+[00:23:09.480] if an answer doesn't exist and that's
+[00:23:10.919] very often where hallucinations can
+[00:23:13.000] arise um and sometimes knowing when to
+[00:23:16.159] say look I I'm not sure about this or I
+[00:23:18.400] I have the confidence issue with the
+[00:23:19.679] answer I'm giving you so just be aware
+[00:23:21.840] that this is an area that needs to be
+[00:23:23.080] checked as well because I think a lot of
+[00:23:24.640] the time exactly like you say there are
+[00:23:25.919] some people that will say yeah I I can
+[00:23:27.480] see that this is a some people that will
+[00:23:29.600] happily accept it as the truth because
+[00:23:31.080] they're just not as experienced in that
+[00:23:32.799] space so almost having the LM come back
+[00:23:34.960] to us and say look I'm just confident in
+[00:23:37.600] this or I'm not confident in this you
+[00:23:38.799] need some additional information or
+[00:23:40.520] additional input or maybe human input
+[00:23:42.360] there to to go get someone to to talk
+[00:23:44.320] exactly and I've seen some people
+[00:23:47.240] customize their prompts and so when they
+[00:23:49.960] start a new prompt session they'll say
+[00:23:52.120] something like if you don't know say you
+[00:23:54.640] don't know and I don't know if that's
+[00:23:57.080] Universal across to all of the llms and
+[00:23:59.760] models but I have seen that used on some
+[00:24:02.559] models and then the llm if it doesn't
+[00:24:05.000] have a high confidence will actually say
+[00:24:07.000] I don't know and then I I think one of
+[00:24:09.120] the things that's currently missing from
+[00:24:10.640] this experience is I haven't seen maybe
+[00:24:14.679] it exists but I haven't seen I haven't
+[00:24:15.960] seen an llm Ask follow-up questions yeah
+[00:24:19.720] and so as a developer there's a lot of
+[00:24:22.640] different spaces and how many times do
+[00:24:25.200] we say it depends and I guess what I
+[00:24:27.919] haven't seen the LMS do is be like it
+[00:24:30.039] depends tell me more about this and
+[00:24:32.880] that's where I think there's definitely
+[00:24:34.760] some room for improvement is instead of
+[00:24:36.520] just giving an answer have the the llm
+[00:24:39.640] actually start to understand the context
+[00:24:41.480] and the related things better before it
+[00:24:43.399] starts spitting out an answer and so
+[00:24:45.919] maybe more of a like we would do as
+[00:24:47.840] humans is oh tell me more about that I
+[00:24:49.840] want to understand that piece more
+[00:24:51.720] before I tell you what the answer is
+[00:24:54.480] yeah yeah it requires quite a different
+[00:24:55.919] dynamic in terms of the chat UI versus
+[00:24:58.000] versus kind of like a single prompt but
+[00:24:59.399] yeah 100% I think I I really agree with
+[00:25:01.440] that another response category was just
+[00:25:03.799] AI plane isn't ready to do this kind of
+[00:25:06.240] thing and I know it's accelerating at a
+[00:25:08.320] ridiculous Pace now and I absolutely
+[00:25:09.960] agree it's not ready today but yeah they
+[00:25:13.320] went on to say have you used co-pilot or
+[00:25:15.520] chat GPT or Claude or whatever they
+[00:25:17.320] still get a lot
+[00:25:18.880] wrong so here's something that is is
+[00:25:21.679] beginning to happen which I think is
+[00:25:23.240] really fascinating the space is this
+[00:25:26.120] first came up I was on a work group
+[00:25:28.559] where there was a bunch of companies
+[00:25:31.080] that were looking at how do we convert
+[00:25:33.159] Java code to cotlin code and one of the
+[00:25:36.279] ideas in that space is oh maybe the LMS
+[00:25:38.960] can do it for us but the challenge is
+[00:25:41.960] that that as you're saying sometimes the
+[00:25:44.279] LMS are going to get it wrong and so
+[00:25:46.559] what can we do about that and so there's
+[00:25:48.120] been some experiments in that space
+[00:25:50.240] where what you do is you have a process
+[00:25:53.320] around the llm that takes some Java code
+[00:25:56.159] converts it to cotlin code and then it
+[00:25:58.720] runs your compiler runs your build and
+[00:26:01.600] if that generate new generated code
+[00:26:04.000] creates a compile error then you feed
+[00:26:06.640] that compiler back into the LM and say I
+[00:26:09.559] got this air and then you tell it to try
+[00:26:12.360] again or modify the code to fix the air
+[00:26:15.440] and and then you could iterate through
+[00:26:17.720] this Loop maybe you could even change
+[00:26:19.240] models or change model parameters or
+[00:26:21.120] something like that to iterate to
+[00:26:23.320] something that actually compiles and
+[00:26:25.440] then maybe your next step is to then add
+[00:26:28.760] your actual test for that thing into the
+[00:26:31.240] loop as well and so then you start to to
+[00:26:33.840] create this feedback cycle with the llm
+[00:26:36.279] to then iterate to something that
+[00:26:38.200] actually works all good in theory I
+[00:26:41.000] tried this on a rust project so I was
+[00:26:44.039] working rust I'm not a rust expert and I
+[00:26:47.080] was getting a compiler warning in on
+[00:26:49.640] this piece of rust code and so I fed
+[00:26:52.000] that into an llm and said hey fix this
+[00:26:54.559] code for me and so it gave me back some
+[00:26:57.440] code I was like sweet great and so I put
+[00:26:59.559] that code in and then it's then I get a
+[00:27:02.679] compiler instead of just a warning i'
+[00:27:04.840] now the code that it was given me it was
+[00:27:06.559] now a compiler and so then I gave the
+[00:27:08.480] compiler code to the LM and said fix
+[00:27:11.760] this compiler for me and it gave me back
+[00:27:14.039] the code with the warning and so then I
+[00:27:16.720] was just in this recursive Loop of it it
+[00:27:19.600] couldn't resolve through iteration to
+[00:27:23.120] something that actually worked but was
+[00:27:25.120] that just a context problem where it
+[00:27:26.360] didn't have enough context from the
+[00:27:27.720] previous iterations where it learned
+[00:27:29.640] okay I can't do that cuz I tried that
+[00:27:30.960] and that's what happened maybe I need to
+[00:27:32.720] think outside the box that's almost
+[00:27:34.360] where not hallucination necessarily but
+[00:27:37.440] thinking out the box to try and work out
+[00:27:39.480] a different solution could actually
+[00:27:41.480] that's a good point yeah the fuzziness
+[00:27:43.120] of these and potentially throwing other
+[00:27:46.120] models at it as well this model maybe
+[00:27:48.440] isn't going to be able to iterate to a
+[00:27:50.000] solution but let me try a different
+[00:27:51.640] model and see yeah so I think you're
+[00:27:53.279] right like this iterative feedback loop
+[00:27:56.360] with multiple LM
+[00:27:58.760] potentially could get us much closer to
+[00:28:01.039] a working solution but like none of this
+[00:28:03.440] infrastructure exists around this yet no
+[00:28:06.039] one has no one that I know of is has
+[00:28:08.600] written tools that can like actually
+[00:28:10.640] integrate this iterative feedback loop
+[00:28:12.720] into a normal development process and so
+[00:28:15.960] so yeah I think we're still at the
+[00:28:17.679] beginning of this kind of Journey for
+[00:28:19.320] how we can use these tools to to iterate
+[00:28:22.640] more effectively to Working
+[00:28:25.080] Solutions yeah the the next category was
+[00:28:28.919] and and I think there's there's a couple
+[00:28:30.480] like this but talking about eventually
+[00:28:33.960] yes that will be the case but in the
+[00:28:35.279] meantime we need a human in the loop
+[00:28:37.080] still and I think there's two pieces
+[00:28:38.760] around this one is still in terms of the
+[00:28:41.919] where the technology is but if we think
+[00:28:45.399] about we just talked about AI not
+[00:28:47.120] potentially being ready just yet what
+[00:28:49.320] about us as humans not being ready
+[00:28:51.120] because technology can change bang
+[00:28:52.919] overnight and and it's quick however
+[00:28:55.919] humans they take time to adjust their
+[00:28:58.120] workflows and time to do development in
+[00:29:00.600] a different way are we the going to be
+[00:29:02.919] the slowest part of this this puzzle in
+[00:29:05.279] terms of changing the way we develop and
+[00:29:07.559] getting used to it and getting
+[00:29:08.640] comfortable with trusting what what
+[00:29:10.760] what's coming out of it yeah I think
+[00:29:13.760] we're in a moment of
+[00:29:16.399] co-evolution with these tools and yeah
+[00:29:19.320] the humans are changing the AIS are
+[00:29:21.120] changing and we're both co-evolving and
+[00:29:24.039] and that's back to the beginning where
+[00:29:25.360] we talked about not really knowing where
+[00:29:26.880] this all goes is both sides are
+[00:29:29.159] iteratively moving forward but they're
+[00:29:32.080] also entangled and moving forward
+[00:29:35.519] together in a away and yeah I think like
+[00:29:38.320] we as humans are going to have to change
+[00:29:40.120] how we think about things how we
+[00:29:41.519] approach problems how we use the tools
+[00:29:44.320] but then obviously the tools are also
+[00:29:46.039] changing and so yeah it's for
+[00:29:48.679] now one of the most important things
+[00:29:51.120] when using these tools is what one of my
+[00:29:53.840] my co-workers says is is you still have
+[00:29:56.480] to use your brain what the tools are
+[00:29:58.679] doing they're assisting you they're
+[00:29:59.960] helping you but you still need to use
+[00:30:02.519] your brain and be able to look at some
+[00:30:04.240] code and be like that code is not what I
+[00:30:07.200] need and and whether it's code or
+[00:30:09.640] whatever the llm is coming up for you
+[00:30:13.000] writing documentation like Java dos
+[00:30:16.000] incredibly useful tool that the llms can
+[00:30:18.919] do for us now but you still need to read
+[00:30:21.360] your Java and be like is this actually
+[00:30:24.200] correct and so yeah I think it's this
+[00:30:26.279] pairing between the tools and our brains
+[00:30:29.240] based on all the experience that we have
+[00:30:30.679] and the business problem that we are
+[00:30:32.840] understanding and trying to solve yeah
+[00:30:35.279] and and that actually came up a couple
+[00:30:36.440] of times as well in just from the point
+[00:30:38.360] of view of the abstraction and saying
+[00:30:40.480] this is just another abstraction to
+[00:30:41.919] where we are now this person this
+[00:30:44.240] individual didn't imagine a big
+[00:30:45.600] difference between how we work now to
+[00:30:47.440] later so ask computer to do something
+[00:30:49.360] run it verify and repeat and iterate
+[00:30:51.559] through that which yeah to some extent
+[00:30:53.840] is true it obviously changes the changes
+[00:30:56.679] what we are physically doing
+[00:30:58.519] a machine and and potentially let's talk
+[00:31:00.360] a little bit about what you consider the
+[00:31:02.760] dev role to be in this kind of like
+[00:31:05.000] future space you were previously talking
+[00:31:07.200] about that it's the human that still
+[00:31:08.760] needs that brain to actually be able to
+[00:31:11.159] whether it's design or whether it's
+[00:31:12.440] create the app in the way that they want
+[00:31:14.200] to achieve something is the developer
+[00:31:16.679] just that one level abstracted higher
+[00:31:19.440] and focusing on on the app that that's
+[00:31:21.600] slightly high level ignoring the lines
+[00:31:24.200] of code or how is done things are done
+[00:31:26.760] and focusing more on the what
+[00:31:29.519] yeah that was an interesting comment
+[00:31:31.679] where somebody is like so we essentially
+[00:31:33.639] just the future is that developers are
+[00:31:35.760] business analysts and are the ones that
+[00:31:38.279] can take the the business requirements
+[00:31:40.120] and translate them into a specification
+[00:31:42.720] is that what you're proposing and I
+[00:31:45.399] don't know if that's what the future
+[00:31:47.200] looks like I I don't know if I would be
+[00:31:49.039] very super stoked on that because I like
+[00:31:51.440] solving problems and getting into to
+[00:31:54.399] code and like figuring out the right
+[00:31:56.320] ways to model things and test things and
+[00:31:59.360] the like mechanics of a lot of this
+[00:32:01.200] stuff not so I don't get super excited
+[00:32:03.919] about understanding users and their
+[00:32:06.039] needs so let's talk about that because I
+[00:32:08.039] think that's a really important piece of
+[00:32:09.720] as to where development goes because
+[00:32:13.159] developers aren't developers just
+[00:32:14.880] because let's go into this space because
+[00:32:16.480] there's a ton of money in it they do it
+[00:32:18.120] because they love problem solving and
+[00:32:19.880] they enjoy coding so in this new world
+[00:32:22.880] what is the where's the fun where what's
+[00:32:24.919] the thing that is going to get a
+[00:32:25.919] developer to have that amazing moment
+[00:32:28.480] where they solve something is that still
+[00:32:30.000] going to
+[00:32:31.360] exist I I sure hope so I would be bummed
+[00:32:34.320] out if if the AI took the fun Parts out
+[00:32:36.440] of the job because yeah I think
+[00:32:38.639] hopefully where this goes is that the AI
+[00:32:40.919] takes the not fun parts and does those
+[00:32:43.039] for me and then I get to focus on the
+[00:32:45.159] fun Parts but I don't know what that
+[00:32:47.320] actually looks like for would I enjoy my
+[00:32:50.279] job if all that I was doing was writing
+[00:32:52.919] a test and the types and the interface
+[00:32:56.120] would that be fun for me I don't know if
+[00:32:58.080] it would that creative piece by seeing
+[00:33:01.919] an application being built up by writing
+[00:33:03.919] spec versus actually writing the code
+[00:33:06.080] because you are still creating but you
+[00:33:08.480] could argue as well exactly like you
+[00:33:10.240] said if you can get the AI to do those
+[00:33:11.440] things that you either don't like doing
+[00:33:13.600] or takes time and isn't actually that
+[00:33:15.360] part of the creation everything from
+[00:33:17.240] tests as well but documentation those
+[00:33:19.440] kind of things that keep everything up
+[00:33:21.120] to the standard which often when we look
+[00:33:23.200] in open source spaces and other areas
+[00:33:26.279] your mileage varies across many
+[00:33:28.159] different libraries and packages right
+[00:33:29.840] there's that aspect as well going
+[00:33:32.159] further into the future some people say
+[00:33:34.679] do you know what this is great but you
+[00:33:36.519] didn't go far enough there's something
+[00:33:37.760] beyond what you're saying which is
+[00:33:39.320] talking about developers or what we
+[00:33:41.799] would label as a developer in the future
+[00:33:43.960] they're just going to write test specs
+[00:33:45.279] rather than Implement
+[00:33:47.639] um and people will use AI for writing
+[00:33:50.880] tests as well so instead of treating AI
+[00:33:54.039] as a solution effectively just to build
+[00:33:56.320] code you'd treat it as a companion that
+[00:33:58.519] says I'm going to write some tests I'm
+[00:34:00.039] going to write some code it does it all
+[00:34:02.000] for me and my hands are clean it it
+[00:34:04.960] broadens the number of people that can
+[00:34:06.440] be that developer as well yeah where
+[00:34:09.040] does it
+[00:34:10.240] stop yeah I think we've seen so many so
+[00:34:13.679] many I don't know attempts but some of
+[00:34:16.159] them successful around low code or no
+[00:34:18.800] code and they're I think it's a wide
+[00:34:21.520] space And so there's going to be I'm
+[00:34:24.919] sure places that need developers who can
+[00:34:27.440] write code and debug code and get into
+[00:34:29.879] the Gory details of things and figure
+[00:34:31.960] out the hard problems and then just like
+[00:34:34.399] we have with low code and no code
+[00:34:36.159] there's going to be this widening of who
+[00:34:38.639] can actually be a developer who can
+[00:34:41.079] create things and an example that my
+[00:34:43.159] co-author podcast co-host Bruce eckel
+[00:34:46.200] likes to talk about is that we've got a
+[00:34:48.480] bookstore in in our little town we live
+[00:34:50.919] in here in crb Colorado and the software
+[00:34:54.079] that exists to manage a bookstore is
+[00:34:56.599] terrible because who is motivated to
+[00:34:59.560] build a team of 20 developers to build
+[00:35:02.359] good bookstore software right like it
+[00:35:04.560] just it doesn't make sense to for that
+[00:35:07.800] space to be solved because it's too
+[00:35:10.160] expensive to get to a good solution and
+[00:35:13.560] there's not not enough benefit to people
+[00:35:15.920] actually investing in that and so we
+[00:35:18.160] have a problem that that there are many
+[00:35:21.280] domains in our world that could be
+[00:35:23.640] better solved through software and yet
+[00:35:26.480] there's not enough
+[00:35:28.160] Financial motivation there people have
+[00:35:31.040] to spend many years learning how to
+[00:35:33.160] build systems to be able to solve those
+[00:35:35.599] problems and if we can W significantly
+[00:35:39.400] widen the net for who can actually solve
+[00:35:41.760] these problems like that is amazing and
+[00:35:44.320] could get our friend Arvin who runs the
+[00:35:46.040] bookstore good bookstore software that
+[00:35:49.119] he currently doesn't have because there
+[00:35:51.280] just isn't the
+[00:35:53.160] economic incentives for that to exist
+[00:35:57.000] and so I think great let's widen the
+[00:35:58.880] spectrum of who can solve many of the
+[00:36:01.640] problems around the world with software
+[00:36:03.760] I think that's a great thing but I don't
+[00:36:05.800] foresee there is the future is that only
+[00:36:10.200] people that don't know how to code but
+[00:36:12.200] know how to use AI tools are the only
+[00:36:15.119] ones that exist I don't I think it'll
+[00:36:17.200] just continue to be a spectrum of we
+[00:36:19.800] solve many different problems in the
+[00:36:22.000] space of software and and there's there
+[00:36:25.839] it's a very big tent with room for a lot
+[00:36:28.000] of people and a lot of different tools
+[00:36:29.800] and a lot of different skill sets and a
+[00:36:31.760] lot of different experiences so that's
+[00:36:34.240] my crystal ball take on is I don't think
+[00:36:35.960] developers are going away and being
+[00:36:37.800] replaced by AIS anytime soon but
+[00:36:40.079] certainly there will be developers that
+[00:36:42.280] use these tools to hopefully enable us
+[00:36:45.240] to be more productive and focus on the
+[00:36:46.880] fun Parts yeah sounds great sounds great
+[00:36:50.040] James this has been wonderful and yeah
+[00:36:51.880] next up actually we're going to we're
+[00:36:53.200] going to get a little bit more Hands-On
+[00:36:54.319] we're going to screen share and actually
+[00:36:55.640] actually see some see some of C in
+[00:36:57.920] action and talk a little bit about how
+[00:37:00.119] AI tools can help us help us actually
+[00:37:02.800] write better tests and write more tests
+[00:37:05.000] as we develop code James for the time
+[00:37:06.599] being thank you so much it was a really
+[00:37:08.200] great cheat that was a fun chat thank
+[00:37:18.920] you thanks for tuning in join us next
+[00:37:21.680] time on the AI native Dev brought to you
+[00:37:24.040] by Tesla
+[00:37:27.640] oh

@@ -1,0 +1,6257 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:04.960
+Agent is actually a wrapper around your
+
+2
+00:00:02.880 --> 00:00:06.720
+LLM. So, imagine you are starting your
+
+3
+00:00:04.960 --> 00:00:08.320
+session and asking Claude code to
+
+4
+00:00:06.720 --> 00:00:10.480
+develop something and all of this
+
+5
+00:00:08.320 --> 00:00:12.480
+information goes into the context and
+
+6
+00:00:10.480 --> 00:00:14.560
+every time Claude code tries to fix the
+
+7
+00:00:12.480 --> 00:00:16.000
+bug, it actually sends this information
+
+8
+00:00:14.560 --> 00:00:18.160
+to the context window. So, all these
+
+9
+00:00:16.000 --> 00:00:19.800
+trace logs, trace backs, all this goes
+
+10
+00:00:18.160 --> 00:00:21.720
+into the context. We are in the era
+
+11
+00:00:19.800 --> 00:00:24.120
+where we can just populate in plain
+
+12
+00:00:21.720 --> 00:00:26.120
+language a huge document describing how
+
+13
+00:00:24.120 --> 00:00:27.600
+something complex should work and agent
+
+14
+00:00:26.120 --> 00:00:29.480
+will come up with a roughly working
+
+15
+00:00:27.600 --> 00:00:31.120
+solution on its own. Usually, it won't
+
+16
+00:00:29.480 --> 00:00:33.200
+be exactly what you want and you will
+
+17
+00:00:31.120 --> 00:00:35.080
+need to anyway like manual interventions
+
+18
+00:00:33.200 --> 00:00:37.040
+and fixes to validate that. But again,
+
+19
+00:00:35.080 --> 00:00:38.920
+it's not a bug, it's a feature because
+
+20
+00:00:37.040 --> 00:00:41.400
+we are underspecifying stuff. What's a
+
+21
+00:00:38.920 --> 00:00:43.960
+good way to be able to eval an agent's
+
+22
+00:00:41.400 --> 00:00:47.040
+capability as let's say code generation?
+
+23
+00:00:43.960 --> 00:00:47.040
+&gt;&gt; So, it's a huge topic.
+
+24
+00:00:47.340 --> 00:00:53.319
+[Music]
+
+25
+00:00:53.440 --> 00:00:56.680
+Before we jump into this episode, I
+
+26
+00:00:55.000 --> 00:00:59.360
+wanted to let you know that this podcast
+
+27
+00:00:56.680 --> 00:01:01.440
+is for developers building with AI at
+
+28
+00:00:59.360 --> 00:01:04.120
+the core. So, whether that's exploring
+
+29
+00:01:01.440 --> 00:01:06.680
+the latest tools, the workflows, or the
+
+30
+00:01:04.120 --> 00:01:09.000
+best practices, this podcast for you. A
+
+31
+00:01:06.680 --> 00:01:10.320
+really quick ask, 90% of people who are
+
+32
+00:01:09.000 --> 00:01:12.040
+listening to this haven't yet
+
+33
+00:01:10.320 --> 00:01:13.880
+subscribed. So, if this content has
+
+34
+00:01:12.040 --> 00:01:16.200
+helped you build smarter, hit that
+
+35
+00:01:13.880 --> 00:01:18.720
+subscribe button and maybe a like. All
+
+36
+00:01:16.200 --> 00:01:21.120
+right, back to the episode. Hello and
+
+37
+00:01:18.720 --> 00:01:23.000
+welcome to another episode of the AI and
+
+38
+00:01:21.120 --> 00:01:24.520
+Native Dev. I'm super excited about this
+
+39
+00:01:23.000 --> 00:01:26.280
+episode. We're going to go uh we're
+
+40
+00:01:24.520 --> 00:01:27.640
+actually going to talk about uh agents
+
+41
+00:01:26.280 --> 00:01:30.400
+and we're going to do a kind of like a
+
+42
+00:01:27.640 --> 00:01:33.800
+little 101 uh with agents. I know there
+
+43
+00:01:30.400 --> 00:01:35.360
+are a ton of people who have absolutely
+
+44
+00:01:33.800 --> 00:01:36.840
+gone deep with agents, tried every
+
+45
+00:01:35.360 --> 00:01:38.600
+single agents. But actually, do you know
+
+46
+00:01:36.840 --> 00:01:40.320
+what? There are a huge number of
+
+47
+00:01:38.600 --> 00:01:42.280
+developers as we found out at various
+
+48
+00:01:40.320 --> 00:01:44.960
+conferences recently that when we talk
+
+49
+00:01:42.280 --> 00:01:47.680
+about agents, we actually need to do
+
+50
+00:01:44.960 --> 00:01:50.720
+more content which is more about 101.
+
+51
+00:01:47.680 --> 00:01:52.160
+Let's talk about why agents are useful,
+
+52
+00:01:50.720 --> 00:01:53.600
+what are the constituent parts of
+
+53
+00:01:52.160 --> 00:01:55.320
+agents, how can we best use them, what
+
+54
+00:01:53.600 --> 00:01:57.000
+are they good for, what are they not,
+
+55
+00:01:55.320 --> 00:02:00.480
+and also what is the difference between
+
+56
+00:01:57.000 --> 00:02:01.960
+agents and other types of AI uh
+
+57
+00:02:00.480 --> 00:02:04.840
+you know pieces like a
+
+58
+00:02:01.960 --> 00:02:07.360
+like an assistant or perhaps a bot or
+
+59
+00:02:04.840 --> 00:02:10.360
+something like that. Joining me today uh
+
+60
+00:02:07.360 --> 00:02:12.760
+is is Max Shaposhnikov uh who is going
+
+61
+00:02:10.360 --> 00:02:15.440
+to be talking uh about all of these
+
+62
+00:02:12.760 --> 00:02:18.120
+wonderful agent 101s. Uh Max is a
+
+63
+00:02:15.440 --> 00:02:20.040
+research engineer at uh Tessel. Max,
+
+64
+00:02:18.120 --> 00:02:21.120
+welcome to the podcast. How are you? Hi,
+
+65
+00:02:20.040 --> 00:02:23.320
+thank you very much for this great
+
+66
+00:02:21.120 --> 00:02:26.400
+introduction. Yeah, I'm happy to be
+
+67
+00:02:23.320 --> 00:02:27.840
+there and happy to talk about agents 101
+
+68
+00:02:26.400 --> 00:02:29.440
+and share some some insights, some
+
+69
+00:02:27.840 --> 00:02:31.000
+details about that. So, yeah, let's dive
+
+70
+00:02:29.440 --> 00:02:33.960
+in. And this is the kind of thing Max is
+
+71
+00:02:31.000 --> 00:02:36.200
+a Max is uh a very humble but very very
+
+72
+00:02:33.960 --> 00:02:37.840
+smart uh person. So, while we're going
+
+73
+00:02:36.200 --> 00:02:40.400
+to try and fit this into an episode,
+
+74
+00:02:37.840 --> 00:02:42.920
+this may be a part one of seven or
+
+75
+00:02:40.400 --> 00:02:44.240
+eight. We will see. Uh but but Max, what
+
+76
+00:02:42.920 --> 00:02:46.560
+do we actually what Max, will you tell
+
+77
+00:02:44.240 --> 00:02:47.640
+us a little bit about yourself first? Um
+
+78
+00:02:46.560 --> 00:02:49.800
+what you've been working on, what your
+
+79
+00:02:47.640 --> 00:02:51.120
+passions are in the in the AI space.
+
+80
+00:02:49.800 --> 00:02:53.760
+It's my first experience like working
+
+81
+00:02:51.120 --> 00:02:54.840
+with code gen uh here at Tessel. Um I
+
+82
+00:02:53.760 --> 00:02:57.920
+work as a research engineer as I
+
+83
+00:02:54.840 --> 00:03:00.200
+mentioned. Our focus here on like making
+
+84
+00:02:57.920 --> 00:03:02.240
+agents reliable and be able to produce
+
+85
+00:03:00.200 --> 00:03:03.880
+uh robust code such that whenever your
+
+86
+00:03:02.240 --> 00:03:05.920
+agent develop you something, you can be
+
+87
+00:03:03.880 --> 00:03:07.480
+confident and sure that it develop
+
+88
+00:03:05.920 --> 00:03:08.880
+something good, something which you can
+
+89
+00:03:07.480 --> 00:03:11.240
+trust and you don't need to, you know,
+
+90
+00:03:08.880 --> 00:03:12.920
+expend hours verifying the results. So,
+
+91
+00:03:11.240 --> 00:03:15.280
+that's the thing which we're building
+
+92
+00:03:12.920 --> 00:03:17.600
+here at Tessel. Um beyond that, my
+
+93
+00:03:15.280 --> 00:03:19.840
+previous experience was a lot uh about
+
+94
+00:03:17.600 --> 00:03:22.720
+pre-training of the LLMs.
+
+95
+00:03:19.840 --> 00:03:24.520
+I worked at a big tech and uh again like
+
+96
+00:03:22.720 --> 00:03:27.080
+I was in the pre-training team in the
+
+97
+00:03:24.520 --> 00:03:28.200
+foundational LLM team where we focused
+
+98
+00:03:27.080 --> 00:03:30.400
+on
+
+99
+00:03:28.200 --> 00:03:32.200
+figuring out how to how to train
+
+100
+00:03:30.400 --> 00:03:34.440
+large-scale models uh that could be
+
+101
+00:03:32.200 --> 00:03:36.720
+later fine-tuned for specific tasks uh
+
+102
+00:03:34.440 --> 00:03:38.800
+and again like coding is one such task.
+
+103
+00:03:36.720 --> 00:03:39.800
+I didn't uh work with that before
+
+104
+00:03:38.800 --> 00:03:41.320
+Tessel.
+
+105
+00:03:39.800 --> 00:03:43.600
+Uh my specification was like natural
+
+106
+00:03:41.320 --> 00:03:45.960
+language processing, text-to-speech, and
+
+107
+00:03:43.600 --> 00:03:48.200
+other more common multimodalities.
+
+108
+00:03:45.960 --> 00:03:49.160
+Interesting, very cool. And and I think,
+
+109
+00:03:48.200 --> 00:03:50.280
+you know, when we think about think
+
+110
+00:03:49.160 --> 00:03:52.160
+about agents, there's a bunch that's
+
+111
+00:03:50.280 --> 00:03:53.520
+kind of, you know, similar across
+
+112
+00:03:52.160 --> 00:03:54.560
+irrespective of what the agent's trying
+
+113
+00:03:53.520 --> 00:03:56.160
+to do or what it's trying to whether
+
+114
+00:03:54.560 --> 00:03:58.880
+it's trying to generate code or not. And
+
+115
+00:03:56.160 --> 00:04:01.880
+let's kind of first of all position an
+
+116
+00:03:58.880 --> 00:04:02.840
+agent with other AI entities. So, I
+
+117
+00:04:01.880 --> 00:04:05.360
+mentioned at the start, you know, we
+
+118
+00:04:02.840 --> 00:04:08.280
+have assistants and that's really where
+
+119
+00:04:05.360 --> 00:04:10.600
+when we think about AI code generation,
+
+120
+00:04:08.280 --> 00:04:13.920
+typically the the early stage co-pilots
+
+121
+00:04:10.600 --> 00:04:16.799
+of of the year were very much assistants
+
+122
+00:04:13.920 --> 00:04:19.200
+to us. What makes the difference between
+
+123
+00:04:16.799 --> 00:04:21.799
+an agent, an assistant, and a and even a
+
+124
+00:04:19.200 --> 00:04:24.680
+bot? I think um
+
+125
+00:04:21.799 --> 00:04:25.840
+the right answer would be like uh
+
+126
+00:04:24.680 --> 00:04:28.640
+there are like
+
+127
+00:04:25.840 --> 00:04:30.760
+couple of these types of entities as I
+
+128
+00:04:28.640 --> 00:04:32.480
+mentioned and uh actually never thought
+
+129
+00:04:30.760 --> 00:04:34.920
+about that co-pilot thing, but I think
+
+130
+00:04:32.480 --> 00:04:37.000
+it's a fourth uh such modality. So, in
+
+131
+00:04:34.920 --> 00:04:39.800
+my picture, there are like bots,
+
+132
+00:04:37.000 --> 00:04:42.000
+co-pilots, AI assistants, and AI agents.
+
+133
+00:04:39.800 --> 00:04:45.200
+So, that's like a more complete picture.
+
+134
+00:04:42.000 --> 00:04:48.400
+Uh I would say like the bots is the the
+
+135
+00:04:45.200 --> 00:04:50.720
+oldest type of these um
+
+136
+00:04:48.400 --> 00:04:52.400
+uh you know, in this space. Uh usually,
+
+137
+00:04:50.720 --> 00:04:54.000
+they are automating super simple
+
+138
+00:04:52.400 --> 00:04:55.920
+scripted tasks.
+
+139
+00:04:54.000 --> 00:04:58.200
+Uh they don't include
+
+140
+00:04:55.920 --> 00:05:00.400
+uh multi-turn conversations. They are
+
+141
+00:04:58.200 --> 00:05:03.720
+having like a predetermined dialogue
+
+142
+00:05:00.400 --> 00:05:05.440
+tree like or dialogue flow and you know
+
+143
+00:05:03.720 --> 00:05:07.680
+and you can forecast and understand like
+
+144
+00:05:05.440 --> 00:05:10.400
+in advance in which position, in which
+
+145
+00:05:07.680 --> 00:05:12.880
+node the the bot will be.
+
+146
+00:05:10.400 --> 00:05:14.320
+Um so, you script all the logic. In some
+
+147
+00:05:12.880 --> 00:05:16.520
+specific cases, there might might be
+
+148
+00:05:14.320 --> 00:05:17.760
+like ML models applied, but again like
+
+149
+00:05:16.520 --> 00:05:19.280
+they are super simple like
+
+150
+00:05:17.760 --> 00:05:21.640
+classification tasks, named entity
+
+151
+00:05:19.280 --> 00:05:23.640
+recognition. That's it. And we're
+
+152
+00:05:21.640 --> 00:05:25.760
+talking about typical bots, website bots
+
+153
+00:05:23.640 --> 00:05:28.120
+that we love to hate. Yeah, yeah, I get
+
+154
+00:05:25.760 --> 00:05:29.960
+you. Yeah. At some point like I think in
+
+155
+00:05:28.120 --> 00:05:33.080
+that that trend about building bots
+
+156
+00:05:29.960 --> 00:05:34.880
+started since uh Alexa, maybe like 2015,
+
+157
+00:05:33.080 --> 00:05:37.360
+right? Like when first version of Alexa
+
+158
+00:05:34.880 --> 00:05:39.160
+was released and Siri was released. So,
+
+159
+00:05:37.360 --> 00:05:41.040
+there was like a lot of hope that bots
+
+160
+00:05:39.160 --> 00:05:42.800
+will be the future.
+
+161
+00:05:41.040 --> 00:05:43.920
+Uh well, uh apparently, we're still not
+
+162
+00:05:42.800 --> 00:05:45.960
+there.
+
+163
+00:05:43.920 --> 00:05:48.640
+Uh bots are still not able to do lots
+
+164
+00:05:45.960 --> 00:05:50.280
+of, you know, cool stuff. Uh again like
+
+165
+00:05:48.640 --> 00:05:52.320
+they are super simple in the nature in
+
+166
+00:05:50.280 --> 00:05:54.240
+their nature. They are prescriptive.
+
+167
+00:05:52.320 --> 00:05:56.840
+They have like specific patterns about
+
+168
+00:05:54.240 --> 00:05:58.240
+how how to perform specific tasks and
+
+169
+00:05:56.840 --> 00:06:00.280
+they are very limited. They don't have
+
+170
+00:05:58.240 --> 00:06:02.200
+an environment and environment is a very
+
+171
+00:06:00.280 --> 00:06:03.600
+key like important word which we'll talk
+
+172
+00:06:02.200 --> 00:06:05.480
+later. Um
+
+173
+00:06:03.600 --> 00:06:07.840
+so, moving next, I think that the next
+
+174
+00:06:05.480 --> 00:06:11.080
+in this uh hierarchy is the co-pilots.
+
+175
+00:06:07.840 --> 00:06:12.680
+Uh co-pilots are like auto-complete.
+
+176
+00:06:11.080 --> 00:06:16.120
+Uh usually, we treated uh as
+
+177
+00:06:12.680 --> 00:06:20.840
+auto-complete models which help you to
+
+178
+00:06:16.120 --> 00:06:22.320
+assist in finishing the specific context
+
+179
+00:06:20.840 --> 00:06:24.080
+uh which you are working with. So, in
+
+180
+00:06:22.320 --> 00:06:26.160
+terms of code, imagine you are like
+
+181
+00:06:24.080 --> 00:06:27.920
+typing some function, it gathers the
+
+182
+00:06:26.160 --> 00:06:29.120
+local context, for example, the previous
+
+183
+00:06:27.920 --> 00:06:31.880
+information which is already in the
+
+184
+00:06:29.120 --> 00:06:34.360
+file, the future information um
+
+185
+00:06:31.880 --> 00:06:36.680
+and that's already enough for it to just
+
+186
+00:06:34.360 --> 00:06:38.040
+complete a small piece in the middle uh
+
+187
+00:06:36.680 --> 00:06:39.920
+for the function which you work. But
+
+188
+00:06:38.040 --> 00:06:42.760
+again like the scope is very small, it's
+
+189
+00:06:39.920 --> 00:06:44.360
+super local, and the key feature for
+
+190
+00:06:42.760 --> 00:06:47.240
+co-pilot models is that they should be
+
+191
+00:06:44.360 --> 00:06:49.040
+like instant, super fast such that
+
+192
+00:06:47.240 --> 00:06:51.000
+uh you know, you can press a tab and it
+
+193
+00:06:49.040 --> 00:06:52.560
+work like an auto-complete. And
+
+194
+00:06:51.000 --> 00:06:54.360
+actually, when when we were talking in
+
+195
+00:06:52.560 --> 00:06:56.560
+the early stages of our podcast when we
+
+196
+00:06:54.360 --> 00:06:58.040
+were talking with people like uh Tabnine
+
+197
+00:06:56.560 --> 00:06:59.400
+in the early days when we they were
+
+198
+00:06:58.040 --> 00:07:02.320
+saying some super interesting things
+
+199
+00:06:59.400 --> 00:07:04.360
+about how the speed at which uh an
+
+200
+00:07:02.320 --> 00:07:05.880
+auto-complete basically a co-pilot like
+
+201
+00:07:04.360 --> 00:07:07.360
+you say, the speed at which that
+
+202
+00:07:05.880 --> 00:07:09.920
+delivered an answer
+
+203
+00:07:07.360 --> 00:07:12.000
+massively like talking split seconds
+
+204
+00:07:09.920 --> 00:07:13.840
+massively changed the user the developer
+
+205
+00:07:12.000 --> 00:07:15.720
+experience with those whether people
+
+206
+00:07:13.840 --> 00:07:17.680
+would want to use them or not. And
+
+207
+00:07:15.720 --> 00:07:20.160
+typically, it's because they provide
+
+208
+00:07:17.680 --> 00:07:22.280
+small responses. They're short responses
+
+209
+00:07:20.160 --> 00:07:25.160
+that I as an individual know what I
+
+210
+00:07:22.280 --> 00:07:27.000
+should expect and know what I I can
+
+211
+00:07:25.160 --> 00:07:28.800
+actually type it myself most likely cuz
+
+212
+00:07:27.000 --> 00:07:30.360
+I'm not asking it to do something huge.
+
+213
+00:07:28.800 --> 00:07:31.280
+It's just a single line or something
+
+214
+00:07:30.360 --> 00:07:33.040
+that is
+
+215
+00:07:31.280 --> 00:07:36.000
+very often based on the very local
+
+216
+00:07:33.040 --> 00:07:38.000
+context of the of the method, etc. Yeah,
+
+217
+00:07:36.000 --> 00:07:40.120
+I think like in the early days, these
+
+218
+00:07:38.000 --> 00:07:42.200
+co-pilot models, the the requirement for
+
+219
+00:07:40.120 --> 00:07:44.640
+it to be super fast was extremely
+
+220
+00:07:42.200 --> 00:07:47.080
+important because they were just not
+
+221
+00:07:44.640 --> 00:07:49.400
+able to deliver complex stuff and that's
+
+222
+00:07:47.080 --> 00:07:51.040
+why people were very picky and serious
+
+223
+00:07:49.400 --> 00:07:52.680
+about the speed of it. Now, there's a
+
+224
+00:07:51.040 --> 00:07:54.920
+relaxation of this requirement and I
+
+225
+00:07:52.680 --> 00:07:57.600
+think people are ready to wait more if
+
+226
+00:07:54.920 --> 00:07:59.360
+this uh co-pilot models could, you know,
+
+227
+00:07:57.600 --> 00:08:01.600
+achieve like or
+
+228
+00:07:59.360 --> 00:08:04.240
+really execute a very complex scenario.
+
+229
+00:08:01.600 --> 00:08:06.360
+I can think of a actual scenario where
+
+230
+00:08:04.240 --> 00:08:08.640
+you are defining, let's say, a class and
+
+231
+00:08:06.360 --> 00:08:10.560
+you're writing a docstring for a class.
+
+232
+00:08:08.640 --> 00:08:12.120
+Um so, the docstring can be quite
+
+233
+00:08:10.560 --> 00:08:14.360
+complex, right? It can include a lot of
+
+234
+00:08:12.120 --> 00:08:15.880
+details about like your intentions, how
+
+235
+00:08:14.360 --> 00:08:19.040
+this class will look like, what it will
+
+236
+00:08:15.880 --> 00:08:20.400
+do. And I think now that agents are so
+
+237
+00:08:19.040 --> 00:08:23.560
+sorry, not agents like assistants,
+
+238
+00:08:20.400 --> 00:08:25.800
+co-pilots are so smart, people are okay
+
+239
+00:08:23.560 --> 00:08:28.880
+to wait couple of more seconds
+
+240
+00:08:25.800 --> 00:08:30.840
+um and the tolerance to wait uh is now
+
+241
+00:08:28.880 --> 00:08:32.240
+like growing. That that like literally
+
+242
+00:08:30.840 --> 00:08:33.960
+literally fine because they their
+
+243
+00:08:32.240 --> 00:08:35.440
+capabilities just growing up. Uh that's
+
+244
+00:08:33.960 --> 00:08:37.880
+our um
+
+245
+00:08:35.440 --> 00:08:39.479
+uh co-pilots. Again like their core
+
+246
+00:08:37.880 --> 00:08:41.760
+feature, usually, they are small, they
+
+247
+00:08:39.479 --> 00:08:43.560
+are instant in response. The next
+
+248
+00:08:41.760 --> 00:08:44.880
+generation of the models is AI
+
+249
+00:08:43.560 --> 00:08:46.800
+assistants
+
+250
+00:08:44.880 --> 00:08:50.400
+uh and this is the first moment I think
+
+251
+00:08:46.800 --> 00:08:52.680
+where the agentic capabilities are
+
+252
+00:08:50.400 --> 00:08:54.240
+already uh presented.
+
+253
+00:08:52.680 --> 00:08:56.600
+Uh maybe not in the full picture, but
+
+254
+00:08:54.240 --> 00:08:58.960
+still like a lot of them already there.
+
+255
+00:08:56.600 --> 00:09:01.680
+So, their purpose is to assist with user
+
+256
+00:08:58.960 --> 00:09:04.240
+tasks and this is the first moment where
+
+257
+00:09:01.680 --> 00:09:06.440
+user task can be actually anything. It
+
+258
+00:09:04.240 --> 00:09:09.400
+can be code generation, but it can be
+
+259
+00:09:06.440 --> 00:09:10.920
+planning, it can be searching for and
+
+260
+00:09:09.400 --> 00:09:13.080
+doing them doing the market research.
+
+261
+00:09:10.920 --> 00:09:15.040
+Like the purpose of the assistant can be
+
+262
+00:09:13.080 --> 00:09:17.960
+different. The capabilities the core
+
+263
+00:09:15.040 --> 00:09:21.080
+capabilities for uh this assistant is to
+
+264
+00:09:17.960 --> 00:09:23.680
+respond to the user requests. So, like
+
+265
+00:09:21.080 --> 00:09:26.160
+as assistant word means like uh
+
+266
+00:09:23.680 --> 00:09:29.080
+it waits for your for your response, it
+
+267
+00:09:26.160 --> 00:09:31.560
+outputs you uh it you know, like result
+
+268
+00:09:29.080 --> 00:09:33.680
+of execution and it further waits for
+
+269
+00:09:31.560 --> 00:09:37.440
+for another clar- clarifications or
+
+270
+00:09:33.680 --> 00:09:39.680
+another commands. So, it um it iterates
+
+271
+00:09:37.440 --> 00:09:40.800
+with it interacts with you in a chat
+
+272
+00:09:39.680 --> 00:09:42.960
+chat way.
+
+273
+00:09:40.800 --> 00:09:44.480
+Uh it doesn't generate like a long plan,
+
+274
+00:09:42.960 --> 00:09:46.400
+it doesn't focus on the long horizon
+
+275
+00:09:44.480 --> 00:09:48.520
+tasks. It's focused specifically on what
+
+276
+00:09:46.400 --> 00:09:51.200
+to do what you want to do right now. And
+
+277
+00:09:48.520 --> 00:09:53.480
+I think like the core another important
+
+278
+00:09:51.200 --> 00:09:55.440
+uh detail is that uh user makes the
+
+279
+00:09:53.480 --> 00:09:57.040
+decisions. So, user is always in the
+
+280
+00:09:55.440 --> 00:09:59.000
+loop uh and that's what is the
+
+281
+00:09:57.040 --> 00:10:01.240
+differentiator factor for
+
+282
+00:09:59.000 --> 00:10:03.680
+between the agent and the system. And
+
+283
+00:10:01.240 --> 00:10:06.280
+nowadays, I think like yes, definitely
+
+284
+00:10:03.680 --> 00:10:08.080
+like AI agents are growing and becoming
+
+285
+00:10:06.280 --> 00:10:10.800
+massively adopted, but still in
+
+286
+00:10:08.080 --> 00:10:14.160
+practice, people are mixing
+
+287
+00:10:10.800 --> 00:10:16.480
+the term AI agent with AI assistant. And
+
+288
+00:10:14.160 --> 00:10:18.280
+if you're using a cursor with a top
+
+289
+00:10:16.480 --> 00:10:19.960
+interactive tab open on the right, then
+
+290
+00:10:18.280 --> 00:10:21.720
+you're using using AI assistant because
+
+291
+00:10:19.960 --> 00:10:23.840
+you're always there to chat with the
+
+292
+00:10:21.720 --> 00:10:26.240
+model and fix it. And even if you're
+
+293
+00:10:23.840 --> 00:10:28.240
+using cloud code, which is technically
+
+294
+00:10:26.240 --> 00:10:29.960
+AI agent, you're still very likely use
+
+295
+00:10:28.240 --> 00:10:32.840
+it as a system because you're typing
+
+296
+00:10:29.960 --> 00:10:34.240
+commands, you validate the results, and
+
+297
+00:10:32.840 --> 00:10:35.920
+if you're unhappy, then you ask it to
+
+298
+00:10:34.240 --> 00:10:37.440
+redo something. So, so would you say
+
+299
+00:10:35.920 --> 00:10:39.560
+they are
+
+300
+00:10:37.440 --> 00:10:41.520
+they have that agentic capability, but
+
+301
+00:10:39.560 --> 00:10:42.720
+typically the way we use them is as an
+
+302
+00:10:41.520 --> 00:10:44.720
+assistant.
+
+303
+00:10:42.720 --> 00:10:46.920
+So, the the difference between a the
+
+304
+00:10:44.720 --> 00:10:48.440
+difference between an agent or an
+
+305
+00:10:46.920 --> 00:10:50.520
+assistant
+
+306
+00:10:48.440 --> 00:10:53.040
+is almost the way we use it versus
+
+307
+00:10:50.520 --> 00:10:56.040
+capabilities. Maybe it's different
+
+308
+00:10:53.040 --> 00:10:58.200
+versions or not versions, but different
+
+309
+00:10:56.040 --> 00:11:00.200
+implementations and offerings will be
+
+310
+00:10:58.200 --> 00:11:01.839
+better at certain things versus other,
+
+311
+00:11:00.200 --> 00:11:04.400
+whether it's
+
+312
+00:11:01.839 --> 00:11:06.640
+the longer term more autonomous tasks
+
+313
+00:11:04.400 --> 00:11:09.560
+versus the other, but it's typically
+
+314
+00:11:06.640 --> 00:11:11.640
+how we interact. Correct. So, I think
+
+315
+00:11:09.560 --> 00:11:13.480
+if we want to highlight the border, then
+
+316
+00:11:11.640 --> 00:11:15.080
+like assistants they're again like
+
+317
+00:11:13.480 --> 00:11:17.960
+interacting with the user, waiting for
+
+318
+00:11:15.080 --> 00:11:20.040
+the response. And
+
+319
+00:11:17.960 --> 00:11:22.560
+the user makes the decisions. But for AI
+
+320
+00:11:20.040 --> 00:11:23.960
+agents, usually they can be treated as
+
+321
+00:11:22.560 --> 00:11:27.240
+proactive
+
+322
+00:11:23.960 --> 00:11:29.839
+tasks, like assistants which can do like
+
+323
+00:11:27.240 --> 00:11:32.520
+long horizon, very challenging,
+
+324
+00:11:29.839 --> 00:11:34.560
+multi-step complex tasks,
+
+325
+00:11:32.520 --> 00:11:36.520
+sometimes not requiring human in the
+
+326
+00:11:34.560 --> 00:11:39.680
+loop. That's the definition of the AI
+
+327
+00:11:36.520 --> 00:11:42.680
+agent, at least in this taxonomy which
+
+328
+00:11:39.680 --> 00:11:45.000
+we introduced of four core entities. AI
+
+329
+00:11:42.680 --> 00:11:46.880
+agent is like on the top because AI
+
+330
+00:11:45.000 --> 00:11:48.839
+agent can technically
+
+331
+00:11:46.880 --> 00:11:50.760
+do not require human to be there to
+
+332
+00:11:48.839 --> 00:11:53.240
+achieve the task. And let's go into
+
+333
+00:11:50.760 --> 00:11:56.480
+agency a little bit deeper in terms of
+
+334
+00:11:53.240 --> 00:11:58.720
+the way we use them. Um you mentioned
+
+335
+00:11:56.480 --> 00:12:01.360
+cursor, you mentioned code code. Very
+
+336
+00:11:58.720 --> 00:12:03.960
+different usage patterns in terms of one
+
+337
+00:12:01.360 --> 00:12:06.200
+uses a terminal UI, one uses a more
+
+338
+00:12:03.960 --> 00:12:08.560
+classical IDE.
+
+339
+00:12:06.200 --> 00:12:12.160
+If we look at others, in fact, quite a
+
+340
+00:12:08.560 --> 00:12:13.720
+few have almost favored either IDE or
+
+341
+00:12:12.160 --> 00:12:16.720
+terminal, but there are a surprising
+
+342
+00:12:13.720 --> 00:12:19.720
+number that favor terminal these days.
+
+343
+00:12:16.720 --> 00:12:22.520
+Is there a best way to use an agent? Is
+
+344
+00:12:19.720 --> 00:12:24.680
+there a way that is you know, easier for
+
+345
+00:12:22.520 --> 00:12:27.640
+us to give an agent information or
+
+346
+00:12:24.680 --> 00:12:29.839
+context? Or is it really up to the user
+
+347
+00:12:27.640 --> 00:12:31.000
+depending on how the user prefers to
+
+348
+00:12:29.839 --> 00:12:32.600
+interact with that agent?
+
+349
+00:12:31.000 --> 00:12:35.120
+&gt;&gt; Yes, I think
+
+350
+00:12:32.600 --> 00:12:37.640
+the interactivity is the differentiator
+
+351
+00:12:35.120 --> 00:12:41.600
+factor. Like when you're using an IDE
+
+352
+00:12:37.640 --> 00:12:45.040
+with a extension like a cursor
+
+353
+00:12:41.600 --> 00:12:47.760
+being like visible to you, then you are
+
+354
+00:12:45.040 --> 00:12:49.800
+like agreeing to to the scenario where
+
+355
+00:12:47.760 --> 00:12:51.800
+you are in the loop. You're always
+
+356
+00:12:49.800 --> 00:12:53.360
+checking what happens, and you're just
+
+357
+00:12:51.800 --> 00:12:55.920
+doing this interactively. So, UI
+
+358
+00:12:53.360 --> 00:12:57.560
+elements like simplify
+
+359
+00:12:55.920 --> 00:12:59.440
+and
+
+360
+00:12:57.560 --> 00:13:01.480
+you know, like accelerate the onboarding
+
+361
+00:12:59.440 --> 00:13:03.000
+for you as a developer. It doesn't
+
+362
+00:13:01.480 --> 00:13:06.360
+replace you as a developer. It's just
+
+363
+00:13:03.000 --> 00:13:08.560
+like here on the side exist to help you
+
+364
+00:13:06.360 --> 00:13:10.920
+with achieving like specific tasks like
+
+365
+00:13:08.560 --> 00:13:13.320
+executing helping you to write a
+
+366
+00:13:10.920 --> 00:13:16.640
+specific code file or specific unit test
+
+367
+00:13:13.320 --> 00:13:18.520
+and so on. And be very helpful in the
+
+368
+00:13:16.640 --> 00:13:20.440
+sense that there is a UI. You don't need
+
+369
+00:13:18.520 --> 00:13:22.440
+to know any commands because there are
+
+370
+00:13:20.440 --> 00:13:25.120
+buttons, and
+
+371
+00:13:22.440 --> 00:13:27.200
+it's just like a box for you to type the
+
+372
+00:13:25.120 --> 00:13:29.920
+text and execute. So,
+
+373
+00:13:27.200 --> 00:13:32.360
+I think like the cool
+
+374
+00:13:29.920 --> 00:13:33.560
+part of the cursor or WinServe is that
+
+375
+00:13:32.360 --> 00:13:35.960
+they are
+
+376
+00:13:33.560 --> 00:13:37.560
+giving you this IDE
+
+377
+00:13:35.960 --> 00:13:40.280
+with a
+
+378
+00:13:37.560 --> 00:13:43.480
+with lots of UI elements to help you
+
+379
+00:13:40.280 --> 00:13:45.760
+onboard to using these tools more like
+
+380
+00:13:43.480 --> 00:13:47.920
+proactively and in your everyday use
+
+381
+00:13:45.760 --> 00:13:49.960
+case. While for AI agents like with
+
+382
+00:13:47.920 --> 00:13:51.480
+terminal, by definition, like you don't
+
+383
+00:13:49.960 --> 00:13:54.120
+need like
+
+384
+00:13:51.480 --> 00:13:55.760
+buttons, right? Like complex things
+
+385
+00:13:54.120 --> 00:13:58.760
+complex things can be done just with the
+
+386
+00:13:55.760 --> 00:14:00.040
+combination of the of the of the of the
+
+387
+00:13:58.760 --> 00:14:02.000
+keys
+
+388
+00:14:00.040 --> 00:14:04.080
+or the commands. So, terminal is like
+
+389
+00:14:02.000 --> 00:14:06.480
+for more advanced users
+
+390
+00:14:04.080 --> 00:14:09.880
+for those who are ready to accelerate
+
+391
+00:14:06.480 --> 00:14:12.680
+even further because they don't need to
+
+392
+00:14:09.880 --> 00:14:15.400
+have have a visualization. They are okay
+
+393
+00:14:12.680 --> 00:14:16.839
+just like living in the terminal and
+
+394
+00:14:15.400 --> 00:14:18.360
+manipulating all the commands in the
+
+395
+00:14:16.839 --> 00:14:21.480
+terminal. Because if you're at some
+
+396
+00:14:18.360 --> 00:14:23.079
+point advanced the Vim or Nana or
+
+397
+00:14:21.480 --> 00:14:25.079
+whatever editor
+
+398
+00:14:23.079 --> 00:14:27.040
+or a Git, you actually don't need UIs,
+
+399
+00:14:25.079 --> 00:14:29.800
+right? You can just do and achieve very
+
+400
+00:14:27.040 --> 00:14:32.079
+hard scenarios with terminal directly,
+
+401
+00:14:29.800 --> 00:14:33.920
+and it saves you time. But again like
+
+402
+00:14:32.079 --> 00:14:36.160
+it's just like a bit harder because it's
+
+403
+00:14:33.920 --> 00:14:38.760
+less interactive because it's easier to
+
+404
+00:14:36.160 --> 00:14:40.839
+to lose what happens.
+
+405
+00:14:38.760 --> 00:14:42.880
+And I think the
+
+406
+00:14:40.839 --> 00:14:44.520
+the amount of the generated information
+
+407
+00:14:42.880 --> 00:14:46.760
+sometimes maybe overwhelming, so it's
+
+408
+00:14:44.520 --> 00:14:48.200
+hard to navigate for the terminal just
+
+409
+00:14:46.760 --> 00:14:50.440
+because there's so many things that are
+
+410
+00:14:48.200 --> 00:14:52.120
+happening, and it requires some skill to
+
+411
+00:14:50.440 --> 00:14:53.880
+learn how to use it properly. Yeah,
+
+412
+00:14:52.120 --> 00:14:55.720
+absolutely. And I think things like
+
+413
+00:14:53.880 --> 00:14:57.959
+cursor, for example, where you see the
+
+414
+00:14:55.720 --> 00:15:00.240
+the the changes and you can flip from
+
+415
+00:14:57.959 --> 00:15:02.000
+file to file very very easily. You
+
+416
+00:15:00.240 --> 00:15:03.680
+obviously miss that from the from the
+
+417
+00:15:02.000 --> 00:15:05.240
+terminal point of view. But I don't know
+
+418
+00:15:03.680 --> 00:15:06.880
+what it is about, you know, just being
+
+419
+00:15:05.240 --> 00:15:08.839
+on a terminal that actually just makes
+
+420
+00:15:06.880 --> 00:15:10.280
+me feel faster, more productive at the
+
+421
+00:15:08.839 --> 00:15:11.440
+terminal.
+
+422
+00:15:10.280 --> 00:15:13.160
+And of course, when you're at the
+
+423
+00:15:11.440 --> 00:15:15.240
+terminal, you get the power of the
+
+424
+00:15:13.160 --> 00:15:17.640
+terminal, right? It's it's it tell us a
+
+425
+00:15:15.240 --> 00:15:20.920
+little bit about how you can effectively
+
+426
+00:15:17.640 --> 00:15:23.200
+use the terminal beyond just code code.
+
+427
+00:15:20.920 --> 00:15:24.880
+Yeah, that's true. And another super
+
+428
+00:15:23.200 --> 00:15:25.920
+advantage of the terminal solution is
+
+429
+00:15:24.880 --> 00:15:28.839
+that like
+
+430
+00:15:25.920 --> 00:15:31.280
+it gives you a better way to run your
+
+431
+00:15:28.839 --> 00:15:34.360
+agent in the background, right? Like you
+
+432
+00:15:31.280 --> 00:15:37.600
+can run the cloud code code X terminal
+
+433
+00:15:34.360 --> 00:15:39.839
+CLI in the non-interactive mode
+
+434
+00:15:37.600 --> 00:15:41.880
+just for a CLI giving a prompt what you
+
+435
+00:15:39.839 --> 00:15:44.680
+want to, you know, what you want from
+
+436
+00:15:41.880 --> 00:15:47.079
+this agent to to do, and it will spawn a
+
+437
+00:15:44.680 --> 00:15:48.560
+background process and fully on its own
+
+438
+00:15:47.079 --> 00:15:51.240
+start executing
+
+439
+00:15:48.560 --> 00:15:53.680
+this complex request which you asked it.
+
+440
+00:15:51.240 --> 00:15:55.920
+But I think nowadays actually like any
+
+441
+00:15:53.680 --> 00:15:57.640
+AI system tools like such as cursor,
+
+442
+00:15:55.920 --> 00:15:58.720
+they are also moving in this direction,
+
+443
+00:15:57.640 --> 00:16:00.720
+and they're adding more and more
+
+444
+00:15:58.720 --> 00:16:03.600
+capabilities. For example,
+
+445
+00:16:00.720 --> 00:16:05.520
+a couple of months ago cursor couldn't
+
+446
+00:16:03.600 --> 00:16:07.240
+have access to a terminal. So, you if
+
+447
+00:16:05.520 --> 00:16:10.440
+you run something, you need to you
+
+448
+00:16:07.240 --> 00:16:12.320
+needed to copy and paste directly in the
+
+449
+00:16:10.440 --> 00:16:14.200
+in the text box
+
+450
+00:16:12.320 --> 00:16:15.760
+of the of the cursor
+
+451
+00:16:14.200 --> 00:16:17.760
+the error message, for example. But now
+
+452
+00:16:15.760 --> 00:16:19.680
+it actually has access to a terminal, so
+
+453
+00:16:17.760 --> 00:16:22.520
+it has access to the information which
+
+454
+00:16:19.680 --> 00:16:25.120
+you are in the terminal like
+
+455
+00:16:22.520 --> 00:16:27.200
+using. So, that's one thing. And now
+
+456
+00:16:25.120 --> 00:16:28.959
+there's that cursor also launched their
+
+457
+00:16:27.200 --> 00:16:32.040
+own agent, which can be also
+
+458
+00:16:28.959 --> 00:16:34.880
+non-interactive or CLI. So, they are
+
+459
+00:16:32.040 --> 00:16:36.839
+covering this space as well.
+
+460
+00:16:34.880 --> 00:16:38.320
+You know, they want to get both sides
+
+461
+00:16:36.839 --> 00:16:39.400
+and both people like who are who want to
+
+462
+00:16:38.320 --> 00:16:41.120
+interact who want to have more
+
+463
+00:16:39.400 --> 00:16:42.480
+interactivity and who who want who are
+
+464
+00:16:41.120 --> 00:16:45.240
+okay to
+
+465
+00:16:42.480 --> 00:16:47.200
+work just with CLI. It's fairly how
+
+466
+00:16:45.240 --> 00:16:49.120
+I think we're fairly familiar you and I
+
+467
+00:16:47.200 --> 00:16:50.400
+with trying out a bunch of these, and I
+
+468
+00:16:49.120 --> 00:16:52.079
+think everything that we've mentioned so
+
+469
+00:16:50.400 --> 00:16:54.160
+far I've definitely played with, I'm
+
+470
+00:16:52.079 --> 00:16:55.959
+sure you have. And there's obviously a
+
+471
+00:16:54.160 --> 00:16:57.720
+bunch of others, Gemini CLI. I think you
+
+472
+00:16:55.959 --> 00:17:00.160
+actually maybe mentioned Gemini. Code X
+
+473
+00:16:57.720 --> 00:17:01.920
+is another. Where would you say like for
+
+474
+00:17:00.160 --> 00:17:03.480
+for those listening who are kind of like
+
+475
+00:17:01.920 --> 00:17:06.160
+on the you know, trying to trying to
+
+476
+00:17:03.480 --> 00:17:08.040
+follow this 101 working out well, where
+
+477
+00:17:06.160 --> 00:17:11.040
+do I actually start? Where would you say
+
+478
+00:17:08.040 --> 00:17:12.720
+is like a good place to start? Is there
+
+479
+00:17:11.040 --> 00:17:14.959
+is there one good place or is it really
+
+480
+00:17:12.720 --> 00:17:17.280
+depending on where where a user is most
+
+481
+00:17:14.959 --> 00:17:19.199
+consistently, you know, doing those
+
+482
+00:17:17.280 --> 00:17:21.120
+tasks? Should they try and find an agent
+
+483
+00:17:19.199 --> 00:17:23.280
+in that environment? What would you
+
+484
+00:17:21.120 --> 00:17:25.480
+recommend? I think it depends on the
+
+485
+00:17:23.280 --> 00:17:27.079
+level of experience and maybe on the
+
+486
+00:17:25.480 --> 00:17:29.120
+role of the person in the company if
+
+487
+00:17:27.079 --> 00:17:31.280
+we're talking about some some technical
+
+488
+00:17:29.120 --> 00:17:34.040
+people because definitely there are no
+
+489
+00:17:31.280 --> 00:17:35.600
+code solutions, right? Like Lovable, for
+
+490
+00:17:34.040 --> 00:17:37.440
+example, that
+
+491
+00:17:35.600 --> 00:17:39.679
+that provides your
+
+492
+00:17:37.440 --> 00:17:42.160
+live coding platform for developing
+
+493
+00:17:39.679 --> 00:17:43.720
+backends and frontends instantly without
+
+494
+00:17:42.160 --> 00:17:45.280
+any knowledge of the code. So, it
+
+495
+00:17:43.720 --> 00:17:47.480
+requires you zero knowledge. It just
+
+496
+00:17:45.280 --> 00:17:50.320
+requires you to be there to validate and
+
+497
+00:17:47.480 --> 00:17:52.320
+approve the the the content generated by
+
+498
+00:17:50.320 --> 00:17:54.400
+the AI
+
+499
+00:17:52.320 --> 00:17:56.480
+assistant or whatever.
+
+500
+00:17:54.400 --> 00:17:57.840
+And the more the the closer you are to
+
+501
+00:17:56.480 --> 00:18:00.640
+the code
+
+502
+00:17:57.840 --> 00:18:02.800
+and the more scale you need,
+
+503
+00:18:00.640 --> 00:18:04.080
+then the more advanced tools you need to
+
+504
+00:18:02.800 --> 00:18:07.040
+use,
+
+505
+00:18:04.080 --> 00:18:08.840
+which require potentially a lot of
+
+506
+00:18:07.040 --> 00:18:10.920
+manual resolution
+
+507
+00:18:08.840 --> 00:18:14.000
+of the problems. So, for example, if you
+
+508
+00:18:10.920 --> 00:18:16.120
+are like a software engineer and you're
+
+509
+00:18:14.000 --> 00:18:18.679
+writing and your your goal is to develop
+
+510
+00:18:16.120 --> 00:18:20.400
+a lot of software tasks and a lot of
+
+511
+00:18:18.679 --> 00:18:22.240
+manipulations with the code, then you're
+
+512
+00:18:20.400 --> 00:18:25.240
+okay to start with first of all a
+
+513
+00:18:22.240 --> 00:18:28.159
+copilot just to see if your if the
+
+514
+00:18:25.240 --> 00:18:31.760
+copilot models are helping you to at
+
+515
+00:18:28.159 --> 00:18:33.800
+least accelerate your productivity
+
+516
+00:18:31.760 --> 00:18:36.040
+as a as a developer. So, does it help
+
+517
+00:18:33.800 --> 00:18:37.440
+you to write a better faster code? If
+
+518
+00:18:36.040 --> 00:18:39.360
+you're happy with the copilot, then
+
+519
+00:18:37.440 --> 00:18:41.800
+you're going to the next extension and
+
+520
+00:18:39.360 --> 00:18:45.280
+go with a cursor IDE when you're
+
+521
+00:18:41.800 --> 00:18:47.280
+starting using these complex assistants
+
+522
+00:18:45.280 --> 00:18:52.800
+as your companions helping you achieve
+
+523
+00:18:47.280 --> 00:18:55.200
+the task. And now the scope of autonomy
+
+524
+00:18:52.800 --> 00:18:57.240
+and what assistants can do grows. So,
+
+525
+00:18:55.200 --> 00:18:59.679
+you can delegate it to change not just a
+
+526
+00:18:57.240 --> 00:19:01.880
+function, but entire files. And once
+
+527
+00:18:59.679 --> 00:19:04.200
+you're okay with that, then you can can
+
+528
+00:19:01.880 --> 00:19:06.000
+move to the top of this hierarchy and
+
+529
+00:19:04.200 --> 00:19:08.120
+start using cloud code and cursor or
+
+530
+00:19:06.000 --> 00:19:10.600
+Gemini CLI
+
+531
+00:19:08.120 --> 00:19:13.120
+directly in the terminal because now you
+
+532
+00:19:10.600 --> 00:19:14.720
+know the strong sides of these. Now you
+
+533
+00:19:13.120 --> 00:19:16.040
+know what you can delegate it, and
+
+534
+00:19:14.720 --> 00:19:18.840
+probably you're already like familiar
+
+535
+00:19:16.040 --> 00:19:20.520
+with a core capabilities and familiar
+
+536
+00:19:18.840 --> 00:19:22.880
+with how these
+
+537
+00:19:20.520 --> 00:19:25.800
+tools are working. So, you can delegate
+
+538
+00:19:22.880 --> 00:19:28.560
+even more scope in a fully autonomous
+
+539
+00:19:25.800 --> 00:19:30.919
+pipeline or setup. So, I think the
+
+540
+00:19:28.560 --> 00:19:32.440
+the reasoning should be like that.
+
+541
+00:19:30.919 --> 00:19:34.240
+Start with something super simple which
+
+542
+00:19:32.440 --> 00:19:35.679
+doesn't require any knowledge of code,
+
+543
+00:19:34.240 --> 00:19:37.560
+and if you already have a knowledge,
+
+544
+00:19:35.679 --> 00:19:38.840
+then progress further
+
+545
+00:19:37.560 --> 00:19:41.280
+and
+
+546
+00:19:38.840 --> 00:19:43.480
+go into more and more advanced
+
+547
+00:19:41.280 --> 00:19:45.520
+tools. I think it's a really really good
+
+548
+00:19:43.480 --> 00:19:47.400
+advice in terms of it's not just
+
+549
+00:19:45.520 --> 00:19:49.040
+actually about Well, there's two things
+
+550
+00:19:47.400 --> 00:19:52.520
+I think here. One one is that there's a
+
+551
+00:19:49.040 --> 00:19:54.200
+trust implication, and it's important to
+
+552
+00:19:52.520 --> 00:19:55.720
+be in control like when we start
+
+553
+00:19:54.200 --> 00:19:57.680
+learning how to drive, we don't jump
+
+554
+00:19:55.720 --> 00:19:59.920
+into a Ferrari and try and try and try
+
+555
+00:19:57.680 --> 00:20:02.240
+and drive that Ferrari. It's about do
+
+556
+00:19:59.920 --> 00:20:04.160
+you know taking small steps.
+
+557
+00:20:02.240 --> 00:20:05.640
+Once we're comfortable with it, once we
+
+558
+00:20:04.160 --> 00:20:07.600
+trust ourselves as well as the tools
+
+559
+00:20:05.640 --> 00:20:09.920
+that we have, we go on to the next step.
+
+560
+00:20:07.600 --> 00:20:11.520
+And and this growth in autonomy is is
+
+561
+00:20:09.920 --> 00:20:13.280
+all about that growth in trust. I I
+
+562
+00:20:11.520 --> 00:20:16.600
+absolutely love that. And I and I like
+
+563
+00:20:13.280 --> 00:20:18.920
+the the focus there as well in terms of
+
+564
+00:20:16.600 --> 00:20:21.000
+you know, sticking to where you're most
+
+565
+00:20:18.920 --> 00:20:23.080
+familiar in that sense of if you're if
+
+566
+00:20:21.000 --> 00:20:25.320
+you're familiar with an IDE, well, maybe
+
+567
+00:20:23.080 --> 00:20:27.280
+let's let's start you know, what when
+
+568
+00:20:25.320 --> 00:20:28.640
+you go from there maybe GitHub Copilot
+
+569
+00:20:27.280 --> 00:20:30.440
+or something like that in the IDE is the
+
+570
+00:20:28.640 --> 00:20:32.120
+best place. And then maybe cursor if you
+
+571
+00:20:30.440 --> 00:20:34.360
+want to stay with IDE. If you love
+
+572
+00:20:32.120 --> 00:20:36.800
+terminals, maybe dip into something else
+
+573
+00:20:34.360 --> 00:20:39.000
+from from from that. Really really like
+
+574
+00:20:36.800 --> 00:20:40.520
+that advice. Some some of our listeners
+
+575
+00:20:39.000 --> 00:20:41.920
+may have heard of subagents before. What
+
+576
+00:20:40.520 --> 00:20:44.520
+what's the difference between an agent
+
+577
+00:20:41.920 --> 00:20:46.760
+and a subagent? Some like subagents is
+
+578
+00:20:44.520 --> 00:20:49.600
+basically an instance
+
+579
+00:20:46.760 --> 00:20:52.280
+uh like another instance of an agent
+
+580
+00:20:49.600 --> 00:20:56.040
+just spawned and controlled by the main
+
+581
+00:20:52.280 --> 00:20:59.400
+agent. And you usually use that when
+
+582
+00:20:56.040 --> 00:21:02.400
+your task is so complex that one agent
+
+583
+00:20:59.400 --> 00:21:05.560
+is not enough to tackle it. And when
+
+584
+00:21:02.400 --> 00:21:07.880
+there are different options or different
+
+585
+00:21:05.560 --> 00:21:09.640
+paths that can be explored. Uh so I
+
+586
+00:21:07.880 --> 00:21:11.280
+think like yeah two two scenarios where
+
+587
+00:21:09.640 --> 00:21:14.080
+the the problem is so complex that it
+
+588
+00:21:11.280 --> 00:21:17.080
+needs to be split into smaller parts or
+
+589
+00:21:14.080 --> 00:21:19.800
+when you need to make a search to like
+
+590
+00:21:17.080 --> 00:21:22.760
+just explore the space and
+
+591
+00:21:19.800 --> 00:21:24.440
+to just one of one of the options. So
+
+592
+00:21:22.760 --> 00:21:26.720
+like yeah these two scenarios. But
+
+593
+00:21:24.440 --> 00:21:30.440
+basically subagent is just like another
+
+594
+00:21:26.720 --> 00:21:33.440
+instance of uh of a main agent which is
+
+595
+00:21:30.440 --> 00:21:35.560
+asked to solve a specific problem.
+
+596
+00:21:33.440 --> 00:21:38.000
+So uh you can think of it as a master
+
+597
+00:21:35.560 --> 00:21:39.400
+slave architecture. Uh right like if you
+
+598
+00:21:38.000 --> 00:21:41.400
+are for example interacting with a
+
+599
+00:21:39.400 --> 00:21:43.600
+master agent with with the one which is
+
+600
+00:21:41.400 --> 00:21:47.040
+you have access in your terminal.
+
+601
+00:21:43.600 --> 00:21:48.960
+Uh and you ask it to develop a um a
+
+602
+00:21:47.040 --> 00:21:51.400
+service that has a front end and a back
+
+603
+00:21:48.960 --> 00:21:54.120
+end, then it's a great candidate for
+
+604
+00:21:51.400 --> 00:21:56.440
+splitting uh and spawning a subagents.
+
+605
+00:21:54.120 --> 00:21:58.120
+One subagent will be working on the back
+
+606
+00:21:56.440 --> 00:21:59.320
+end, another agent will be working on
+
+607
+00:21:58.120 --> 00:22:01.400
+the front end.
+
+608
+00:21:59.320 --> 00:22:03.440
+Um and they will be doing their like
+
+609
+00:22:01.400 --> 00:22:06.360
+pieces independently. And then at some
+
+610
+00:22:03.440 --> 00:22:09.120
+point they will go back to the master
+
+611
+00:22:06.360 --> 00:22:11.800
+uh agent to communicate back the result.
+
+612
+00:22:09.120 --> 00:22:13.560
+And the master will decide are they okay
+
+613
+00:22:11.800 --> 00:22:15.960
+or like is the result is fine? Does it
+
+614
+00:22:13.560 --> 00:22:18.040
+satisfy the overall goal? And if not,
+
+615
+00:22:15.960 --> 00:22:20.240
+then it will circle back the the
+
+616
+00:22:18.040 --> 00:22:22.280
+information to them and give a feedback.
+
+617
+00:22:20.240 --> 00:22:24.280
+And they like continue iterating or
+
+618
+00:22:22.280 --> 00:22:25.800
+refining uh based on the feedback which
+
+619
+00:22:24.280 --> 00:22:27.640
+they received to improve this back end
+
+620
+00:22:25.800 --> 00:22:30.440
+and front end. That's a
+
+621
+00:22:27.640 --> 00:22:33.440
+uh example of how to use subagents for
+
+622
+00:22:30.440 --> 00:22:35.840
+coding assistance, for tasks beyond
+
+623
+00:22:33.440 --> 00:22:37.520
+coding where you need like exploration.
+
+624
+00:22:35.840 --> 00:22:40.440
+Uh subagents might be just like a
+
+625
+00:22:37.520 --> 00:22:42.320
+parallel instances of the same agent
+
+626
+00:22:40.440 --> 00:22:44.040
+which are just exploring the problem
+
+627
+00:22:42.320 --> 00:22:45.480
+from different angles. For example, you
+
+628
+00:22:44.040 --> 00:22:46.600
+want to search
+
+629
+00:22:45.480 --> 00:22:49.080
+um
+
+630
+00:22:46.600 --> 00:22:51.440
+for some information like to answer some
+
+631
+00:22:49.080 --> 00:22:53.679
+specific question. And then you can make
+
+632
+00:22:51.440 --> 00:22:55.640
+a search with one type of query in the
+
+633
+00:22:53.679 --> 00:22:57.560
+Google, you can make a search over the
+
+634
+00:22:55.640 --> 00:23:00.160
+articles in the Wikipedia, you can do a
+
+635
+00:22:57.560 --> 00:23:02.240
+search over the information available in
+
+636
+00:23:00.160 --> 00:23:04.400
+your I don't know like local database.
+
+637
+00:23:02.240 --> 00:23:07.000
+And for all that scenarios, they all
+
+638
+00:23:04.400 --> 00:23:08.560
+about the search of the information in
+
+639
+00:23:07.000 --> 00:23:10.280
+different sources, but they are done by
+
+640
+00:23:08.560 --> 00:23:12.520
+just like a different agents.
+
+641
+00:23:10.280 --> 00:23:15.400
+Technically speaking,
+
+642
+00:23:12.520 --> 00:23:18.560
+uh in in some future there won't be need
+
+643
+00:23:15.400 --> 00:23:21.760
+uh in subagents because the master agent
+
+644
+00:23:18.560 --> 00:23:22.800
+will be so smart and will be knowing how
+
+645
+00:23:21.760 --> 00:23:24.679
+to
+
+646
+00:23:22.800 --> 00:23:27.679
+um how to resolve any challenging
+
+647
+00:23:24.679 --> 00:23:29.880
+problem uh on its own. So it won't it
+
+648
+00:23:27.679 --> 00:23:31.679
+won't you know, lose and won't forget
+
+649
+00:23:29.880 --> 00:23:33.800
+about the context. It will know how to
+
+650
+00:23:31.679 --> 00:23:35.560
+navigate in this complex structure on
+
+651
+00:23:33.800 --> 00:23:39.360
+its own. And technically it won't need
+
+652
+00:23:35.560 --> 00:23:40.960
+to have spawning subagents. Um but
+
+653
+00:23:39.360 --> 00:23:42.679
+another reason for another motivation
+
+654
+00:23:40.960 --> 00:23:44.360
+for the subagents is just like speed.
+
+655
+00:23:42.679 --> 00:23:47.080
+All we we know that agents are super
+
+656
+00:23:44.360 --> 00:23:49.000
+slow. If you try to paralyze them and
+
+657
+00:23:47.080 --> 00:23:50.960
+subagents is one way of doing this, you
+
+658
+00:23:49.000 --> 00:23:53.000
+just get the result faster. You just get
+
+659
+00:23:50.960 --> 00:23:54.840
+like 10 implementations of the same
+
+660
+00:23:53.000 --> 00:23:56.679
+thing and maybe one or two of them are
+
+661
+00:23:54.840 --> 00:23:59.600
+good and working and doing what you were
+
+662
+00:23:56.679 --> 00:24:01.400
+expecting. So it's just like um like you
+
+663
+00:23:59.600 --> 00:24:03.280
+know, like latency
+
+664
+00:24:01.400 --> 00:24:05.400
+um and throughput
+
+665
+00:24:03.280 --> 00:24:05.960
+uh versus idling time.
+
+666
+00:24:05.400 --> 00:24:08.520
+Um
+
+667
+00:24:05.960 --> 00:24:10.040
+yeah. I think like the time that you
+
+668
+00:24:08.520 --> 00:24:11.560
+mentioned there and the parallelization
+
+669
+00:24:10.040 --> 00:24:14.920
+as well as the context are both really
+
+670
+00:24:11.560 --> 00:24:18.240
+good reasons to use them. Um in terms of
+
+671
+00:24:14.920 --> 00:24:20.640
+in terms of the cons the the the the the
+
+672
+00:24:18.240 --> 00:24:22.800
+negatives that that they can that they
+
+673
+00:24:20.640 --> 00:24:24.679
+provide, is it just is is it like
+
+674
+00:24:22.800 --> 00:24:27.560
+burning tokens more or anything anything
+
+675
+00:24:24.679 --> 00:24:30.280
+that we need to be cautious of? Yeah, I
+
+676
+00:24:27.560 --> 00:24:31.640
+mean like for sure like costs will grow
+
+677
+00:24:30.280 --> 00:24:35.280
+uh linearly, right? Like with more
+
+678
+00:24:31.640 --> 00:24:37.400
+agents you will cost like spend more. Um
+
+679
+00:24:35.280 --> 00:24:40.040
+And sometimes there might be a situation
+
+680
+00:24:37.400 --> 00:24:41.280
+where you again like spawn the these all
+
+681
+00:24:40.040 --> 00:24:44.120
+agents, but they actually didn't
+
+682
+00:24:41.280 --> 00:24:46.760
+converge to anything. Um
+
+683
+00:24:44.120 --> 00:24:48.840
+And another disadvantage is that there
+
+684
+00:24:46.760 --> 00:24:51.960
+are different ways how to spawn how to
+
+685
+00:24:48.840 --> 00:24:54.280
+launch the subagents. One is the your
+
+686
+00:24:51.960 --> 00:24:56.360
+main agent can launch
+
+687
+00:24:54.280 --> 00:24:58.960
+subagents on its own because like Claude
+
+688
+00:24:56.360 --> 00:25:01.360
+Code actually now gives this capability.
+
+689
+00:24:58.960 --> 00:25:03.360
+You can ask explicitly saying explicitly
+
+690
+00:25:01.360 --> 00:25:05.320
+in the prompt, use parallel agents to
+
+691
+00:25:03.360 --> 00:25:07.280
+analyze this complex document, right? So
+
+692
+00:25:05.320 --> 00:25:09.560
+you can explicitly state it in the
+
+693
+00:25:07.280 --> 00:25:11.720
+prompt and it will on its own spawn like
+
+694
+00:25:09.560 --> 00:25:14.280
+multiple versions of the agents. But the
+
+695
+00:25:11.720 --> 00:25:17.120
+thing is is that you can
+
+696
+00:25:14.280 --> 00:25:19.400
+you might want to have specialized some
+
+697
+00:25:17.120 --> 00:25:21.560
+subagents, right? So instead of like
+
+698
+00:25:19.400 --> 00:25:24.480
+general search subagents, you want to
+
+699
+00:25:21.560 --> 00:25:27.240
+have subagents focused on a specific
+
+700
+00:25:24.480 --> 00:25:28.960
+access or a specific angle of a problem.
+
+701
+00:25:27.240 --> 00:25:31.920
+And here you need like to have extra
+
+702
+00:25:28.960 --> 00:25:35.720
+customization. You need to work you need
+
+703
+00:25:31.920 --> 00:25:38.320
+to uh carefully design instructions for
+
+704
+00:25:35.720 --> 00:25:41.240
+uh for that subagent in order to get
+
+705
+00:25:38.320 --> 00:25:42.960
+best you know, get get great result. So
+
+706
+00:25:41.240 --> 00:25:45.640
+the downside that you know, like
+
+707
+00:25:42.960 --> 00:25:48.360
+speaking of downsides, the time for
+
+708
+00:25:45.640 --> 00:25:50.280
+designing the subagents. It's also like
+
+709
+00:25:48.360 --> 00:25:53.600
+uh an art and you need to make an
+
+710
+00:25:50.280 --> 00:25:56.160
+effort. If you don't do it, then
+
+711
+00:25:53.600 --> 00:25:58.400
+probably um main agent will do it on its
+
+712
+00:25:56.160 --> 00:25:59.760
+own. But the quality of the subagents
+
+713
+00:25:58.400 --> 00:26:02.040
+might be different because it might just
+
+714
+00:25:59.760 --> 00:26:05.480
+like miss uh some
+
+715
+00:26:02.040 --> 00:26:06.720
+some some important bits uh in in in the
+
+716
+00:26:05.480 --> 00:26:08.920
+instruction to the subagent.
+
+717
+00:26:06.720 --> 00:26:11.360
+&gt;&gt; Yeah. And and in terms of the agents
+
+718
+00:26:08.920 --> 00:26:13.320
+like other than being able to customize
+
+719
+00:26:11.360 --> 00:26:15.480
+an agent and be able to a subagent
+
+720
+00:26:13.320 --> 00:26:16.840
+rather. And and be able to say how I
+
+721
+00:26:15.480 --> 00:26:18.160
+want you to use this subagent when
+
+722
+00:26:16.840 --> 00:26:19.240
+you're when you're doing these types of
+
+723
+00:26:18.160 --> 00:26:20.880
+things
+
+724
+00:26:19.240 --> 00:26:22.720
+uh or allow it to choose the the the
+
+725
+00:26:20.880 --> 00:26:25.040
+appropriate kind of subagent to do those
+
+726
+00:26:22.720 --> 00:26:28.080
+tasks. I presume the main agent is the
+
+727
+00:26:25.040 --> 00:26:30.800
+is pretty much entirely the the the
+
+728
+00:26:28.080 --> 00:26:33.800
+communicator across subagents. There's
+
+729
+00:26:30.800 --> 00:26:35.440
+no human interaction between
+
+730
+00:26:33.800 --> 00:26:37.280
+uh that that that bypasses the main
+
+731
+00:26:35.440 --> 00:26:39.000
+agent. Yeah, I mean like it depends on
+
+732
+00:26:37.280 --> 00:26:40.520
+the design of your system and I think in
+
+733
+00:26:39.000 --> 00:26:43.040
+Claude Code it's very hard to control
+
+734
+00:26:40.520 --> 00:26:44.920
+it. Like usually the subagents are
+
+735
+00:26:43.040 --> 00:26:46.880
+launched on the background. So you don't
+
+736
+00:26:44.920 --> 00:26:48.679
+actually have access directly to see
+
+737
+00:26:46.880 --> 00:26:51.040
+what they are doing. You only can see it
+
+738
+00:26:48.679 --> 00:26:54.040
+in the logs. So if you open the
+
+739
+00:26:51.040 --> 00:26:55.760
+um Claude uh JSONL file to see what were
+
+740
+00:26:54.040 --> 00:26:57.480
+the commands, you will see that agents
+
+741
+00:26:55.760 --> 00:26:59.840
+were doing something on the background,
+
+742
+00:26:57.480 --> 00:27:01.040
+but you won't necessarily see it in your
+
+743
+00:26:59.840 --> 00:27:02.960
+terminal.
+
+744
+00:27:01.040 --> 00:27:05.320
+Uh you won't necessarily see the the
+
+745
+00:27:02.960 --> 00:27:07.720
+thinking process, the the path, the
+
+746
+00:27:05.320 --> 00:27:10.440
+planning for each of the subagents. So
+
+747
+00:27:07.720 --> 00:27:11.920
+yeah like again and maybe another like I
+
+748
+00:27:10.440 --> 00:27:14.240
+don't know disadvantage or even
+
+749
+00:27:11.920 --> 00:27:16.880
+advantage of this is that like you trust
+
+750
+00:27:14.240 --> 00:27:18.280
+it even more. So you need to believe in
+
+751
+00:27:16.880 --> 00:27:21.080
+in the fact that it will come up with
+
+752
+00:27:18.280 --> 00:27:23.280
+something uh meaningful even more if you
+
+753
+00:27:21.080 --> 00:27:25.240
+are entering the world of subagents.
+
+754
+00:27:23.280 --> 00:27:26.280
+Cool. You mentioned context management
+
+755
+00:27:25.240 --> 00:27:29.240
+which I think is actually a really
+
+756
+00:27:26.280 --> 00:27:30.760
+important part of subagents. Well, first
+
+757
+00:27:29.240 --> 00:27:34.240
+of all we should talk about the problems
+
+758
+00:27:30.760 --> 00:27:36.800
+of you know, context within agents and
+
+759
+00:27:34.240 --> 00:27:40.440
+when they compact why they compact
+
+760
+00:27:36.800 --> 00:27:42.920
+context and and how perhaps subagents
+
+761
+00:27:40.440 --> 00:27:44.160
+can alleviate at least some of that by
+
+762
+00:27:42.920 --> 00:27:46.360
+running in their in their own little
+
+763
+00:27:44.160 --> 00:27:49.080
+domains. Talk us through a little bit
+
+764
+00:27:46.360 --> 00:27:51.520
+about the the need and the problems of
+
+765
+00:27:49.080 --> 00:27:54.400
+context or over context for an agent.
+
+766
+00:27:51.520 --> 00:27:55.920
+&gt;&gt; Yeah, so um
+
+767
+00:27:54.400 --> 00:27:56.880
+behind the scenes We're going to jump
+
+768
+00:27:55.920 --> 00:27:58.679
+into the second half of our
+
+769
+00:27:56.880 --> 00:28:01.240
+conversation. But first, a quick
+
+770
+00:27:58.679 --> 00:28:03.679
+shout-out to AI Native DevCon. Two days
+
+771
+00:28:01.240 --> 00:28:05.760
+of hands-on sessions, deep dives, and
+
+772
+00:28:03.679 --> 00:28:07.960
+honest conversations about what it means
+
+773
+00:28:05.760 --> 00:28:10.280
+to build AI native software. November
+
+774
+00:28:07.960 --> 00:28:12.200
+18th and 19th in New York or join
+
+775
+00:28:10.280 --> 00:28:15.880
+virtually from anywhere. Tickets and
+
+776
+00:28:12.200 --> 00:28:15.880
+details at ainativedev.io/devcon.
+
+777
+00:28:16.240 --> 00:28:20.200
+See you there. Behind the scenes of all
+
+778
+00:28:18.160 --> 00:28:21.679
+the agents there are LLMs, right? Like
+
+779
+00:28:20.200 --> 00:28:26.360
+large language models and they are
+
+780
+00:28:21.679 --> 00:28:29.080
+trained with some fixed uh or maximum uh
+
+781
+00:28:26.360 --> 00:28:30.200
+context length. And this context length,
+
+782
+00:28:29.080 --> 00:28:31.640
+one of the main limitation I'll talk
+
+783
+00:28:30.200 --> 00:28:36.240
+about the other one.
+
+784
+00:28:31.640 --> 00:28:39.840
+Uh but like it usually has some like max
+
+785
+00:28:36.240 --> 00:28:42.120
+max size. Like 256k tokens or 1 million
+
+786
+00:28:39.840 --> 00:28:44.280
+tokens. So so there is a limit of how
+
+787
+00:28:42.120 --> 00:28:45.320
+much information can be used in the
+
+788
+00:28:44.280 --> 00:28:48.800
+context to the
+
+789
+00:28:45.320 --> 00:28:51.400
+uh to your LLM. And when we like
+
+790
+00:28:48.800 --> 00:28:54.640
+starting talking about agents, agent is
+
+791
+00:28:51.400 --> 00:28:57.560
+actually a wrapper around your LLM which
+
+792
+00:28:54.640 --> 00:28:59.919
+has which constantly adds something
+
+793
+00:28:57.560 --> 00:29:02.240
+appends something new to the context.
+
+794
+00:28:59.919 --> 00:29:04.200
+Right? So imagine you are starting uh
+
+795
+00:29:02.240 --> 00:29:05.640
+your session and asking Claude Code to
+
+796
+00:29:04.200 --> 00:29:07.200
+develop something,
+
+797
+00:29:05.640 --> 00:29:08.720
+uh it creates like you I don't know like
+
+798
+00:29:07.200 --> 00:29:10.960
+a bunch of files and all of this
+
+799
+00:29:08.720 --> 00:29:14.120
+information goes into the context. So it
+
+800
+00:29:10.960 --> 00:29:16.560
+already occupies some thousands of the
+
+801
+00:29:14.120 --> 00:29:19.440
+tokens in the context window.
+
+802
+00:29:16.560 --> 00:29:20.640
+And every time Claude Code tries to fix
+
+803
+00:29:19.440 --> 00:29:24.000
+the bug,
+
+804
+00:29:20.640 --> 00:29:25.400
+uh it actually also like uh adds appends
+
+805
+00:29:24.000 --> 00:29:28.400
+this information to the context window.
+
+806
+00:29:25.400 --> 00:29:31.919
+So all these trace logs, trace backs,
+
+807
+00:29:28.400 --> 00:29:34.520
+all this goes into the context. And it's
+
+808
+00:29:31.919 --> 00:29:36.880
+crazy how fast you can you know, like
+
+809
+00:29:34.520 --> 00:29:38.440
+reach the limit of the context memory.
+
+810
+00:29:36.880 --> 00:29:40.400
+Um
+
+811
+00:29:38.440 --> 00:29:42.919
+And uh that's
+
+812
+00:29:40.400 --> 00:29:46.640
+one you know, like place where subagents
+
+813
+00:29:42.919 --> 00:29:48.640
+can help because different instances
+
+814
+00:29:46.640 --> 00:29:50.960
+uh of the like different sub agents will
+
+815
+00:29:48.640 --> 00:29:53.640
+have their own context window
+
+816
+00:29:50.960 --> 00:29:56.040
+and that's that's how you like you know
+
+817
+00:29:53.640 --> 00:29:58.960
+increase the amount of the available
+
+818
+00:29:56.040 --> 00:30:01.640
+context because every every single sub
+
+819
+00:29:58.960 --> 00:30:03.240
+agent will maintain its own
+
+820
+00:30:01.640 --> 00:30:04.280
+context window
+
+821
+00:30:03.240 --> 00:30:06.280
+just
+
+822
+00:30:04.280 --> 00:30:08.480
+pre-filled with the information it
+
+823
+00:30:06.280 --> 00:30:09.800
+gathered from the main agent about the
+
+824
+00:30:08.480 --> 00:30:12.560
+instruction about the task which it
+
+825
+00:30:09.800 --> 00:30:13.640
+needed to accomplish but the rest of the
+
+826
+00:30:12.560 --> 00:30:15.960
+the rest of the context won't be
+
+827
+00:30:13.640 --> 00:30:18.080
+affected it's Which I think when you
+
+828
+00:30:15.960 --> 00:30:19.920
+talked about research so a sub agent
+
+829
+00:30:18.080 --> 00:30:22.080
+that does an amount of research on a
+
+830
+00:30:19.920 --> 00:30:24.320
+topic if it did a ton of research and
+
+831
+00:30:22.080 --> 00:30:26.160
+actually only 10% of that was valid the
+
+832
+00:30:24.320 --> 00:30:27.360
+90% wouldn't actually go back to the
+
+833
+00:30:26.160 --> 00:30:29.920
+main
+
+834
+00:30:27.360 --> 00:30:31.920
+to to to the main agent it actually only
+
+835
+00:30:29.920 --> 00:30:34.720
+report that 10% which it thinks is most
+
+836
+00:30:31.920 --> 00:30:36.120
+valid and then the agent the main agent
+
+837
+00:30:34.720 --> 00:30:38.320
+can go right I've got exactly the
+
+838
+00:30:36.120 --> 00:30:40.640
+information I need and my context window
+
+839
+00:30:38.320 --> 00:30:42.800
+isn't isn't overwhelmed with nonsense
+
+840
+00:30:40.640 --> 00:30:45.560
+&gt;&gt; Thanks for clarifying and and making it
+
+841
+00:30:42.800 --> 00:30:48.000
+like clearly understandable so yeah like
+
+842
+00:30:45.560 --> 00:30:50.080
+out of this thousands of tokens which
+
+843
+00:30:48.000 --> 00:30:52.600
+sub agent could generate only a small
+
+844
+00:30:50.080 --> 00:30:54.960
+bit of it like super super like small
+
+845
+00:30:52.600 --> 00:30:56.920
+part the the result will go into the
+
+846
+00:30:54.960 --> 00:30:58.840
+memory of the main agent to proceed with
+
+847
+00:30:56.920 --> 00:30:59.840
+the main task
+
+848
+00:30:58.840 --> 00:31:02.160
+and the rest of the memory will be
+
+849
+00:30:59.840 --> 00:31:04.560
+cleared yeah like the capacity the the
+
+850
+00:31:02.160 --> 00:31:06.520
+limit of the memory goes away pretty
+
+851
+00:31:04.560 --> 00:31:09.160
+quickly that's why we need to have some
+
+852
+00:31:06.520 --> 00:31:11.280
+tools for compressing and
+
+853
+00:31:09.160 --> 00:31:12.880
+they are implemented like compression
+
+854
+00:31:11.280 --> 00:31:14.840
+tools are implemented
+
+855
+00:31:12.880 --> 00:31:17.080
+in most of the
+
+856
+00:31:14.840 --> 00:31:19.240
+modern agents but that's actually like a
+
+857
+00:31:17.080 --> 00:31:21.400
+pretty challenging task because it's not
+
+858
+00:31:19.240 --> 00:31:23.480
+always obvious what information is no
+
+859
+00:31:21.400 --> 00:31:26.880
+more no longer useful and what is
+
+860
+00:31:23.480 --> 00:31:28.040
+actually still valid because like you
+
+861
+00:31:26.880 --> 00:31:30.080
+could
+
+862
+00:31:28.040 --> 00:31:31.240
+put in the memory the information about
+
+863
+00:31:30.080 --> 00:31:34.640
+like
+
+864
+00:31:31.240 --> 00:31:36.680
+initial state of the file at some point
+
+865
+00:31:34.640 --> 00:31:38.720
+in the beginning of your session but
+
+866
+00:31:36.680 --> 00:31:40.640
+then during your
+
+867
+00:31:38.720 --> 00:31:42.360
+interaction you were
+
+868
+00:31:40.640 --> 00:31:43.680
+like completely like talking and asking
+
+869
+00:31:42.360 --> 00:31:45.840
+the agent to solve a different problem
+
+870
+00:31:43.680 --> 00:31:47.920
+and then refer back to this information
+
+871
+00:31:45.840 --> 00:31:49.600
+which you put in in the beginning
+
+872
+00:31:47.920 --> 00:31:52.520
+and it could be already outdated because
+
+873
+00:31:49.600 --> 00:31:55.240
+of some other reasons so agent need to
+
+874
+00:31:52.520 --> 00:31:57.400
+know why this happened and it needs to
+
+875
+00:31:55.240 --> 00:31:59.160
+like spend extra tokens to understand it
+
+876
+00:31:57.400 --> 00:32:02.080
+okay my context is actually become
+
+877
+00:31:59.160 --> 00:32:04.760
+outdated I need to clear it it's
+
+878
+00:32:02.080 --> 00:32:06.600
+it's you know like safe to clean it
+
+879
+00:32:04.760 --> 00:32:09.360
+and remove the information so it does
+
+880
+00:32:06.600 --> 00:32:11.880
+some extra work for making this
+
+881
+00:32:09.360 --> 00:32:14.280
+compression so compression is a
+
+882
+00:32:11.880 --> 00:32:15.960
+a separate challenging task I would say
+
+883
+00:32:14.280 --> 00:32:18.280
+And that problem could happen again and
+
+884
+00:32:15.960 --> 00:32:19.760
+again and again every single time you
+
+885
+00:32:18.280 --> 00:32:21.920
+get your context window high enough that
+
+886
+00:32:19.760 --> 00:32:22.880
+it has to really redo that compression
+
+887
+00:32:21.920 --> 00:32:25.080
+correct
+
+888
+00:32:22.880 --> 00:32:26.280
+let's talk a little bit about agents and
+
+889
+00:32:25.080 --> 00:32:27.720
+what they're good at and what they're
+
+890
+00:32:26.280 --> 00:32:30.240
+not good at cuz I think we've talked a
+
+891
+00:32:27.720 --> 00:32:32.000
+lot about you know
+
+892
+00:32:30.240 --> 00:32:33.480
+how they do some of their some of their
+
+893
+00:32:32.000 --> 00:32:35.200
+things but
+
+894
+00:32:33.480 --> 00:32:37.200
+as users as let's maybe focus on
+
+895
+00:32:35.200 --> 00:32:39.280
+developers since this is a developer
+
+896
+00:32:37.200 --> 00:32:41.640
+podcast let's get let's say you know
+
+897
+00:32:39.280 --> 00:32:43.320
+what what what I what should I expect an
+
+898
+00:32:41.640 --> 00:32:45.520
+agent to be
+
+899
+00:32:43.320 --> 00:32:48.560
+really good at most of the time and
+
+900
+00:32:45.520 --> 00:32:50.720
+actually not be surprised if it if it
+
+901
+00:32:48.560 --> 00:32:52.880
+struggles with other tasks Very very
+
+902
+00:32:50.720 --> 00:32:55.040
+good question
+
+903
+00:32:52.880 --> 00:32:56.720
+if you can like explain in a very
+
+904
+00:32:55.040 --> 00:32:58.360
+thorough details the problem which you
+
+905
+00:32:56.720 --> 00:33:01.280
+are trying to solve so if we are talking
+
+906
+00:32:58.360 --> 00:33:04.040
+about a coding problem if you write a
+
+907
+00:33:01.280 --> 00:33:07.560
+very careful specification capturing all
+
+908
+00:33:04.040 --> 00:33:09.560
+the necessary aspects of your
+
+909
+00:33:07.560 --> 00:33:12.760
+of your product or your decisions all
+
+910
+00:33:09.560 --> 00:33:14.960
+the requirements there you can expect
+
+911
+00:33:12.760 --> 00:33:16.800
+that it will come up with a prototype
+
+912
+00:33:14.960 --> 00:33:20.040
+that will be at least very close to what
+
+913
+00:33:16.800 --> 00:33:21.560
+you want so I I mean like that's already
+
+914
+00:33:20.040 --> 00:33:23.880
+like a surprising right like we are in
+
+915
+00:33:21.560 --> 00:33:25.880
+the era where we can just populate in
+
+916
+00:33:23.880 --> 00:33:27.960
+plain language a huge document
+
+917
+00:33:25.880 --> 00:33:29.120
+describing how something complex should
+
+918
+00:33:27.960 --> 00:33:31.160
+work
+
+919
+00:33:29.120 --> 00:33:34.280
+and agent will come up with a roughly
+
+920
+00:33:31.160 --> 00:33:36.560
+working solution on its own so this is
+
+921
+00:33:34.280 --> 00:33:39.320
+where we are in terms of what agents can
+
+922
+00:33:36.560 --> 00:33:41.080
+do there there are lots of caveats to
+
+923
+00:33:39.320 --> 00:33:43.080
+that is that like usually it won't be
+
+924
+00:33:41.080 --> 00:33:45.120
+exactly what you want and you will need
+
+925
+00:33:43.080 --> 00:33:47.720
+to anyway like manual intervention and
+
+926
+00:33:45.120 --> 00:33:50.160
+fixes to validate that like
+
+927
+00:33:47.720 --> 00:33:51.800
+fix it and correct where it made some
+
+928
+00:33:50.160 --> 00:33:55.600
+wrong decisions
+
+929
+00:33:51.800 --> 00:33:57.800
+so human in the loop still essential
+
+930
+00:33:55.600 --> 00:34:00.760
+but again it's not a bug it's a feature
+
+931
+00:33:57.800 --> 00:34:03.320
+because our requirements are always
+
+932
+00:34:00.760 --> 00:34:05.440
+loose and we are under specifying stuff
+
+933
+00:34:03.320 --> 00:34:08.280
+and since we under specified
+
+934
+00:34:05.440 --> 00:34:10.440
+the LLM has a choice to decide on its
+
+935
+00:34:08.280 --> 00:34:12.399
+own if the content is under specified
+
+936
+00:34:10.440 --> 00:34:14.640
+how to proceed with it if you didn't say
+
+937
+00:34:12.399 --> 00:34:17.919
+in your specification which database to
+
+938
+00:34:14.640 --> 00:34:21.720
+use like post person or it's up to
+
+939
+00:34:17.919 --> 00:34:23.440
+the LLM to come up with what it thinks
+
+940
+00:34:21.720 --> 00:34:25.280
+but it's not a problem of an LLM it's
+
+941
+00:34:23.440 --> 00:34:26.120
+just because you under specified right
+
+942
+00:34:25.280 --> 00:34:28.480
+so
+
+943
+00:34:26.120 --> 00:34:30.040
+I would say like to sum to sum to sum up
+
+944
+00:34:28.480 --> 00:34:31.840
+if you give like a very clean
+
+945
+00:34:30.040 --> 00:34:33.679
+instruction a very detailed information
+
+946
+00:34:31.840 --> 00:34:34.679
+about how you see your solution should
+
+947
+00:34:33.679 --> 00:34:37.600
+work
+
+948
+00:34:34.679 --> 00:34:39.640
+and what things it should include then
+
+949
+00:34:37.600 --> 00:34:42.320
+it's already good enough at instruction
+
+950
+00:34:39.640 --> 00:34:44.600
+following to develop you a prototype
+
+951
+00:34:42.320 --> 00:34:47.399
+which matches your expectations both in
+
+952
+00:34:44.600 --> 00:34:49.280
+back end and front end I would say
+
+953
+00:34:47.399 --> 00:34:51.200
+There might be some
+
+954
+00:34:49.280 --> 00:34:53.560
+again like limitations of the solution
+
+955
+00:34:51.200 --> 00:34:55.960
+which it will come up with but that can
+
+956
+00:34:53.560 --> 00:34:58.720
+be because you were under specified in
+
+957
+00:34:55.960 --> 00:35:00.640
+the spec or because the task was I don't
+
+958
+00:34:58.720 --> 00:35:03.280
+know it sometimes it can come up with
+
+959
+00:35:00.640 --> 00:35:05.160
+non-efficient like unefficient solution
+
+960
+00:35:03.280 --> 00:35:06.600
+which which it won't be scalable and you
+
+961
+00:35:05.160 --> 00:35:08.560
+will anyway need to refactor it but
+
+962
+00:35:06.600 --> 00:35:11.720
+usually it comes also because of your
+
+963
+00:35:08.560 --> 00:35:14.840
+loose specification so yeah like
+
+964
+00:35:11.720 --> 00:35:17.520
+for sure like in one shot in few shot
+
+965
+00:35:14.840 --> 00:35:19.640
+you can come up with a working game
+
+966
+00:35:17.520 --> 00:35:21.000
+which works in your browser you can come
+
+967
+00:35:19.640 --> 00:35:23.200
+up with a
+
+968
+00:35:21.000 --> 00:35:25.359
+server which can be hosted locally and
+
+969
+00:35:23.200 --> 00:35:26.880
+sometimes I think you can even go beyond
+
+970
+00:35:25.359 --> 00:35:28.720
+that and
+
+971
+00:35:26.880 --> 00:35:30.520
+do even a
+
+972
+00:35:28.720 --> 00:35:31.880
+you know a deployment also fully
+
+973
+00:35:30.520 --> 00:35:34.120
+autonomously that's what at least
+
+974
+00:35:31.880 --> 00:35:35.960
+lovable offers right they like
+
+975
+00:35:34.120 --> 00:35:37.880
+fully maintain the life cycle of the
+
+976
+00:35:35.960 --> 00:35:39.320
+development of a front end and back end
+
+977
+00:35:37.880 --> 00:35:41.040
+and serving this for you and you don't
+
+978
+00:35:39.320 --> 00:35:43.280
+need to you don't need to make any
+
+979
+00:35:41.040 --> 00:35:45.720
+decisions about this so agents are that
+
+980
+00:35:43.280 --> 00:35:48.240
+powerful Yeah absolutely
+
+981
+00:35:45.720 --> 00:35:50.680
+and but let's now talk about
+
+982
+00:35:48.240 --> 00:35:52.960
+mentioning deployment let me think about
+
+983
+00:35:50.680 --> 00:35:55.200
+something that we can that we are happy
+
+984
+00:35:52.960 --> 00:35:58.359
+to push to production something that we
+
+985
+00:35:55.200 --> 00:35:59.800
+as professional developers now want to
+
+986
+00:35:58.359 --> 00:36:01.280
+want to
+
+987
+00:35:59.800 --> 00:36:03.240
+want to use and
+
+988
+00:36:01.280 --> 00:36:05.640
+build with in fact why don't we why
+
+989
+00:36:03.240 --> 00:36:07.359
+don't we think first about the actual
+
+990
+00:36:05.640 --> 00:36:09.440
+development environment that we that we
+
+991
+00:36:07.359 --> 00:36:11.160
+as professional developers need to use
+
+992
+00:36:09.440 --> 00:36:13.000
+there's certain things like you know
+
+993
+00:36:11.160 --> 00:36:15.600
+security issues for example if I'm if I
+
+994
+00:36:13.000 --> 00:36:16.760
+want to use cloud code locally
+
+995
+00:36:15.600 --> 00:36:18.160
+you know it's going to have full access
+
+996
+00:36:16.760 --> 00:36:20.960
+to my system if I want to run things
+
+997
+00:36:18.160 --> 00:36:22.760
+locally okay what's happening now what
+
+998
+00:36:20.960 --> 00:36:24.960
+where do I need to kind of first of all
+
+999
+00:36:22.760 --> 00:36:26.480
+think from a from a professional point
+
+1000
+00:36:24.960 --> 00:36:28.640
+of view of locking down my system a
+
+1001
+00:36:26.480 --> 00:36:31.040
+little bit more Yeah absolutely so like
+
+1002
+00:36:28.640 --> 00:36:32.640
+basically if you're
+
+1003
+00:36:31.040 --> 00:36:34.480
+working on your like local version of
+
+1004
+00:36:32.640 --> 00:36:36.640
+the repo and you're giving a full access
+
+1005
+00:36:34.480 --> 00:36:40.280
+to the cloud code to work on it at some
+
+1006
+00:36:36.640 --> 00:36:42.040
+point it can do rm minus rf
+
+1007
+00:36:40.280 --> 00:36:44.080
+accidentally and if you do don't do a
+
+1008
+00:36:42.040 --> 00:36:45.240
+checkpoint then you're in trouble
+
+1009
+00:36:44.080 --> 00:36:47.080
+and there are lots of stories on the
+
+1010
+00:36:45.240 --> 00:36:48.960
+Reddit where cloud code like went that
+
+1011
+00:36:47.080 --> 00:36:51.160
+crazy and did that
+
+1012
+00:36:48.960 --> 00:36:53.160
+and in order to you know like
+
+1013
+00:36:51.160 --> 00:36:54.880
+accelerate the professional development
+
+1014
+00:36:53.160 --> 00:36:57.200
+experience there are like
+
+1015
+00:36:54.880 --> 00:37:00.280
+different approaches how to do that
+
+1016
+00:36:57.200 --> 00:37:03.440
+one which you can do on your own you can
+
+1017
+00:37:00.280 --> 00:37:05.600
+spawn cloud codes always in the isolated
+
+1018
+00:37:03.440 --> 00:37:07.920
+environments so you can
+
+1019
+00:37:05.600 --> 00:37:10.640
+like create a separate docker container
+
+1020
+00:37:07.920 --> 00:37:12.760
+which will have a replica of your repo
+
+1021
+00:37:10.640 --> 00:37:14.960
+and you will you know send the commands
+
+1022
+00:37:12.760 --> 00:37:17.120
+to this docker container and
+
+1023
+00:37:14.960 --> 00:37:18.920
+agent will in this isolated environment
+
+1024
+00:37:17.120 --> 00:37:21.880
+will be working on a replica and
+
+1025
+00:37:18.920 --> 00:37:23.320
+actually that's one branch of a
+
+1026
+00:37:21.880 --> 00:37:26.840
+solving these issues with the
+
+1027
+00:37:23.320 --> 00:37:29.480
+permissions and with the scare of being
+
+1028
+00:37:26.840 --> 00:37:31.440
+of being scared to remove something so
+
+1029
+00:37:29.480 --> 00:37:32.640
+isolated environments that's that's
+
+1030
+00:37:31.440 --> 00:37:34.200
+where you can
+
+1031
+00:37:32.640 --> 00:37:36.320
+solve you know
+
+1032
+00:37:34.200 --> 00:37:38.240
+some of the issues another type of
+
+1033
+00:37:36.320 --> 00:37:40.560
+problem with the security for example
+
+1034
+00:37:38.240 --> 00:37:44.440
+related to the API keys for example what
+
+1035
+00:37:40.560 --> 00:37:47.240
+if you are asking your agent to write
+
+1036
+00:37:44.440 --> 00:37:48.880
+another agent right like for example you
+
+1037
+00:37:47.240 --> 00:37:51.720
+are a company which develop develops
+
+1038
+00:37:48.880 --> 00:37:53.320
+like agents for some reason and to test
+
+1039
+00:37:51.720 --> 00:37:56.359
+this agent
+
+1040
+00:37:53.320 --> 00:37:57.480
+it might need to have access to the API
+
+1041
+00:37:56.359 --> 00:37:59.560
+token
+
+1042
+00:37:57.480 --> 00:38:01.880
+right and if you provide this API token
+
+1043
+00:37:59.560 --> 00:38:05.200
+then it can go crazy there because it
+
+1044
+00:38:01.880 --> 00:38:07.200
+can start doing infinite tasks basically
+
+1045
+00:38:05.200 --> 00:38:09.200
+burning your budget
+
+1046
+00:38:07.200 --> 00:38:10.680
+and um
+
+1047
+00:38:09.200 --> 00:38:13.280
+this this is
+
+1048
+00:38:10.680 --> 00:38:15.320
+for these types of the you know like
+
+1049
+00:38:13.280 --> 00:38:17.480
+issues that's much more hard like much
+
+1050
+00:38:15.320 --> 00:38:19.880
+harder to come up with something some
+
+1051
+00:38:17.480 --> 00:38:21.760
+some security solution
+
+1052
+00:38:19.880 --> 00:38:23.200
+unless you cut off the internet
+
+1053
+00:38:21.760 --> 00:38:26.520
+completely
+
+1054
+00:38:23.200 --> 00:38:28.640
+but yeah like that's a type of the
+
+1055
+00:38:26.520 --> 00:38:30.560
+security concern but yeah like speaking
+
+1056
+00:38:28.640 --> 00:38:32.880
+of the main approach the sandboxing
+
+1057
+00:38:30.560 --> 00:38:35.920
+environments that's what um
+
+1058
+00:38:32.880 --> 00:38:38.560
+allows you to solve most of the problems
+
+1059
+00:38:35.920 --> 00:38:40.240
+Another way of solving is a solving
+
+1060
+00:38:38.560 --> 00:38:43.840
+these types of problems is like again
+
+1061
+00:38:40.240 --> 00:38:46.640
+like limiting the available tools for
+
+1062
+00:38:43.840 --> 00:38:47.920
+the agents for example agent cannot
+
+1063
+00:38:46.640 --> 00:38:49.359
+write
+
+1064
+00:38:47.920 --> 00:38:52.240
+or edit
+
+1065
+00:38:49.359 --> 00:38:55.800
+files under specific directories so you
+
+1066
+00:38:52.240 --> 00:38:58.120
+are as the user in the loop can create
+
+1067
+00:38:55.800 --> 00:39:02.200
+these rules and this will prohibit agent
+
+1068
+00:38:58.120 --> 00:39:04.080
+from making like dangerous actions from
+
+1069
+00:39:02.200 --> 00:39:06.400
+very sensible
+
+1070
+00:39:04.080 --> 00:39:07.520
+you know like libraries or directories
+
+1071
+00:39:06.400 --> 00:39:10.240
+where there's a lot of sensitive
+
+1072
+00:39:07.520 --> 00:39:13.080
+information and yeah like some tools for
+
+1073
+00:39:10.240 --> 00:39:15.760
+example Gemini CLI comes with a sandbox
+
+1074
+00:39:13.080 --> 00:39:17.359
+solution available out of the box so if
+
+1075
+00:39:15.760 --> 00:39:19.359
+you start a Gemini session with a
+
+1076
+00:39:17.359 --> 00:39:21.720
+sandbox from your current directory then
+
+1077
+00:39:19.359 --> 00:39:23.920
+it will make a clone of your repo in the
+
+1078
+00:39:21.720 --> 00:39:26.520
+isolated docker container and you can
+
+1079
+00:39:23.920 --> 00:39:28.440
+also specify which commands or which
+
+1080
+00:39:26.520 --> 00:39:30.000
+tools are available so you can you can
+
+1081
+00:39:28.440 --> 00:39:33.359
+disconnect it from the internet for
+
+1082
+00:39:30.000 --> 00:39:35.280
+example and then
+
+1083
+00:39:33.359 --> 00:39:37.080
+it will just like start working in the
+
+1084
+00:39:35.280 --> 00:39:38.200
+isolated environment and you don't need
+
+1085
+00:39:37.080 --> 00:39:41.920
+to do
+
+1086
+00:39:38.200 --> 00:39:41.920
+any manual spawning of
+
+1087
+00:39:45.040 --> 00:39:50.080
+&gt;&gt; Yeah.
+
+1088
+00:39:47.280 --> 00:39:52.440
+Yeah, that's one way to to look at this.
+
+1089
+00:39:50.080 --> 00:39:53.720
+Yeah, very interesting.
+
+1090
+00:39:52.440 --> 00:39:55.200
+And what about memory and memory
+
+1091
+00:39:53.720 --> 00:39:57.920
+management? Is this is this something
+
+1092
+00:39:55.200 --> 00:40:00.120
+that's kind of like similar
+
+1093
+00:39:57.920 --> 00:40:02.840
+similar controls that we would have? So
+
+1094
+00:40:00.120 --> 00:40:04.920
+basically some providers
+
+1095
+00:40:02.840 --> 00:40:07.520
+like again like Gemini CLI also works on
+
+1096
+00:40:04.920 --> 00:40:09.720
+the tools which help you to
+
+1097
+00:40:07.520 --> 00:40:11.840
+have a fine-grained control over the
+
+1098
+00:40:09.720 --> 00:40:14.560
+memory of the agent so you can make a
+
+1099
+00:40:11.840 --> 00:40:17.840
+checkpoint, you can make a snapshots of
+
+1100
+00:40:14.560 --> 00:40:19.960
+the context that was at some point in
+
+1101
+00:40:17.840 --> 00:40:22.040
+the memory of the agent. Once you
+
+1102
+00:40:19.960 --> 00:40:23.520
+snapshot it, you can finish the session,
+
+1103
+00:40:22.040 --> 00:40:26.560
+you can close the terminal, and you can
+
+1104
+00:40:23.520 --> 00:40:28.520
+restart it the other day and resume from
+
+1105
+00:40:26.560 --> 00:40:30.680
+a specific context
+
+1106
+00:40:28.520 --> 00:40:32.840
+from a specific you know point in in
+
+1107
+00:40:30.680 --> 00:40:34.560
+time where you were developing. And
+
+1108
+00:40:32.840 --> 00:40:36.560
+Which I think is super valuable, right?
+
+1109
+00:40:34.560 --> 00:40:37.680
+Because with with particularly when
+
+1110
+00:40:36.560 --> 00:40:39.960
+you're thinking about professional
+
+1111
+00:40:37.680 --> 00:40:43.160
+development environments, you you you
+
+1112
+00:40:39.960 --> 00:40:45.920
+want them to work in certain ways. And
+
+1113
+00:40:43.160 --> 00:40:47.720
+and it's about it's about retaining that
+
+1114
+00:40:45.920 --> 00:40:49.640
+information so I don't need to say again
+
+1115
+00:40:47.720 --> 00:40:51.480
+and again and again like you know you're
+
+1116
+00:40:49.640 --> 00:40:52.960
+speaking to a child.
+
+1117
+00:40:51.480 --> 00:40:55.440
+Don't do this, do this, don't do this,
+
+1118
+00:40:52.960 --> 00:40:57.280
+do this. Sometimes like you are also as
+
+1119
+00:40:55.440 --> 00:40:58.960
+a developer you're not sure about the
+
+1120
+00:40:57.280 --> 00:41:00.440
+solution which you want to see in the
+
+1121
+00:40:58.960 --> 00:41:02.520
+end so you are communicating and
+
+1122
+00:41:00.440 --> 00:41:05.280
+chatting with an agent to propose you
+
+1123
+00:41:02.520 --> 00:41:07.920
+multiple implementations, right? And
+
+1124
+00:41:05.280 --> 00:41:09.600
+then you snapshot each of these and at
+
+1125
+00:41:07.920 --> 00:41:11.440
+some point in the future like you want
+
+1126
+00:41:09.600 --> 00:41:13.480
+to decide to come back to a specific one
+
+1127
+00:41:11.440 --> 00:41:15.920
+which you like the most and you want to
+
+1128
+00:41:13.480 --> 00:41:18.120
+revert your context to the specific
+
+1129
+00:41:15.920 --> 00:41:19.800
+point in time to the approach which you
+
+1130
+00:41:18.120 --> 00:41:22.080
+like. So that's
+
+1131
+00:41:19.800 --> 00:41:25.160
+like it just makes your environment
+
+1132
+00:41:22.080 --> 00:41:27.480
+clean and
+
+1133
+00:41:25.160 --> 00:41:29.440
+clean and easy to control so it's no
+
+1134
+00:41:27.480 --> 00:41:32.240
+longer messy. You don't need to remember
+
+1135
+00:41:29.440 --> 00:41:34.120
+where you did you commit your
+
+1136
+00:41:32.240 --> 00:41:36.080
+changes to a specific branch such that
+
+1137
+00:41:34.120 --> 00:41:38.560
+you never lose the information which
+
+1138
+00:41:36.080 --> 00:41:40.400
+agent already generated or so you you
+
+1139
+00:41:38.560 --> 00:41:42.600
+just like
+
+1140
+00:41:40.400 --> 00:41:45.640
+you just eliminate from your brain
+
+1141
+00:41:42.600 --> 00:41:47.120
+context some information which is
+
+1142
+00:41:45.640 --> 00:41:48.800
+maybe not useful
+
+1143
+00:41:47.120 --> 00:41:49.840
+because you have access to explicitly
+
+1144
+00:41:48.800 --> 00:41:52.040
+store
+
+1145
+00:41:49.840 --> 00:41:53.520
+snapshots of the memory. And yeah,
+
+1146
+00:41:52.040 --> 00:41:55.160
+that's what that's that's a super cool
+
+1147
+00:41:53.520 --> 00:41:56.840
+feature for especially professional
+
+1148
+00:41:55.160 --> 00:41:58.560
+development developers or working with
+
+1149
+00:41:56.840 --> 00:41:59.880
+many branches or working with many
+
+1150
+00:41:58.560 --> 00:42:01.720
+features
+
+1151
+00:41:59.880 --> 00:42:03.240
+at scale. I'm working within an
+
+1152
+00:42:01.720 --> 00:42:05.160
+organization as well where there's
+
+1153
+00:42:03.240 --> 00:42:07.920
+probably a bunch of shared knowledge.
+
+1154
+00:42:05.160 --> 00:42:10.640
+And I guess you know perhaps there are
+
+1155
+00:42:07.920 --> 00:42:12.840
+organizational policies
+
+1156
+00:42:10.640 --> 00:42:15.160
+or organizational styles, ways of
+
+1157
+00:42:12.840 --> 00:42:16.920
+working, things that you know the
+
+1158
+00:42:15.160 --> 00:42:20.600
+platform team want you to do or don't
+
+1159
+00:42:16.920 --> 00:42:22.440
+want you to do. Can we can we
+
+1160
+00:42:20.600 --> 00:42:24.240
+allow this knowledge to be shared
+
+1161
+00:42:22.440 --> 00:42:25.840
+through
+
+1162
+00:42:24.240 --> 00:42:27.880
+through context management as well,
+
+1163
+00:42:25.840 --> 00:42:29.400
+organizational context management? Yeah,
+
+1164
+00:42:27.880 --> 00:42:30.280
+so I think
+
+1165
+00:42:29.400 --> 00:42:32.320
+um
+
+1166
+00:42:30.280 --> 00:42:34.400
+most of the tools are focusing on the
+
+1167
+00:42:32.320 --> 00:42:37.000
+context which is local which is
+
+1168
+00:42:34.400 --> 00:42:39.400
+available like in the local environment
+
+1169
+00:42:37.000 --> 00:42:41.320
+and uh
+
+1170
+00:42:39.400 --> 00:42:44.960
+for example you can you can for sure
+
+1171
+00:42:41.320 --> 00:42:48.080
+have a Gemini MD or Claude MD or agent
+
+1172
+00:42:44.960 --> 00:42:50.320
+MD file where you explicitly say
+
+1173
+00:42:48.080 --> 00:42:53.760
+and refer to other
+
+1174
+00:42:50.320 --> 00:42:55.920
+markdown files to other documentation to
+
+1175
+00:42:53.760 --> 00:42:57.360
+such that when agents will be started
+
+1176
+00:42:55.920 --> 00:42:59.120
+will be triggered it will have all the
+
+1177
+00:42:57.360 --> 00:43:00.760
+information about your security
+
+1178
+00:42:59.120 --> 00:43:02.560
+guidelines, the code guidelines and so
+
+1179
+00:43:00.760 --> 00:43:05.000
+on. There's a
+
+1180
+00:43:02.560 --> 00:43:06.840
+some problem with that is that
+
+1181
+00:43:05.000 --> 00:43:08.680
+again if you overload the context with
+
+1182
+00:43:06.840 --> 00:43:11.280
+so many instructions the agent can be
+
+1183
+00:43:08.680 --> 00:43:12.360
+just confused and can just you know get
+
+1184
+00:43:11.280 --> 00:43:13.800
+lost
+
+1185
+00:43:12.360 --> 00:43:15.680
+into this
+
+1186
+00:43:13.800 --> 00:43:17.320
+terabytes like
+
+1187
+00:43:15.680 --> 00:43:19.880
+flow of information
+
+1188
+00:43:17.320 --> 00:43:22.560
+plus sometimes the instructions can be
+
+1189
+00:43:19.880 --> 00:43:24.640
+overwhelming and conflicting and it's
+
+1190
+00:43:22.560 --> 00:43:27.600
+unclear what to do in this case.
+
+1191
+00:43:24.640 --> 00:43:29.400
+So I would say that's a great
+
+1192
+00:43:27.600 --> 00:43:32.440
+not just a research topic but a product
+
+1193
+00:43:29.400 --> 00:43:35.720
+topic and many companies will try to
+
+1194
+00:43:32.440 --> 00:43:38.160
+solve this for sure because how to
+
+1195
+00:43:35.720 --> 00:43:41.120
+introduce the tribal knowledge of your
+
+1196
+00:43:38.160 --> 00:43:44.080
+company and knowledge about the
+
+1197
+00:43:41.120 --> 00:43:46.440
+security guidelines efficiently the
+
+1198
+00:43:44.080 --> 00:43:47.880
+coding guidelines and so on efficiently
+
+1199
+00:43:46.440 --> 00:43:51.120
+such that you could your agent could
+
+1200
+00:43:47.880 --> 00:43:52.800
+benefit and use it all the time for your
+
+1201
+00:43:51.120 --> 00:43:54.320
+when you're doing like coding and never
+
+1202
+00:43:52.800 --> 00:43:55.560
+forgets about this and always respected
+
+1203
+00:43:54.320 --> 00:43:57.560
+it.
+
+1204
+00:43:55.560 --> 00:44:01.280
+That's an open problem. I don't think
+
+1205
+00:43:57.560 --> 00:44:03.160
+like any of the existing
+
+1206
+00:44:01.280 --> 00:44:05.120
+like providers or vendors of the agents
+
+1207
+00:44:03.160 --> 00:44:07.120
+solve this explicitly but there are like
+
+1208
+00:44:05.120 --> 00:44:09.600
+definitely like approaches for that. For
+
+1209
+00:44:07.120 --> 00:44:12.480
+example Gemini CLI gives you access to
+
+1210
+00:44:09.600 --> 00:44:14.080
+directly write some memories into the
+
+1211
+00:44:12.480 --> 00:44:16.480
+into the agent's memory. I think it's
+
+1212
+00:44:14.080 --> 00:44:19.920
+called flash memory update
+
+1213
+00:44:16.480 --> 00:44:22.400
+and a prompt. It will attend your prompt
+
+1214
+00:44:19.920 --> 00:44:24.320
+to the Gemini MD and refresh the Gemini
+
+1215
+00:44:22.400 --> 00:44:26.440
+MD in the memory in the context memory
+
+1216
+00:44:24.320 --> 00:44:28.280
+of the agent. So that's one way to
+
+1217
+00:44:26.440 --> 00:44:30.480
+introduce
+
+1218
+00:44:28.280 --> 00:44:31.920
+super recent information directly into
+
+1219
+00:44:30.480 --> 00:44:34.080
+the context.
+
+1220
+00:44:31.920 --> 00:44:37.640
+Or Claude code which introduced this
+
+1221
+00:44:34.080 --> 00:44:39.120
+concept of skills, right? Where you have
+
+1222
+00:44:37.640 --> 00:44:40.760
+um
+
+1223
+00:44:39.120 --> 00:44:43.359
+bunch of
+
+1224
+00:44:40.760 --> 00:44:45.880
+like independent things like skills
+
+1225
+00:44:43.359 --> 00:44:47.520
+which can be dynamically fetched
+
+1226
+00:44:45.880 --> 00:44:49.920
+in the context memory depending on
+
+1227
+00:44:47.520 --> 00:44:51.560
+what's the situation is.
+
+1228
+00:44:49.920 --> 00:44:54.040
+So that's that's a way like that these
+
+1229
+00:44:51.560 --> 00:44:55.800
+are the approaches for for for the from
+
+1230
+00:44:54.040 --> 00:44:58.120
+the vendors to tackle this complex
+
+1231
+00:44:55.800 --> 00:44:59.760
+problem of respecting your specific
+
+1232
+00:44:58.120 --> 00:45:00.920
+choices and decisions. And of course
+
+1233
+00:44:59.760 --> 00:45:02.640
+Tessal
+
+1234
+00:45:00.920 --> 00:45:04.120
+are kind of leading into this space as
+
+1235
+00:45:02.640 --> 00:45:06.440
+well, right? In and around context
+
+1236
+00:45:04.120 --> 00:45:08.800
+management of of of holding
+
+1237
+00:45:06.440 --> 00:45:12.560
+organizational data a little bit as well
+
+1238
+00:45:08.800 --> 00:45:12.560
+as various open source
+
+1239
+00:45:12.800 --> 00:45:16.440
+kind of usage specs I guess as well as
+
+1240
+00:45:14.680 --> 00:45:18.520
+proprietary. Tell us a little bit about
+
+1241
+00:45:16.440 --> 00:45:20.640
+how that kind of can level up your
+
+1242
+00:45:18.520 --> 00:45:23.280
+agents I suppose in in more professional
+
+1243
+00:45:20.640 --> 00:45:26.440
+environment. Yeah. So this the concept
+
+1244
+00:45:23.280 --> 00:45:29.160
+of the usage specs is that like
+
+1245
+00:45:26.440 --> 00:45:31.520
+it's the easiest to explain it in the
+
+1246
+00:45:29.160 --> 00:45:33.680
+in the example of third-party dependence
+
+1247
+00:45:31.520 --> 00:45:36.000
+third-party dependencies. So imagine you
+
+1248
+00:45:33.680 --> 00:45:38.880
+are working with a
+
+1249
+00:45:36.000 --> 00:45:40.280
+library with some framework and it has
+
+1250
+00:45:38.880 --> 00:45:42.680
+many dependencies.
+
+1251
+00:45:40.280 --> 00:45:45.160
+And if you want to implement in your
+
+1252
+00:45:42.680 --> 00:45:48.920
+library a feature related to this
+
+1253
+00:45:45.160 --> 00:45:51.640
+dependency, right? Then you need to make
+
+1254
+00:45:48.920 --> 00:45:53.440
+sure that the agent the code agent has a
+
+1255
+00:45:51.640 --> 00:45:55.600
+lot of capabilities and lots of
+
+1256
+00:45:53.440 --> 00:45:57.600
+knowledge about this dependency.
+
+1257
+00:45:55.600 --> 00:45:59.359
+But imagine this is not a very popular
+
+1258
+00:45:57.600 --> 00:46:02.480
+library. Imagine that's like something
+
+1259
+00:45:59.359 --> 00:46:05.160
+which was just released recently and it
+
+1260
+00:46:02.480 --> 00:46:07.280
+was not a part of the training data for
+
+1261
+00:46:05.160 --> 00:46:08.920
+the Claude code or for any foundational
+
+1262
+00:46:07.280 --> 00:46:12.080
+LLM so
+
+1263
+00:46:08.920 --> 00:46:14.480
+LLM just doesn't know how the API of
+
+1264
+00:46:12.080 --> 00:46:16.600
+this dependency looks like.
+
+1265
+00:46:14.480 --> 00:46:18.480
+And the only way to solve it is either
+
+1266
+00:46:16.600 --> 00:46:19.680
+to have a access to the source code
+
+1267
+00:46:18.480 --> 00:46:21.520
+which is super inefficient, right?
+
+1268
+00:46:19.680 --> 00:46:25.040
+Because it will require the agent to
+
+1269
+00:46:21.520 --> 00:46:27.520
+clone the the repo to navigate through
+
+1270
+00:46:25.040 --> 00:46:30.440
+thousands of the files and so on or it
+
+1271
+00:46:27.520 --> 00:46:33.840
+can just like try to import this
+
+1272
+00:46:30.440 --> 00:46:35.640
+dependency and try to test this the
+
+1273
+00:46:33.840 --> 00:46:37.920
+functionality available in this repo in
+
+1274
+00:46:35.640 --> 00:46:40.240
+the dummy script which again is also
+
+1275
+00:46:37.920 --> 00:46:42.320
+inefficient in terms of turns, right?
+
+1276
+00:46:40.240 --> 00:46:44.840
+Like agent will spend lots of time just
+
+1277
+00:46:42.320 --> 00:46:48.720
+understanding how to work with this
+
+1278
+00:46:44.840 --> 00:46:51.200
+library. So why would you do that?
+
+1279
+00:46:48.720 --> 00:46:53.720
+No reasons. You want to be efficient,
+
+1280
+00:46:51.200 --> 00:46:57.120
+right? You can use usage specs. Usage
+
+1281
+00:46:53.720 --> 00:47:00.120
+specs is a compressed
+
+1282
+00:46:57.120 --> 00:47:02.359
+representation of the API of this
+
+1283
+00:47:00.120 --> 00:47:05.240
+library which can be consumed by your
+
+1284
+00:47:02.359 --> 00:47:07.080
+agent from the Tessal registry or from
+
+1285
+00:47:05.240 --> 00:47:09.320
+your private registry because Tessal is
+
+1286
+00:47:07.080 --> 00:47:12.760
+also working on the having registries
+
+1287
+00:47:09.320 --> 00:47:15.080
+for for for companies. And if you
+
+1288
+00:47:12.760 --> 00:47:17.320
+consume this you know usage specs, it's
+
+1289
+00:47:15.080 --> 00:47:19.840
+just like a bunch of the documents which
+
+1290
+00:47:17.320 --> 00:47:21.920
+show how the
+
+1291
+00:47:19.840 --> 00:47:25.840
+API is designed for this specific
+
+1292
+00:47:21.920 --> 00:47:29.600
+package, then agent has direct access to
+
+1293
+00:47:25.840 --> 00:47:32.520
+the very clear
+
+1294
+00:47:29.600 --> 00:47:34.280
+knowledge of how to how to work with
+
+1295
+00:47:32.520 --> 00:47:36.760
+with this specific library. It doesn't
+
+1296
+00:47:34.280 --> 00:47:39.800
+need to scan thousands of files. It has
+
+1297
+00:47:36.760 --> 00:47:42.640
+everything stored in a very nicely
+
+1298
+00:47:39.800 --> 00:47:45.040
+formatted and easily accessible
+
+1299
+00:47:42.640 --> 00:47:48.040
+for you like directly here. So it's very
+
+1300
+00:47:45.040 --> 00:47:48.040
+token efficient
+
+1301
+00:47:48.280 --> 00:47:54.480
+turns efficient and working because like
+
+1302
+00:47:51.520 --> 00:47:56.760
+we made a big effort to make that these
+
+1303
+00:47:54.480 --> 00:47:59.440
+usage specs valuable and containing lots
+
+1304
+00:47:56.760 --> 00:48:01.640
+of information. So
+
+1305
+00:47:59.440 --> 00:48:03.520
+usage specs not only show the API
+
+1306
+00:48:01.640 --> 00:48:04.920
+methods and the definitions but also how
+
+1307
+00:48:03.520 --> 00:48:07.359
+to use them. What are the best
+
+1308
+00:48:04.920 --> 00:48:10.000
+scenarios? What are the underlying
+
+1309
+00:48:07.359 --> 00:48:12.240
+implications of using this specific
+
+1310
+00:48:10.000 --> 00:48:14.640
+API? So that's
+
+1311
+00:48:12.240 --> 00:48:15.960
+one you know way how to look into the
+
+1312
+00:48:14.640 --> 00:48:18.359
+usage specs
+
+1313
+00:48:15.960 --> 00:48:19.520
+as a way to
+
+1314
+00:48:18.359 --> 00:48:20.400
+learn
+
+1315
+00:48:19.520 --> 00:48:23.120
+to
+
+1316
+00:48:20.400 --> 00:48:26.359
+to give you know to give your agent a
+
+1317
+00:48:23.120 --> 00:48:28.560
+knowledge about some library which was
+
+1318
+00:48:26.359 --> 00:48:30.280
+never part of the pre-training data or
+
+1319
+00:48:28.560 --> 00:48:32.560
+which is not popular or which is a
+
+1320
+00:48:30.280 --> 00:48:34.280
+private, right? Which was
+
+1321
+00:48:32.560 --> 00:48:36.720
+you know like agent just doesn't know
+
+1322
+00:48:34.280 --> 00:48:39.640
+about this. Yeah, awesome. Let's wrap
+
+1323
+00:48:36.720 --> 00:48:41.720
+this section up by talking about evals
+
+1324
+00:48:39.640 --> 00:48:43.520
+cuz I think when we talk about
+
+1325
+00:48:41.720 --> 00:48:45.240
+professional development, we need to
+
+1326
+00:48:43.520 --> 00:48:47.280
+know we need to be able to test. We need
+
+1327
+00:48:45.240 --> 00:48:48.720
+to be able to say okay these agents are
+
+1328
+00:48:47.280 --> 00:48:50.640
+best because
+
+1329
+00:48:48.720 --> 00:48:52.200
+they can do these particular things
+
+1330
+00:48:50.640 --> 00:48:53.960
+really well. I will use these other
+
+1331
+00:48:52.200 --> 00:48:55.680
+agents because they can do these other
+
+1332
+00:48:53.960 --> 00:48:58.280
+things particularly well maybe reviews
+
+1333
+00:48:55.680 --> 00:49:01.200
+or tests or whatever. How do we
+
+1334
+00:48:58.280 --> 00:49:04.000
+what's a good way to be able to eval an
+
+1335
+00:49:01.200 --> 00:49:06.760
+agent's capability as let's say code
+
+1336
+00:49:04.000 --> 00:49:08.520
+generation? So it's a huge topic because
+
+1337
+00:49:06.760 --> 00:49:10.400
+like there are so many ways to This is a
+
+1338
+00:49:08.520 --> 00:49:13.400
+podcast episode by itself but let's try
+
+1339
+00:49:10.400 --> 00:49:16.080
+to cover it in the in 5 minutes.
+
+1340
+00:49:13.400 --> 00:49:18.160
+So yeah, eval is just like super complex
+
+1341
+00:49:16.080 --> 00:49:20.680
+topic on its own like it's a very
+
+1342
+00:49:18.160 --> 00:49:22.640
+complex like how to eval LLMs in general
+
+1343
+00:49:20.680 --> 00:49:24.359
+like because they can do literally so
+
+1344
+00:49:22.640 --> 00:49:26.640
+many things but how do you eval this?
+
+1345
+00:49:24.359 --> 00:49:29.120
+And it becomes more and more challenging
+
+1346
+00:49:26.640 --> 00:49:31.040
+even if you try to limit the scope just
+
+1347
+00:49:29.120 --> 00:49:32.560
+to code generation because apparently
+
+1348
+00:49:31.040 --> 00:49:33.800
+code generation is also like a super
+
+1349
+00:49:32.560 --> 00:49:35.800
+complex
+
+1350
+00:49:33.800 --> 00:49:38.040
+you know task and uh
+
+1351
+00:49:35.800 --> 00:49:39.480
+evaluating the capabilities of the agent
+
+1352
+00:49:38.040 --> 00:49:43.200
+specifically in this domain is also
+
+1353
+00:49:39.480 --> 00:49:45.360
+challenging. So, I would say the most
+
+1354
+00:49:43.200 --> 00:49:48.520
+common way to do this now in the
+
+1355
+00:49:45.360 --> 00:49:51.480
+community and in the research
+
+1356
+00:49:48.520 --> 00:49:52.400
+environment and in academia is to use
+
+1357
+00:49:51.480 --> 00:49:56.240
+like
+
+1358
+00:49:52.400 --> 00:49:58.600
+popular benchmarks such as SWE-bench,
+
+1359
+00:49:56.240 --> 00:50:01.600
+specifically a verified variant of it,
+
+1360
+00:49:58.600 --> 00:50:03.760
+which was popularized by OpenAI. So, the
+
+1361
+00:50:01.600 --> 00:50:05.320
+way these evals are working
+
+1362
+00:50:03.760 --> 00:50:07.000
+in a sense in some sense they are
+
+1363
+00:50:05.320 --> 00:50:11.200
+reflecting their real development
+
+1364
+00:50:07.000 --> 00:50:13.440
+process. They are taking your repository
+
+1365
+00:50:11.200 --> 00:50:15.200
+in the state before some feature was
+
+1366
+00:50:13.440 --> 00:50:17.160
+implemented.
+
+1367
+00:50:15.200 --> 00:50:19.080
+Then it asks you to implement the
+
+1368
+00:50:17.160 --> 00:50:20.840
+specific feature, right? It gives you a
+
+1369
+00:50:19.080 --> 00:50:23.120
+repo before the feature was there. It
+
+1370
+00:50:20.840 --> 00:50:24.800
+gives you requirements about what how
+
+1371
+00:50:23.120 --> 00:50:27.120
+the feature should look like. It gives
+
+1372
+00:50:24.800 --> 00:50:28.680
+you some maybe information about the API
+
+1373
+00:50:27.120 --> 00:50:31.840
+and how
+
+1374
+00:50:28.680 --> 00:50:34.600
+how it is intended to be implemented.
+
+1375
+00:50:31.840 --> 00:50:36.920
+Then you launch your agent, your coding
+
+1376
+00:50:34.600 --> 00:50:39.360
+assistant, which that does the work to
+
+1377
+00:50:36.920 --> 00:50:42.400
+implement the missing files, the
+
+1378
+00:50:39.360 --> 00:50:45.680
+missing feature. And once it generated
+
+1379
+00:50:42.400 --> 00:50:48.840
+this patch, right? Like this update,
+
+1380
+00:50:45.680 --> 00:50:51.000
+it is evaluated against a commit which
+
+1381
+00:50:48.840 --> 00:50:53.680
+has real tests, which has real unit
+
+1382
+00:50:51.000 --> 00:50:56.480
+tests approved by the human, so which we
+
+1383
+00:50:53.680 --> 00:50:59.680
+can treat as a ground truth. And if your
+
+1384
+00:50:56.480 --> 00:51:01.640
+agent proposed patch passes this test,
+
+1385
+00:50:59.680 --> 00:51:03.760
+then you can think of it as a success
+
+1386
+00:51:01.640 --> 00:51:05.680
+and ooh, your agent implemented
+
+1387
+00:51:03.760 --> 00:51:07.000
+everything properly. So, it works as
+
+1388
+00:51:05.680 --> 00:51:07.880
+expected.
+
+1389
+00:51:07.000 --> 00:51:08.680
+So,
+
+1390
+00:51:07.880 --> 00:51:11.240
+that's
+
+1391
+00:51:08.680 --> 00:51:13.920
+the most common way how to how to test
+
+1392
+00:51:11.240 --> 00:51:16.360
+it. Of course, it's very hard to design
+
+1393
+00:51:13.920 --> 00:51:19.200
+such benchmark, right? Like because
+
+1394
+00:51:16.360 --> 00:51:23.400
+in reality you can't just go to GitHub
+
+1395
+00:51:19.200 --> 00:51:24.880
+and clone any package, pick a PR and use
+
+1396
+00:51:23.400 --> 00:51:26.160
+this
+
+1397
+00:51:24.880 --> 00:51:28.440
+PR
+
+1398
+00:51:26.160 --> 00:51:29.520
+as a as a, you know, like a source for
+
+1399
+00:51:28.440 --> 00:51:32.520
+your
+
+1400
+00:51:29.520 --> 00:51:35.200
+evaluation because many PRs are lacking
+
+1401
+00:51:32.520 --> 00:51:36.880
+of documentation. They don't declare any
+
+1402
+00:51:35.200 --> 00:51:38.680
+any information about like design
+
+1403
+00:51:36.880 --> 00:51:41.520
+choices and so on. So, you need to
+
+1404
+00:51:38.680 --> 00:51:42.960
+filter the data very aggressively to
+
+1405
+00:51:41.520 --> 00:51:45.920
+just include
+
+1406
+00:51:42.960 --> 00:51:47.800
+those data points where your agent has
+
+1407
+00:51:45.920 --> 00:51:50.320
+theoretically like a chance to solve
+
+1408
+00:51:47.800 --> 00:51:52.840
+this problem, right? Like because
+
+1409
+00:51:50.320 --> 00:51:55.120
+your your PR description, the issue
+
+1410
+00:51:52.840 --> 00:51:56.800
+description should be enough and should
+
+1411
+00:51:55.120 --> 00:51:58.480
+contain enough information for the agent
+
+1412
+00:51:56.800 --> 00:52:00.600
+to solve the problem.
+
+1413
+00:51:58.480 --> 00:52:02.880
+And if it misses the definitions of the
+
+1414
+00:52:00.600 --> 00:52:04.400
+API, if it misses some assumptions that
+
+1415
+00:52:02.880 --> 00:52:06.160
+agent just like theoretically doesn't
+
+1416
+00:52:04.400 --> 00:52:08.680
+have chances to come up with
+
+1417
+00:52:06.160 --> 00:52:12.560
+uh, with the right solution. So,
+
+1418
+00:52:08.680 --> 00:52:14.800
+SWE-bench alike evaluations is the most
+
+1419
+00:52:12.560 --> 00:52:16.840
+common approach, but
+
+1420
+00:52:14.800 --> 00:52:20.840
+again, like it's very limited. If you
+
+1421
+00:52:16.840 --> 00:52:22.800
+look into into the SWE-bench pro
+
+1422
+00:52:20.840 --> 00:52:25.080
+tasks, then they are usually touching
+
+1423
+00:52:22.800 --> 00:52:28.280
+only one file. Rarely they touch two
+
+1424
+00:52:25.080 --> 00:52:29.600
+files. And again, like that's not real
+
+1425
+00:52:28.280 --> 00:52:31.600
+software development experience, right?
+
+1426
+00:52:29.600 --> 00:52:33.200
+Like usually when you ship a feature,
+
+1427
+00:52:31.600 --> 00:52:35.600
+you're shipping like
+
+1428
+00:52:33.200 --> 00:52:37.520
+five or six files. You're making changes
+
+1429
+00:52:35.600 --> 00:52:39.840
+in many places
+
+1430
+00:52:37.520 --> 00:52:42.520
+and you need to be super accurate in
+
+1431
+00:52:39.840 --> 00:52:45.320
+imports, in unit tests and so on. So,
+
+1432
+00:52:42.520 --> 00:52:46.920
+the real PRs are much more challenging
+
+1433
+00:52:45.320 --> 00:52:48.800
+than what we have in
+
+1434
+00:52:46.920 --> 00:52:49.800
+SWE-bench pro. So, that's why we need
+
+1435
+00:52:48.800 --> 00:52:52.240
+like
+
+1436
+00:52:49.800 --> 00:52:53.800
+a new benchmark.
+
+1437
+00:52:52.240 --> 00:52:56.000
+It can be It can be of the same format,
+
+1438
+00:52:53.800 --> 00:52:58.160
+but it needs to be a next level
+
+1439
+00:52:56.000 --> 00:53:00.000
+requiring the agent to make changes not
+
+1440
+00:52:58.160 --> 00:53:03.760
+in one file, but in a collection of
+
+1441
+00:53:00.000 --> 00:53:05.800
+files. So, more of a guideline or a
+
+1442
+00:53:03.760 --> 00:53:07.920
+a signal versus something that's more
+
+1443
+00:53:05.800 --> 00:53:09.320
+complete in terms of will will
+
+1444
+00:53:07.920 --> 00:53:12.280
+absolutely relate to your exact
+
+1445
+00:53:09.320 --> 00:53:14.800
+experience. Exactly. And also this type
+
+1446
+00:53:12.280 --> 00:53:17.320
+of eval, I think it focuses mainly on
+
+1447
+00:53:14.800 --> 00:53:20.200
+the software engineering backend tasks,
+
+1448
+00:53:17.320 --> 00:53:21.800
+but what if we go to the
+
+1449
+00:53:20.200 --> 00:53:24.000
+agents which are
+
+1450
+00:53:21.800 --> 00:53:26.160
+which can produce
+
+1451
+00:53:24.000 --> 00:53:29.120
+UI, right? Like how do you evaluate the
+
+1452
+00:53:26.160 --> 00:53:31.440
+UI? Or what if you are developing an
+
+1453
+00:53:29.120 --> 00:53:32.960
+agent which interacts with a database
+
+1454
+00:53:31.440 --> 00:53:35.080
+and can change the state of the
+
+1455
+00:53:32.960 --> 00:53:37.040
+database, right? Like it's a different
+
+1456
+00:53:35.080 --> 00:53:39.360
+type of eval and it's it's a different
+
+1457
+00:53:37.040 --> 00:53:41.840
+type of a complexity and community is
+
+1458
+00:53:39.360 --> 00:53:43.240
+now working on a specific like dedicated
+
+1459
+00:53:41.840 --> 00:53:46.800
+benchmarks for assessing these
+
+1460
+00:53:43.240 --> 00:53:49.200
+capabilities as well. Like if your agent
+
+1461
+00:53:46.800 --> 00:53:52.880
+generated a UI, how you evaluate that it
+
+1462
+00:53:49.200 --> 00:53:55.400
+is like matching the
+
+1463
+00:53:52.880 --> 00:53:57.600
+the request in the in the user prompt.
+
+1464
+00:53:55.400 --> 00:53:59.280
+How like how can we trust that what it
+
+1465
+00:53:57.600 --> 00:54:03.040
+came up with actually matches the
+
+1466
+00:53:59.280 --> 00:54:05.359
+expectations? Yeah. Yeah, so that's like
+
+1467
+00:54:03.040 --> 00:54:07.840
+a pick of an iceberg.
+
+1468
+00:54:05.359 --> 00:54:09.720
+Absolutely. Let's Let's wrap up with I
+
+1469
+00:54:07.840 --> 00:54:11.320
+guess what's next for agents or what
+
+1470
+00:54:09.720 --> 00:54:14.000
+what what are the what are the things
+
+1471
+00:54:11.320 --> 00:54:16.280
+that you're most looking forward to in
+
+1472
+00:54:14.000 --> 00:54:18.480
+whatever this next generation of agents
+
+1473
+00:54:16.280 --> 00:54:20.880
+AI agents looks like. One of my
+
+1474
+00:54:18.480 --> 00:54:23.040
+expectation is that like agents should
+
+1475
+00:54:20.880 --> 00:54:24.320
+at some point learn how to write a
+
+1476
+00:54:23.040 --> 00:54:25.600
+better code
+
+1477
+00:54:24.320 --> 00:54:28.000
+because
+
+1478
+00:54:25.600 --> 00:54:29.560
+now nowadays the quality of the code
+
+1479
+00:54:28.000 --> 00:54:31.359
+they produce
+
+1480
+00:54:29.560 --> 00:54:32.320
+sometimes it's like just like a garbage.
+
+1481
+00:54:31.359 --> 00:54:34.320
+It's like
+
+1482
+00:54:32.320 --> 00:54:35.800
+you can feel that it's a one-time
+
+1483
+00:54:34.320 --> 00:54:38.640
+script.
+
+1484
+00:54:35.800 --> 00:54:41.240
+It's really not something which you will
+
+1485
+00:54:38.640 --> 00:54:43.720
+enjoy to come back at some point like
+
+1486
+00:54:41.240 --> 00:54:46.560
+later in the timeline and work on top of
+
+1487
+00:54:43.720 --> 00:54:48.880
+that. A lot of the code which LLM
+
+1488
+00:54:46.560 --> 00:54:52.160
+generates that's super garbage, messy,
+
+1489
+00:54:48.880 --> 00:54:54.240
+not scalable. So, um,
+
+1490
+00:54:52.160 --> 00:54:56.280
+and of course you can deal with it by
+
+1491
+00:54:54.240 --> 00:54:58.359
+having more guidelines about how to
+
+1492
+00:54:56.280 --> 00:55:01.440
+write the code, but still I think it's
+
+1493
+00:54:58.359 --> 00:55:04.600
+an open challenge to improve the quality
+
+1494
+00:55:01.440 --> 00:55:06.480
+of the generated code
+
+1495
+00:55:04.600 --> 00:55:08.960
+in general for the agent. So, that's my
+
+1496
+00:55:06.480 --> 00:55:11.200
+one expectation. Second is of course
+
+1497
+00:55:08.960 --> 00:55:14.240
+like improving the
+
+1498
+00:55:11.200 --> 00:55:17.000
+UI capabilities. So, like most of the
+
+1499
+00:55:14.240 --> 00:55:20.160
+existing agents they are struggling
+
+1500
+00:55:17.000 --> 00:55:22.200
+with creating a really nice UIs
+
+1501
+00:55:20.160 --> 00:55:25.120
+following your specific instructions.
+
+1502
+00:55:22.200 --> 00:55:26.880
+So, I expect the core models to get
+
+1503
+00:55:25.120 --> 00:55:28.280
+improvement over there.
+
+1504
+00:55:26.880 --> 00:55:29.440
+And
+
+1505
+00:55:28.280 --> 00:55:31.520
+I think
+
+1506
+00:55:29.440 --> 00:55:34.200
+I would love to see like we talked a
+
+1507
+00:55:31.520 --> 00:55:36.040
+little bit about the SWE-bench eval. So,
+
+1508
+00:55:34.200 --> 00:55:38.320
+I want to see
+
+1509
+00:55:36.040 --> 00:55:40.840
+a new version of the a more challenging
+
+1510
+00:55:38.320 --> 00:55:44.080
+version of SWE-bench and people are
+
+1511
+00:55:40.840 --> 00:55:46.040
+working on that. For example, SWE-pro.
+
+1512
+00:55:44.080 --> 00:55:47.920
+That's a much more complex and
+
+1513
+00:55:46.040 --> 00:55:50.480
+challenging variant of the SWE-bench
+
+1514
+00:55:47.920 --> 00:55:52.960
+where agent is just like
+
+1515
+00:55:50.480 --> 00:55:55.040
+facing harder tasks, which again like
+
+1516
+00:55:52.960 --> 00:55:59.280
+require it to make changes in multiple
+
+1517
+00:55:55.040 --> 00:56:01.440
+files and accuracy falls dramatically,
+
+1518
+00:55:59.280 --> 00:56:04.280
+which makes all the claims that agents
+
+1519
+00:56:01.440 --> 00:56:07.800
+can execute long horizon tasks kind of
+
+1520
+00:56:04.280 --> 00:56:12.280
+not valid. So, um,
+
+1521
+00:56:07.800 --> 00:56:13.920
+really having very complex PRs, having
+
+1522
+00:56:12.280 --> 00:56:15.920
+making agents solving really complex
+
+1523
+00:56:13.920 --> 00:56:19.000
+tasks which require changes in multiple
+
+1524
+00:56:15.920 --> 00:56:20.800
+files, this is the way to
+
+1525
+00:56:19.000 --> 00:56:22.120
+make it able to solve long horizon
+
+1526
+00:56:20.800 --> 00:56:24.200
+tasks.
+
+1527
+00:56:22.120 --> 00:56:27.120
+So, I'm expecting
+
+1528
+00:56:24.200 --> 00:56:29.120
+to again like have more
+
+1529
+00:56:27.120 --> 00:56:31.000
+more of an input from the academia, from
+
+1530
+00:56:29.120 --> 00:56:34.200
+the people and investment in the better
+
+1531
+00:56:31.000 --> 00:56:36.720
+benchmarks about how how can we trust,
+
+1532
+00:56:34.200 --> 00:56:38.480
+how can we make sure that it is able to
+
+1533
+00:56:36.720 --> 00:56:39.960
+generate complex code,
+
+1534
+00:56:38.480 --> 00:56:41.920
+but also like improving the of course
+
+1535
+00:56:39.960 --> 00:56:43.120
+definitely the the accuracy on these
+
+1536
+00:56:41.920 --> 00:56:46.800
+benchmarks.
+
+1537
+00:56:43.120 --> 00:56:48.800
+And that's a great way to wrap up with a
+
+1538
+00:56:46.800 --> 00:56:50.120
+tell me I'm a research engineer without
+
+1539
+00:56:48.800 --> 00:56:51.880
+telling me I'm a without saying I'm a
+
+1540
+00:56:50.120 --> 00:56:52.880
+research engineer without talking about
+
+1541
+00:56:51.880 --> 00:56:53.880
+evals.
+
+1542
+00:56:52.880 --> 00:56:55.240
+So,
+
+1543
+00:56:53.880 --> 00:56:57.800
+Max, this has been this has been
+
+1544
+00:56:55.240 --> 00:56:59.720
+extremely interesting and thorough.
+
+1545
+00:56:57.800 --> 00:57:01.400
+Really, really appreciate all your
+
+1546
+00:56:59.720 --> 00:57:03.560
+knowledge and experience here in
+
+1547
+00:57:01.400 --> 00:57:05.160
+chatting about agents. I'd love to kind
+
+1548
+00:57:03.560 --> 00:57:07.160
+of hear what our audience thinks in
+
+1549
+00:57:05.160 --> 00:57:09.320
+terms of more sessions like this, more
+
+1550
+00:57:07.160 --> 00:57:11.800
+of the kind of the 101, let's go let's
+
+1551
+00:57:09.320 --> 00:57:13.000
+go deeper into certain agents and other
+
+1552
+00:57:11.800 --> 00:57:15.400
+AI
+
+1553
+00:57:13.000 --> 00:57:17.680
+technologies. We can absolutely do that.
+
+1554
+00:57:15.400 --> 00:57:19.080
+So, let us know. Max, massive thank you.
+
+1555
+00:57:17.680 --> 00:57:20.480
+Thank you for joining us and thank you
+
+1556
+00:57:19.080 --> 00:57:22.280
+for sharing. Yeah, thank you very much
+
+1557
+00:57:20.480 --> 00:57:24.000
+for having me and yeah, we'll be happy
+
+1558
+00:57:22.280 --> 00:57:25.880
+to come back and talk more about
+
+1559
+00:57:24.000 --> 00:57:28.480
+&gt;&gt; Absolutely, absolutely. This is one of
+
+1560
+00:57:25.880 --> 00:57:30.680
+20 in a series that we're doing now,
+
+1561
+00:57:28.480 --> 00:57:32.280
+Max. That's fun. Amazing. Thanks very
+
+1562
+00:57:30.680 --> 00:57:33.680
+much, everyone. Really appreciate you
+
+1563
+00:57:32.280 --> 00:57:36.160
+joining and tune in for the next
+
+1564
+00:57:33.680 --> 00:57:36.160
+episode.

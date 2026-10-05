@@ -1,0 +1,528 @@
+[00:00:01.080] You can see there's basically a disturbance
+[00:00:02.680] right here in the Force, which I think is very interesting.
+[00:00:04.600] the model release, we believe, caused a severe degradation
+[00:00:09.480] in the amount of times these static files were getting called on.
+[00:00:13.960] Why has there been almost a 50% decrease in the amount of times
+[00:00:18.600] the agents use these specific instruction files?
+[00:00:25.760] no. Oh!
+[00:00:28.720] Nice to see everybody today.
+[00:00:31.360] At this beautiful event.
+[00:00:32.800] Thank you, Tessl.
+[00:00:33.480] Thank you, Sam, for the invite.
+[00:00:36.680] So this talk is named 'Steer.'
+[00:00:38.920] 'Steer' refers to coding agents.
+[00:00:43.440] Steering capability.
+[00:00:44.760] We'll talk about that at length.
+[00:00:46.560] And we'll talk about how the multi-agent coding
+[00:00:49.280] agents are breaking agile.
+[00:00:52.360] So let's do some background.
+[00:00:54.680] Here's me and some of my team.
+[00:00:56.840] My name is Guy.
+[00:00:58.240] I'm the co-founder and CEO of Baz.
+[00:01:00.320] I've been hacking at this specific problem space for almost seven years.
+[00:01:06.720] So my last company started in 2019.
+[00:01:10.600] In the midst of the digital transformation.
+[00:01:14.720] So as all of us were moving from on premises
+[00:01:17.960] into cloud-hosted web applications, me and my team, some of them
+[00:01:22.560] in this picture we discovered one tiny problem
+[00:01:26.240] is that everybody's adopting new coding paradigms, new programming
+[00:01:30.000] languages back in the day called Terraform and CloudFormation and Kubernetes,
+[00:01:34.120] but are also causing many misconfigurations and vulnerabilities
+[00:01:37.600] that are exposing their customers' private data.
+[00:01:40.480] So we spun up in.
+[00:01:45.560] De facto standard for scanning
+[00:01:47.840] that type of infrastructure as code for misconfigurations and vulnerabilities.
+[00:01:52.600] It's been a success to date.
+[00:01:54.320] It has 6 million monthly downloads up until today.
+[00:01:57.560] We built a company around it.
+[00:01:59.280] It was called Bridgecrew, ran for about a year and a half
+[00:02:02.480] and then got acquired by Palo Alto Networks, where me and again,
+[00:02:07.760] this beautiful team built an application security business
+[00:02:11.760] that still runs, pretty amazing products today out of Palo Alto,
+[00:02:17.080] securing over 50% of the Fortune 50.
+[00:02:21.560] And scaling every single year.
+[00:02:24.920] I left Palo Alto about two years ago to start Baz because
+[00:02:29.000] we saw that this problem is getting worse.
+[00:02:32.600] So just like digital transformation introduced a new paradigm,
+[00:02:35.960] which was new programming languages that were completely overlooked by the existing
+[00:02:40.280] software development stack.
+[00:02:42.440] AI coding is now introducing
+[00:02:44.880] a millions, trillions of lines of code that no one's really looking at, right?
+[00:02:50.160] We did some past work on this specific area,
+[00:02:52.920] also had some patents registered, and we're still contributing.
+[00:02:57.120] Me and my team today contribute to many open source projects you all know and love.
+[00:03:00.400] Basically, to tackle this specific problem.
+[00:03:04.680] So like any good
+[00:03:06.440] community talk, we're going to start with the famous Spider-Man meme.
+[00:03:09.720] And the reason me and other speakers love this meme,
+[00:03:13.400] because it really points to a problem that we have or re observed now
+[00:03:17.280] as, engineers and software developers, how many software developers
+[00:03:21.080] do we have in the room today? Right. Good.
+[00:03:24.320] Which we're not really sure today what's
+[00:03:27.200] driving our code into a single specific direction.
+[00:03:31.240] So we have a semblance of what's driving, but we don't really know.
+[00:03:35.720] I haven't labeled the Spider-Men, because there are different flavors today,
+[00:03:39.200] but you can think of them as, you know, Claude, OpenAI, Cursor.
+[00:03:43.840] You can think of them as AGENTS.md,
+[00:03:46.600] CLAUDE.md, and a skills file, right?
+[00:03:49.720] So there's different ways
+[00:03:51.400] where we can give instructions to our coding agents and get to a result,
+[00:03:55.520] but we don't really know who's in the helm.
+[00:03:58.720] I'm not sure if any of you have ever looked, but over the last year
+[00:04:01.840] and we'll see some data.
+[00:04:02.960] This talk is mostly around data,
+[00:04:04.520] and it's supposed to make you freak out, by the way.
+[00:04:07.640] The way that your coding agents ingest
+[00:04:11.120] these steering files, this configuration files, has changed multiple times.
+[00:04:15.880] So originally, like almost 14, 16
+[00:04:19.400] months ago, we first started to adopt AGENTS.md files.
+[00:04:23.640] So who uses an AGENTS.md or a CLAUDE.md?
+[00:04:26.400] So, like a static instruction file, because we identified
+[00:04:29.720] or I should say anthropic identified
+[00:04:32.720] that we're inserting the same context over and over again in our coding agents.
+[00:04:37.440] So they made us hardcode these instructions onto our repositories.
+[00:04:41.920] And what they basically did in the first iteration is
+[00:04:44.040] they loaded up into the context window over time, the way that context was loaded
+[00:04:49.360] into your coding agents session changed dramatically.
+[00:04:54.520] So, starting with the Opus 3.7 family,
+[00:04:58.240] we observed that they start to compact the AGENTS.md files
+[00:05:02.280] because we started to see so many of these files reminisced,
+[00:05:06.440] remaining the code base, and start to steer in different directions.
+[00:05:09.560] Once we got skills added to the mix, we found that they are actually
+[00:05:13.400] inserting it in a separate part of the of the context window of your coding agent.
+[00:05:17.680] So today, no one really knows, but we're seeing much better
+[00:05:21.560] results in terms of adherence to a steering agent, a specific one.
+[00:05:25.520] But there's still many, many problems left to solve.
+[00:05:29.920] I'm going to use a couple of
+[00:05:33.120] modestly viral tweets
+[00:05:35.120] to prove my point, but none of them really reflect your reality.
+[00:05:39.600] I think it's a reality that sometimes exists on social media.
+[00:05:44.440] Number one, and there's a, I think,
+[00:05:46.760] almost a consensus around where the bottleneck is today.
+[00:05:49.760] So there's generally no,
+[00:05:52.440] restraint or there's no stopping a developer once
+[00:05:56.880] they get their hands on a coding model.
+[00:05:58.400] We have great free coding models that can help us now compose code
+[00:06:01.480] at endless amounts.
+[00:06:04.800] The way this leads me
+[00:06:06.240] and my team is really commonly think about collaboration, right?
+[00:06:09.440] So the stock starts with agile.
+[00:06:11.720] If you think about where we started this journey into a coding
+[00:06:15.640] 3 or 4 years ago, it was in an environment where we had rituals,
+[00:06:19.720] where we synchronized humans on what we're going to build next.
+[00:06:23.960] A lot of these rituals are now thrown out the window.
+[00:06:26.800] And the bottleneck that once existed, which is a human led
+[00:06:30.440] bottleneck of having enough engineers on a given problem, has now shifted.
+[00:06:34.720] And the bottleneck, I think, commonly
+[00:06:37.320] now referred to as the PR bottleneck, basically talks about the fact
+[00:06:41.480] that we're able to build and ship many new paths.
+[00:06:45.440] But the way that our current systems are wired, those are not the bottleneck.
+[00:06:49.720] Right?
+[00:06:49.880] Because we have 60 systems that take, you know, between
+[00:06:53.160] tens of minutes to hours to complete their cycles.
+[00:06:56.920] And obviously, we still rely on our peers to get validation
+[00:06:59.760] that what we're writing is legitimate.
+[00:07:04.880] Second degree to this problem is what happens
+[00:07:08.040] not only in a team environment,
+[00:07:10.360] but what happens when there's more than one agent at play.
+[00:07:13.960] So I talked about this kind of referenced this on the Spiderman slide,
+[00:07:17.720] but there's now some concrete research that goes into understanding what happens
+[00:07:22.640] when there's more
+[00:07:23.760] than one active coding session in a given code base or a code repo.
+[00:07:27.680] So let's even assume that
+[00:07:30.320] those specific agents use the same operating system.
+[00:07:33.760] They all use either a single harness or drive their skills
+[00:07:37.720] from a single registry or.
+[00:07:42.960] Their their coding trajectories
+[00:07:45.960] has nothing to do with those agents and files and instructions at all.
+[00:07:50.000] It has to do with the shared memory, the context that's being traversed,
+[00:07:54.560] that's being fetched from your code base, on every on, on every code base session,
+[00:07:58.520] on every coding session can radically change
+[00:08:02.440] the type of plan you might get when you do a Claude Code plan
+[00:08:05.240] and the type of output when you try to build something new.
+[00:08:08.360] Now that seems like a new answer, like a small thing.
+[00:08:10.720] But if we can't really get, you know, consistent confidence
+[00:08:15.240] that we're going to get a result, a code that's going to adhere to
+[00:08:19.240] what's important for us in a steering file, then what are we even doing?
+[00:08:22.680] Right?
+[00:08:26.040] This is one final bit of research and then we'll go into data.
+[00:08:28.840] So there's ways where we can see that coordination
+[00:08:32.640] actually does compound and create value.
+[00:08:36.520] Interestingly, neither a
+[00:08:40.440] an instruction or a skill
+[00:08:42.720] and not even a shared memory creates a consistent outcome.
+[00:08:46.040] The number one factor that drives a consistent outcome is setup.
+[00:08:50.920] So if we're able to create setups that mimic the exact starting point
+[00:08:55.280] for a given coding task, that's probably the number one predictor
+[00:08:59.520] that we get a consistent results on the back.
+[00:09:03.160] Okay.
+[00:09:04.920] So this data has a bit of a backstory.
+[00:09:07.960] So what does Baz do?
+[00:09:11.760] Baz operates
+[00:09:14.320] simply a fleet of agents
+[00:09:17.080] that performs code review in very specific subdomains.
+[00:09:20.280] Now this is important just because I want you to understand
+[00:09:23.200] the weight I'm going to give the data.
+[00:09:24.720] I'm going to show you
+[00:09:25.320] and what I think that teaches us about where the industry is headed.
+[00:09:28.680] So we've built out these domain specific agents
+[00:09:32.280] that are think of them as experts, domain experts with superpowers
+[00:09:37.160] that are bound to solve specific problems within your SDLC.
+[00:09:41.520] So one example is a security reviewer.
+[00:09:44.600] is powered by a prompt factory
+[00:09:47.960] that continuously defines prompts that are relevant
+[00:09:52.600] for your codebase and the problems and the vulnerability that it may be,
+[00:09:57.360] prone to and continuously tries to identify.
+[00:10:00.680] What would an attacker do if he identifies your code as an opportunity
+[00:10:04.560] to attack your current application?
+[00:10:07.680] So it has its own prompt factory.
+[00:10:09.720] It has its own tools, so it's able to run things like compilers,
+[00:10:13.760] interpreters, code scanning tools like static analysis and dynamic analysis.
+[00:10:17.640] It's able to go into your dependency registries
+[00:10:20.560] and unpack your your dependencies and a bunch of other things
+[00:10:24.480] and their kind of claim to
+[00:10:26.520] fame is the ability to see whether or not your peers are exploitable.
+[00:10:31.000] Now, we do this for a bunch of different types of subdomains.
+[00:10:34.560] Whenever we produce a suggestion, whether that's shipped through a GitHub
+[00:10:39.800] or GitLab comment, we retain your response as a developer.
+[00:10:44.960] So if you accept the comment or if you've implemented the change
+[00:10:48.200] that we suggested, we label that as a success for the agent,
+[00:10:51.880] and we know that this specific prompt, with the specific context, works for you.
+[00:10:56.400] Same works the opposite way.
+[00:10:58.160] We sometimes
+[00:10:58.720] see profanity, so someone curses the agent because they give them a bad response.
+[00:11:03.240] Great indication.
+[00:11:04.440] Keep cursing agent.
+[00:11:05.520] We know that this agent is not doing a very good job.
+[00:11:08.600] Yeah. Now, the way we collect
+[00:11:11.520] data, we're trying to understand how people are building.
+[00:11:14.840] And specifically, we want to see what's effective in how they're building.
+[00:11:17.840] So this becomes and we've been doing these use cases for about two years now
+[00:11:22.160] for our customer base.
+[00:11:23.600] And now we have an anonymous database that teaches us
+[00:11:26.800] how people are reacting to the feedback they're getting from
+[00:11:29.840] these different agents.
+[00:11:30.800] And that gives us an indication whether or not their steering
+[00:11:34.200] engine is contributing for them.
+[00:11:36.280] Writing good, compliant, correct, not buggy code,
+[00:11:39.920] rather than using bad
+[00:11:42.720] configurations or bad instruction files.
+[00:11:45.720] Okay,
+[00:11:47.800] so the first data point is not even about data point.
+[00:11:50.160] Anybody familiar with Tessl's skills registry?
+[00:11:53.840] So sorry for the maybe dropping in a a competitor here.
+[00:11:59.640] So Tessl's registry — an online registry — has what's most interesting for me,
+[00:12:05.360] is trend data for what people are downloading into their
+[00:12:10.280] installs.
+[00:12:10.840] And, and probably this is largely skewed into people that are building harnesses.
+[00:12:15.520] Right.
+[00:12:15.760] So if you are building a harness, you're iteratively updating the scale,
+[00:12:20.040] just like you would iteratively import a package from npm.
+[00:12:24.320] So two things that are interesting here.
+[00:12:26.440] The first one is you'd see that out of the top ten a lot of them are code
+[00:12:30.240] review skills.
+[00:12:31.120] So interestingly enough, people want guidance
+[00:12:35.200] even if they feel very confident about their code base.
+[00:12:37.560] So they go out to the internet and they ask people like Matt Packer
+[00:12:41.560] for, templated instructions on how to do good code review.
+[00:12:46.840] The other thing you might notice is that most of the download
+[00:12:49.880] on this two time period is flat.
+[00:12:52.920] So I think it's starting to tell us something about the adoption of skills.
+[00:12:57.200] So keep that in mind as well.
+[00:12:59.280] But still all of these skills and all of the other skills are in the other tabs.
+[00:13:03.040] You can go go ahead and look for them.
+[00:13:04.520] I think they give us a good sense, a good, sentiment
+[00:13:08.560] into what the coding agents are good at at every given point.
+[00:13:12.480] So, like four months ago, everybody was looking for skills that, helped you this.
+[00:13:17.240] Love your product. Copy.
+[00:13:19.840] A couple of months before that, everybody wanted good skills
+[00:13:23.600] that make sure that your design system isn't drifting.
+[00:13:28.520] But now we've kind of generalized on some best practices across
+[00:13:32.600] different domains like front end, back end, etc..
+[00:13:34.720] Okay,
+[00:13:36.440] so this is the first part of
+[00:13:38.000] of some proprietary.
+[00:13:44.640] Metadata.
+[00:13:45.600] And there's another question here.
+[00:13:46.920] You can see there's basically a disturbance
+[00:13:48.760] right here in the Force, which I think is very interesting.
+[00:13:50.600] So we track
+[00:13:51.600] the usage of these different instruction files across our customer base.
+[00:13:56.320] And you can see we look at a bunch of different types of
+[00:13:59.760] static raw files that you would store in your code base.
+[00:14:02.280] You can see that the most prevalent was Claude.
+[00:14:04.120] And that's because Anthropic still forces you to use that.
+[00:14:06.840] But right after that we see skills.
+[00:14:08.680] So these are kind of the top to use.
+[00:14:10.640] And then there's a wide variety
+[00:14:11.880] like Cursor rules, and CodeRabbit, and a few others.
+[00:14:16.280] What do you think happened here
+[00:14:19.240] I guess.
+[00:14:20.640] Yeah.
+[00:14:22.600] It was a model. Yeah. Great job.
+[00:14:24.320] Okay. We're going to do like a point system.
+[00:14:25.960] So you got a thousand points.
+[00:14:28.200] So there was a model release I think slightly before here.
+[00:14:30.960] That's why the dates are skewed.
+[00:14:32.560] And the model release, we believe, caused a severe degradation
+[00:14:38.280] in the amount of times these static files were getting called on.
+[00:14:43.040] And since this is a very diverse codebase, mostly enterprise customers,
+[00:14:46.840] it's really hard to kind of take out one specific takeaway.
+[00:14:51.840] But I think this was completely invisible to you.
+[00:14:55.080] And I mean, we saw this in the data.
+[00:14:57.080] And after what does this mean?
+[00:14:58.600] Why has there been almost a 50% decrease in the amount of times
+[00:15:03.240] the agents use these specific instruction files?
+[00:15:07.720] Again, this is going to be a confusing term.
+[00:15:09.240] This is not supposed to instill confidence in you
+[00:15:13.480] second or third graph right now.
+[00:15:15.760] So we have this way to see whether or not our agent suggestions
+[00:15:20.640] are getting picked up and addressed by humans or coding agents.
+[00:15:25.720] And this approach shows you two different lines across this past summer,
+[00:15:29.880] which had multiple meaningful model releases, by the way, no skewing models here.
+[00:15:34.480] And you can see, basically, the amount of times
+[00:15:38.440] that we got addressed comments with guidelines and without guidelines.
+[00:15:43.320] So what we saw is that when agents adhere to coding guidelines,
+[00:15:48.240] like the ones that exist in those instruction files,
+[00:15:51.280] we see that eventually there's stronger acceptance from developers.
+[00:15:55.640] So it's a strong correlation. So what happens?
+[00:15:57.800] People write their instruction files.
+[00:15:59.840] Our agents pick them up.
+[00:16:01.320] And then there's strong
+[00:16:02.360] adherence and acceptance of of those findings specifically.
+[00:16:06.200] So it means that when we do specifically try to find
+[00:16:09.960] problems and bugs using their instructions and skills.
+[00:16:13.360] The baseline model adheres to them.
+[00:16:15.920] And we're seeing better acceptance rates, with that in mind.
+[00:16:20.440] We also saw a
+[00:16:21.720] correlation where coding guidelines correlate with higher review acceptance.
+[00:16:25.960] So we produce a review comment. We tell you.
+[00:16:29.360] Hey there's going to be a bug here.
+[00:16:30.560] There's going to be a vulnerability.
+[00:16:32.440] And we identify then whenever we include your own guidelines, either
+[00:16:36.680] in the language or the sentiment,
+[00:16:38.120] there's a stronger likelihood that developers will use it.
+[00:16:41.400] Now, this doesn't work with a stock harness — like your stock harness.
+[00:16:45.480] If you use Claude Code, you don't get this.
+[00:16:47.880] This happens with our harness because we force the model to use your guidelines.
+[00:16:53.000] Because we saw this data back in the beginning of the summer,
+[00:16:56.000] that whenever we include language that exists in your instruction files,
+[00:16:59.600] there's a higher likelihood that it will get picked up.
+[00:17:04.560] We think it's correlation.
+[00:17:05.920] We have some examples that it's not causation.
+[00:17:10.720] Yeah.
+[00:17:11.960] So, what's the takeaway from this?
+[00:17:13.520] So one thing to think about when you think about writing your own
+[00:17:16.840] your own harness, your own AGENTS.md,
+[00:17:20.600] your own skills registry — is to really think deeply.
+[00:17:24.480] If you are in a position where you can continuously maintain
+[00:17:27.760] the knowledge and information that's stored in that file.
+[00:17:30.920] Because what happens is, regardless whether or not it was updated recently,
+[00:17:35.120] other coding agents, downstream, and Baz is no different
+[00:17:38.560] than a GitHub Copilot, and it's no different than a CodeRabbit or a Cursor.
+[00:17:42.160] They are going to pick up on that little nuance and assume
+[00:17:45.440] that's still a single source of truth for you.
+[00:17:49.200] What's the inverse version of that?
+[00:17:52.080] If you have skills, you have guidelines.
+[00:17:54.480] You have instruction files, especially in a big team in a large mono repo.
+[00:17:58.160] And they weren't updated in the last six, 12, 18 weeks.
+[00:18:02.320] And you didn't specifically call them out on another,
+[00:18:05.920] kind of central control plane for your AI,
+[00:18:11.480] whether it's your own harness or like a global ruleset,
+[00:18:14.360] then you're going to get a self-correcting agent
+[00:18:18.000] that's continuously adhering to that old agent stack,
+[00:18:22.480] even if it's no longer relevant, even if sometimes
+[00:18:25.880] you've made other decisions downstream that don't necessarily reflect that.
+[00:18:32.360] And one final one just to close this off.
+[00:18:36.160] So again, this data is supposed to be confusing.
+[00:18:39.880] We discovered that some specific coding instructions
+[00:18:42.720] correlate stronger to high acceptance.
+[00:18:45.720] So specifically, one of our competitors is called CodeRabbit.
+[00:18:49.720] They actually use a structured JSON that contains a rule set.
+[00:18:54.200] Has anyone used CodeRabbit?
+[00:18:55.960] Yeah.
+[00:18:56.280] So CodeRabbit specifically, we discovered that their rule
+[00:18:59.480] set across models and across organizations
+[00:19:03.120] is specifically strong at forcing your agents to do something.
+[00:19:07.560] So even if you did like a poke or like a 14 day trial a year ago,
+[00:19:13.160] and this file still exists in your code base, it's
+[00:19:16.160] going to overcome the instructions in your CLAUDE.md, your latest skills.
+[00:19:21.080] And even if you move to Cursor or an AGENTS.md.
+[00:19:24.320] Right.
+[00:19:24.640] So think about the hydra problem here, and how much that makes a difference.
+[00:19:31.680] Okay.
+[00:19:32.720] So to wrap this up I want to send you off with two things.
+[00:19:37.240] We started with steer steer and age. So.
+[00:19:45.840] If it was on a board
+[00:19:47.520] then someone would pick it up and the task would get done.
+[00:19:50.960] We had rituals like a daily or weekly or a retrospective
+[00:19:55.080] where we talked about the good and the bad practices that we want to
+[00:19:58.200] distill into our knowledge bases and into our engineering habits.
+[00:20:02.440] Those are gone.
+[00:20:03.640] I would say that across
+[00:20:06.440] maybe thousands of teams that we've seen.
+[00:20:09.960] Those rituals are diminishing, in the sense
+[00:20:12.680] that — are they really determining what the engineering outcomes are going to be?
+[00:20:17.040] So what replaced them?
+[00:20:18.680] Three main things.
+[00:20:20.040] If I have to be very, very general.
+[00:20:22.520] The first one is spec.
+[00:20:24.080] So huge growth in spec files.
+[00:20:28.800] Spec files written either in markdown or linked to a Linear issue.
+[00:20:35.360] And by the way, plan files as well.
+[00:20:37.040] Like planning, and planning through Claude Code.
+[00:20:39.640] Those are probably the number one ways to make
+[00:20:42.680] your coding agents act in a specific vertical.
+[00:20:45.920] Collaboration over planning.
+[00:20:48.520] Not completely solved today with Claude Code,
+[00:20:50.440] but there is a good open source solution you should check out — Plane.
+[00:20:53.800] As an example, we have some capability over there,
+[00:20:57.680] but you'll be amazed at how much a good human written
+[00:21:01.280] spec impacts outcome
+[00:21:05.520] regardless of the underlying configuration mess.
+[00:21:10.000] Number two is verification.
+[00:21:11.240] Obviously I'm biased because that's my day job.
+[00:21:13.920] I've been doing this for seven years, but if we identify GitHub as like
+[00:21:17.920] this choke point, that's really important for us for decision making.
+[00:21:21.000] If we built the tools into either a GitHub Action or,
+[00:21:25.240] or a stock tool, where you get that verification,
+[00:21:28.640] you'll be able to suppress bad behaviors that result from steer slips.
+[00:21:35.480] Number
+[00:21:35.880] three is and this is quite new is merge tactics.
+[00:21:39.120] So historically, we'd write, right?
+[00:21:42.320] We would squash and merge the diffs into our main branch.
+[00:21:47.360] I would strongly recommend looking at creative merge tactics.
+[00:21:52.880] Merge queues are now native to GitHub.
+[00:21:54.520] So that's not even a niche product anymore.
+[00:21:57.800] Anyone can use them.
+[00:21:58.920] And what merge queues specifically allow you to do.
+[00:22:01.520] And there's different ways to go about it.
+[00:22:04.040] It allows you basically to cherry pick much better than before
+[00:22:07.360] and be able to understand whether or not, especially if you wrote a good spec,
+[00:22:11.280] what you eventually want your code to include.
+[00:22:14.360] So, you know, one thing we're seeing is that it probably doesn't make sense.
+[00:22:18.760] It's probably almost like a hopeless goal.
+[00:22:21.640] You're not going to have the best hygiene on your coding
+[00:22:25.880] agent operating system, just because this environment is moving very fast.
+[00:22:30.120] One thing that we recommend to
+[00:22:31.360] our customers is to think, rethink about collaboration and agile
+[00:22:34.680] through these three specific lenses, which we think are still top of mind
+[00:22:38.440] for companies,
+[00:22:39.440] especially if you're building something like a software factory.
+[00:22:41.480] But even if you're doing some baseline modernization around the code agent.
+[00:22:46.440] And that's it.
+[00:22:47.600] If this is interesting for you.
+[00:22:49.920] There's one asset I would recommend checking out at baz.ai.
+[00:22:53.440] It's called the Rework Calculator.
+[00:22:57.760] And what the Rework Calculator allows you to do is —
+[00:23:00.920] You can plot in your team size
+[00:23:04.600] and your average PR rates, and it will give you a sense
+[00:23:08.680] of how much work and how much money you're spending on iterative rework
+[00:23:14.120] that goes into some of these, redundant workflows as a result of
+[00:23:18.640] multiple operating systems and inconsistent coding agent activity.
+[00:23:23.160] So we have a full report
+[00:23:24.120] called The State of Rework, and you can check that out on our website.
+[00:23:28.840] Okay.
+[00:23:29.520] Perfect on time.
+[00:23:32.960] Almost.
+[00:23:34.800] Okay. Thank you. Thank you.
+[00:23:40.880] We have time for questions.
+[00:23:43.280] In a true story time
+[00:23:44.640] as live streaming and being in the room, you will hold two microphones.
+[00:23:48.720] Do any questions about.
+[00:23:55.760] Yes. No.
+[00:24:00.760] I'm still.
+[00:24:03.720] Two mikes a week.
+[00:24:05.080] Thank you so much for the talk.
+[00:24:07.040] That was really interesting.
+[00:24:08.000] The data specifically was quite fascinating
+[00:24:11.440] because we've seen very similar trends and we've in our evaluations
+[00:24:16.160] seen the exact regression that you were seeing as models change.
+[00:24:19.680] And so it was very refreshing to see that that kind
+[00:24:22.520] of validated in your data as well, which is
+[00:24:26.000] in a separate lens as well.
+[00:24:27.760] So my main question is,
+[00:24:31.960] as you're seeing these models change and improve,
+[00:24:35.560] are you still seeing — even when the files setting
+[00:24:38.960] get cut down for the guidance and the improvement for the code reviews?
+[00:24:43.000] Towards the end, I saw that there was still a bit of an uptrend, right?
+[00:24:46.240] Like we're still now compounding and adding more files and stuff.
+[00:24:50.280] Do you see that on average decreasing, or do we still see it going back to levels
+[00:24:54.160] where the guidance that we're adding into our code bases is just different?
+[00:24:58.520] Maybe less prescriptive or even more specific.
+[00:25:02.040] Like, how's it changing as the models are getting better?
+[00:25:06.120] I'll tell you why — that's the exact question
+[00:25:08.680] that freaks me out and freaks some of our customers out,
+[00:25:11.840] because there's anecdotal evidence that that's exactly what's happening.
+[00:25:15.400] So later model versions are better
+[00:25:18.760] at adhering to baseline instructions.
+[00:25:22.320] Let's call them.
+[00:25:23.560] But the problem, I think, is that we never pin to a specific model.
+[00:25:28.640] So think about even today, especially
+[00:25:32.000] at the meta level, like the Opus 5 models came out,
+[00:25:36.120] we very rarely used the same model throughout our coding journey.
+[00:25:40.840] We would usually start a, you know, plan with maybe
+[00:25:47.080] get bigger model.
+[00:25:47.760] Then, you know, another model
+[00:25:49.480] maybe doesn't have that problem because you have great investors.
+[00:25:52.160] But many, many of us and many of our customers have that.
+[00:25:55.800] The reason is that
+[00:25:58.640] the inconsistency has too many variables.
+[00:26:02.480] So the models are constantly changing under the hood,
+[00:26:05.880] the operating systems and the paradigms are changing under the hood.
+[00:26:09.200] And my concern is that the labs are not very transparent
+[00:26:14.280] about how they ingest and inject, that type of context in and out of the session.
+[00:26:19.880] So even if I want to make a bold
+[00:26:21.400] investment and say, you know, our team is going to be completely
+[00:26:25.440] invested in skills and build their own skills registry.
+[00:26:29.160] But OpenAI then comes out with a model that does a better job
+[00:26:32.320] at compaction and injecting,
+[00:26:34.000] you know, skills into the context session,
+[00:26:35.960] but we don't know how they do it on the file level, on the folder level, on
+[00:26:39.040] the repo level, that I think it's still a big mystery.
+[00:26:42.400] And people are going to have to figure it out
+[00:26:44.280] whether it works out for their code base or not.
+[00:26:46.200] And the problem is that we don't have good visibility to adherence at the moment.
+[00:26:51.280] Great question though.
+[00:26:59.000] Did you ever have that?
+[00:27:00.960] You know, you posted this
+[00:27:02.200] because if you see some interference, I will stand in the way.
+[00:27:05.960] We were briefed.
+[00:27:06.800] So my question is there's a lot of other things that go into it,
+[00:27:11.600] like, say, long-horizon projects and a setup where you might have,
+[00:27:17.360] certain types of agents splitting up the work and even the harness.
+[00:27:21.960] Right.
+[00:27:22.200] So if you use, like, DeepSeek, to have your own setup,
+[00:27:27.920] how should we think about interpreting,
+[00:27:30.440] kind of the data that we've seen so far
+[00:27:33.880] and maybe what to expect that might change
+[00:27:37.440] or just, you know, how do we think about that additional complexity?
+[00:27:40.600] Yeah. Great. Great point.
+[00:27:41.600] So the question was on a long-horizon task.
+[00:27:44.400] We have one good example that's pretty consistent.
+[00:27:46.520] We've been doing full code base sweeps for a good part of the last ten months.
+[00:27:53.320] So like a chunky database that gives us an indication on whether
+[00:27:56.440] or not models and instruction files are really adhering, in the long horizon.
+[00:28:01.920] Much more consistent than shorter tasks.
+[00:28:05.960] And we have a reason to think why that's happening
+[00:28:10.120] just because of the amount of turns
+[00:28:11.560] and iterations, there's just a larger likelihood that your coding agents
+[00:28:15.680] are going to land on the right instruction file within that longer time period,
+[00:28:21.320] but we're seeing a sharp decrease on the user side.
+[00:28:25.440] So users don't want to spend a lot of time coding.
+[00:28:28.480] They're expecting faster responses.
+[00:28:30.640] They don't want to use those expensive and long-horizon models right now.
+[00:28:34.760] So I feel like the trade-off right now is between
+[00:28:38.640] you know, longer horizon, like, go on this board.
+[00:28:41.320] Side quests probably get better adherence, but on the other hand,
+[00:28:45.240] I think the developers downstream don't really want that.
+[00:28:48.680] They want fast
+[00:28:49.240] responses, they want faster verification, they want to close faster loops.
+[00:28:53.480] And that's where these problems are really at their worst.
+[00:28:58.800] Good question.
+[00:28:59.680] Thank you so much.
+[00:29:01.680] More questions? Awesome.
+[00:29:03.960] Thank you very much.
+[00:29:04.720] Thank you, Sam.
+[00:29:09.840] Thank you so
+[00:29:11.720] Oh, no. Oh!

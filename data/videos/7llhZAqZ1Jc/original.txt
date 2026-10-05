@@ -1,0 +1,524 @@
+[00:00:04.584] [music]
+[00:00:09.679] Um, yep. I'm Bill Maxwell. I'm at Hobot
+[00:00:13.120] AI. We build a open-source uh MCP
+[00:00:15.920] management platform. And over the next
+[00:00:18.800] 20 25 minutes or so, we're going to talk
+[00:00:20.880] about uh why agents and MCP are good and
+[00:00:24.800] what MCP
+[00:00:26.800] is and the basic primitives that you
+[00:00:30.880] probably aren't aware of that make for
+[00:00:32.719] an actual good development experience
+[00:00:34.880] with uh MCP.
+[00:00:38.000] So the reason you know we know coding
+[00:00:40.719] agents are good probably the best
+[00:00:42.719] pattern for agents right now the most
+[00:00:45.200] successful anyway right we are
+[00:00:47.600] definitely seeing value getting um
+[00:00:51.280] making progress with these agents and so
+[00:00:54.559] uh they primarily work on code and code
+[00:00:57.600] is typically part of a larger process
+[00:01:00.239] your software development life cycle and
+[00:01:01.920] so as you're trying to work with these
+[00:01:04.960] with your code it also would be nice to
+[00:01:07.119] be the work with your repositories, your
+[00:01:09.040] issues, your tickets, pull requests, uh
+[00:01:11.600] the pipeline, the build status, you just
+[00:01:13.840] really trying to understand kind of the
+[00:01:15.280] endto-end picture of what's going on in
+[00:01:18.640] your, you know, software delivery life
+[00:01:20.320] cycle. And so the reason the way you
+[00:01:23.200] need to do that is you need the ability
+[00:01:25.119] to connect to systems. And there's lots
+[00:01:28.880] of different ways that you can connect
+[00:01:30.560] to these systems. I mean, you have a
+[00:01:32.640] coding agent. So you can just tell it,
+[00:01:34.720] hey, connect to this system. here's some
+[00:01:36.960] API keys and have at it and it could
+[00:01:39.360] possibly write you a function for that.
+[00:01:41.759] Um, tool calling I think I heard you
+[00:01:45.360] know came out with OpenAI a long time
+[00:01:47.439] ago now and uh so you could do it that
+[00:01:50.240] way but really you want a repeatable
+[00:01:53.119] process and a way of interacting with
+[00:01:54.960] these systems so that it becomes
+[00:01:57.680] portable. you're not reduplicating
+[00:01:59.439] effort or basically every time you
+[00:02:01.040] switch coding agents or clients that you
+[00:02:03.360] have to rebuild this tooling and these
+[00:02:05.280] systems interactions with these other
+[00:02:07.600] systems. And so that's where uh model
+[00:02:10.800] context protocol comes in. Um, this is
+[00:02:14.239] MCP and it's really a system designed uh
+[00:02:17.920] to connect your LLM models and your
+[00:02:21.440] systems together so that you can
+[00:02:24.959] uh interact with uh all of these
+[00:02:27.520] different um
+[00:02:29.920] systems and capabilities. And so just
+[00:02:32.319] really the way to think about it is that
+[00:02:34.720] it's the USBC port uh for these
+[00:02:37.760] applications for connecting AI
+[00:02:40.080] applications to uh tools and data
+[00:02:43.680] structures and other systems within the
+[00:02:47.440] your ecosystem.
+[00:02:49.280] And so
+[00:02:51.120] at a high level uh there's really a few
+[00:02:53.599] parts to the MCP ecos um architecture
+[00:02:57.920] that you're looking at. So, you've got
+[00:02:59.599] an MCP host, which is probably uh your
+[00:03:02.560] AI application. That could be like a VS
+[00:03:04.959] Code. It could be your cloud. Uh it
+[00:03:07.280] could be just a regular chat client. Um
+[00:03:09.760] and within each of those, you define
+[00:03:12.640] these client connections to um your MCP
+[00:03:17.680] servers. And so really when you're
+[00:03:20.800] interacting with MCP, it's it's these
+[00:03:23.519] two pieces interacting together um that
+[00:03:27.040] really sort of bring out the whole
+[00:03:28.640] experience. And so if you have a really
+[00:03:31.200] great MCP server that doesn't have all
+[00:03:33.360] of the capabilities uh with a client
+[00:03:35.519] that doesn't have all the capabilities
+[00:03:36.799] to support all of the functions, then
+[00:03:39.200] you're sort of, you know, in a in a
+[00:03:41.280] weird space. So when we look at this,
+[00:03:43.599] we're going to look at sort of the two
+[00:03:44.959] sides of uh the MCP bits and where those
+[00:03:48.400] primitives are. And so server side,
+[00:03:51.519] you're looking primarily at tools, uh
+[00:03:53.920] prompts, and resources. And so those
+[00:03:57.280] capabilities are put into the the MCP
+[00:04:00.799] server as uh and as the developer of
+[00:04:03.599] that server. And then on the client side
+[00:04:06.799] you have uh capabilities like sampling
+[00:04:10.799] uh elicitations and roots. And so if
+[00:04:13.680] your client supports these capabilities
+[00:04:15.920] you can now start to get a much better
+[00:04:19.120] UX or experience design developer
+[00:04:21.519] experience or user experience around the
+[00:04:23.919] MCP kind of context that you're working
+[00:04:26.560] with.
+[00:04:28.160] And so each of these primitives really
+[00:04:31.360] shapes,
+[00:04:33.199] you know, how you how you're going to
+[00:04:34.880] interact with these systems. So having a
+[00:04:36.960] tool that just calls something that maps
+[00:04:39.120] to an API may or may not be useful.
+[00:04:41.280] These primitives give you the ability to
+[00:04:43.520] get feedback to interact with um
+[00:04:47.680] uh you know the confirm and actually
+[00:04:51.120] have safety and actually have the
+[00:04:52.960] ability to um work with these tools and
+[00:04:57.120] systems in a safe way because agents and
+[00:05:01.040] AI the models they don't always do the
+[00:05:03.759] same thing twice. So you want to give it
+[00:05:05.759] as much context information as possible
+[00:05:08.320] to make the right choice.
+[00:05:12.160] So, first let's dive into tools. This
+[00:05:15.520] is, I think, what most people believe uh
+[00:05:18.720] MCP is. Uh when you hear MCP server,
+[00:05:21.759] you're thinking tool calls. Uh I think
+[00:05:24.160] on Twitter, they fight that, you know,
+[00:05:26.160] we can do tool calls 100 different ways.
+[00:05:28.320] We don't need MCP. But really, this is
+[00:05:30.880] the action surface and probably the most
+[00:05:33.840] value uh oriented piece of the MCP
+[00:05:36.479] server that people really want is they
+[00:05:38.240] need that ability to be able to get um
+[00:05:42.320] uh information from something else and
+[00:05:44.000] put it in uh to the context so they can
+[00:05:46.080] continue working with it, build a
+[00:05:47.520] presentation. And so these tools in as
+[00:05:51.360] you're developing or evaluating an MCP
+[00:05:54.160] server, you're really looking for clear
+[00:05:56.720] tool names. uh you're looking for uh the
+[00:06:00.880] descriptions to be accurate. You're
+[00:06:02.639] looking for uh clear inputs so that you
+[00:06:06.000] understand what's going to happen. So
+[00:06:07.919] for instance, this get github issue uh
+[00:06:10.479] you takes an issue ID. It's very
+[00:06:12.080] self-explanatory. It's like I'm
+[00:06:13.759] conversing with you which means the
+[00:06:15.680] model has a better shot of actually
+[00:06:17.440] understanding that tool and its purpose.
+[00:06:23.120] And so really when you're evaluating or
+[00:06:26.560] building the uh the utility that you'll
+[00:06:30.479] actually be able to get from it um is is
+[00:06:34.400] largely dependent on how this is built.
+[00:06:36.479] So if the tool name is ambiguous like uh
+[00:06:41.199] you know doesn't necessarily say like
+[00:06:43.039] get github issue and you happen to have
+[00:06:45.600] just get issue and you're also using it
+[00:06:47.600] with a bit bucket or a gitlab MTP server
+[00:06:51.600] and sort of the same because your
+[00:06:52.800] enterprise does everything um then you
+[00:06:56.960] sort of end up in this thing the model
+[00:06:59.520] can get confused right because if you
+[00:07:01.520] say something casually get this issue it
+[00:07:04.800] may or may not know which system you're
+[00:07:07.360] actually talking about. Um, and so,
+[00:07:11.680] um, you also want these tools to be
+[00:07:14.400] somewhat focused on the intention piece.
+[00:07:16.479] So, I want to create an issue, right? I
+[00:07:19.520] don't want to have to go get all the
+[00:07:20.960] different pieces that I would need uh to
+[00:07:23.360] actually create that issue on the
+[00:07:25.360] backend system and being able to call
+[00:07:27.280] with the different uh tools.
+[00:07:30.080] And so
+[00:07:32.160] um yeah, so looking at it uh a little
+[00:07:35.280] bit higher level at you know a good
+[00:07:37.520] design versus a bad design uh we're
+[00:07:39.840] going to focus on the intention of the
+[00:07:41.599] user. So, add note to contact and it
+[00:07:44.639] takes a contact name and the note. Uh,
+[00:07:47.199] that's clear. The parameters are clear.
+[00:07:49.599] Um, it's mapping to exactly what I might
+[00:07:52.240] want and casually say in the
+[00:07:54.479] conversation, it's it's sticking with
+[00:07:56.479] kind of that userbased language. and a
+[00:07:59.280] bad design and depending on which CRM
+[00:08:01.440] system you've ever used um you know and
+[00:08:04.479] you map things directly to an API uh you
+[00:08:08.080] have these different tools that are like
+[00:08:10.000] get the contact ID get the record get
+[00:08:12.560] the note and depending on the model or
+[00:08:15.919] you know somewhere it needs to be
+[00:08:18.000] instructed to do this right like the in
+[00:08:20.800] order for the agent to actually succeed
+[00:08:23.360] um either the model needs to know the
+[00:08:25.199] CRM and that's what it needs to do which
+[00:08:27.280] is unlikely if you're doing something
+[00:08:28.879] with like a local model and possibly
+[00:08:31.039] even with the frontier models is is uh
+[00:08:34.080] you know not likely that it would be
+[00:08:35.839] able to guess this. So then as a user
+[00:08:37.919] you're stuck prompting it and saying
+[00:08:40.560] okay do this do this do this which is
+[00:08:42.640] not a great experience for you as an end
+[00:08:44.800] user using these servers and so
+[00:08:48.720] um yeah that is
+[00:08:51.440] a bad design.
+[00:08:54.160] The other thing, you know, once we get
+[00:08:56.240] past tools, the other capabilities that
+[00:08:58.560] we have to at our disposal, building and
+[00:09:00.880] evaluating MCP servers are prompts.
+[00:09:03.040] Prompts are pre-built templates on the
+[00:09:04.720] server side that give the user clues or
+[00:09:07.839] actions to interact with the server and
+[00:09:10.240] actually have a chance at succeeding in
+[00:09:13.360] um being able to get the agent to do
+[00:09:15.519] what it wants or just in a casual
+[00:09:18.000] conversation.
+[00:09:19.440] um you know this is what gives people
+[00:09:22.000] sort of the action and the ability to
+[00:09:23.920] actually use these servers.
+[00:09:26.399] And so when you're looking at this in
+[00:09:28.080] claude or different clients you have
+[00:09:30.000] these slash commands and you'll see that
+[00:09:32.560] um there's basically they're like forms
+[00:09:34.959] and so you know you have create issue.
+[00:09:37.839] It's going to take like a title and a
+[00:09:39.920] and a repository name. It'll figure that
+[00:09:42.240] out for you. And so again, it's the
+[00:09:45.680] natural language way of interacting with
+[00:09:47.680] and as long as your tool names are good,
+[00:09:49.920] like it should just kind of line up and
+[00:09:52.240] have things succeed.
+[00:09:57.519] Um, yeah, the other one is resources.
+[00:10:01.120] And so resources are pretty powerful and
+[00:10:04.800] you know, a cool capability. Uh
+[00:10:07.600] yesterday I did a workshop um on on
+[00:10:12.000] building a chess client uh or chess
+[00:10:14.560] agent and so with resources we can
+[00:10:17.360] actually use something called MCP UI and
+[00:10:20.399] return HTML documents that then get
+[00:10:22.640] rendered in the chat client. So then you
+[00:10:24.640] can create these rich UX experiences
+[00:10:26.480] with drag and drop test pieces and the
+[00:10:28.560] MCP servers managing the states in the
+[00:10:30.640] background. But a resource in terms of
+[00:10:33.120] MCP can be really any bit of data. uh
+[00:10:36.240] these bits of data are not passed
+[00:10:38.240] directly to the LLM. Um it's controlled
+[00:10:41.040] by the user and so the user decides
+[00:10:44.560] whether or not they want to be able to
+[00:10:46.480] pass that. Um tools can uh create and
+[00:10:51.360] return uh resources so you can get the
+[00:10:54.000] record. So if I added a customer, I can
+[00:10:56.079] get the customer record back as a
+[00:10:57.680] resource.
+[00:10:59.839] And so, you know, when you're looking at
+[00:11:02.320] your client and how this impacts your
+[00:11:03.920] experience as a developer um interacting
+[00:11:06.480] with this, you can see once you have
+[00:11:09.040] resources, they're typically presented
+[00:11:10.800] to you in like a file structure or a
+[00:11:12.880] directory structure along those lines.
+[00:11:15.040] Um, it lets you select them and pass
+[00:11:17.279] them to the model. And again, a lot of
+[00:11:19.519] this is on the idea that you want to
+[00:11:24.000] control and have some say in where your
+[00:11:26.160] information is going, where your
+[00:11:27.360] documents are going, um, and what's
+[00:11:29.440] going back and forth between the model.
+[00:11:37.760] Sorry. Um,
+[00:11:44.000] next, uh, sampling. So sampling is a
+[00:11:47.279] weirdly named uh capability, but what
+[00:11:50.160] this does is it enables
+[00:11:52.800] the tool to request the client run an AI
+[00:11:57.519] query. And so if you want to get a bunch
+[00:12:00.880] of records and ask for a summary as part
+[00:12:03.040] of the tool, it can do that. And what it
+[00:12:05.279] does is it sends that back to the client
+[00:12:07.920] where the client then um gets to decide
+[00:12:12.000] um
+[00:12:13.760] does this make sense? do I want to run
+[00:12:15.440] this? And so in an ideal situation, uh
+[00:12:18.320] you would have a human in the loop that
+[00:12:19.839] actually approves that request that it
+[00:12:21.760] says yes, please do this. Uh that you
+[00:12:24.079] get to pick the model, maybe limit the
+[00:12:25.920] tokens. Um but basically again giving
+[00:12:29.120] back control to the end user through the
+[00:12:31.680] client. Um but still having a mechanism
+[00:12:35.120] to actually have the server leverage all
+[00:12:38.639] the benefits of AI.
+[00:12:45.120] So, elicitations,
+[00:12:47.360] again, some of these names, they're all
+[00:12:49.200] low-level protocol type of names, but
+[00:12:51.279] basically, this is confirmations or ways
+[00:12:54.560] to gather information from the end user.
+[00:12:57.200] So, a tool can confirm that you want to
+[00:12:59.920] take an action. It can present like,
+[00:13:02.959] hey, if you want to do this, I'm missing
+[00:13:04.959] this bit of information. instead of
+[00:13:06.560] failing and going back out to the LLM,
+[00:13:08.480] it can just prompt the user and say,
+[00:13:10.079] "Hey, you know, fill out this missing
+[00:13:12.160] bit of information and if you're ready,
+[00:13:14.079] then we can confirm uh that that's, you
+[00:13:17.040] know, what you want to have done and
+[00:13:18.880] actually go ahead and do it."
+[00:13:23.360] And so again, the the practical side of
+[00:13:26.320] it becomes sort of the
+[00:13:29.600] uh I say delete a database. It says
+[00:13:34.399] without an elicitation it says okay and
+[00:13:36.639] it just deletes whatever database it
+[00:13:38.720] happens to think you meant with an
+[00:13:41.200] elicitation you can say delete a
+[00:13:42.720] database it could say okay I'm going to
+[00:13:45.120] delete the production database are you
+[00:13:47.200] sure and then you can confirm or deny so
+[00:13:50.079] it builds this safety mechanism into the
+[00:13:53.040] um into the experience uh that becomes
+[00:13:56.160] really u pretty pretty critical I think
+[00:13:59.519] to good design of your MCP servers and
+[00:14:02.800] tools. So, as you're looking at
+[00:14:05.279] different servers, you're going to
+[00:14:06.639] definitely want to consider that
+[00:14:09.680] roots. Um
+[00:14:12.560] this one is basically the client when it
+[00:14:15.279] comes up it can say you know here's the
+[00:14:17.519] directories to this that you have access
+[00:14:19.839] to the service server side and the
+[00:14:22.480] server can then when it's referencing
+[00:14:25.120] things can say you know I need to list
+[00:14:26.720] directories or list files in this
+[00:14:28.720] directory and make sure it's within that
+[00:14:30.720] route and so uh these are not a security
+[00:14:34.160] enforcement boundary uh these are just
+[00:14:36.880] simply suggestions to the MCP server
+[00:14:40.560] uh you know to help scope and give the
+[00:14:42.639] agent some context on where it's working
+[00:14:44.800] and how that could look. Um you
+[00:14:50.160] uh yeah so again in a nice client it
+[00:14:53.519] would autodiscocover uh it might ask you
+[00:14:56.320] to provide this information and so you
+[00:14:58.720] can list different file paths the
+[00:15:00.720] different directories um and then you
+[00:15:04.000] can also confirm like do you want it to
+[00:15:06.000] have access to slash no I don't um but
+[00:15:09.360] basically
+[00:15:11.279] uh this gives you a way to uh specify
+[00:15:14.079] that and So now if we can walk through
+[00:15:17.519] sort of an example of how all of this
+[00:15:20.639] kind of comes together because there's a
+[00:15:22.240] lot of different pieces. If you can
+[00:15:24.160] think like I want to create the GitHub
+[00:15:25.920] issue, right? You're going to hit the
+[00:15:28.639] slash command as the user and that's
+[00:15:30.560] going to pull up a list of prompts. And
+[00:15:32.720] so there's a prompt that says create
+[00:15:34.800] issue in repo with the following
+[00:15:37.760] description. And then you're going to
+[00:15:39.519] submit that to the chat. the model's
+[00:15:41.519] going to uh you know process that and
+[00:15:44.959] then it sees that it's got a tool that's
+[00:15:46.639] available to make a to create an issue.
+[00:15:50.160] So it does that the tool is well written
+[00:15:53.120] and you know you also notice that it
+[00:15:55.600] didn't have a title field and so based
+[00:15:58.320] on the uh description that the user is
+[00:16:00.959] given it's going to send a sampling
+[00:16:02.720] request to the LLM to the client and say
+[00:16:06.079] hey generate a title for this issue
+[00:16:08.480] right and so the user can either uh see
+[00:16:11.680] that as a prompt or confirm but
+[00:16:13.600] basically now a title has been generated
+[00:16:16.160] by the model and is now
+[00:16:19.360] um goes back to the tool and then the
+[00:16:21.279] tool says okay let's confirm with the
+[00:16:24.000] user that this is what they meant and
+[00:16:25.440] it's okay to actually create this and so
+[00:16:27.920] here they say do you want to create uh
+[00:16:31.680] you know this bug based on the title
+[00:16:34.320] that was generated and here's the repo
+[00:16:37.360] we'll just assume that the description
+[00:16:39.040] is going to go in exactly as it was and
+[00:16:41.680] then the user confirms and says yeah and
+[00:16:44.959] the tool creates the issue and the model
+[00:16:46.880] simply responds great issue 2 1 2 3 4
+[00:16:49.839] has been created in /reo.
+[00:16:52.560] So that's how you like this is a good
+[00:16:54.639] use case of like how all the pieces can
+[00:16:57.120] come together more than just a simple
+[00:16:59.519] tool call and a hope that it did the
+[00:17:01.759] right thing. Um, yeah.
+[00:17:05.600] So, just coming back to it now, looking
+[00:17:07.839] and picking a good MCP server or if
+[00:17:09.919] you're a developer of MCP servers and
+[00:17:11.919] you're trying to figure out how do I
+[00:17:14.000] make this MCP safe and build trust with
+[00:17:17.039] my end users, then you're going to want
+[00:17:18.959] to make sure that you go through and you
+[00:17:20.720] have clearly defined tools. The name of
+[00:17:23.199] the tool is probably one of the most
+[00:17:25.199] important things in order to get the
+[00:17:27.280] agent to successfully call it. If you
+[00:17:29.440] ever get bored, give it random tool
+[00:17:31.520] names with really great descriptions and
+[00:17:33.600] it'll still get super confused.
+[00:17:36.240] Um,
+[00:17:37.760] again, you don't want your user staring
+[00:17:39.600] at a blank screen. So, you're going to
+[00:17:41.039] want to have prompts. Uh, you're going
+[00:17:43.039] to want to use elicitations for any
+[00:17:45.039] action that's going to have a side
+[00:17:46.880] effect. You're going to want to make
+[00:17:48.480] sure that they are able to basically
+[00:17:52.080] confirm or deny that is uh what you
+[00:17:55.120] want. You don't also necessarily if it's
+[00:17:57.120] been kind of a long conversation, you
+[00:17:59.039] don't want to just have it fail out and
+[00:18:00.559] have the user have to go back and enter
+[00:18:02.160] all that information. So, if you can
+[00:18:03.679] elicit and say, "Hey, you know, I need
+[00:18:05.840] this last bit of data. Can you please
+[00:18:07.840] provide that to me?" Um, again, that's
+[00:18:10.240] that's what you're going to want to see
+[00:18:11.600] or have available to you. If you are
+[00:18:14.400] making use of roots, say you're working
+[00:18:16.640] with source code, you don't want it to
+[00:18:18.640] move beyond sort of the repository
+[00:18:20.720] direct the git repository directory
+[00:18:22.640] you're already in, then you're going to
+[00:18:24.080] want to make sure that's there. Um,
+[00:18:27.039] and again, when you're picking an MCP
+[00:18:29.120] server, you're developing an MCP server,
+[00:18:31.600] the we didn't touch too much on this,
+[00:18:33.919] but there's two types of protocols that
+[00:18:35.840] an MCP server can uh typically interacts
+[00:18:38.799] with. There's standard IO, and these are
+[00:18:41.280] typically run on your laptop. And so
+[00:18:43.840] those are going to be given uh probably
+[00:18:46.720] an API key if they're going to be
+[00:18:48.240] running and communicating with remote
+[00:18:49.919] systems. Um if you're going to do a
+[00:18:52.720] streamable HTTP that gives you the
+[00:18:54.480] ability to host it centrally, set up
+[00:18:56.640] OOTH so that people are logging in and
+[00:18:58.960] you have uh centralized control over
+[00:19:01.039] that. Um you know, it's just a
+[00:19:04.160] consideration on on what you're using
+[00:19:06.400] and and how you're using them
+[00:19:10.720] on the client side. Uh when you're using
+[00:19:13.039] MCP servers, there's tons and tons of
+[00:19:15.840] clients. There's different agents.
+[00:19:17.280] There's different frameworks, but the
+[00:19:19.039] things that you're going to want to make
+[00:19:20.640] sure is that it does support the
+[00:19:22.720] elicitations bits. You're going to want
+[00:19:24.640] to make sure um when you're using a
+[00:19:26.799] client, if the server is asking you for
+[00:19:28.559] a confirmation, that you're actually
+[00:19:30.480] getting it and putting you in the loop.
+[00:19:32.480] Um the sampling bits, if your tool MCP
+[00:19:36.880] server is going to use it, it is a nice
+[00:19:38.559] thing to have. Not all clients support
+[00:19:40.400] this. Uh, but definitely you're going to
+[00:19:42.799] want the ability to uh rate limit those
+[00:19:46.559] requests. You're going to want to make
+[00:19:47.760] sure that these things are um Whoa,
+[00:19:52.720] sorry.
+[00:19:54.799] That surprised me.
+[00:19:59.919] Right. Um, yeah. So,
+[00:20:05.280] yep.
+[00:20:06.960] So then just we didn't talk too much
+[00:20:09.440] about uh the security side of thing. I
+[00:20:11.840] kind of just assumed that we wanted the
+[00:20:13.760] MCP servers. But with this your MCP
+[00:20:18.559] server potentially introduces new
+[00:20:20.320] vectors, but you shouldn't forget uh
+[00:20:22.880] your, you know, old school security and
+[00:20:26.559] do the due diligence that you would for
+[00:20:28.240] any other open- source piece of software
+[00:20:30.080] that you're going to run or consume. Um,
+[00:20:33.520] when you're selecting these MCP servers,
+[00:20:36.159] you are going to want to typically use
+[00:20:39.039] trusted third parties that have built
+[00:20:40.880] this. Uh, if you can use the remote, um,
+[00:20:43.760] and it makes sense for you, then that
+[00:20:45.440] makes sense. So, you know, the GitHub
+[00:20:47.600] host one remotely, Lassie host one. Um,
+[00:20:51.200] you know, just depending on the tool
+[00:20:52.400] sets and if it's available, you're going
+[00:20:54.720] to want to inspect all the tool names,
+[00:20:57.280] uh, parameters and descriptions. just
+[00:20:59.760] you're basically looking to make sure
+[00:21:01.360] it's not trying to inject something
+[00:21:03.120] malicious into your code. Uh it's a
+[00:21:05.840] little bit time consuming in the
+[00:21:08.159] enterprise. If you are running MCP
+[00:21:11.760] servers and you need to scale that out
+[00:21:13.360] for your whole organization, you might
+[00:21:15.360] consider using an MCP gateway like OOTTO
+[00:21:18.000] for audit logging and other things.
+[00:21:20.000] There's other open source alternatives
+[00:21:22.080] like uh MCP jungle for instance. Um,
+[00:21:25.120] you're going to want to scan your tool
+[00:21:26.559] names and parameters continuously um, in
+[00:21:29.760] case over time there's code that changes
+[00:21:32.880] uh, as things evolve. Um, and you're
+[00:21:35.840] going to want to centralize uh,
+[00:21:37.600] authentication. Uh, that's definitely
+[00:21:40.000] something that becomes pretty important
+[00:21:41.360] when you're scaling up consuming your
+[00:21:43.520] MCP servers. and then filtering um the
+[00:21:46.880] ability to inspect and make sure that
+[00:21:49.200] tool calls aren't taking data and
+[00:21:51.200] sticking that uh sending that to
+[00:21:53.679] different places that you don't want it
+[00:21:55.039] to go.
+[00:21:57.919] So, thank you. Uh if you've got
+[00:22:00.320] questions, I'll be here for a bit and
+[00:22:03.440] also at the Obot booth.
+[00:22:05.679] >> Thank you so much. I I feel a deep sense
+[00:22:07.760] of shame. I've I've personally developed
+[00:22:09.600] an MCP server and now I feel absolutely
+[00:22:12.159] terrible I didn't see this talk
+[00:22:13.679] beforehand. So, uh this is wonderful.
+[00:22:15.840] Thank you so much. I really appreciate
+[00:22:17.360] it. Thank you.
+[00:22:21.455] [music]
+[00:22:26.040] [music]
+[00:22:34.555] >> [music]

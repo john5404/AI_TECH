@@ -1,0 +1,506 @@
+[00:00:04.584] [music]
+[00:00:09.920] So, uh, welcome everyone to my talk,
+[00:00:12.880] Agents on Guard Rails, Deterministic
+[00:00:15.920] Safety for Database Operations. Uh,
+[00:00:19.199] we're going to do 75 slides and a song,
+[00:00:22.080] a musical gospel song that I prepared
+[00:00:24.880] for the occasion. It was cut from the
+[00:00:27.199] original presentation, but we're going
+[00:00:29.760] to have two minutes in the end. I'm
+[00:00:31.679] going to play it for you. So, uh, about
+[00:00:34.320] me, my name is Otim. I'm 40 years old
+[00:00:36.880] from, uh, near Tel Aviv. Until very
+[00:00:39.360] recently, I was CTO and co-founder of a
+[00:00:41.760] company called Origa. At Orga, we built
+[00:00:44.079] two, uh, pretty cool open-source
+[00:00:46.320] projects in the database space. One of
+[00:00:48.160] them is called Ant. Ant is an entity
+[00:00:51.120] framework for Go and Atlas is a
+[00:00:53.840] Terraform for databases a database
+[00:00:56.000] schema management tool. I'm going to
+[00:00:57.360] touch about uh touch on it a little bit
+[00:01:00.239] later today. Today as part of Honeybadge
+[00:01:03.359] labs I provide consulting for early
+[00:01:05.920] stage developerfacing startups. So let's
+[00:01:09.840] start. So uh coding agents have come a
+[00:01:13.600] long way in the past couple of years. We
+[00:01:15.520] went from tab completion to multifile
+[00:01:18.080] edits. Today we can get full pull
+[00:01:20.159] requests from a single prompt. I think
+[00:01:23.840] it's fair to say at this rate of change
+[00:01:26.400] and improvement that we are heading
+[00:01:27.759] towards a future of unattended software
+[00:01:31.360] engineering which means that in
+[00:01:33.840] inevitably we're going to need to trust
+[00:01:36.400] them with our production databases.
+[00:01:41.119] Uh, as someone who's been in I've
+[00:01:44.240] dedicated the past 5 years of my life to
+[00:01:46.799] protect production databases from
+[00:01:49.040] mistakes that can be made by developers
+[00:01:51.759] to nuke production. I find this kind of
+[00:01:54.720] scary and today I want to talk a little
+[00:01:57.840] bit uh uh about the ways in which agents
+[00:02:01.280] can mess up your production database and
+[00:02:04.399] see what we can do about them. We don't
+[00:02:05.840] want to give up all of these uh this
+[00:02:07.759] potential efficiency gains. So let's
+[00:02:10.640] start. When we talk about SQL, we
+[00:02:13.920] typically split into two kind of
+[00:02:15.520] distinct domains. One is DDL, data
+[00:02:17.920] definition language. How do we change
+[00:02:20.239] and define the schema of the database?
+[00:02:23.200] Things like drop a table or alter uh
+[00:02:26.879] create a index on a table. And the other
+[00:02:29.599] half is DML, select, update, delete.
+[00:02:34.480] Okay, the reading and writing of data.
+[00:02:36.480] So let's start by focusing on DDL. I'm
+[00:02:39.680] going to tell you a short story. Uh if
+[00:02:42.800] you remember this story, it's presented
+[00:02:44.959] as a song at the end of the talk. Uh so
+[00:02:48.400] here we have a developer and this
+[00:02:50.160] developer is requested by their product
+[00:02:54.080] manager. A very simple request. Hey, can
+[00:02:56.160] we please make the email column on the
+[00:02:58.800] users table unique because we don't want
+[00:03:01.440] duplicate values on this column and
+[00:03:03.280] messes up the reports and yeah, we don't
+[00:03:05.360] want to uh have any of that. So any
+[00:03:07.440] sensible developer would do today go to
+[00:03:10.080] cloud code uh let's prompt and ask to
+[00:03:13.360] make the the the changes unique. Now
+[00:03:15.519] this is a SQLJS and OJS from U framework
+[00:03:19.760] and cloud is able to find the right file
+[00:03:22.720] make the change and changing the data
+[00:03:24.239] model email column is now unique true.
+[00:03:27.440] Now our developer knows that the next
+[00:03:29.200] thing they need to do is to plan a
+[00:03:30.959] migration. Immigration is basically a
+[00:03:32.799] script that you're going to execute
+[00:03:34.480] moment before you deploy the next
+[00:03:36.400] version of the application to production
+[00:03:37.920] to bring the database schema to the
+[00:03:40.080] place where it needs to be. So we're not
+[00:03:42.879] going to do this ourselves. We're going
+[00:03:44.640] to ask Claude again to do this for us.
+[00:03:47.280] And we ask Claude to generate the
+[00:03:48.799] migration for us. So it knows how to do
+[00:03:51.360] the thing. It used the SQLiz CLI. It
+[00:03:54.159] creates the boiler plate. Then it
+[00:03:55.599] implements the placeholders. And at the
+[00:03:58.239] end of the process, we have the
+[00:04:00.080] migration. this is correctly
+[00:04:02.319] implemented. Okay, this is the right way
+[00:04:04.400] to do this in SQLJS.
+[00:04:09.200] Uh so the developer creates a pull
+[00:04:11.920] request goes through all the standard
+[00:04:14.560] hoops. So there's the PR CI is green,
+[00:04:17.519] the teams gives the thumbs up, it goes
+[00:04:19.280] through staging, everything is
+[00:04:22.800] by the book. Okay.
+[00:04:25.360] And now it's time to go live. And then
+[00:04:29.199] has to be an end. Then uh something
+[00:04:31.840] happens. We deploy and system blows up.
+[00:04:36.320] DB CPU goes to the roof. 100% error rate
+[00:04:40.240] on the critical endpoints in our backend
+[00:04:42.400] system, which is of course correlated
+[00:04:44.080] with 100% unsatisfied
+[00:04:47.120] management. Our CTO is kind of angry
+[00:04:49.360] right now. What the heck is going on?
+[00:04:52.080] Why did this happen? Okay, so in our
+[00:04:54.639] application, we're using a Postgress
+[00:04:56.080] database. Pretty popular. Most of you
+[00:04:57.759] are probably using it today in
+[00:04:59.280] production. And in Postgress, if you ask
+[00:05:01.520] the database to make an existing column
+[00:05:04.000] unique to implement that change, it
+[00:05:07.039] needs to uh acquire an access exclusive
+[00:05:09.840] lock on the users table, which means
+[00:05:12.240] that there are no reads or rights
+[00:05:14.000] allowed for the duration of the change.
+[00:05:17.360] So what happens is postquest to maintain
+[00:05:19.919] the integrity. If you remember from
+[00:05:21.759] acid, the I is the integrity. So we need
+[00:05:25.039] to verify the rule before applying it.
+[00:05:27.680] We stop the world. No arrays and rights.
+[00:05:30.880] We build the index from scratch. If this
+[00:05:33.759] is a large table, this can take a while.
+[00:05:35.759] It's a full table scan. And then we
+[00:05:37.919] reconstruct the data structure that can
+[00:05:40.560] maintain the uh uniqueness. This takes
+[00:05:43.039] disk. It takes resources. This can be a
+[00:05:45.199] time-consuming operation. Once
+[00:05:47.680] everything is done, the lock is
+[00:05:49.440] released. In the meantime,
+[00:05:52.400] any request to our server that wants to
+[00:05:55.199] do anything with the users table needs
+[00:05:57.199] to wait for the lock to be released. The
+[00:05:59.440] requests start piling up. Eventually, we
+[00:06:02.400] uh are out of connections. Our
+[00:06:04.240] connection pool is depleted and then all
+[00:06:08.479] requests coming into the server fail
+[00:06:10.160] even if they don't have anything to do
+[00:06:11.520] with the users's table. So, not a great
+[00:06:15.039] outcome. And as engineers, of course, we
+[00:06:16.880] want to ask, can this be prevented? So
+[00:06:19.280] turns out in Postgress there is a way to
+[00:06:21.120] do this safely. So we can create the
+[00:06:22.720] index concurrently and then we add the
+[00:06:25.120] constraint with the using index keyword
+[00:06:27.199] which can tells Postgress hey this index
+[00:06:30.080] this uh uh we know that this column is
+[00:06:32.720] unique using this index and you can just
+[00:06:35.680] now this turns into a metadata lock
+[00:06:37.360] which is very very fast and
+[00:06:39.360] unnoticeable.
+[00:06:41.120] I would have loved to know this before
+[00:06:43.680] deploying my change to production. Okay,
+[00:06:48.080] so we need some form of guardrails. The
+[00:06:49.840] agent here did the right thing, but it
+[00:06:52.080] still somehow managed to nuke the
+[00:06:54.240] database in production. Uh, good time to
+[00:06:56.880] introduce Atlas is something I worked on
+[00:06:58.720] with my co-founder at at Origa who built
+[00:07:00.960] this out. This is still uh uh going on.
+[00:07:04.240] Really, really great product. It's
+[00:07:05.440] called the Terraform for databases. So,
+[00:07:07.520] kind of a more modern DevOps approach to
+[00:07:09.919] to working with uh database schema. And
+[00:07:12.639] one of the cool features that Atlas has
+[00:07:14.479] is the migrate lint command which is
+[00:07:16.960] basically static code analysis for DDL
+[00:07:19.599] statements. So it will reconstruct the
+[00:07:22.240] current state of the database. It will
+[00:07:23.680] understand what the changes you want to
+[00:07:24.960] make and it will run them through a set
+[00:07:26.960] of analysis of analyzers 30 plus
+[00:07:29.680] analyzers database specific and it will
+[00:07:32.479] tell you stuff like this is a
+[00:07:33.599] destructive change. It's going to delete
+[00:07:34.880] data. This is going to lock the table
+[00:07:36.479] and you can also set your own uh
+[00:07:38.240] policies if you want to enforce stuff
+[00:07:40.160] specific to your use case.
+[00:07:42.720] In our case, if we had run the migrate
+[00:07:45.039] lint command against our specific
+[00:07:46.960] change, we would have gotten this adding
+[00:07:48.960] unique constraint on table users
+[00:07:50.560] acquires and access exclusive log bloing
+[00:07:53.199] blocking both reads and writes. I would
+[00:07:55.840] have loved to know this before uh
+[00:07:58.879] approving cla's changes. This would have
+[00:08:00.960] been great. So, we are in uh end of
+[00:08:04.000] 2025. So, we don't just you know run
+[00:08:06.240] commands in the terminal anymore. So we
+[00:08:08.560] can wrap atlas with a cloud uh slash
+[00:08:11.599] command that basically tells us this is
+[00:08:13.680] the process from now going on how to
+[00:08:15.520] plan a schema change and then we can use
+[00:08:17.919] this in our workflow. So we do SL schema
+[00:08:20.479] make the emails unique. Now claude is
+[00:08:23.759] going to do its thing. It's going to
+[00:08:24.960] find the data model to update. It's
+[00:08:26.639] going to plan the migration and then
+[00:08:28.479] it's it will run the migrate lint
+[00:08:31.280] command. This is part of the prompt for
+[00:08:32.800] this tool uh that we have created. And
+[00:08:35.919] at the end of the process we get this.
+[00:08:38.240] Okay. So cloud basically stops and tells
+[00:08:40.719] us okay this is pretty valuable. This is
+[00:08:42.959] going to lock the table causing us a
+[00:08:45.120] problem. But as you know agents are not
+[00:08:47.680] 100% reliable at using the tools that
+[00:08:50.480] you provide them. Developers might not
+[00:08:52.800] know about this slash command. So if you
+[00:08:54.399] really want something robust you're
+[00:08:56.160] going to connect this to a GitHub action
+[00:08:58.160] or to the CI system. So you're going to
+[00:08:59.920] basically have a a deterministic wall
+[00:09:02.800] that these type of changes cannot be
+[00:09:04.720] merged without any explicit approval.
+[00:09:07.040] The pull request is going to be read and
+[00:09:09.360] uh whatever work the the agent uh
+[00:09:12.720] generates or hallucinates is going to be
+[00:09:14.800] protected by some formal guardrails. So
+[00:09:18.480] key takeaways use some local tool to
+[00:09:21.200] inform agents of risk and use CI
+[00:09:23.760] guardrails to enforce safety. We talked
+[00:09:26.640] about DDL changing the database schema a
+[00:09:28.959] rare but risky operations more
+[00:09:30.560] day-to-day reading and writing from the
+[00:09:32.880] database. So let's consider databases
+[00:09:35.920] plus agents at runtime. Last November
+[00:09:39.440] anthropic released MCP
+[00:09:42.160] all about enhancing the models context
+[00:09:45.120] giving more information access to
+[00:09:46.959] information and access to tools. The
+[00:09:48.959] models can now interact with the
+[00:09:50.800] external world.
+[00:09:52.800] What better context to provide to the
+[00:09:55.120] model than the database itself. The
+[00:09:56.880] database contains the state, contains
+[00:09:58.959] the data.
+[00:10:00.959] Think about the possibilities, right?
+[00:10:02.560] Everything that we can do. So this
+[00:10:05.120] April, Google released MCP toolbox for
+[00:10:07.680] databases. Essentially the connective
+[00:10:10.000] tissue between agents and databases. And
+[00:10:12.800] they have built a ton of integrations.
+[00:10:15.440] This makes it practically free to create
+[00:10:18.079] an integration between your database and
+[00:10:21.600] your uh agent that you're working on. So
+[00:10:23.920] it's basically you brew install the
+[00:10:26.079] thing, you add this to your MCP toolbox
+[00:10:29.680] uh to your MCP servers JSON and then you
+[00:10:32.079] can do stuff like uh okay claude
+[00:10:36.079] tell me about this databases you we are
+[00:10:37.920] connected to. So it will use the list
+[00:10:39.839] the list tables tool and basically do
+[00:10:42.399] like a schema introspection to
+[00:10:44.240] understand. So this is like a CMS
+[00:10:45.760] blogging platform that we are connected
+[00:10:47.279] to. Now it will ask who are the top
+[00:10:49.760] authors in this uh system and it will
+[00:10:52.079] use the execute SQL tool to generate
+[00:10:54.880] this report. So who are so we have Bob
+[00:10:57.040] Bob is our top uh top contributor to
+[00:10:59.600] this uh blog post. So this is super cool
+[00:11:02.560] if you are just hacking locally you know
+[00:11:04.160] you are a trusted user it's cool that
+[00:11:06.240] you going to access production or access
+[00:11:08.399] the database directly and you get to you
+[00:11:10.800] know review all the MCP tool calls
+[00:11:12.880] before they are they're made. So it's
+[00:11:14.640] kind of maybe not ideal but but it can
+[00:11:17.040] work. But what if we are building an
+[00:11:19.120] agent for users? So something that users
+[00:11:20.959] are going to be uh uh using directly and
+[00:11:23.600] we still want to give this connection
+[00:11:25.440] between the agent and uh the database.
+[00:11:29.200] So allowing agents to query uh
+[00:11:32.800] production databases. I'm the second
+[00:11:35.120] person in a row to reference this
+[00:11:36.880] incident of uh uh Jason Lmin and the
+[00:11:40.000] deleted database. So it's a risky thing,
+[00:11:42.880] right? the the the if we lose the
+[00:11:44.480] database, our company is kind of gone or
+[00:11:46.640] at least in very serious trouble. So, we
+[00:11:48.640] want to be careful about doing that. So,
+[00:11:50.720] let's put this MCP server on Rails.
+[00:11:54.880] So, we're going to stop using the
+[00:11:57.040] execute SQL tool. No more direct access
+[00:11:59.600] to just, you know, generate a query and
+[00:12:02.000] we're going to replace it with
+[00:12:03.440] structured tools. So, MCP toolbox
+[00:12:05.920] supports this tools YAML file. you can
+[00:12:07.760] define the data source and then provide
+[00:12:09.680] it with a closed set of queries of tools
+[00:12:12.480] that it's going to expose as the uh
+[00:12:14.160] tools of the MCP server and these are
+[00:12:16.240] the only things that the agent is going
+[00:12:17.680] to be able to invoke against the
+[00:12:19.440] database. Each tool definition
+[00:12:21.920] provides the inputs. So what are the
+[00:12:23.360] knobs that the model can set and then
+[00:12:25.519] the query this is our edit post uh tool
+[00:12:29.440] and you will notice these dollar two
+[00:12:32.320] dollar three these are the placeholders
+[00:12:34.000] from the uh input tool. So these are ex
+[00:12:36.800] uh interpolated at uh runtime and this
+[00:12:41.200] enables us to do something. You're
+[00:12:43.200] acting uh on behalf of Bob top
+[00:12:45.680] contributor. Please set the title of his
+[00:12:48.000] latest piece uh to this and that. And
+[00:12:50.480] now uh Claude tries to use XSQL. It's
+[00:12:53.600] not available anymore. It figures out
+[00:12:55.920] who are the who is the top author, who's
+[00:12:58.079] this Bob, and it uses the available
+[00:13:00.399] tools uh to make the change that we
+[00:13:04.639] asked it for. Okay. And we can use uh
+[00:13:07.440] another prompt to ask for the result.
+[00:13:09.360] And we can see now that we were able to
+[00:13:12.720] uh change Bob's blog post to these
+[00:13:15.360] hacker uh caps uh notation.
+[00:13:19.360] So, you may have noticed something weird
+[00:13:20.959] I wrote in the prompt. You're acting on
+[00:13:23.040] behalf of Bob. This should kind of bring
+[00:13:25.200] on the the red uh alarm light in your
+[00:13:28.560] mind cuz you probably heard about SQL
+[00:13:30.800] injections, right? When we use uh add a
+[00:13:33.440] semicolon at the end of some input and
+[00:13:35.440] we use that to kind of uh change the way
+[00:13:38.800] a system is supposed to work to do
+[00:13:40.800] malicious stuff. Now we are dealing with
+[00:13:42.399] prompt injection. So we have different
+[00:13:44.000] prompts we can give the database the the
+[00:13:46.399] agent to kind of change its behavior to
+[00:13:49.279] act as on behalf of a different user.
+[00:13:51.760] And we can't let LLMs to decide their
+[00:13:54.240] own authentication what they are allowed
+[00:13:56.800] to do. Okay? It cannot be like an input
+[00:13:59.120] that the the the agent gets to set. Uh
+[00:14:02.160] it needs to be something that is done
+[00:14:03.920] externally. So MCP toolbox provides
+[00:14:07.279] authenticated parameters. And to uh
+[00:14:10.000] demonstrate this, I built a small demo
+[00:14:12.480] application where I'm logged in with
+[00:14:14.320] Google authentication. And I'm going to
+[00:14:16.720] try to do the same thing. I'm going to
+[00:14:18.480] uh try to edit Bob's uh post. So I want
+[00:14:22.079] to prevent this with these uh
+[00:14:23.680] authenticated parameters which work by
+[00:14:26.240] defining an O services. So we're telling
+[00:14:28.480] the MCP toolbox who is the identity
+[00:14:31.279] provider. Okay. So it can verify that
+[00:14:33.680] the person that's supposedly uh the
+[00:14:36.079] agent is acting on behalf of uh is the
+[00:14:39.600] right person and we can now create tools
+[00:14:42.720] that are autoop populated from the
+[00:14:45.440] authenticated user's email. Right? So
+[00:14:47.199] this is like a reference to a field in
+[00:14:49.279] the uh uh um in the JWT token that is uh
+[00:14:54.480] provided and then what we do is we kind
+[00:14:57.120] of add to the wear clause of this tool
+[00:14:59.920] uh something that verifies that the ID
+[00:15:01.760] of the user is the value that we got
+[00:15:03.600] from the identity provider. So basically
+[00:15:06.320] now if someone tries to act on behalf of
+[00:15:08.079] someone that is not them the query will
+[00:15:10.720] not work. It will return it will be like
+[00:15:12.639] a no op. Uh so just a bit of code is uh
+[00:15:17.040] we're going to initialize this set of
+[00:15:18.560] tools. We're going to take the whatever
+[00:15:19.839] the MCP server provides and wrap it with
+[00:15:22.240] this authentication uh uh token in
+[00:15:25.839] injection thing. Uh we create this
+[00:15:28.639] decorator in Python to make sure that we
+[00:15:31.519] always propagate the bearer token the
+[00:15:33.920] the API key or the the uh the identifier
+[00:15:37.120] that we get from the client into the
+[00:15:38.720] request context. And then we can uh
+[00:15:42.560] whenever we initialize the agent, we
+[00:15:44.399] make it such that whenever the tools are
+[00:15:46.160] called, we propagate the identity all
+[00:15:48.560] the way from the identity provider all
+[00:15:50.480] the way to the MCP toolbox that can
+[00:15:52.160] decide to reject the calls uh or sorry
+[00:15:55.360] to inject these values into the tool
+[00:15:57.440] calls. And then finally, what this looks
+[00:16:00.000] like is I'm going to sign in. I'm going
+[00:16:01.839] to update Bob's most recent post,
+[00:16:04.240] telling the the agent how to find it.
+[00:16:06.639] and it tells me it cannot be done
+[00:16:08.480] because you don't have permission. Okay.
+[00:16:10.639] Okay. Update my post. Uh find it via the
+[00:16:13.440] leaderboard and update it to Devcon
+[00:16:15.279] 2025. And then bam, uh it works. So key
+[00:16:20.480] takeaways,
+[00:16:22.560] no execute SQL tool for production
+[00:16:25.040] agents. Uh instead provide them with
+[00:16:27.680] tools with pre-approved queries. Set the
+[00:16:29.759] guard rails here so you can control what
+[00:16:31.519] happens. Don't let agents set uh
+[00:16:34.480] sensitive inputs. instead set them
+[00:16:36.880] yourself via code. And we covered DDL
+[00:16:42.320] changing the database. We saw how we can
+[00:16:44.480] use Atlas or similar tools to do some
+[00:16:46.720] sort of deterministic validation of
+[00:16:48.800] schema changes that are proposed by the
+[00:16:50.320] agent. We saw DML and how we can kind of
+[00:16:53.360] set guard rails around that using the
+[00:16:55.360] tools provided to us with uh Google's
+[00:16:57.759] MCP uh toolbox. And with that, thank you
+[00:17:01.600] very much. [applause]
+[00:17:08.640] How are we on time?
+[00:17:10.000] >> Oh, yes. Yeah. Yeah. Yeah.
+[00:17:12.880] >> Okay. Because we have a two-minute song
+[00:17:14.240] at the end.
+[00:17:14.720] >> Yeah.
+[00:17:15.919] >> Uh, so any questions?
+[00:17:19.520] >> Yeah.
+[00:17:20.640] >> What is your Oh, thank you. That's all
+[00:17:22.640] right.
+[00:17:22.880] >> All right. What is your stance on um use
+[00:17:26.400] like doing direct SQL but only in a
+[00:17:28.799] readonly state like one of the things
+[00:17:30.240] would be like deep analytics like
+[00:17:31.840] analysis type things do you do you worry
+[00:17:34.160] about those same types of things as well
+[00:17:36.880] >> so uh really depends on the setting and
+[00:17:39.440] what is the application that you're
+[00:17:40.720] building but for example this thing that
+[00:17:42.320] I showed with MCP toolbox in postquest
+[00:17:44.240] can be achieved by rowle security right
+[00:17:46.720] where you kind of inject the user ID you
+[00:17:48.720] can use database mechanisms I think the
+[00:17:51.280] the the authenticated parameter is cool
+[00:17:53.360] because it's supported across a very
+[00:17:54.960] wide range of databases and but if you
+[00:17:57.039] are like working towards a specific use
+[00:17:59.200] case and you can use database
+[00:18:01.039] permissions control they're usually a
+[00:18:03.039] lot of times not granular enough but if
+[00:18:05.360] that works in your specific database
+[00:18:07.440] sure
+[00:18:13.520] >> okay
+[00:18:15.760] >> I get your question um [clears throat]
+[00:18:18.160] it seems like you you have a very small
+[00:18:19.919] set of like allowed actions right saying
+[00:18:22.080] hey these possibly you had three as an
+[00:18:23.840] example but it's really limiting like
+[00:18:26.240] the expressivity of the agent is to be
+[00:18:28.720] able to work with like whatever
+[00:18:30.080] ecosystem you're plugging into in this
+[00:18:32.000] case Postgress like do you think that
+[00:18:34.240] that's going to scale like you're
+[00:18:35.440] expecting everybody to follow this
+[00:18:36.880] example and say hey three goes to 300
+[00:18:40.799] allowed actions and we're really just or
+[00:18:42.799] or is the the opposite side of that
+[00:18:44.559] where you just maybe your question was
+[00:18:46.480] similar which was is there not just like
+[00:18:48.480] a higher level action that we're just
+[00:18:50.160] saying hey please don't delete anything
+[00:18:51.600] like if If it includes a delete or a
+[00:18:53.679] drop, then this should not be permitted
+[00:18:55.520] at all. Something that's kind of like
+[00:18:57.120] >> So, so I think uh this is just one tool.
+[00:18:59.760] There's many ways to limit to set the
+[00:19:01.760] guardrails. I think the the important
+[00:19:03.360] takeaway is to be mindful about what you
+[00:19:05.919] let the agent do. So, MCP toolbox let
+[00:19:09.120] you compose like an hierarchy of tool
+[00:19:11.039] sets that's available in MCP. So you can
+[00:19:13.600] it can be actually a larger group of uh
+[00:19:16.559] of queries that you open up uh in cases
+[00:19:19.280] where you trust the user enough and you
+[00:19:21.039] have like a a a protection
+[00:19:24.400] mechanism on the database side such that
+[00:19:26.400] you know that you you're not leaking out
+[00:19:28.400] data that the the user is not supposed
+[00:19:30.559] to see then that's fine. But it's still
+[00:19:32.720] like within the same rails of of a realm
+[00:19:34.960] of we have guard rails. We have stuff
+[00:19:37.120] that's not just like we're prompting the
+[00:19:39.360] agent not to do what it's allowed. we
+[00:19:41.039] have some actual like deterministic
+[00:19:43.280] boundaries that are going to prevent
+[00:19:44.640] stuff from from happening. So definitely
+[00:19:46.720] this limits the expressivity of text to
+[00:19:49.039] SQL which is amazing for especially on
+[00:19:51.360] an analysis use case. Um but you know
+[00:19:55.919] I've seen a company that does they're
+[00:19:57.760] using TSO. It's like a a SQLite thing
+[00:20:00.480] where they create like a a separate
+[00:20:02.480] database per tenant and then you know
+[00:20:04.880] they connect to the specific tenant
+[00:20:06.720] database and then you know it's it's a
+[00:20:08.960] readonly use case. they they spin up a
+[00:20:11.520] like a fork of the database that you can
+[00:20:13.120] basically work against and then the the
+[00:20:15.039] blast radius is very limited. You cannot
+[00:20:16.640] access another user's data and you
+[00:20:18.640] cannot cause damage to your existing
+[00:20:20.080] data. So you know but that that's the
+[00:20:22.400] same guardrails thinking is just
+[00:20:23.679] different mechanisms of enforcing
+[00:20:46.479] >> [music]

@@ -1,0 +1,1479 @@
+[00:00:00.240] first of all we already have seen like
+[00:00:02.399] fully agentic systems I don't know if
+[00:00:03.719] you've followed open ai's recent deep
+[00:00:05.879] research for example I've made a very
+[00:00:07.680] good use of it to recently to thoroughly
+[00:00:10.160] research and find the top 100 best dad
+[00:00:13.040] jokes out there and sort out the 50 that
+[00:00:15.639] are least known within them and rank
+[00:00:18.080] them by humor took it eight minutes and
+[00:00:20.560] it's the first time that I actually
+[00:00:21.640] managed to get AI to it doesn't even
+[00:00:23.519] create but find new and pretty good dad
+[00:00:27.119] jok says Dad jok go I'm a fan
+[00:00:30.759] you're listening to the AI native Dev
+[00:00:32.759] brought to you by
+[00:00:43.000] Tesla hello everyone welcome back to the
+[00:00:45.480] AI native Dev today I am excited to talk
+[00:00:48.199] again about security it is a passion of
+[00:00:50.039] mine on it and to do that we have Mato
+[00:00:52.039] roas who is the co-founder and chief
+[00:00:53.960] scientist at Lera which is a great kind
+[00:00:56.359] of AI security company we'll talk about
+[00:00:58.000] not so much their products but gandal
+[00:00:59.519] they've created and he's here to talk
+[00:01:01.719] about kind of both llm security AI
+[00:01:03.480] security as a whole and specifically
+[00:01:04.799] agent security so matau welcome to the
+[00:01:06.960] show and thanks for coming on great to
+[00:01:08.640] be here uh so Mel let's let's start by
+[00:01:10.840] setting the stage a little bit about LM
+[00:01:12.600] security we've had a bunch of episodes
+[00:01:13.920] about it but you know I don't maybe not
+[00:01:15.720] everybody has seen it and also I don't
+[00:01:17.080] know it's a fast shaping world so maybe
+[00:01:19.000] definitions are a little bit off maybe
+[00:01:21.520] let's start by sort of saying what is to
+[00:01:23.479] you what should we know about or how
+[00:01:25.159] should we think about llm security AI
+[00:01:27.159] security or maybe llm security specific
+[00:01:29.079] yeah thanks great great question I think
+[00:01:30.720] there is a lot of terminology in the air
+[00:01:32.759] when you hear about air security there
+[00:01:34.880] is prompt injections there are gel braks
+[00:01:36.960] there are like data poisoning all these
+[00:01:38.560] different ideas and I think it's helpful
+[00:01:40.920] to take a step back and try to look at
+[00:01:43.200] the whole picture and maybe I would say
+[00:01:45.560] there are two types of vulnerability in
+[00:01:48.960] llm based applications the first are
+[00:01:52.119] traditional vulnerabilities when you're
+[00:01:53.880] designing a software system you want
+[00:01:55.719] permissions to be set right so people
+[00:01:57.960] talk a lot about rag for example and
+[00:02:00.119] whether the right users will have access
+[00:02:02.200] to the right data in that rag to a large
+[00:02:05.399] extent that really is a question of
+[00:02:07.280] permissioning who has access to what
+[00:02:09.280] documents and those are very important
+[00:02:11.680] problems but they're not particularly
+[00:02:13.720] new when you're launching these
+[00:02:15.080] applications you should make sure that
+[00:02:16.319] this is in place right and it's the the
+[00:02:18.599] security aspect is over permission is
+[00:02:20.239] like make sure that people don't get
+[00:02:21.680] access that they should not have yes
+[00:02:23.840] when you're thinking about agents like
+[00:02:25.200] we'll talk about later you should just
+[00:02:27.239] give permissions to the tools that
+[00:02:28.680] you're using to be to be the right one
+[00:02:31.239] so if you want to read email only don't
+[00:02:33.480] give it send access for example these
+[00:02:34.920] are just good habits to have when
+[00:02:36.879] designing these systems and this is
+[00:02:38.160] something that is really not new now
+[00:02:41.280] when you're thinking about what is new
+[00:02:43.599] and there is quite a bit in a not shell
+[00:02:46.440] I think the llms are vulnerable because
+[00:02:51.040] they introduce a really fundamentally
+[00:02:52.560] new type of vulnerability and that is
+[00:02:54.560] that they really struggle to separate
+[00:02:57.800] developer instructions from external
+[00:03:00.480] input or data and this allows the
+[00:03:02.760] attackers to manipulate the behavior of
+[00:03:05.200] the system via data so you know let's
+[00:03:08.360] try to unpack that for a second yeah if
+[00:03:10.319] you have a rag application for example
+[00:03:13.480] and you ask a question like what is the
+[00:03:15.200] capital of France and you withdraw a
+[00:03:16.879] document and that document has an attack
+[00:03:20.360] in there that wants you to get false
+[00:03:23.080] information about that maybe that
+[00:03:24.319] question is not the best example but
+[00:03:26.040] once to surface false information for
+[00:03:27.560] example the attacker can try to
+[00:03:30.319] manipulate the model into interpreting
+[00:03:33.879] the data in this document as new
+[00:03:35.840] instructions and then executing those to
+[00:03:38.720] then provide false information to the
+[00:03:40.640] user and I think in a not shell the way
+[00:03:43.480] I like to think about it is that data or
+[00:03:46.000] what traditionally has been only data
+[00:03:48.080] documents images videos suddenly become
+[00:03:51.519] executables and the moment the llm goes
+[00:03:54.079] through them then this can be executed
+[00:03:56.480] and the attacker can achieve multiple
+[00:03:58.599] goals now what where does the
+[00:04:00.920] terminology come in people talk about
+[00:04:02.400] gel breaks these are typically
+[00:04:04.239] situations where the user sends data to
+[00:04:07.760] the model to bypass the alignment
+[00:04:09.959] mechanisms of the model so it can talk
+[00:04:11.640] about how to build weapons and and
+[00:04:13.400] things like that like an unhinged
+[00:04:14.879] version of the of LM prompt injections
+[00:04:17.359] are typically referred to more of an
+[00:04:18.720] indirect setting where a user is talking
+[00:04:21.639] to an LM that has access to documents
+[00:04:23.400] for example or data that has been
+[00:04:25.560] manipulated and is containing attacks
+[00:04:27.840] and ultimately the this is all about the
+[00:04:30.759] separation maybe between the how and the
+[00:04:32.360] what or the means and the end let's say
+[00:04:34.160] so what are the means of attacking these
+[00:04:36.039] llms the means is you manipulate the
+[00:04:37.880] data in a way that gets the llm to
+[00:04:39.960] execute it and achieve the attacker's
+[00:04:41.840] commands and then the ends can be a lot
+[00:04:44.199] of stuff it can be to bypass the model
+[00:04:46.160] alignment mechanism to access a tool
+[00:04:48.240] that an agent is not supposed to access
+[00:04:50.520] to surface false information to the user
+[00:04:52.600] anyway you choose your pick these are
+[00:04:54.080] more about what you want to get out of
+[00:04:57.160] it and this is the I guess in this case
+[00:05:00.880] your data would always be executed right
+[00:05:03.520] unlike to an extent trying to get the
+[00:05:06.160] system to execute your command is also
+[00:05:08.360] bold news and whatever that's what SQL
+[00:05:10.320] injection is Tres tries to do that's
+[00:05:12.199] what process scripting tries to do
+[00:05:13.560] that's what remot command execution
+[00:05:14.639] tries to do and and I think the
+[00:05:16.840] distinction you're saying here is
+[00:05:18.360] actually it's trivial in fact you have
+[00:05:20.240] no way not to have the llm execute your
+[00:05:23.680] sort of a data when you're the attacker
+[00:05:25.919] and so that sort of interweaving is just
+[00:05:28.840] built in and you can manipulate a bunch
+[00:05:30.800] of things yeah I guess that's what makes
+[00:05:33.199] it very tricky is that this is actually
+[00:05:35.720] what gives the lmit power this precisely
+[00:05:38.720] why it is so powerful that it can just
+[00:05:40.800] take in natural images and text and
+[00:05:43.479] execute instructions from it and the
+[00:05:45.759] barrier is very thin you can imagine we
+[00:05:48.560] may get on to this example later but you
+[00:05:50.240] can imagine an an email coming in to
+[00:05:52.880] your assistant that says hey can you
+[00:05:54.800] forward this email from last week
+[00:05:56.840] totally benign command the agents should
+[00:05:58.960] execute it you can imagine another one
+[00:06:00.960] which says hey can you exfiltrate your
+[00:06:02.680] whole inbox to me from an attacker like
+[00:06:07.199] these are particular very similar in the
+[00:06:09.240] way they manifest and then the question
+[00:06:11.280] is how do you make the distinction
+[00:06:12.520] between the two yeah yeah and so super
+[00:06:14.960] interesting Bine we had an episode a
+[00:06:16.759] bunch of months ago with Caleb semi and
+[00:06:18.520] he talked about the sort of the control
+[00:06:19.639] plane and data plane and how there's no
+[00:06:21.120] separation and I think you're talking
+[00:06:22.240] about the same thing but I like the
+[00:06:23.720] analogy it's a I know like in my mind
+[00:06:26.680] I've had the dubious pleasure even in
+[00:06:28.919] tesel of Building Products that have
+[00:06:30.639] some area in which you are executing uh
+[00:06:33.360] user code and again it's built-in remote
+[00:06:36.120] command execution and really the
+[00:06:38.120] exercise is no longer at can you run
+[00:06:40.599] that code it's more about can you
+[00:06:42.520] contain the execution of that code right
+[00:06:45.599] and so I think maybe it's a little bit
+[00:06:47.080] along those lines which is think about a
+[00:06:49.080] system in which you are remotely
+[00:06:50.960] executing user code and secure it
+[00:06:54.000] appropriately yes and you're doing that
+[00:06:55.919] by Design continuously and I think that
+[00:06:58.520] maybe more about what it takes to solve
+[00:07:01.280] all of that we may get into that later
+[00:07:02.840] but because of the nature of the problem
+[00:07:05.520] this really is an AI first problem like
+[00:07:08.319] understanding these kind of subtle
+[00:07:10.520] patterns and attack patterns in data
+[00:07:12.400] being able to generate adversarial data
+[00:07:14.680] to Red Team systems all of these
+[00:07:16.280] questions suddenly become like an AI
+[00:07:19.160] first problem how do you actually do
+[00:07:21.120] this effectively I wonder so another
+[00:07:23.919] domain that I think about sometimes is
+[00:07:25.720] just the nebulous nature of the
+[00:07:28.080] functionality of the system cuz you
+[00:07:29.560] talked about the means and the end but
+[00:07:32.199] you can make the case that the end in AI
+[00:07:34.720] or LL owered system is probably like
+[00:07:37.000] less defined than it is in any sort of
+[00:07:40.199] traditional software applications there
+[00:07:41.680] isn't if you wanted the sort of the Holy
+[00:07:43.440] Grail of security which is whitelisting
+[00:07:45.319] these are the only commands that you are
+[00:07:46.960] allowed to do and everything else is
+[00:07:48.360] this allowed that's just entirely
+[00:07:50.599] unfathomable in the world of llms
+[00:07:52.560] because it's an infinite Universe of
+[00:07:55.319] sort of things that might that might
+[00:07:56.960] occur and I guess I wonder is that does
+[00:08:00.520] that come up like you you you do a lot
+[00:08:02.280] again we're not going to talk about the
+[00:08:03.280] Lara product too much but part of that
+[00:08:04.919] is you identify malicious activity and
+[00:08:06.879] malicious output I get the input when
+[00:08:09.039] someone is trying to whatever mess up
+[00:08:10.879] they indeed get the system to execute
+[00:08:12.400] something it shouldn't but in the output
+[00:08:14.759] piece is it harder to try and understand
+[00:08:18.159] whether it is in line with the desires
+[00:08:20.039] of the developers versus not I think
+[00:08:21.840] that's a great question and and I think
+[00:08:24.000] people emphasize a lot the means okay do
+[00:08:26.560] you identify the means but at the end of
+[00:08:28.240] the day if you want to have a great
+[00:08:31.400] security experience and you actually
+[00:08:32.719] want to identify these things you need
+[00:08:35.080] to look at the output and you need to
+[00:08:36.560] focus on specific use cases often a very
+[00:08:39.159] canonical use case is someone trying to
+[00:08:41.320] jailbreak a model to get it to say
+[00:08:43.760] offensive things that are against the
+[00:08:45.080] alignment mechanisms of the model that's
+[00:08:47.160] what hits the news and it's very popular
+[00:08:48.920] and people love to jailbreak systems
+[00:08:50.920] that's an example where you know to
+[00:08:52.519] identify the vulnerability you may of
+[00:08:54.800] course try to see if the input has been
+[00:08:57.160] tampered with but additionally you do
+[00:08:59.800] want to see if the output contains the
+[00:09:02.000] kind of language and content that would
+[00:09:03.920] be against the alignment of the model or
+[00:09:06.000] the kind of content that the the
+[00:09:08.399] Enterprise or the the customer wants to
+[00:09:10.360] to right use and only by combining these
+[00:09:13.160] two can you really leverage the powers
+[00:09:15.399] of of of Defense in depth and identify
+[00:09:17.279] it and that extends Way Beyond that for
+[00:09:19.320] most use cases and most even if you go
+[00:09:21.399] to fully agentic use cases at any
+[00:09:23.640] individual moment the agent is taking
+[00:09:26.200] data from some tool and making a
+[00:09:28.160] decision about what tool to call next
+[00:09:30.360] and with which data and you can identify
+[00:09:32.880] that and and focus on that transaction
+[00:09:35.160] and try to validate via the input and
+[00:09:36.920] the output whether that transaction
+[00:09:38.880] should actually go through or not
+[00:09:40.519] through yeah yeah so maybe let's hold
+[00:09:42.200] that thought and come back to this like
+[00:09:43.560] meta level a little bit towards the end
+[00:09:45.760] after we get a little bit more specific
+[00:09:47.600] but just we want to talk about newer
+[00:09:49.120] things including a paperie youve s
+[00:09:50.600] written but for starters let's you
+[00:09:52.519] rattled off a few of these kind of
+[00:09:54.079] attacks just to make sure everybody is
+[00:09:56.279] in mentally in the same place of it what
+[00:09:58.399] would you say are the prim types of
+[00:09:59.959] attacks like we talk about prompt
+[00:10:01.240] injection
+[00:10:02.320] jailbreaking data poisoning yeah I think
+[00:10:04.920] want say like a word about each of those
+[00:10:06.320] just level set us so we're using of the
+[00:10:08.680] ter absolutely so maybe let's say for
+[00:10:10.680] the sake of defining them even though
+[00:10:12.240] definitions vary a little bit uh a
+[00:10:14.240] jailbreak is one where the user is
+[00:10:16.000] directly trying to manipulate the model
+[00:10:17.839] that is interacting with to bypass some
+[00:10:20.160] of its alignment mechanisms the model
+[00:10:22.079] was trained with reinforcement learning
+[00:10:24.880] to never output harmful content for
+[00:10:26.959] example you want to provide data input
+[00:10:29.519] that override in some sense those
+[00:10:31.680] mechanisms that's a jailbreak and that's
+[00:10:34.079] against the system prompt or like the I
+[00:10:37.240] think mostly it is against whatever it
+[00:10:39.880] is that the the platform Builder the
+[00:10:41.760] tool Builder is trying to contain people
+[00:10:44.519] to some Lane and you're trying to break
+[00:10:46.959] out of that as the attacker yes but it
+[00:10:49.600] would goes even beyond that so that's
+[00:10:51.399] the first level at which you want to
+[00:10:52.760] stay aligned but most of these models
+[00:10:56.120] after pre-training they go through
+[00:10:57.959] something called like rhf where they are
+[00:11:00.200] trained with reinforcement learning with
+[00:11:01.639] human feedback and the goal there is to
+[00:11:04.519] partially to make models that are
+[00:11:06.279] helpful and also models that are har
+[00:11:08.120] harm harmless and so the company needs
+[00:11:11.120] to Define that notion of harm right and
+[00:11:13.480] so that is deeply encoded via training
+[00:11:15.560] in the weights of the model like the
+[00:11:17.480] weights actually contain that behavior
+[00:11:19.480] and so the model by Design regardless of
+[00:11:21.839] system prompt should never say tell you
+[00:11:24.560] how to build a bomb right yeah good
+[00:11:26.399] correction so not just system prompt but
+[00:11:28.320] still conceptually it is the hey I am
+[00:11:30.560] offering you I've got an AI based tool
+[00:11:32.360] or maybe literally like a Chach PT style
+[00:11:34.079] like the tool that is AI and I'm
+[00:11:35.839] offering it to you the user and you're
+[00:11:37.480] trying to undo or get through the uh
+[00:11:40.680] protections that might be built into the
+[00:11:42.360] system like maybe a little bit like
+[00:11:43.720] breaking through the firewall in this
+[00:11:45.320] case absolutely that that's that's
+[00:11:47.120] exactly right and at the first level I
+[00:11:49.440] find talking to people that this is what
+[00:11:51.720] they care most about or what they're
+[00:11:53.200] most aware about but then we go into the
+[00:11:55.600] second one which is prompt injections
+[00:11:57.760] and for the sake of this definition
+[00:12:00.160] let's say that's more when you have an
+[00:12:02.320] indirect attacker so you as a user
+[00:12:05.120] interacting with an AI system the AI
+[00:12:07.560] system has access to data can be
+[00:12:09.200] searching the web it can be searching
+[00:12:11.920] documents and the prompt injection is an
+[00:12:14.639] attack to the model that is contained in
+[00:12:16.880] those data sources and that as the model
+[00:12:20.240] reads the data sources gets executed and
+[00:12:22.639] then affects the user in in some way and
+[00:12:25.079] one very interesting flip side there is
+[00:12:27.079] that the it is the unknown KN user that
+[00:12:30.240] is a victim here as opposed to the
+[00:12:32.040] jailbreak where the user is the one
+[00:12:34.000] perpetrating the exploit and that's
+[00:12:36.440] primarily why I personally am way more
+[00:12:38.839] concerned about these prompt injection
+[00:12:41.199] attacks yeah we have talk to a lot of
+[00:12:43.240] people that have internal AI tools and
+[00:12:45.360] therefore believe they don't need
+[00:12:46.279] security because they're internal yeah
+[00:12:48.160] to the company but as soon as you have
+[00:12:50.720] access to any form of untrusted data
+[00:12:53.279] then now you can have third party
+[00:12:55.160] attackers modifying a lot of stuff
+[00:12:57.519] within your company without your
+[00:12:58.680] awareness so yeah that's fromp injection
+[00:13:01.040] I'm trying to think about the equivalent
+[00:13:02.320] to real world and this one is a bit
+[00:13:03.600] harder right it's like a side Channel
+[00:13:05.199] attack but there isn't really an
+[00:13:06.680] equivalent in the regular software world
+[00:13:09.000] to this prompt injection so before
+[00:13:10.680] you're breaking through defenses here
+[00:13:12.920] it's yeah it's it's pretty brand new
+[00:13:15.800] yeah it's like you have someone
+[00:13:17.360] internally always clicking executables
+[00:13:20.040] that come in via email and just execute
+[00:13:23.000] like crazy and then never ask if if you
+[00:13:25.199] should that do that in the first place
+[00:13:26.760] right and I think that's yeah that
+[00:13:28.680] happens inherently via the language
+[00:13:30.600] model hopefully you don't have one of
+[00:13:32.040] those in your organization you never
+[00:13:33.360] know so you've got jailbreaking you've
+[00:13:35.160] got prom in let's say you mention data
+[00:13:37.680] poisoning again I think traditionally I
+[00:13:40.959] would say when people talk about data
+[00:13:43.000] poisoning even though all of this is
+[00:13:44.399] data poisoning in some sense got a
+[00:13:46.079] prompt injection to a document
+[00:13:48.600] poisoning but I think people refer to
+[00:13:50.920] that when they think about fine-tuning
+[00:13:52.880] or training the model there have been
+[00:13:54.519] some examples where as you fine tun the
+[00:13:57.040] model so now you're not just prompting
+[00:13:58.880] it or giving it data in context but
+[00:14:00.560] you're actually modifying the weights of
+[00:14:02.560] the network with with some of your data
+[00:14:05.079] any adversarial content that gets
+[00:14:07.079] ingested can potentially now provide
+[00:14:09.800] back doors to attackers in operation
+[00:14:11.880] like weeks months later and I think
+[00:14:14.240] what's very difficult about that is that
+[00:14:16.480] once that data makes it to the weights
+[00:14:18.480] of the model yeah it becomes very
+[00:14:20.880] difficult to identify that this exploit
+[00:14:23.600] took place and that is probably one of
+[00:14:25.079] the most concerning ones out there for
+[00:14:26.600] sure and that's the one really again
+[00:14:29.079] equivalent I would say is like supply
+[00:14:30.440] chain security attacks because it's
+[00:14:32.279] something that's Upstream from the
+[00:14:33.880] software that you're actually running
+[00:14:36.759] that get manipulated but it's just
+[00:14:38.600] paired together with a low
+[00:14:39.880] explainability that you have around AI
+[00:14:41.839] systems and so you don't really know
+[00:14:43.600] what they do or why they did the thing
+[00:14:45.759] when they did it correctly let alone
+[00:14:47.880] knowing what they why they did it when
+[00:14:50.040] they when they abused something so if
+[00:14:51.720] you manage to manipulate it it's a
+[00:14:52.920] pretty hidden and it's probably harder
+[00:14:54.720] to execute because you need some sort of
+[00:14:56.720] volume of data or very specific sort of
+[00:14:59.160] tuning access to be able to like pull it
+[00:15:02.639] off but if you do it's pretty this is
+[00:15:04.440] the equivalent of solar winds type
+[00:15:06.519] problem that embeds into your system
+[00:15:08.759] right yeah and to your point the
+[00:15:11.480] obscurity of it is what makes it very
+[00:15:13.279] difficult once it's in it's very
+[00:15:14.519] difficult to identify and even though it
+[00:15:17.160] may be more difficult to pull off these
+[00:15:19.079] model providers are continuously
+[00:15:21.160] training their models pre-training on
+[00:15:23.079] data online and it is clear that data is
+[00:15:26.399] now highly adversarial in a lot of cont
+[00:15:29.120] of the web and I'm I'm you know to the
+[00:15:31.920] extent that these model providers put
+[00:15:33.440] the right safeguards in place when
+[00:15:35.560] ingesting this data some of these may
+[00:15:37.680] actually go through and the the very big
+[00:15:39.880] capacity models are a able to remember a
+[00:15:41.720] lot of stuff even if they saw it very
+[00:15:44.319] scarcely yeah yeah so I think those are
+[00:15:47.240] like probably the big terms maybe we'll
+[00:15:48.560] move on a little bit to the new stuff so
+[00:15:50.160] you have beyond the sort of the core
+[00:15:51.560] product of it you have this super fun
+[00:15:53.199] tool or portal I don't know how to call
+[00:15:54.800] it called Gandalf which is the sort of
+[00:15:56.800] fun game in which you basically practice
+[00:15:59.160] injection you try red team NM try to get
+[00:16:01.480] Gandalf to to give you the password I've
+[00:16:03.800] I've spent too much time on it no no I
+[00:16:05.839] passed it in five minutes maybe a little
+[00:16:07.759] more Super Fun quite addictive Gandalf
+[00:16:10.000] lara. recommended and you've turned that
+[00:16:12.480] into sort of a good data Trove of
+[00:16:14.759] understanding help people attack and
+[00:16:16.199] recently released an interesting paper
+[00:16:18.440] around learnings from it so was with all
+[00:16:20.680] that tea up a little bit tell us a
+[00:16:22.000] little bit about whatever it is that you
+[00:16:23.319] feel you still need to say about Gandalf
+[00:16:25.120] but also about the about this paper and
+[00:16:26.600] the learning yeah absolutely yeah gandal
+[00:16:29.040] has been really amazing and maybe one
+[00:16:31.560] thing to add is that by now we've had
+[00:16:33.959] over couple million people playing and
+[00:16:36.519] over 60 million attacks to all sorts of
+[00:16:39.120] llms and that of course gives us very
+[00:16:42.759] unique insights into just what kind of
+[00:16:45.720] techniques do people come up with and
+[00:16:48.440] how do they leverage their creativity to
+[00:16:50.600] break these systems regardless of
+[00:16:52.639] language of location of all these
+[00:16:54.279] different things we have people from all
+[00:16:55.600] over the world playing playing Gandalf
+[00:16:57.759] we have people building automated
+[00:16:59.759] attackers playing Gandalf and so because
+[00:17:02.319] of that um it really allows us to draw a
+[00:17:04.919] lot of conclusions um in terms of you
+[00:17:06.760] know where things are and where things
+[00:17:07.880] are going and last year we decided that
+[00:17:11.799] it was time to take that to the next
+[00:17:13.720] level and actually run some randomized
+[00:17:16.079] experiments in there to try to make some
+[00:17:18.120] statements about the state of the field
+[00:17:20.520] and what's easy and what's hard and
+[00:17:22.600] share them with the community and that's
+[00:17:24.559] a paper that we put out there about a
+[00:17:26.280] month ago and yeah happy to tell you a
+[00:17:28.559] little bit about the highest level and
+[00:17:30.799] we can dive into whatever you find to
+[00:17:32.559] the specific so that'll be great and I
+[00:17:33.880] love the idea of leveraging a whole
+[00:17:35.840] startup story around gandal coming out
+[00:17:37.640] and you folks leaning into it and and
+[00:17:39.600] making uh really turning it identifying
+[00:17:41.640] the opportunity and leaning into it and
+[00:17:43.000] now experiments being later element of
+[00:17:45.520] it of trying out you basically have a
+[00:17:46.960] bunch of attackers even though they're
+[00:17:48.240] doing it for fun they're actually
+[00:17:49.640] putting a lot of effort into it trying
+[00:17:51.960] to do that so anyways that's fine this
+[00:17:53.640] is not a startup podcast we'll move on
+[00:17:55.240] but but yeah tell so so in the paper in
+[00:17:56.880] the learnings a bunch of those learnings
+[00:17:59.120] I'll let you how do you how would you
+[00:18:00.520] categorize the top learnings from that
+[00:18:02.000] paper which by the way we'll put a link
+[00:18:03.880] to in the show notes awesome yeah yeah
+[00:18:05.960] yeah happy to chat about the startup
+[00:18:07.520] Story Another Day that's a very fun one
+[00:18:10.000] I think at the highest level one thing
+[00:18:12.400] that we identified in this paper is that
+[00:18:15.679] the way that the field is currently
+[00:18:18.240] thinking about AI security is
+[00:18:20.600] fundamentally flawed or lacking in in
+[00:18:23.880] quite a few aspects and the paper uses
+[00:18:27.000] data at scale to try to make the point
+[00:18:29.559] that it's time to take a bit of a
+[00:18:31.320] broader lens how we think about security
+[00:18:34.120] how we evaluate security and the kind of
+[00:18:36.480] Investments that need to be made to to
+[00:18:38.679] work in security and maybe at the
+[00:18:41.600] highest level the maybe one of the
+[00:18:44.559] biggest learnings or or the starting
+[00:18:46.440] points is the way people evaluate the
+[00:18:49.600] defense of a system today of an llm
+[00:18:52.240] system is that there are some data sets
+[00:18:55.039] out there of attacks or prompt
+[00:18:56.919] injections whatever you pass through the
+[00:18:59.200] model you have some kind of label that
+[00:19:01.440] you attributed to this data and then you
+[00:19:03.679] measure how many did I catch and uh
+[00:19:07.240] that's about it in terms of how people
+[00:19:08.919] think about about security so the paper
+[00:19:11.679] tries to challenge that idea or at least
+[00:19:13.559] the findings of the paper challenge that
+[00:19:15.200] idea and at the highest level we
+[00:19:17.440] introduce what we call DC which is the
+[00:19:20.799] dynamic security utility framework for
+[00:19:23.600] thinking about Security in LMS and more
+[00:19:26.679] specifically about security
+[00:19:29.679] and at the same time user utility I
+[00:19:31.640] think maybe that's one of the most
+[00:19:32.720] important things is that like anything
+[00:19:35.960] in security one thing one can do to
+[00:19:38.640] defend an LM is to block every piece of
+[00:19:41.159] traffic going through it yeah that a the
+[00:19:43.799] internet that's the best way to be
+[00:19:45.280] secure exactly unplug everything close
+[00:19:48.280] all the way to bankruptcy yeah exact
+[00:19:50.159] exactly yeah and of course that will
+[00:19:52.000] work it will hit 100% on all those
+[00:19:54.200] benchmarks but it will of course fail to
+[00:19:56.679] keep users happy and to make a usable
+[00:19:58.360] product
+[00:19:59.600] and again that's not particularly new I
+[00:20:01.600] think if you think about a firewall or
+[00:20:03.120] any other security product you don't
+[00:20:05.000] want to block every single piece of
+[00:20:06.200] traffic you want to be very selective on
+[00:20:07.960] that false positive false negative type
+[00:20:10.360] measure how many but you're like using
+[00:20:12.440] that lingo right now you're talking
+[00:20:14.240] about how existing detection measurement
+[00:20:17.440] focus on the sort of true positives on
+[00:20:20.000] the cases in which it was indeed an
+[00:20:21.520] attack and you've caught it but and
+[00:20:23.840] naturally the false positives but that's
+[00:20:25.720] not enough that's not enough exactly I
+[00:20:28.240] think the the core finding is that while
+[00:20:30.600] we do have those two aspects and a
+[00:20:32.600] developer needs to find ways to have
+[00:20:35.480] tradeoffs between the two depending on
+[00:20:36.919] what matters to them in L&M applications
+[00:20:39.400] and agents the tradeoff goes way deeper
+[00:20:41.880] than it has in the past and so maybe to
+[00:20:45.120] give you a quick example of of what we
+[00:20:46.760] found in the experiments we run where we
+[00:20:49.559] ask people to Red teim different llms
+[00:20:51.320] with different defenses on them we
+[00:20:53.200] separate two types of defenses one are
+[00:20:55.840] external defenses that outside of the LM
+[00:20:59.320] take a look at the payloads that are
+[00:21:00.760] coming in and out like we discussed
+[00:21:02.480] earlier and try to make an assessment of
+[00:21:04.760] whether they should block that and if
+[00:21:06.559] they block it the player failed at
+[00:21:08.679] extracting the password from the the
+[00:21:10.480] Gandalf agent and second type of defense
+[00:21:13.159] is in the system prompt in the system
+[00:21:15.640] prompt I'm going to tell the llm to not
+[00:21:18.200] reveal the password ever and then you
+[00:21:20.120] can be very verbose and just tell it to
+[00:21:22.440] really never ever do it and then we
+[00:21:24.440] measure how those two compare and in in
+[00:21:26.720] many respects and especially because we
+[00:21:28.200] didn't play the game of optimizing the
+[00:21:30.320] defenses too much yeah there's a limit
+[00:21:32.480] yes we have limited time there the
+[00:21:34.559] system PR defenses work quite well often
+[00:21:36.559] in terms of security so it turns out
+[00:21:38.760] that they they often block the attacks
+[00:21:40.679] and by tldr by the way a spoiler alert
+[00:21:44.400] humans break everything and so that's an
+[00:21:46.360] important part of the data that we saw
+[00:21:48.720] but the important thing is that the
+[00:21:50.159] system prom defenses work well but then
+[00:21:52.200] we looked at other measures of utility
+[00:21:54.200] for example we started to look at the
+[00:21:56.159] answers that these models give the ones
+[00:21:58.240] that are better defended in the system
+[00:21:59.799] prompt how do they look like and we
+[00:22:02.200] actually found that they are for example
+[00:22:04.240] way shorter than the reference so if a
+[00:22:06.919] unprotected llm will give you like a
+[00:22:08.520] detailed answer like this then maybe the
+[00:22:10.559] defended one will give you a shorter
+[00:22:12.159] answer more to the point and this is a
+[00:22:14.159] byproduct of just adding these defenses
+[00:22:16.559] it just so happens to affect the
+[00:22:18.440] behavior of the model so that the even
+[00:22:20.919] the content of these responses is quite
+[00:22:23.080] different from um what you were getting
+[00:22:25.679] from the undefended model so suddenly
+[00:22:27.840] you start to see how
+[00:22:29.279] because these defenses are so deeply
+[00:22:30.679] intertwined with the model you start to
+[00:22:32.960] see utility hits that are not as trivial
+[00:22:34.960] as the F positiv and they become
+[00:22:37.120] functional kind of in the in the sense
+[00:22:39.360] exactly the external one I think is easy
+[00:22:41.760] to relate to for anyone who has that any
+[00:22:43.480] sort of security measure which is just
+[00:22:45.840] like you would in a web up firewall or
+[00:22:47.279] even a regular firewall of it there's a
+[00:22:49.720] there's a leniency that you have to
+[00:22:51.200] offer because otherwise you're going to
+[00:22:52.640] start breaking the application and also
+[00:22:55.559] the defenses tend to not be as Dynamic
+[00:22:57.400] if you try to you know explain the
+[00:22:59.200] application to the external defense the
+[00:23:01.600] application always changes especially as
+[00:23:03.200] we got into the era of devop and fast
+[00:23:04.880] moving applications it's very hard to
+[00:23:07.520] consistently have the defense be tuned
+[00:23:10.559] at your system and so a dance that
+[00:23:13.520] nobody really loves but unfortunately
+[00:23:15.279] everybody's familiar with which is what
+[00:23:16.960] do you allow in and what do you disallow
+[00:23:19.640] and you'll have some attacks that pass
+[00:23:21.200] through that you hope the system deals
+[00:23:23.480] with you're used to that but the
+[00:23:25.200] protections of the system up until now
+[00:23:28.640] tended to be very in line and fine-tune
+[00:23:31.559] like they would rarely break the
+[00:23:33.279] application because they were literally
+[00:23:34.480] in the code of the applications produced
+[00:23:36.159] and provided by the very developers that
+[00:23:38.760] provided the functionality and so now
+[00:23:41.360] you're saying like those developers the
+[00:23:43.120] tool they have at their disposal is the
+[00:23:44.720] system prompt and lo and behold
+[00:23:47.120] sometimes when they create the right the
+[00:23:48.960] defensive system prompt they actually
+[00:23:51.559] break their own
+[00:23:52.679] functionality exactly and that has an
+[00:23:54.679] impact on the user experience that
+[00:23:56.039] they're crafting and one could argue
+[00:23:58.200] then okay then let's prefer external
+[00:23:59.919] defenses which have a lot of advantages
+[00:24:02.559] of course but the kind of extension of
+[00:24:06.279] that is that when you go to agents and
+[00:24:09.080] when the security solution even external
+[00:24:11.559] is verifying every single transaction
+[00:24:13.960] that goes in the system as the agent
+[00:24:15.520] makes sense of the world and tries to
+[00:24:17.000] make decisions you realize that the
+[00:24:19.360] security solution is very deeply
+[00:24:21.480] intertwined in the execution flow of the
+[00:24:23.799] program no matter what even if it goes
+[00:24:25.600] beyond system prompt and so that's where
+[00:24:28.480] find it very interesting that any
+[00:24:30.679] discussion around security for llms and
+[00:24:33.440] the more agentic it gets the more it
+[00:24:35.279] should be the case really goes hand
+[00:24:37.760] inhand with the utility and what is what
+[00:24:39.520] it means for utility and there is really
+[00:24:41.320] no free launch and having that
+[00:24:43.000] discussion or at least bringing that
+[00:24:44.640] discussion to the public was something
+[00:24:46.080] that we felt very strongly about after
+[00:24:47.919] looking at the results in the paper yeah
+[00:24:50.080] I think it's a super valuable discussion
+[00:24:52.360] triggered at this conversation here on
+[00:24:54.000] the podcast it's interesting because
+[00:24:56.320] when you think about security when you
+[00:24:57.600] explain security to non-security person
+[00:24:59.159] then you you talk about how security is
+[00:25:00.840] about the unknown functionality so like
+[00:25:02.440] functional testing is really about hey
+[00:25:04.200] the system is designed to do ABC
+[00:25:06.520] functional testing should make sure that
+[00:25:08.200] it performs ABC correctly when it gets a
+[00:25:10.320] three it returns a seven right as it
+[00:25:12.080] should and security is this infinite
+[00:25:14.559] World of unknown behavior of unintended
+[00:25:18.039] behavior and that's why the kind of the
+[00:25:20.559] Holy gra is the white list because if
+[00:25:22.559] you could really Define all the correct
+[00:25:24.000] behaviors in a very neat box then you
+[00:25:25.799] can say anything else is this loud but
+[00:25:27.679] that's just rare the case and so you you
+[00:25:30.360] need to Define examples of things that
+[00:25:32.799] are unintended and it's just like almost
+[00:25:35.960] unfathomable to to think about like the
+[00:25:37.760] llms we've had de on the intercom we had
+[00:25:39.720] you know Tomar here from G we've had all
+[00:25:41.320] sorts of guests on the show that talk
+[00:25:43.440] about how in the world ofms it's really
+[00:25:45.399] hard to know if your product works like
+[00:25:46.760] even the functional testing piece is
+[00:25:48.200] hard to Define like everything your
+[00:25:49.679] product surprises you all the time so
+[00:25:53.360] how can you ever aspire to to contain it
+[00:25:57.799] when you don't even know what the
+[00:25:59.080] boundaries of its capabilities are like
+[00:26:00.919] I don't know is that what's your sense
+[00:26:02.840] at this point it's probably not fact but
+[00:26:04.200] opinion but is is it a kind of a false
+[00:26:08.000] hope in this doain of it is it how do
+[00:26:10.440] you suggest that people think about
+[00:26:12.840] first of all like what is in reason and
+[00:26:15.360] two is given these learnings like how
+[00:26:18.120] should they approach it yeah it's a
+[00:26:21.399] great question I think it is very
+[00:26:22.679] challenging especially as you go into
+[00:26:25.760] agents and and tools that are making
+[00:26:27.440] more and more decisions then testing
+[00:26:29.760] becomes harder and harder of course and
+[00:26:32.520] I think that's we we'll talk about
+[00:26:34.399] agents later but as a jumping a little
+[00:26:36.640] bit ahead I think one of the key
+[00:26:38.279] challenges there is that the agent will
+[00:26:39.880] be always making decisions based on data
+[00:26:42.320] on the Fly and so if you want an analogy
+[00:26:45.840] for that it means that the agent is
+[00:26:49.000] writing software on the go the code is
+[00:26:51.799] the source code is being written as data
+[00:26:53.679] comes in there is no like shift left
+[00:26:55.880] necessarily on the code level and test
+[00:26:57.919] it well before deployment you're writing
+[00:27:00.039] the code in prod in some sense yeah um
+[00:27:02.640] and of course that that begs the
+[00:27:04.039] question of okay what do we do here and
+[00:27:05.919] I think that's where I would connect it
+[00:27:07.720] back to what we discussed earlier keep
+[00:27:09.440] it keeping it simple for now just inputs
+[00:27:11.360] and outputs I would make the the claim
+[00:27:13.960] that a human that is looking at an agent
+[00:27:16.720] snapshot in time you have a tool sending
+[00:27:18.840] you an email and then you're the agent
+[00:27:20.679] decides I'm going to call that the
+[00:27:22.240] calender tool right there with this
+[00:27:23.720] other payload a human could freeze that
+[00:27:26.760] and take a look at the payLo
+[00:27:28.799] can take a look at all the context of
+[00:27:31.960] the application and everything that you
+[00:27:34.000] know the user wants to achieve with this
+[00:27:35.720] application maybe it has metadata on who
+[00:27:38.120] the sender is I don't know just imagine
+[00:27:40.120] yeah as much metadata the context to an
+[00:27:43.279] extent digest the the context as much
+[00:27:45.840] context as possible on what this is the
+[00:27:48.440] human should be able to make a thumbs up
+[00:27:50.559] thumbs down decision on that in a large
+[00:27:52.960] majority of cases and so I think from
+[00:27:56.000] the way I think this should be addressed
+[00:27:58.200] solved is exactly like that like you
+[00:28:00.159] need to ensure that you have the right
+[00:28:03.440] kind of live testing on the go that
+[00:28:06.399] validates behavior in some sense and I
+[00:28:09.240] think again that's where security and
+[00:28:12.240] the usability to kind of more
+[00:28:14.240] development level side of the projects
+[00:28:17.159] become very intertwined in the llm world
+[00:28:19.200] because yes you can frame it as is an
+[00:28:21.880] attacker trying to get my system of
+[00:28:23.600] track for example but you can also frame
+[00:28:26.519] it as even if no one is trying to get it
+[00:28:28.600] off track is it going off track
+[00:28:30.640] nonetheless yeah even without intending
+[00:28:32.799] yeah people areally wired them some
+[00:28:34.720] money they didn't even try to do that
+[00:28:36.679] yeah I think I love that it to an extent
+[00:28:38.519] that statement couples both of my sort
+[00:28:40.760] of recent Journeys right because that's
+[00:28:42.039] ni it was all about merging developer
+[00:28:43.559] security you were saying that actually
+[00:28:44.679] needs to be truly continuous says in
+[00:28:46.640] even in lifetime and two is tle we talk
+[00:28:49.519] a lot about how software is adaptable
+[00:28:50.960] it's no longer in general I think in Ai
+[00:28:52.919] and llm World anything static will
+[00:28:55.559] become Dynamic that would be for
+[00:28:57.480] whatever the music you listen to or the
+[00:28:59.640] the stories you you read and all of
+[00:29:02.159] those things will become Dynamic and
+[00:29:03.399] adaptable and adapt to your context
+[00:29:05.240] software is no different like it is we
+[00:29:06.960] don't think of it as static but it is
+[00:29:08.159] static you deploy the software and then
+[00:29:10.360] it remains that software until it's
+[00:29:12.279] deployed again no longer the case with
+[00:29:14.760] LMS they create software on the Fly and
+[00:29:17.279] your security needs to be similarly
+[00:29:18.880] adaptable which exactly is a cool and
+[00:29:22.440] interesting and not a little bit scary
+[00:29:24.279] in inste of thinking about how do you
+[00:29:26.120] like we'll switch to AG we've been
+[00:29:27.440] foreshadowing agent security for a while
+[00:29:29.000] now like we'll get to that in a sec but
+[00:29:30.600] how do you how would you measure whether
+[00:29:33.159] you're any good at on the- fly security
+[00:29:37.960] creation there's a lot of meta layers
+[00:29:40.360] over here right yeah I think it's a very
+[00:29:42.640] good question I think at the end of the
+[00:29:43.919] day you need the right observability and
+[00:29:47.720] to make sure especially the more you go
+[00:29:49.519] towards agents you need to be able to
+[00:29:51.640] keep track of every single decision
+[00:29:53.080] that's being made and you know
+[00:29:54.320] retroactively look at that of course one
+[00:29:56.640] can imagine roll outs that are
+[00:29:59.120] increasing in scope there are ways to
+[00:30:00.960] restrict the systems right um You can
+[00:30:03.000] make the system PR very narrow you can
+[00:30:05.200] make the tool AIS very narrow and and
+[00:30:07.440] you can make the action space and then
+[00:30:08.960] you can learn as you go what kind of
+[00:30:11.159] content is going in what kind of
+[00:30:12.200] mistakes are being made and so on I
+[00:30:13.559] think that's an obvious one that to me
+[00:30:15.080] makes sense but another one and we see
+[00:30:17.240] huge demand for this today is just
+[00:30:19.559] shifting left on the red teaming side
+[00:30:21.320] like how can you have a red teing
+[00:30:24.480] Playbook that actually adapts to the the
+[00:30:28.080] nature of the systems and is not only
+[00:30:30.480] executing a bunch of different tests but
+[00:30:32.519] it's actually very aggressively trying
+[00:30:34.679] to get it to go of track um in different
+[00:30:36.919] ways and how do you make that highly
+[00:30:38.919] contextual meaning that you try to make
+[00:30:41.399] it go of the rails in the ways that
+[00:30:43.840] matter for the application and then how
+[00:30:46.120] do you then provide insights into the
+[00:30:48.640] developer of just exactly how the system
+[00:30:51.600] is going off rails so that he can put
+[00:30:53.760] stuff in place and maybe the last one is
+[00:30:55.919] that of course in production in real
+[00:30:57.760] time time one of the ways to make things
+[00:31:00.039] a little bit narrower is to always
+[00:31:02.240] especially at the beginning at a human
+[00:31:04.000] in the loop for example when send
+[00:31:06.240] commands are being used or anything like
+[00:31:08.600] that you can just mitigate some of the
+[00:31:10.159] bad outcomes again talking about means
+[00:31:11.600] and ends right ultimately you want to
+[00:31:13.080] prevent bad actions or or inappropriate
+[00:31:15.960] actions and so you want to add
+[00:31:18.440] mechanisms for these actions to surface
+[00:31:20.440] before they're executed yeah and that's
+[00:31:22.200] about giving less power to a system that
+[00:31:24.120] you don't yet fully trust ABS so I guess
+[00:31:27.039] let's finally get to that sort of our
+[00:31:28.320] next chapter of our conversation here
+[00:31:29.960] and talk about agent security this is
+[00:31:32.080] all of these problems we've been talking
+[00:31:33.639] about so far are true even if you're
+[00:31:35.639] like a relatively naive user of the llms
+[00:31:38.600] but they get uh Messier and Messier as
+[00:31:41.039] you get bigger and agents definitely are
+[00:31:43.760] have higher aspirations around what they
+[00:31:45.600] achieve so maybe for starters again
+[00:31:48.039] let's start with terminology a little
+[00:31:49.360] bit because agent is a very overloaded
+[00:31:51.679] term so Define for us like what what do
+[00:31:53.919] you mean when you think about an agent
+[00:31:56.559] there probably as many
+[00:31:58.840] are people in the world opinions so
+[00:32:01.559] let's give it let's give it a go I think
+[00:32:02.960] to me the way I think about a fully
+[00:32:04.720] agentic system is a system that where an
+[00:32:08.559] llm automatically determines the
+[00:32:10.559] program's execution flow based on user
+[00:32:13.519] input and available data sources and
+[00:32:15.880] tools let's let's unpack that for a
+[00:32:17.639] second I think the most important thing
+[00:32:19.039] there is that it autonomously determines
+[00:32:22.120] the execution flow of the program if you
+[00:32:24.279] want to give an example of say CH GPT
+[00:32:27.159] like rag application you say hey answer
+[00:32:30.000] this question and you get an answer
+[00:32:31.240] right when you go to the world of more
+[00:32:33.720] agentic systems then you say manage my
+[00:32:36.960] inbox and then the system is going to
+[00:32:39.200] say okay I'll come back to you when I'm
+[00:32:41.679] done right and then it's going to decide
+[00:32:44.320] okay I'm going to just ping the inbox
+[00:32:45.960] I'm going to look at the email I'm going
+[00:32:47.200] to take an action based on that and
+[00:32:48.600] eventually he will decide when to stop
+[00:32:51.600] and he will tell you I'm done I did all
+[00:32:53.720] these 20 things and so the important
+[00:32:55.960] thing there is that the the agent was
+[00:32:57.840] fully in control of what tools it was
+[00:33:00.279] calling and what decisions he was making
+[00:33:03.399] with the data it was getting from the
+[00:33:04.960] tools and again that's a little bit of a
+[00:33:08.120] ideal definition of course in practice
+[00:33:10.320] you have all sorts of hybrids right like
+[00:33:11.960] you have a lot of llm based workflows
+[00:33:13.919] where actually it's like agentic in the
+[00:33:16.120] sense that you have different tools
+[00:33:17.679] being called different stages but the
+[00:33:20.120] tool is the LM is not in control of
+[00:33:21.960] those flows it's like the flow is always
+[00:33:23.880] the same and the llm is performing a
+[00:33:26.200] predetermined action at agage all of
+[00:33:28.720] those have their challenges it starts
+[00:33:30.399] from conversational all the way to fully
+[00:33:32.279] agentic but I
+[00:33:34.240] think my opinion is that the jump from
+[00:33:37.960] llm workflows to fully agentic is like
+[00:33:42.360] much larger than conversational to
+[00:33:44.639] workflows or almost like traditional
+[00:33:46.480] software to to llms just because that is
+[00:33:48.760] what introduces that novel fact that
+[00:33:51.880] you're no longer in control of the steps
+[00:33:53.880] of what's Happening you're really giving
+[00:33:56.639] control to a machine
+[00:33:58.519] that decides what to do and when to stop
+[00:34:01.240] and I think from a security in utility
+[00:34:03.039] and usability perspective this
+[00:34:04.960] introduces all sort of Novel challenges
+[00:34:07.200] yeah and I I think I like that
+[00:34:08.679] definition I think if I go it back
+[00:34:10.480] saying at the metal level is just the
+[00:34:11.919] scope of task so that's one an agent
+[00:34:15.320] Loosely said is every time you're trying
+[00:34:16.679] to do something bigger you probably need
+[00:34:18.480] an agent uh because there's more steps
+[00:34:21.399] uh two that I guess you mentioned in
+[00:34:23.000] passing is the tool use element of it
+[00:34:26.119] which and we come back a little bit to
+[00:34:28.119] say is it or isn't agentic if it's just
+[00:34:30.679] inline tool use I don't know maybe
+[00:34:32.599] that's a bit of a Mose conversation but
+[00:34:34.320] directionally more tool use so you're
+[00:34:36.599] giving it more power so you've asked it
+[00:34:37.760] to do something bigger you've given it
+[00:34:39.200] more power and then you're pointing out
+[00:34:41.760] that you don't know the path it would
+[00:34:44.240] pursue to be able to accomplish that and
+[00:34:47.079] so back to our comment on what is
+[00:34:49.399] intentional or like intended behaviors
+[00:34:51.679] and unintended Behavior there might be
+[00:34:53.760] 10,000 different ways that are all
+[00:34:56.159] legitimate ways for it to try and
+[00:34:58.599] achieve the results and in fact it
+[00:34:59.839] doesn't even plan them up front it it
+[00:35:01.839] sort of produces them on the Fly and so
+[00:35:04.599] separating those from the
+[00:35:06.599] 10,1 uh behavior that is unintended that
+[00:35:09.520] is actually a malicious behavior that's
+[00:35:12.800] a beast that's a hard thing to detect
+[00:35:15.359] and you know what one thing I would that
+[00:35:16.640] there that's 100% right I'll say two
+[00:35:19.240] things to just to complement that one is
+[00:35:21.680] that's maybe the biggest discussion
+[00:35:23.119] Point I've I've felt in the AI security
+[00:35:25.720] community and and and Beyond which is
+[00:35:28.320] will we ever give such kind of s that
+[00:35:31.000] kind of agency to a software program to
+[00:35:33.520] do all these things or or can't we just
+[00:35:36.000] keep it like a narrow system like we
+[00:35:37.680] just keep the action space narrow we
+[00:35:39.680] don't give right access and so on why
+[00:35:42.320] would we even open up that gate I think
+[00:35:44.560] that's a fair question but I think first
+[00:35:47.040] of all we already have seen like fully
+[00:35:49.359] agentic systems I don't know if you've
+[00:35:50.599] followed open AI recent deep research
+[00:35:52.960] for example I've made a very good use of
+[00:35:54.920] it to uh recently to discover thoroughly
+[00:35:58.119] research and find the top 100 best dad
+[00:36:01.000] jokes out there and sort out the 50 that
+[00:36:03.599] are least known within them and ranked
+[00:36:06.040] them by humor I took it eight minutes
+[00:36:08.359] and it's the first time that I actually
+[00:36:09.560] managed to get AI to it doesn't even
+[00:36:11.440] create but find new and pretty good dad
+[00:36:15.040] jokes as dad jokes go I'm a fan doing it
+[00:36:17.839] very much applied the best use of the
+[00:36:19.599] state-ofthe-art yeah sorry that do no
+[00:36:23.319] but please send them to me because like
+[00:36:25.079] I can make huge use of the
+[00:36:28.079] uh I was so happy about it that I posted
+[00:36:30.960] about it on LinkedIn so I think what I'm
+[00:36:32.880] going to do immediately after the call
+[00:36:35.319] sorry back to yeah definitely deep
+[00:36:37.640] research is substantial yeah it's
+[00:36:38.800] substantial because basically it's TR to
+[00:36:40.800] end to access all these tools and then
+[00:36:42.280] the system is going to go look for data
+[00:36:43.720] sources and based on what it finds it's
+[00:36:45.560] going to look for other data and it's
+[00:36:47.400] going to do that until it believes it's
+[00:36:48.800] done it has a python interpreter to plot
+[00:36:51.119] graphs it can just really do so much and
+[00:36:53.640] it's not taking action per se it's just
+[00:36:55.640] ultimately giving a report but can start
+[00:36:57.880] to see how these tools are becoming a
+[00:37:00.599] reality and second there's a lot of talk
+[00:37:03.040] about how agents are going to transform
+[00:37:05.280] the economy eventually if you can
+[00:37:06.920] imagine you work at Tesla right in I
+[00:37:08.839] don't know any years ahead probably not
+[00:37:10.880] so many where software is just written
+[00:37:14.359] end to end for very complex tasks that
+[00:37:16.520] would take humans today like a very long
+[00:37:18.359] time in in very short times the the the
+[00:37:21.880] kind of productivity gains that you get
+[00:37:23.880] from this are are just insane it's hard
+[00:37:26.240] for me to imagine we're gonna say no to
+[00:37:28.280] that if the technology gets good enough
+[00:37:29.800] I was listening to Ezra Klein on on the
+[00:37:31.599] New York Times podcast talking about
+[00:37:33.160] this deep research and he said something
+[00:37:35.480] that I think is going to be more and
+[00:37:36.720] more true across the economy which is
+[00:37:39.359] that he has worked with the best
+[00:37:41.319] analysts at the New York Times for 20
+[00:37:43.079] years or something and this tool can
+[00:37:47.040] produce in minutes what the median
+[00:37:49.880] analyst does in days or weeks and to me
+[00:37:52.839] anyway that to me is very representative
+[00:37:54.640] of why we do want and we will want and
+[00:37:57.720] we will give access to these tools and
+[00:37:59.880] that truly agentic systems are not an if
+[00:38:02.839] more of a when so the so I think it's a
+[00:38:05.599] good definition of agents and I think
+[00:38:07.240] myself and probably a good number of
+[00:38:08.440] listeners over here are fans in the
+[00:38:10.240] sense excited by the potential of agents
+[00:38:13.599] and then from here we talk about what
+[00:38:15.200] are the limitations what are the things
+[00:38:17.319] that would block us from doing it I
+[00:38:19.240] think often times the conversations are
+[00:38:21.240] about what can it not do in terms of
+[00:38:24.359] intended Behavior if I stick to that
+[00:38:26.040] terminology but I guess security are
+[00:38:28.000] concerned is the opposite is like when
+[00:38:29.760] is it that you can trust that it hasn't
+[00:38:31.839] gone off the rails so maybe maybe let's
+[00:38:34.240] get back a bit to the meta in a sec but
+[00:38:36.119] before let's concretely so if you're
+[00:38:38.000] building an agent what are the types of
+[00:38:40.960] attack vectors above and beyond we
+[00:38:42.359] already talked about the big llm ones
+[00:38:45.359] maybe you want to mention them again but
+[00:38:47.079] beyond those what are the type of
+[00:38:48.480] security concerns that you might have
+[00:38:51.599] above and beyond amplifying the the ones
+[00:38:53.760] that we've discussed yeah I think in the
+[00:38:56.880] end it really becomes then a matter of
+[00:39:00.119] almost categorization like what are the
+[00:39:01.920] ends that that are become true in the
+[00:39:04.160] agentic case that are not there before
+[00:39:06.839] maybe we can actually think of a few
+[00:39:09.119] examples to to illustrate that maybe to
+[00:39:12.200] keep maybe to warm up and just to get an
+[00:39:14.680] example on a non- agentic system but
+[00:39:16.119] just because it's a very real world
+[00:39:17.240] vulnerability that can help set the pace
+[00:39:20.200] recently gini Google released a sort of
+[00:39:23.760] assistance for the work workplace you
+[00:39:25.599] can talk to your drive you can
+[00:39:27.920] do stuff in your documents so on and
+[00:39:30.280] what we find is that you can do things
+[00:39:31.640] like the following or you could do
+[00:39:33.040] things like the following which is
+[00:39:34.119] pretty crazy let's say you guy use you
+[00:39:38.079] Google work workplace at Tesla and
+[00:39:41.079] you're using this Gemini to ask one
+[00:39:44.119] questions I decide to create a document
+[00:39:46.599] with some attacks that want you to get
+[00:39:48.839] false information of whatever kind or
+[00:39:50.520] give you a fishing link or whatever it
+[00:39:51.880] is I can share that with you and not
+[00:39:55.560] notify you okay okay so you didn't hear
+[00:39:59.359] a thing but now this is in your drive
+[00:40:02.839] and then we showed that the LM can then
+[00:40:05.880] leverage this information via the rug
+[00:40:07.880] and then surface false information so
+[00:40:10.200] right that that's just the kind of very
+[00:40:12.319] real vulnerabilities that you can see
+[00:40:14.680] and that is arguably not so much an
+[00:40:16.440] agent attack it's like a just a larger
+[00:40:19.119] scope llm use attack which there's
+[00:40:21.599] probably a gentic behavior somewhere in
+[00:40:23.119] there the task I asked is is like an llm
+[00:40:25.680] is simple task which is
+[00:40:28.000] bit of info but it was a data poisoning
+[00:40:30.359] attack right yes and it's more to
+[00:40:32.280] illustrate how things compound right so
+[00:40:34.160] you have like the right permissioning do
+[00:40:35.520] you have the right document in your rag
+[00:40:37.040] why is that document there in the first
+[00:40:38.319] place and what why is what is the LM
+[00:40:40.880] executing and so on that that's true I
+[00:40:42.440] think when you think about agents then
+[00:40:44.160] you have the the typical more jailbreak
+[00:40:46.839] actually something topical I saw on
+[00:40:48.480] Twitter this morning um though I'm not
+[00:40:50.599] sure um exactly what happened there so
+[00:40:53.160] this is a bit anecdotal but there's a a
+[00:40:55.440] company called MOS for example where a
+[00:40:57.440] user managed to use a an agent that is
+[00:41:01.319] actually able to run commands on your
+[00:41:03.960] interpreter and like your terminal and
+[00:41:05.800] do all these different things just ask
+[00:41:07.800] it can you just give me the contents of
+[00:41:09.839] this directory and this directory is
+[00:41:12.160] supposed to be where it keeps all of its
+[00:41:13.920] kind of configuration files and then as
+[00:41:15.920] a result the user managed to extract all
+[00:41:18.119] the tools it has access to the system
+[00:41:20.119] prompt all the stuff that was hiding in
+[00:41:21.880] there and that's I think maybe touching
+[00:41:25.440] on one of the original
+[00:41:27.839] more traditional vulnerabilities we
+[00:41:29.160] discussed which is what can this agent
+[00:41:30.760] actually have access to directories or
+[00:41:33.200] or things that should actually not be
+[00:41:34.440] surfed to the user and where it's a
+[00:41:36.760] combination of more of a jailbreak
+[00:41:38.319] attack or or just a simple instruction
+[00:41:40.839] combined with poor system design in some
+[00:41:42.720] sense which which ends up creating the
+[00:41:45.000] vulnerability but then as I mentioned I
+[00:41:47.200] think that if you think about agents
+[00:41:51.480] then again I'm most concerned about
+[00:41:53.599] attacks via data but that can generate
+[00:41:55.200] multiple types of vulnerabilities
+[00:41:57.839] one uh system that we built for to
+[00:42:00.040] illustrate is online chain which is one
+[00:42:01.960] of the leading agentic libraries to to
+[00:42:04.839] build workflow and so on um you can
+[00:42:07.319] build a an agent that is essentially
+[00:42:10.240] summarizing your inbox you know you can
+[00:42:13.000] mon tell it to monitor it and stay there
+[00:42:15.359] and just every time there's an email
+[00:42:16.680] send a tldr a digest and just whatever
+[00:42:19.640] it is you want to do and then you can
+[00:42:21.319] show that as an attacker you can send an
+[00:42:24.400] email to that inbox and the email should
+[00:42:27.800] contain of course the right type of
+[00:42:29.680] attacks and it should encourage the
+[00:42:31.520] model to forget its instructions at the
+[00:42:33.280] end it is really all about like social
+[00:42:36.079] engineering of models instead of people
+[00:42:39.160] but then once you convince the the model
+[00:42:41.559] to do that you can get the model to just
+[00:42:43.440] exfiltrate your whole inbox to the
+[00:42:45.680] attacker for example yeah and so if we
+[00:42:48.319] look at what happened there yeah the how
+[00:42:50.599] is the same as we discussed is the data
+[00:42:52.599] leading to some kind of behavior but
+[00:42:54.760] what you exported there is like just
+[00:42:57.200] getting a tool to use one of his
+[00:42:59.920] functions which is to send emails in an
+[00:43:01.920] inappropriate way or untimely manner or
+[00:43:03.880] unauthorized Manner and so I think
+[00:43:05.839] that's something that is very will be
+[00:43:07.359] very widespread so both of those
+[00:43:09.160] examples though around the authorization
+[00:43:11.319] on it or the access and around the
+[00:43:13.680] around sort of the The Prompt injection
+[00:43:15.240] they're both again they get multiplied
+[00:43:18.280] or Amplified by complexity of a task and
+[00:43:21.359] just how often they happen and the
+[00:43:23.040] trustworthiness of a source and so
+[00:43:25.520] they're they probably should show up in
+[00:43:27.559] agentic systems uh but if if you didn't
+[00:43:30.000] have an agentic system if you had a
+[00:43:31.920] workflow that has entirely controlled
+[00:43:34.680] deterministically but they just
+[00:43:36.119] repeatedly used llms control the flow
+[00:43:38.520] but you go off you read an email you you
+[00:43:40.920] extract an action or whatever it is
+[00:43:42.839] right out of that email and you map it
+[00:43:44.559] to TA you're still susceptible to them
+[00:43:47.160] right they just amplify it are there
+[00:43:49.559] types of attacks that are specific to
+[00:43:52.480] agents that are just they only manifest
+[00:43:54.480] in the context of agentic as you define
+[00:43:56.480] a place in which which the agent the AI
+[00:43:59.680] decides what to do next I would argue
+[00:44:01.839] that this example actually does go a
+[00:44:04.440] little bit in that direction even though
+[00:44:05.599] I agree with you that it's not quite
+[00:44:08.400] identic in the sense that it stays
+[00:44:09.559] within one tool but at the end of the
+[00:44:10.920] day you can rewrite that a little bit
+[00:44:13.720] where the outcome is not that you send
+[00:44:15.480] an email but the outcome is that now
+[00:44:18.160] call another tool that is supposed to
+[00:44:20.079] manipulate your calendar and delete a
+[00:44:21.800] very important invite from your calendar
+[00:44:23.480] or something like that now you actually
+[00:44:25.520] went beyond the barrier of this one tool
+[00:44:27.720] you read the email and it said you
+[00:44:29.880] should really no matter what delete the
+[00:44:31.520] calendar entry from the end whatever at
+[00:44:33.720] 6 p.m. said sure I'm going to do that
+[00:44:36.359] and then doesn't leave any Trace I think
+[00:44:38.480] that is in the predetermined llm
+[00:44:41.440] workflow you're going to have more
+[00:44:42.400] control on the actions that happen so
+[00:44:44.440] you may be not expecting to send an
+[00:44:46.599] email and so you will just not do that
+[00:44:48.760] the point is that whatever the attacker
+[00:44:50.319] encodes in that email which is a
+[00:44:52.079] non-trusted source of data can get the
+[00:44:54.599] llm to abuse either the same tool tool
+[00:44:57.200] or another tool that it has access to
+[00:44:59.319] and I think it is that tool abuse that
+[00:45:01.559] is very novel in the in this agentic
+[00:45:04.359] world where you can get the the the
+[00:45:06.760] attacker can essentially try to get
+[00:45:09.720] control of the tools that the llm has
+[00:45:12.559] access to accomplish its its goals and
+[00:45:15.319] how does it do that it does that by
+[00:45:17.160] manipulating the data that's going into
+[00:45:19.160] these tools and as a result
+[00:45:22.359] modifying the execution flow of the
+[00:45:25.319] program in ways that tailor the attacker
+[00:45:28.040] I I think that makes sense and I think I
+[00:45:29.359] guess the analogy that's very kind of
+[00:45:31.200] helpful clarification and I think the
+[00:45:32.440] analogy is almost like you could ask you
+[00:45:34.760] can use prompt injection say to to make
+[00:45:37.240] it so that when I ask what's the email
+[00:45:40.160] of the company's CFO I will get the
+[00:45:42.800] wrong answer and then the user might get
+[00:45:44.440] that and they might perform some sort of
+[00:45:46.319] wrong action with that but in the
+[00:45:48.160] agent's case it's the it's the agent
+[00:45:49.839] that you are fooling and so you're using
+[00:45:51.480] the llm attack which is hey get me the
+[00:45:54.319] wrong answer but then you're
+[00:45:56.000] subsequently getting the llm to
+[00:45:58.359] therefore say hey send whatever This
+[00:46:00.480] Confidential financial information to
+[00:46:01.960] the CFO and so that's where you
+[00:46:04.800] manipulating the agent so the prompt
+[00:46:06.280] injection was around getting the wrong
+[00:46:08.440] conclusion on a specific discrete action
+[00:46:11.559] but here in the agent security world
+[00:46:13.559] you're combining that with acting on the
+[00:46:16.800] wrong
+[00:46:18.000] information in an automated fashion
+[00:46:20.240] right without human supervision does
+[00:46:21.880] that you know that sounds absolutely
+[00:46:24.480] right and and you can imagine even
+[00:46:26.920] adding three steps ahead where you say
+[00:46:28.319] in the prompt injection not only send
+[00:46:30.359] this email to this person but also and
+[00:46:32.599] by the way delete this email from your
+[00:46:34.119] records and by the way delete the
+[00:46:36.079] history and by the well tell your tell
+[00:46:38.319] the person that you did nothing and in
+[00:46:39.920] all of those cases if you told the human
+[00:46:41.559] that so if the initial the non- agent
+[00:46:43.880] attack the plain llm attack is the
+[00:46:46.839] prompt injection that gets all of that
+[00:46:48.359] sort of instruction a human looks at
+[00:46:50.720] that says no this is I think you need
+[00:46:52.599] fairly low level of qualification to
+[00:46:54.200] Discount that but then the question is
+[00:46:56.400] does an agent does the sort of the llm
+[00:46:58.160] call that decides what to do next does
+[00:47:00.599] it have that Common Sense equivalence to
+[00:47:03.440] say okay this is malicious hence back to
+[00:47:06.160] the intertwining of of utility and
+[00:47:09.280] security that is needed here because
+[00:47:10.559] some actions like that like maybe an
+[00:47:12.160] email of send the confidential info to
+[00:47:13.960] the CFO might be a legitim right ex
+[00:47:17.200] exactly yeah and I think the one thing I
+[00:47:18.920] would add to that is is exactly right
+[00:47:22.240] but even with humans we haven't figured
+[00:47:23.920] out how to keep them secure on online
+[00:47:25.760] right like they clicked stuff the time
+[00:47:27.480] they do the wrong things so now we have
+[00:47:29.520] the challenge of yeah you know we have
+[00:47:31.960] the solving that with automated systems
+[00:47:34.000] I think we have the advantage that
+[00:47:35.240] humans are not that productive and they
+[00:47:36.880] make different mistakes and if we're
+[00:47:38.280] talking about making humans 100 times
+[00:47:40.079] more productive through these LM systems
+[00:47:42.599] then these LMS will make 100% like as
+[00:47:45.440] many of these of these mistakes on it or
+[00:47:47.520] that much faster of it and also they
+[00:47:50.680] would be more repeatable so humans are
+[00:47:52.880] relatively predictable in masses but
+[00:47:55.400] therefore for all the statistical
+[00:47:56.480] attacks out there but they are they're
+[00:47:58.760] still different different people might
+[00:48:00.880] respond differently to to these things
+[00:48:03.119] same with self-driving car and was we're
+[00:48:04.920] going a little bit down down rabbit hole
+[00:48:07.520] but I I think that's I think that's a a
+[00:48:09.400] useful though delineation for the not
+[00:48:11.640] just the scope of the the attacks but
+[00:48:13.800] rather the acting on the the
+[00:48:16.000] manipulation or whatever it is that you
+[00:48:17.599] got the lm2 to propose and I guess maybe
+[00:48:20.640] jumping to the other direction then
+[00:48:22.960] we're all doomed so how would one
+[00:48:25.440] respond to that so I'm building ajeic
+[00:48:27.240] system I want to tap into the sort of ho
+[00:48:29.280] gr of potential but I also don't want it
+[00:48:31.960] sending confidential information away
+[00:48:33.960] and and deleting the email what's a at
+[00:48:36.400] least directionally good course of
+[00:48:37.839] action for me to do yeah I think as a as
+[00:48:39.800] an application Builder you want to be
+[00:48:42.359] very diligent with first of all red
+[00:48:45.240] teaming that system effectively we've
+[00:48:47.440] actually worked with some of the leading
+[00:48:49.680] agent Builders out there um as red
+[00:48:52.000] teaming partners and we have found that
+[00:48:55.119] it's very surprising what you can found
+[00:48:57.520] and what you can achieve via these types
+[00:49:00.240] of attacks and they're often very
+[00:49:01.680] surprising to the people building the
+[00:49:03.640] systems and so I think it is a time
+[00:49:05.599] where it pays off to just really invest
+[00:49:08.119] in that in that predeployment side and
+[00:49:10.200] understanding take your head out of the
+[00:49:12.000] sand
+[00:49:13.240] and run some R appreciate the risk here
+[00:49:16.680] and find some flaws yeah especially
+[00:49:19.040] because while there will be the
+[00:49:21.400] assistant that you can tell organize my
+[00:49:23.799] kids party and it can make calls and it
+[00:49:26.000] can write emails going to do all this
+[00:49:27.359] stuff there's a future probably not too
+[00:49:29.359] far away when that will happen but we're
+[00:49:31.680] not there today so agents are going to
+[00:49:33.520] be rolled out in phases and we're not
+[00:49:36.079] going to give full actionability to them
+[00:49:39.200] on day one that's maybe the first advice
+[00:49:41.520] don't just unleash don't do that an
+[00:49:43.440] agent that can do access your bank
+[00:49:45.079] account on on day want and make
+[00:49:46.920] transfers then one can have just a very
+[00:49:49.599] incremental but fast and Rapid roll out
+[00:49:52.480] where you know you you do try to narrow
+[00:49:54.760] down the core functionality and and then
+[00:49:57.000] you expand axis and you expand things
+[00:49:59.000] from there and you add the right runtime
+[00:50:01.880] defense as as part of that to you know
+[00:50:04.799] like we said earlier there's a Hu look
+[00:50:06.160] at the transactions happening there and
+[00:50:08.200] try to validate them and try to
+[00:50:10.119] understand whether you can actually you
+[00:50:11.680] should actually process that data and
+[00:50:13.440] you should actually make the decision
+[00:50:14.880] that you're about to make in the context
+[00:50:16.799] that you're at and then slowly extend
+[00:50:19.640] from there I think one thing we didn't
+[00:50:21.200] get to discuss on the gandaf paper but I
+[00:50:22.920] mention it now is that a clear finding
+[00:50:24.400] of the paper is that more narrow
+[00:50:27.480] applications definitely help security so
+[00:50:30.760] we found that the more you restrict just
+[00:50:33.079] even via system prompt the the
+[00:50:35.680] application scope the more you can
+[00:50:37.760] resist attacks and so it it is a
+[00:50:40.040] certainty that just having a roll out
+[00:50:43.280] that follows a bit that that principle
+[00:50:45.040] let's get to the fully agentic thing but
+[00:50:47.000] let's give access as needed as we go I
+[00:50:48.839] think that can be a a very responsible
+[00:50:50.720] Way Forward yeah and that's very aligned
+[00:50:52.440] with what we've been talking about so
+[00:50:53.559] far which is if you constrain the ends
+[00:50:55.520] if you make the intended behaviors world
+[00:51:00.319] of your application a bit more
+[00:51:02.839] manageable then you're better able to
+[00:51:05.200] block off the unintended consequences
+[00:51:07.480] the the broader the sort of sphere of
+[00:51:10.000] possibilities that is included in the
+[00:51:12.240] legitimate behavior of your application
+[00:51:14.040] the harder it is to say what is
+[00:51:15.359] illegitimate and do something about it
+[00:51:17.920] so it we'll get there very fast yeah
+[00:51:20.000] you're right then and I think so so one
+[00:51:23.160] of my big takeaways from this
+[00:51:24.480] conversation is just to is all of that
+[00:51:27.000] sort of relationship between utility and
+[00:51:30.559] security and it while it seems obvious
+[00:51:33.920] when you say it uh I think it's often
+[00:51:37.000] forgotten that if you want to secure a
+[00:51:40.200] system you have to be able to Define
+[00:51:42.160] what it is that the system does because
+[00:51:44.559] you have to contain it into that world
+[00:51:47.599] and if you don't have that definition
+[00:51:49.640] well captured then you're going to
+[00:51:52.200] struggle to to secure it and similarly
+[00:51:55.240] when you when you're tools today per
+[00:51:57.319] your paper and your tools today to
+[00:52:00.200] contain its security are the of the
+[00:52:02.280] system prompt and you're interweaving
+[00:52:03.599] that with functionality that will like
+[00:52:05.920] it or not unintentionally constrain the
+[00:52:09.359] possibilities of your application and so
+[00:52:11.559] I think the key guidance probably to
+[00:52:13.040] people is be intentional don't think
+[00:52:15.000] about these two things as I have a Dev
+[00:52:17.640] team that is building my application
+[00:52:19.040] engineering team that's testing their
+[00:52:20.559] utility and then I have someone later on
+[00:52:23.680] who's going to slap on some some text to
+[00:52:26.359] my system prompt and make it secure you
+[00:52:29.880] have to think about them together
+[00:52:31.160] because those two worlds are the same do
+[00:52:33.400] that sound like a good that's at least
+[00:52:35.680] like what I'm understanding a lot from
+[00:52:37.119] all this conversation which has a lot
+[00:52:38.359] more so specific details is just these
+[00:52:41.200] things have to come together 100% I
+[00:52:43.079] couldn't have said it better myself yeah
+[00:52:44.920] very cool I think mat thanks for sharing
+[00:52:47.880] all of the sort of great insights on it
+[00:52:49.480] the definitions of it really enjoy the
+[00:52:51.040] conversation on it the gandal paper is
+[00:52:52.960] great it's actually like relatively
+[00:52:54.720] short it's easy to understand so we put
+[00:52:56.799] a link to it in the show notes and I
+[00:52:58.319] recommend to folks to try it out and
+[00:53:00.119] also to try out gandal if you if you
+[00:53:01.880] haven't yet that would also give you
+[00:53:03.160] like a visceral kind of appreciation for
+[00:53:04.760] it I often say that security is boring
+[00:53:06.440] but hacking is fun and trying it out has
+[00:53:09.160] a realization moment that you probably
+[00:53:10.760] experience I think that's absolutely
+[00:53:12.680] right and and that's why it is actually
+[00:53:14.839] used by many companies as like training
+[00:53:18.040] around the I security because it gives
+[00:53:19.799] people a very deep feeling for what it's
+[00:53:22.240] about and I think that's something that
+[00:53:24.000] very few other methods can achieve yeah
+[00:53:25.760] it really encouraged to go play and if
+[00:53:27.680] they can beat level eight they should
+[00:53:29.240] let me know perfect cool thanks Mato
+[00:53:32.680] again for coming on to the onto the show
+[00:53:34.280] here awesome it was uh a lot of fun and
+[00:53:36.319] thanks everybody for tuning and I hope
+[00:53:38.000] you join us for the next
+[00:53:45.359] one thanks for tuning in join us next
+[00:53:48.119] time on the AI native Dev brought to you
+[00:53:50.480] by Tesla
+[00:53:52.920] [Music]

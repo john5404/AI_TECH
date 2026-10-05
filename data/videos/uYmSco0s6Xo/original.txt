@@ -1,0 +1,1680 @@
+[00:00:00.000] One big challenge that will be when we
+[00:00:01.640] don't understand what's going on in our
+[00:00:03.280] code base anymore, will that be a
+[00:00:04.600] problem or not? Some people are saying,
+[00:00:06.440] "Oh, that's not a problem because AI
+[00:00:08.000] will also maintain it." But I've also
+[00:00:09.920] run into situations where I've used a
+[00:00:12.240] prompt and because of my lack of
+[00:00:14.480] knowledge of what was going on in the
+[00:00:16.040] code base, AI actually deleted important
+[00:00:18.080] code.
+[00:00:18.440] >> I always say that code that was written
+[00:00:19.800] a day ago is legacy code. When we think
+[00:00:21.880] about true legacy code, we might want to
+[00:00:24.920] migrate frameworks. These are massively
+[00:00:27.440] different challenges that AI has to kind
+[00:00:30.200] of tackle.
+[00:00:31.080] >> In areas where you do legacy migration,
+[00:00:33.920] is that usually you don't feed the large
+[00:00:36.520] language model with the legacy code and
+[00:00:38.040] then turn it into new code in one step.
+[00:00:39.800] But usually what you do is you look at
+[00:00:41.240] how do we usually get from A to Z, from
+[00:00:43.320] the COBOL to the Java, and how can we
+[00:00:45.440] use AI on each of those steps on the way
+[00:00:47.480] there? And so we took it the same way
+[00:00:50.160] here. So we looked at first, how can we
+[00:00:52.120] reverse engineer in the sense of like
+[00:00:54.640] how can we create a comprehensive
+[00:00:57.040] description of what this application
+[00:00:58.920] does right now?
+[00:01:00.520] And then when we have that description,
+[00:01:02.320] how can we use that to do the forward
+[00:01:04.040] engineering?
+[00:01:12.080] >> Before we jump into this episode, I
+[00:01:13.600] wanted to let you know that this podcast
+[00:01:15.240] is for developers building with AI at
+[00:01:17.920] the core. So whether that's exploring
+[00:01:20.080] the latest tools, the workflows, or the
+[00:01:22.720] best practices, this podcast's for you.
+[00:01:25.280] Now, we've had amazing guests like
+[00:01:26.760] Olivier Pomel, the CEO of Data Dog,
+[00:01:29.400] Matija Šoškić, the co-founder of Eleven
+[00:01:31.880] Labs, Victor Riparbelli, the CEO and
+[00:01:34.280] co-founder at Synthesia, and of course,
+[00:01:36.560] Tessels very own Patrick Dubois. And
+[00:01:39.000] they're all sharing lessons right from
+[00:01:40.560] the frontier of our industry. A really
+[00:01:42.280] quick ask, 90% of people who are
+[00:01:44.360] listening to this haven't yet
+[00:01:45.640] subscribed. So if this content has
+[00:01:47.360] helped you build smarter, hit that
+[00:01:49.240] subscribe button and maybe a like. It
+[00:01:51.600] really does help us keep bringing the
+[00:01:53.240] folks who are actually pushing this
+[00:01:54.960] space forward and helping build that AI
+[00:01:57.520] native future. All right, back to the
+[00:01:59.840] episode.
+[00:02:00.960] Hello and welcome to another episode of
+[00:02:03.000] the AI native dev. My name is Simon
+[00:02:05.440] Maple. I'm your host for the day and
+[00:02:07.560] joining me today we have Birgitta
+[00:02:09.800] Böckeler who is a distinguished engineer
+[00:02:12.560] at ThoughtWorks and today we're going to
+[00:02:14.320] be talking all about how AI can be used
+[00:02:18.200] not just
+[00:02:19.720] with you know new features that we're
+[00:02:21.360] building in our applications, but as
+[00:02:23.480] well as that looking more into the
+[00:02:25.720] legacy applications and how we can
+[00:02:28.400] unlock forward engineering with
+[00:02:31.720] code that is potentially lost the source
+[00:02:34.240] code, lost the engineers that actually
+[00:02:36.120] originally worked on that. All these
+[00:02:38.040] classic problems that we that we have
+[00:02:40.320] with legacy code. Birgitta, very welcome
+[00:02:42.959] to the AI native dev. How are you?
+[00:02:45.640] >> Hi Simon. Thanks for having me and I'm
+[00:02:47.160] well, thank you.
+[00:02:47.920] >> Absolute pleasure and so you're a
+[00:02:49.080] distinguished engineer at at
+[00:02:50.360] ThoughtWorks and you've
+[00:02:51.880] been an expert over the last few years
+[00:02:53.440] on how teams use AI or essentially
+[00:02:57.400] exploiting AI in software teams, how
+[00:02:59.760] they can get the most of it. You also
+[00:03:01.600] from what I understand
+[00:03:03.320] did some work on the on the tech radar.
+[00:03:04.880] You're one of the people who work on the
+[00:03:06.080] tech radar which is a super cool
+[00:03:09.600] way that people can really look at tools
+[00:03:11.519] and understand
+[00:03:12.840] which levels of maturity they're at and
+[00:03:15.440] and whether or not teams should you know
+[00:03:17.560] assess them, be adopting them, those
+[00:03:19.440] kind of things.
+[00:03:21.040] Talk us through a little bit about about
+[00:03:22.920] kind of like your role and how much fun
+[00:03:25.200] it is to or not fun it is to to put that
+[00:03:27.760] that tech radar together.
+[00:03:30.880] >> Yeah, so ThoughtWorks is a global
+[00:03:32.920] software consultancy, right? And also in
+[00:03:34.680] my professional like my full-time 20
+[00:03:37.880] plus years professional career I've only
+[00:03:39.519] worked in software consulting.
+[00:03:41.680] So I've seen like lots of different
+[00:03:43.120] organizations
+[00:03:44.640] build software and was part of a lot of
+[00:03:47.200] organizations building software.
+[00:03:49.239] Always like hands-on, you know, I'm a
+[00:03:51.000] PowerPoint consultant.
+[00:03:53.080] Um and um so at ThoughtWorks, I've been
+[00:03:56.800] there now for almost 13 years, but the
+[00:03:58.720] last 2 years I've had a full-time role
+[00:04:00.400] to just like,
+[00:04:02.160] you know, dive into the firehose of
+[00:04:04.520] generative AI and large language models
+[00:04:06.440] and how to use them for software teams.
+[00:04:07.959] And it's been uh a lot of fun, but also
+[00:04:10.360] quite intense. And, you know, it's very
+[00:04:12.440] interesting to be in a pressure cooker
+[00:04:14.040] like this in the hype, right, and try to
+[00:04:15.760] stay up to date. And I mean, yeah, one
+[00:04:18.440] thing that can keep me a little bit
+[00:04:19.600] grounded is the work on the technology
+[00:04:21.239] radar as well, which is like we publish
+[00:04:23.360] it twice a year in ThoughtWorks. Just a
+[00:04:25.240] snapshot of what we see at our clients
+[00:04:27.240] in the moment, right? Like as kind of
+[00:04:29.000] like
+[00:04:29.919] yeah,
+[00:04:31.160] compared to things like, you know, big
+[00:04:32.960] market reports, it's just a snapshot of
+[00:04:34.520] what we see, which can be useful, you
+[00:04:36.360] know? And uh actually in the last
+[00:04:38.640] edition, we had over 50% of the entries,
+[00:04:41.520] we usually put around 100 110 entries of
+[00:04:43.840] technologies and techniques that we're
+[00:04:45.280] seeing on it, over 50% of the entries
+[00:04:47.760] were generative AI related. So.
+[00:04:51.000] >> Did one of them did one of them make it
+[00:04:52.520] into the adopts this year?
+[00:04:55.520] >> I don't think so. I think one was in the
+[00:04:57.760] assess. Yeah, no no, but you know what
+[00:04:59.680] we have in adopt is actually retrieval
+[00:05:01.520] augmented generation.
+[00:05:02.640] >> Ah, okay.
+[00:05:03.520] >> Because, you know, when generative AI
+[00:05:04.840] first started, it started in assess
+[00:05:06.680] because it was like a new uh
+[00:05:09.160] technique, right? But it's it's also
+[00:05:11.240] like high-level and abstract enough that
+[00:05:13.520] even at this point, like still
+[00:05:15.520] relatively early in the in the
+[00:05:16.919] technology, right? It's something that
+[00:05:18.160] can go into adopt because it's just like
+[00:05:19.880] a a general technique that everybody's
+[00:05:22.160] using right now.
+[00:05:22.919] >> Mhm. Absolutely.
+[00:05:24.360] >> But that's the only thing, no tool.
+[00:05:26.600] >> Yeah, yeah, absolutely.
+[00:05:28.960] Let's let's talk a little bit about uh I
+[00:05:31.040] guess how we have today um
+[00:05:33.720] worked with AI agents in our existing
+[00:05:36.600] workflows. And I'm I guess I'm
+[00:05:38.520] here I'm talking about active projects
+[00:05:40.520] and how we build
+[00:05:42.520] uh with agents in in that in that kind
+[00:05:44.320] of like uh typical software development
+[00:05:46.120] flow. Then we'll lean into more about
+[00:05:48.720] legacy uh applications, legacy
+[00:05:51.120] modernization. How do you see, you know,
+[00:05:53.560] you've got obviously got a lot of
+[00:05:54.440] experience from from many different
+[00:05:56.440] customers that you work with?
+[00:05:58.960] What what how do you see people using AI
+[00:06:02.960] effectively in their day-to-day
+[00:06:05.120] workflows today?
+[00:06:06.560] >> Yeah.
+[00:06:07.400] Yeah, I think before I answer the
+[00:06:08.320] question, maybe I should also emphasize
+[00:06:10.320] once more because it maybe didn't get
+[00:06:12.400] across quite yet that my focus is really
+[00:06:14.880] on using AI for building software to
+[00:06:18.160] improve how you build software, right?
+[00:06:19.760] Like not using AI in products, right?
+[00:06:22.840] Like putting building it into your
+[00:06:24.000] products. And it's always a little bit
+[00:06:26.200] clunky to describe that difference, but
+[00:06:28.080] I think it's a very important difference
+[00:06:29.440] to make because using AI for how we
+[00:06:31.600] build software affects everybody in
+[00:06:33.520] software development, everybody
+[00:06:35.320] involved, right? Whereas like putting AI
+[00:06:37.640] into your products only affects the
+[00:06:39.640] subset of people that actually work on a
+[00:06:41.200] product like that, right? So I see
+[00:06:42.560] myself as a domain expert in effective
+[00:06:44.560] software delivery, and I try to apply AI
+[00:06:47.240] to this domain, right? So that's kind of
+[00:06:49.800] just to focus it in on a little bit,
+[00:06:51.560] right?
+[00:06:51.880] >> It's such a subtle difference, but
+[00:06:53.160] really important. So at the AI native
+[00:06:54.880] dev, that's what we can that's what we
+[00:06:56.600] care about. We love we we we always
+[00:06:58.720] think about how you use AI in your in
+[00:07:01.600] your workflow. If it goes to production,
+[00:07:04.160] then it's then it's not the workflow.
+[00:07:05.800] It's actually part is the ingredients of
+[00:07:07.240] your app. If it if it if it does go to
+[00:07:09.520] production, but it's actually helping
+[00:07:10.919] the way you actually build and deliver
+[00:07:12.440] to production, then it's all about the
+[00:07:13.960] tools that you use in the workflow. It's
+[00:07:15.320] a subtle difference, but very important.
+[00:07:17.440] >> Yeah. And there's of course overlaps,
+[00:07:19.040] right? If you think of an big
+[00:07:20.520] organization that
+[00:07:22.240] has products and they want to build AI
+[00:07:24.040] into it and like for whatever their
+[00:07:26.320] context is that it's actually worth for
+[00:07:27.960] them to self-host models, have
+[00:07:29.440] guardrails, have evals, right?
+[00:07:31.680] You might also need those to build your
+[00:07:33.240] tools for, you know, using it in the
+[00:07:35.440] software process. So there's overlap,
+[00:07:36.760] but I think it's a it's a good
+[00:07:39.080] distinction to understand because
+[00:07:42.720] it really helps focus sometimes. And
+[00:07:44.960] yeah, so in that space when we talk
+[00:07:46.440] about agents, I would say really
+[00:07:50.600] that we have really agentic tools,
+[00:07:52.800] agentic agents, big words that often
+[00:07:55.440] mean very different things, right? But
+[00:07:57.440] it only really started, let's say,
+[00:07:59.800] exploding around February, March maybe,
+[00:08:02.320] I would say, right? So, a lot of the
+[00:08:05.200] coding assistant started releasing more
+[00:08:08.040] agentic tooling support in autumn last
+[00:08:11.160] year, I would say, October, November.
+[00:08:13.040] There were some open source tools that
+[00:08:14.520] already were doing it quite early, like
+[00:08:16.880] earlier last year, but you know, the
+[00:08:18.720] cursor, windsurf, GitHub copilot kind of
+[00:08:20.960] started end of last year. And then it
+[00:08:23.440] started getting into everybody's
+[00:08:24.720] consciousness with the vibe coding meme,
+[00:08:26.720] right? Like the
+[00:08:28.120] the Karpathy tweet was actually first
+[00:08:30.240] week of February, can you imagine?
+[00:08:32.440] That was 6 months ago.
+[00:08:34.280] >> Which year?
+[00:08:35.960] It feels like about 5 years ago.
+[00:08:38.599] >> Um so, that's when like this agentic
+[00:08:40.800] idea, right? Using that more in in
+[00:08:42.719] coding became more
+[00:08:44.960] um
+[00:08:45.839] of the the step change, I would say,
+[00:08:47.760] right? And what it means in coding
+[00:08:49.920] assistance is basically that the the
+[00:08:52.720] model gets access to even more tools
+[00:08:55.360] than it had before, right? So,
+[00:08:56.640] previously it was basically in the
+[00:08:58.320] coding assistance it could edit files,
+[00:09:01.040] um
+[00:09:02.200] yeah, I think it was mostly editing
+[00:09:03.560] files and often just one file at the at
+[00:09:05.320] the time.
+[00:09:06.080] >> Mhm.
+[00:09:06.480] >> Uh
+[00:09:07.040] and then now what we have is it can edit
+[00:09:09.360] multiple files, it can access the
+[00:09:11.600] terminal most importantly quite
+[00:09:13.000] autonomously and execute commands there,
+[00:09:15.160] execute your tests, and so on, and
+[00:09:17.080] immediately react to the
+[00:09:19.440] responses that you get from it, right?
+[00:09:21.000] So, it really expanded the size of the
+[00:09:24.440] task that a coding assistant can work
+[00:09:27.480] on. And so, either in like a session
+[00:09:29.920] with a developer going kind of like back
+[00:09:31.880] and forth, or then also a little bit
+[00:09:34.120] later, more of these products started
+[00:09:36.520] releasing autonomous
+[00:09:38.880] agents that you can run in the
+[00:09:39.960] background, right? So that was open AI
+[00:09:41.640] codex or cursor started introducing
+[00:09:44.360] these background agents.
+[00:09:46.880] As you know, very early Devon of course
+[00:09:48.720] was one of the first ones that did that.
+[00:09:50.360] So and it's becoming more and more
+[00:09:52.200] common in more and more products now. So
+[00:09:54.480] where you actually send it off by
+[00:09:55.680] itself, right? Without intervening in
+[00:09:57.760] between. So I think those are also two
+[00:09:59.840] that's also very important distinction
+[00:10:01.400] the autonomous ones and like working
+[00:10:03.480] with it myself in the in the workflow.
+[00:10:06.200] And like as a developer working with it,
+[00:10:07.880] I think that's the much more common one
+[00:10:09.520] as well at the moment. So and then when
+[00:10:11.720] you combine that with MCP servers, they
+[00:10:13.480] become even more powerful. They have
+[00:10:14.960] even more tools available. They can
+[00:10:16.520] access my test database or they can
+[00:10:18.360] browse the website in the browser and so
+[00:10:21.160] on and so on, right?
+[00:10:22.600] So and with this expansion in the size
+[00:10:26.040] of the task that we're working on um
+[00:10:29.280] everything kind of get becomes different
+[00:10:31.200] again. Like previously I was much more
+[00:10:33.200] thinking of it like I kind of go maybe
+[00:10:35.520] function by function, line by line and
+[00:10:37.960] AI is there to help me be faster. But
+[00:10:40.240] now AI is doing so much stuff that I
+[00:10:42.120] actually often fall behind, right? So
+[00:10:45.000] now there's like all of these much more
+[00:10:46.920] sophisticated new processes and ways of
+[00:10:49.360] working that we have to come up with as
+[00:10:51.240] developers to even come up and
+[00:10:53.800] make sure that something sensible comes
+[00:10:55.880] out of this.
+[00:10:56.880] >> Yeah, absolutely. And we have actually
+[00:10:58.480] essentially become the managers really
+[00:11:00.400] of those of those processes. Patrick
+[00:11:03.360] Patrick De Bois wrote really interesting
+[00:11:05.000] piece in around parallelization of these
+[00:11:07.839] agentic processes as well. Particularly
+[00:11:09.680] those that are kind of like the more
+[00:11:10.920] asynchronous that you you fire five of
+[00:11:13.440] these asynchronous
+[00:11:16.240] you know, agentic flows off and then
+[00:11:17.960] then they come back and you can
+[00:11:19.520] effectively review. Maybe they're doing
+[00:11:21.000] different things. Maybe they're doing
+[00:11:22.160] the same thing and you want to you want
+[00:11:23.640] to pick through which one which one you
+[00:11:25.360] actually want to take on.
+[00:11:27.160] But yeah, it's really interesting the
+[00:11:29.760] the new role that we're taking on which
+[00:11:31.360] we'll talk about a little bit later.
+[00:11:33.400] Um
+[00:11:34.000] so I guess
+[00:11:35.040] in in terms of, you know,
+[00:11:38.160] when when we when we have agents
+[00:11:41.080] um writing a bunch of code for us,
+[00:11:43.360] um it's very hard for us, I guess, to
+[00:11:46.080] feel almost like connected with that
+[00:11:48.000] code in terms of intimately knowing how
+[00:11:50.880] it's been built, because we tend to
+[00:11:52.560] click accept, accept, accept, and and we
+[00:11:54.600] and we don't tend to necessarily give it
+[00:11:56.240] the the the level of granularity of of
+[00:11:58.800] of checking as we as we want to. Um it
+[00:12:01.400] kind of almost immediately turns into
+[00:12:02.920] legacy code, right? Because when we
+[00:12:04.760] think about I you know, I always say
+[00:12:06.600] code that was written a day ago is
+[00:12:07.920] legacy code. It it's any any code,
+[00:12:10.520] really, that you don't fundamen- that
+[00:12:12.120] you aren't fundamentally actively
+[00:12:14.200] changing,
+[00:12:15.480] in my opinion, can kind of be considered
+[00:12:17.320] legacy because you have There are There
+[00:12:19.480] are tasks you need to do to actually
+[00:12:21.360] truly understand what is this code
+[00:12:23.080] doing, particularly if someone else
+[00:12:24.160] wrote it. What it What is this code
+[00:12:25.800] doing? What is it, you know, what what
+[00:12:27.000] what was in the developer's head when
+[00:12:29.040] when we first when we first kind of look
+[00:12:31.800] at this. And when we think about true
+[00:12:34.120] legacy code, where, you know, you may
+[00:12:36.880] not even have access to the source
+[00:12:38.960] still, but you have this, you know, you
+[00:12:41.240] you you have some application that's
+[00:12:43.360] kind of like running.
+[00:12:45.040] We might want to migrate frameworks. We
+[00:12:47.120] might want to change the platform it's
+[00:12:48.720] running on.
+[00:12:49.920] How do we These are massively different
+[00:12:51.960] challenges that AI has to has to kind of
+[00:12:55.040] tackle. How would you say
+[00:12:57.960] Do we use the same Should we use the
+[00:12:59.440] same tools to to to to make changes or
+[00:13:02.760] to even understand what legacy
+[00:13:05.360] um code is doing compared to forward
+[00:13:08.320] development or or should we look at a
+[00:13:10.360] completely different set of agentic
+[00:13:12.520] processes as well as tools?
+[00:13:14.480] >> Yeah.
+[00:13:16.040] Yeah, legacy migration or modernization,
+[00:13:17.680] I think, is a great example of um
+[00:13:21.280] like uh almost like uh initiatives and
+[00:13:23.839] larger projects that we can run where we
+[00:13:26.000] can really think through how do we use
+[00:13:27.280] agents or how do we use AI in general,
+[00:13:28.800] right? Uh uh in comparison to, you know,
+[00:13:31.720] just the day-to-day usage of a coding
+[00:13:34.720] agent, right? Where we have all of these
+[00:13:37.200] typical practices now. Oh, we plan, we
+[00:13:39.160] break down, and so on, right? Um but
+[00:13:41.560] there are like opportunities when we
+[00:13:43.200] have larger initiatives on our teams
+[00:13:44.960] like a legacy migration, which is I
+[00:13:46.520] think the best example. It can also be
+[00:13:48.760] other workflows, right? Where we can
+[00:13:50.520] actually
+[00:13:51.840] uh more sit down and think about, okay,
+[00:13:54.240] what is a workflow here? Like what uh do
+[00:13:56.920] we want to write prompts that we can
+[00:13:58.360] reuse again and again because we will
+[00:13:59.920] have to do this for 50 components or um
+[00:14:03.320] so I think that's where those two areas
+[00:14:05.080] we talked about before start overlapping
+[00:14:06.760] again as well, right? So now you
+[00:14:08.600] actually want to build an agentic system
+[00:14:10.480] that helps you with your initiative,
+[00:14:12.080] right? So now you have to know more
+[00:14:14.080] about like how do you build build an
+[00:14:15.680] agent yourself or what tools do you have
+[00:14:17.120] available, right?
+[00:14:18.520] And so I've recently worked um
+[00:14:20.520] on a uh on a few things related to uh
+[00:14:23.240] this legacy migration. Like the the the
+[00:14:25.840] first thing was that um
+[00:14:28.920] so we we did indeed have a client, like
+[00:14:31.640] you were saying, who said, "Oh, we
+[00:14:33.200] actually don't have the source code for
+[00:14:34.480] this application anymore."
+[00:14:35.960] >> Mhm.
+[00:14:36.760] >> So, you know, imagine like a bad vendor
+[00:14:38.200] breakup or
+[00:14:40.040] what it and it's apparently not that
+[00:14:41.920] uncommon, I've since found out.
+[00:14:44.160] And they said, "Okay, we haven't been
+[00:14:45.400] able to upgrade this application in
+[00:14:47.120] quite a while. We need to do something.
+[00:14:49.240] Can AI help us, right?"
+[00:14:50.839] >> Even if it's a legacy Even if it's a
+[00:14:52.160] security concern like
+[00:14:53.960] >> Yeah, absolutely.
+[00:14:54.640] >> there are vulnerabilities that are
+[00:14:56.400] you know, all over the place that have
+[00:14:57.760] been found. It could be just general
+[00:14:59.480] maintenance, yeah.
+[00:15:00.440] >> Huge operational risk. Also, they
+[00:15:02.200] couldn't upgrade the database because
+[00:15:04.160] like the newer version of the database
+[00:15:05.920] had some like major changes in dialect
+[00:15:08.920] and so on. They couldn't change the SQL
+[00:15:10.640] queries that were in the code, right?
+[00:15:12.320] >> Wow.
+[00:15:13.080] >> Um
+[00:15:14.120] and so um what
+[00:15:16.560] we have seen now time and again uh in
+[00:15:19.640] areas where you do legacy migration,
+[00:15:21.760] also with those of our clients who have
+[00:15:23.960] large COBOL
+[00:15:25.800] code bases still,
+[00:15:27.240] is that
+[00:15:28.680] usually you don't go from you don't feed
+[00:15:31.640] the large language model with the code
+[00:15:34.200] just the legacy code and then turn it
+[00:15:35.680] into new code in one step. You don't do
+[00:15:37.640] that anyway, right? It's because just
+[00:15:40.680] too far away from each other, right? So,
+[00:15:42.880] but usually what you do is you look at
+[00:15:44.320] how do we usually get from A to Z,
+[00:15:46.160] right? From the COBOL to the Java. And
+[00:15:48.400] how can we use AI on each of those steps
+[00:15:50.440] on the way there, right?
+[00:15:52.000] And so, we took it the same way here.
+[00:15:55.240] So, we looked at first how can we
+[00:15:57.000] reverse engineer in the sense of like
+[00:15:59.520] how can we create a comprehensive
+[00:16:01.920] description of what this application
+[00:16:03.800] does right now?
+[00:16:05.400] And then when we have that description,
+[00:16:07.160] how can we use that to do the forward
+[00:16:08.920] engineering, right?
+[00:16:10.760] So, there's some things that
+[00:16:12.560] have been around for quite a long time
+[00:16:14.760] that are typical data capture approaches
+[00:16:17.320] that we do in legacy migrations also
+[00:16:18.960] before AI, like a change data capture,
+[00:16:21.320] right? So, in one of our experiments we
+[00:16:23.640] put just like triggers on the database
+[00:16:26.600] tables, had, you know, every update and
+[00:16:29.160] insert was kind of recorded into an
+[00:16:31.320] audit table.
+[00:16:33.040] And so that we could just see like in
+[00:16:34.320] the running application what happens. Or
+[00:16:36.480] maybe if you have an event-based system,
+[00:16:38.080] you could like capture events in the
+[00:16:40.560] running application. Or
+[00:16:43.480] what you can now also do with AI is you
+[00:16:45.760] can have AI browse through the
+[00:16:47.839] application, especially when it's a web
+[00:16:49.960] application. Doesn't always work as
+[00:16:52.120] easily as with a web application, right?
+[00:16:54.400] And can have AI describe what it sees as
+[00:16:58.000] it navigates through the application,
+[00:16:59.720] right? And have AI explore all the
+[00:17:01.600] different click paths.
+[00:17:03.280] And then you can tell it every time you
+[00:17:05.240] click after that, please check our audit
+[00:17:07.280] log in the database and see what changed
+[00:17:09.800] in the database when you click that
+[00:17:11.240] button, right? So, you can try and
+[00:17:13.480] create all of these uh
+[00:17:16.839] uh descriptions of what is happening.
+[00:17:18.920] >> It's It's almost like it's It sounds
+[00:17:20.760] like it's kind of like a
+[00:17:22.880] like a forensic exercise really, isn't
+[00:17:24.800] it?
+[00:17:25.079] >> Exactly. Yeah, yeah, yeah.
+[00:17:26.079] >> It's It's incredible. Like when when you
+[00:17:28.439] I guess first of all I got I got a
+[00:17:29.600] question in terms of the tools. Like are
+[00:17:31.440] there tools specific tools that you're
+[00:17:33.320] using for this or is this something that
+[00:17:35.240] you would expect needs to be needs to be
+[00:17:37.520] handcrafted? Um
+[00:17:39.440] and I and I guess my my second question
+[00:17:42.560] from that is when you when you gather
+[00:17:45.400] all this data
+[00:17:47.400] how do you how do you even think about
+[00:17:49.400] which context is most relevant? Uh so
+[00:17:52.440] that when you actually do the analysis,
+[00:17:54.000] you're not overwhelming the LLM with
+[00:17:56.040] that huge amount of
+[00:17:57.920] context, but you're providing it with
+[00:17:59.440] what it needs to make a good decision.
+[00:18:00.680] But I'd love to start with the tooling
+[00:18:02.120] one. How How would someone even think
+[00:18:03.720] about doing this?
+[00:18:05.560] >> Yeah.
+[00:18:07.040] Yeah, so I did uh we found that actually
+[00:18:09.320] you don't need like a fancy gigantic
+[00:18:10.880] platform to get started with this and do
+[00:18:13.040] something there. And my suspicion is
+[00:18:14.720] also that because of the nature of the
+[00:18:17.920] types of system where you have to do all
+[00:18:19.560] this forensics and that are really old,
+[00:18:21.160] right? They it's probably going to be
+[00:18:22.680] different every time, right? Just if you
+[00:18:25.000] think about I don't know SQL or even
+[00:18:27.480] COBOL or stuff like that. There's so
+[00:18:29.120] many dialects there as well, right? When
+[00:18:31.120] it comes to COBOL, for example, we have
+[00:18:33.000] a
+[00:18:34.680] an accelerator that we bring to our
+[00:18:36.120] clients in in ThoughtWorks that we
+[00:18:37.920] customize
+[00:18:39.480] uh every single time we use this for our
+[00:18:41.200] client. So where we say, "Okay, do you
+[00:18:43.320] need Do you have COBOL code? Do you have
+[00:18:45.680] C code? Do you have uh you know, a
+[00:18:48.440] particular dialect of some other
+[00:18:50.280] language, right?" And we load that into
+[00:18:52.440] a knowledge graph to get like a much
+[00:18:54.840] richer uh yeah, data set about what's
+[00:18:58.320] happening. And the um advantage of this
+[00:19:01.240] customization is not just that you might
+[00:19:03.760] have different languages, different
+[00:19:04.960] dialects, and so on, but also you can
+[00:19:06.880] decide based on the goal you have what
+[00:19:09.240] else what do you want to load into the
+[00:19:10.600] knowledge graph, right? So, just imagine
+[00:19:13.680] if you enrich the knowledge graph with
+[00:19:16.160] functional descriptions of the code
+[00:19:18.560] uh
+[00:19:19.440] by an LLM, right? Then, you can
+[00:19:22.000] actually, when you ask the knowledge
+[00:19:23.880] graph about things like what is
+[00:19:25.160] happening in the code base, what
+[00:19:26.720] validations are we using in XYZ,
+[00:19:29.520] if you get more functional answers back,
+[00:19:32.080] you can also provide this to a lot more
+[00:19:33.960] users, right? There's there are users
+[00:19:36.080] who don't want to know if the name of
+[00:19:37.400] the function or the module or but they
+[00:19:39.520] just want to know what's happening in
+[00:19:40.760] the functionality, right? Or you can
+[00:19:42.760] find ways to maybe
+[00:19:45.200] explore what are the different
+[00:19:46.440] capabilities here to find the seams to
+[00:19:48.360] break things apart, right? So, that
+[00:19:50.960] would be a more customized approach
+[00:19:53.440] where maybe you, you know,
+[00:19:55.560] you have really large code bases or you
+[00:19:56.960] have a specific goal or something.
+[00:19:58.720] >> Yeah.
+[00:19:58.920] >> But to get back to that idea to that
+[00:20:01.840] uh example I was talking about before
+[00:20:03.560] where you have lost the back-end code,
+[00:20:05.600] but maybe there's some other stuff,
+[00:20:06.800] right? So, what we did there is just
+[00:20:09.800] like work with an existing coding
+[00:20:11.720] assistant, right?
+[00:20:13.600] So, uh and just then point the coding
+[00:20:16.000] assistant at the things that we have
+[00:20:18.200] available, um and um
+[00:20:22.680] also use a few MCP servers. So, for the
+[00:20:25.000] web browsing, you can use something like
+[00:20:27.080] a Playwright MCP server where that also
+[00:20:30.200] like knows the DOM structure and doesn't
+[00:20:32.160] just go off of visuals, right? And then,
+[00:20:34.880] I also usually like to just create small
+[00:20:37.160] MCP servers on the fly because they're
+[00:20:39.240] really easy to create actually,
+[00:20:41.120] especially if it's like it's like a
+[00:20:42.440] little tool that you might throw away
+[00:20:44.080] later and you don't need it anymore,
+[00:20:45.440] right? So, that's what we did for
+[00:20:47.160] example for this data capture thing. So,
+[00:20:49.760] where the MCP server was just providing
+[00:20:51.680] a way to get a current timestamp and to
+[00:20:54.240] query that audit table.
+[00:20:56.520] And so then the agent could kind of go,
+[00:20:58.160] "Okay." Could get the current timestamp,
+[00:21:00.440] click on a button, and then ask the
+[00:21:02.640] audit table, "What changed since that
+[00:21:04.760] timestamp?"
+[00:21:05.480] >> Mhm.
+[00:21:06.000] >> So, that was the MCP server, right?
+[00:21:08.440] So, um
+[00:21:09.960] and I think that's really great because
+[00:21:11.200] the uh
+[00:21:12.560] in this combination of like coding
+[00:21:14.040] assistance, MCP servers,
+[00:21:16.240] you can actually then build your
+[00:21:18.600] workflow that you need, right? And
+[00:21:20.840] because that is so flexible, um
+[00:21:23.920] that helps us in the situation where
+[00:21:25.240] every legacy situation is slightly
+[00:21:26.720] different.
+[00:21:27.440] >> Yeah.
+[00:21:27.920] >> Right?
+[00:21:28.160] >> Yeah.
+[00:21:29.160] Inter- very interesting. And I guess the
+[00:21:31.720] question is with all of this, is the
+[00:21:34.360] goal then to create the specifications
+[00:21:37.680] or just to get the AI to enough
+[00:21:40.680] information to be able to develop
+[00:21:43.640] new new new features, new new make
+[00:21:45.800] changes on top of that?
+[00:21:47.680] >> Yeah.
+[00:21:48.920] So, um how we approached it is to in the
+[00:21:52.240] first step, which we call this like
+[00:21:54.760] reverse engineering step that just
+[00:21:56.280] creates a description, just create uh
+[00:21:58.640] very very comprehensive description.
+[00:22:00.640] >> Mhm.
+[00:22:00.920] >> And the reason for that is that then
+[00:22:02.920] when you have that description, you can
+[00:22:04.400] actually do more things with that
+[00:22:05.640] description, right? For example, you can
+[00:22:07.320] go to subject matter expert and experts
+[00:22:09.560] and sanity check if it's actually
+[00:22:10.920] correct, right? Cuz you might not even
+[00:22:13.400] have all of the information. In that
+[00:22:15.680] case with the client that didn't have
+[00:22:17.520] the back-end code anymore, we didn't
+[00:22:19.920] know what else is hidden in that
+[00:22:21.800] back-end code. Is it calling any other
+[00:22:23.520] services? We also tried our hand at
+[00:22:25.520] network data capture a little bit, but
+[00:22:27.560] not between services. So, um we actually
+[00:22:30.960] when we decompiled the code, we found
+[00:22:32.720] some uh some signs of like mainframe
+[00:22:35.040] frame calls, right? So, we had all of
+[00:22:37.720] this forensics, but now we needed
+[00:22:40.520] uh I don't know, somebody who lived in
+[00:22:42.120] the times back in the day when all of
+[00:22:44.440] this happened, who can like kind of uh
+[00:22:46.920] uh
+[00:22:47.800] double-check with us if it's actually
+[00:22:49.120] correct.
+[00:22:49.760] >> Yeah.
+[00:22:50.080] >> Or what you can also do then with that
+[00:22:51.760] specification is you can enhance it with
+[00:22:53.800] other things that you want to modernize
+[00:22:56.120] or change, right?
+[00:22:57.200] >> Yeah.
+[00:22:57.520] >> So, um
+[00:22:59.240] we have a team in ThoughtWorks that's
+[00:23:00.480] working on an open-source medical record
+[00:23:02.560] system applica-
+[00:23:04.480] application that is open-source and has
+[00:23:08.120] been around for a long time. And so
+[00:23:09.600] there's a front end that's still Angular
+[00:23:11.800] 1.
+[00:23:12.720] So they really urgently needed to
+[00:23:14.080] upgrade the tech stack, but also they
+[00:23:16.880] wanted to include more compliance with a
+[00:23:19.520] standard in the medical records domain,
+[00:23:21.960] and they wanted to improve the what how
+[00:23:23.960] the front end looks, right? So now they
+[00:23:26.360] could they would go through the front
+[00:23:28.240] end components, create descriptions of
+[00:23:30.400] what they do today, and then enrich them
+[00:23:32.880] with those standard standard
+[00:23:35.320] requirements, and you know, how they
+[00:23:37.120] maybe wanted to change the UI, and then
+[00:23:39.680] use that to generate the new
+[00:23:42.320] Again, under supervision of a developer,
+[00:23:44.120] but you know, the developer would be
+[00:23:46.520] very accelerated.
+[00:23:47.760] >> Yeah, no, absolutely. I guess there's an
+[00:23:49.960] interesting piece there that that that I
+[00:23:52.080] think
+[00:23:53.560] sometimes is is easy to easy to to, you
+[00:23:57.160] know, pull someone in and and just say,
+[00:23:58.920] "Can you look at this?" and they'll
+[00:24:00.800] understand it, they'll know what's right
+[00:24:02.440] and wrong.
+[00:24:03.800] Uh sometimes we just don't have that
+[00:24:05.000] luxury like you say, you know, we have
+[00:24:06.440] to go back into the day and hope there's
+[00:24:07.840] a developer or someone who understands
+[00:24:09.440] that. Of course, with with legacy code,
+[00:24:12.280] the the
+[00:24:13.360] as we say, the what and the how are
+[00:24:15.160] combined together in the code, and it's
+[00:24:17.560] really hard to be able to identify, was
+[00:24:20.240] this written like this because for you
+[00:24:22.240] know, for for a reason? Was this part of
+[00:24:24.240] the the intended behavior? Or is this
+[00:24:26.840] just the implementation? And I guess
+[00:24:29.400] with One thing that really uh to some
+[00:24:32.360] extent allows us to understand that
+[00:24:35.280] expected behavior is tests. And tests
+[00:24:38.600] are ultimately the a great way of being
+[00:24:40.880] able to say, "Right, my change hasn't
+[00:24:42.720] regressed anything."
+[00:24:44.160] Um now, with legacy code, of course,
+[00:24:47.480] we're very very lucky if we have the
+[00:24:49.440] source code, let alone tests that come
+[00:24:51.800] along with it. What what in your opinion
+[00:24:54.560] or in your experience, like
+[00:24:57.760] how common is it to get
+[00:24:59.960] you know, a well-tested legacy or or a
+[00:25:02.760] legacy application with a good set of
+[00:25:04.760] tests that actually allow you to perform
+[00:25:07.800] a reliable change and get that
+[00:25:09.120] validation.
+[00:25:10.240] >> Mhm.
+[00:25:10.560] >> Um and and I guess lacking that,
+[00:25:13.320] how do you create that that safety net
+[00:25:16.160] essentially?
+[00:25:17.480] Whatever changes we make aren't going to
+[00:25:20.280] adversely affect parts of the
+[00:25:21.840] application we didn't even think about.
+[00:25:23.520] >> Yeah. Yeah.
+[00:25:24.680] I mean, this real case that I was
+[00:25:26.640] talking about, there were no tests.
+[00:25:28.080] >> No tests at all.
+[00:25:28.800] >> And also, even if for the back end,
+[00:25:30.600] let's say there were unit tests
+[00:25:32.320] somewhere. I mean, that doesn't help us,
+[00:25:34.320] right? Because it's unit level, right?
+[00:25:36.080] Like, the main thing that would have
+[00:25:37.600] helped us is if there had been like a
+[00:25:39.280] big end-to-end test suite or something
+[00:25:41.880] like that, right? And in fact, like what
+[00:25:43.960] we also looked into, but you know, it
+[00:25:46.360] hasn't progressed to the point that I
+[00:25:48.600] can say it was really successful or not,
+[00:25:50.560] is we also looked into, you know, does
+[00:25:52.640] AI
+[00:25:53.920] can AI help us accelerate building
+[00:25:56.480] almost like um
+[00:25:58.400] uh
+[00:25:59.640] fidelity fitness function. Using fancy
+[00:26:02.880] words, right? Like an end-to-end test
+[00:26:05.000] suite that can help us test parity that
+[00:26:07.760] we can actually point at both
+[00:26:09.480] applications, right? Um and I think on
+[00:26:12.720] the one hand, uh frameworks like
+[00:26:14.560] Playwrights or kind of like web browser
+[00:26:16.560] testing frameworks have become a lot
+[00:26:18.320] more tolerant to different selectors in
+[00:26:20.600] the DOM, right? But with AI, you can
+[00:26:23.400] make in theory make that even more
+[00:26:24.880] flexible, right? Like, so if you have
+[00:26:26.560] end-to-end tests that actually run on
+[00:26:28.000] AI, you can say um find the plus button
+[00:26:31.440] in the column.
+[00:26:32.560] >> Mhm.
+[00:26:32.960] >> Right? And it will try to look for that,
+[00:26:35.160] right? Whereas, so you don't even have
+[00:26:36.880] to use a selector, right? So, it gives
+[00:26:38.240] you a little bit extra um flexibility.
+[00:26:40.880] And also, our idea was maybe we can even
+[00:26:43.040] use that specification that we generated
+[00:26:44.920] with AI and use that as an input to
+[00:26:48.080] write that end-to-end test suite faster,
+[00:26:50.000] right? All with the goal of ultimately
+[00:26:52.040] having a test suite that we can point at
+[00:26:53.920] the old application and at the new
+[00:26:56.120] application. Right?
+[00:26:57.920] I mean, it turns out browser tests are
+[00:26:59.680] already notoriously flaky. It doesn't
+[00:27:01.840] necessarily help when you introduce more
+[00:27:03.800] non-determinism into it.
+[00:27:06.200] So, we didn't like we didn't yet like
+[00:27:09.400] push it far enough to say is this really
+[00:27:12.280] viable or not. I have a little bit of
+[00:27:14.600] doubts, but I think there's there's some
+[00:27:15.920] potential there. But, that's one way to
+[00:27:18.840] to do that. And then overall, it's like
+[00:27:21.840] a constant risk assessment, right?
+[00:27:23.720] Constantly when you do this, you think
+[00:27:25.200] about okay, what's the probability AI
+[00:27:26.960] got this wrong?
+[00:27:29.200] How can I mitigate that? How can I find
+[00:27:31.040] more information? Like, you know, we
+[00:27:32.680] decompile the binary to see if we missed
+[00:27:34.880] anything. How complex is the
+[00:27:37.120] application? What's the business impact
+[00:27:39.200] when something is wrong? Right? How what
+[00:27:41.960] else can you mitigate? Like, again,
+[00:27:43.480] classic legacy migration roll out
+[00:27:46.720] strategies. Like, can you do a staggered
+[00:27:48.280] roll out and start with some like
+[00:27:51.320] or maybe do like compare when the new
+[00:27:54.120] application is running for users,
+[00:27:55.680] compare results of the new one with
+[00:27:57.240] results of the old one. This is all
+[00:27:58.800] classic legacy migration stuff, right?
+[00:28:00.840] >> Yeah.
+[00:28:01.240] >> So, it is a constant risk assessment.
+[00:28:02.960] This particular application wasn't
+[00:28:05.320] particularly complex. So, that's like a
+[00:28:08.040] that's like the good news, right? It was
+[00:28:09.760] a bunch of forms.
+[00:28:11.640] If you have a more complex application,
+[00:28:13.760] then yeah, you have to also put a lot of
+[00:28:15.640] work into this risk assessment and
+[00:28:17.200] mitigation and like how do we
+[00:28:18.800] double-check and
+[00:28:21.600] what else can we do to test? Yeah.
+[00:28:23.600] >> And what And what is your What would you
+[00:28:25.360] say like from a success rate point of
+[00:28:27.120] view in terms of obviously simple simple
+[00:28:31.600] applications, you can kind of really get
+[00:28:33.880] an understanding of of what it should do
+[00:28:36.640] and and you know, I I would expect some
+[00:28:40.000] one once you have all that forensic
+[00:28:41.400] information, an AI bot or agent will be
+[00:28:44.600] able to come in and and and fairly
+[00:28:46.680] easily make certain changes that are a
+[00:28:49.520] low risk.
+[00:28:50.920] With a more complex application where
+[00:28:52.960] there are impacts if you make certain
+[00:28:54.520] changes in certain places,
+[00:28:56.280] >> Mhm.
+[00:28:56.680] >> what kind of like what's your success
+[00:28:59.440] uh expectation um for you know, not
+[00:29:02.640] obviously Yolo one prompting it but
+[00:29:05.000] >> Mhm.
+[00:29:05.520] >> it you know, does it does it take a lot
+[00:29:07.640] of iteration to to get there? Do you get
+[00:29:10.640] to a state where you know what, you're
+[00:29:12.200] actually really confident that there are
+[00:29:14.120] no regressions this can be fully
+[00:29:16.600] >> Mhm.
+[00:29:17.240] >> pushed out?
+[00:29:18.400] >> Yeah.
+[00:29:18.680] >> What's the end game?
+[00:29:20.400] >> So, with the simple application uh where
+[00:29:23.440] we only went through the kind of like
+[00:29:25.120] development and evaluation of an
+[00:29:26.480] approach, we didn't actually start um um
+[00:29:28.800] building it but uh I was really
+[00:29:30.680] impressed like how with the results,
+[00:29:33.120] right? So, like I said it was a bunch of
+[00:29:34.560] forms. We had front-end code, schema,
+[00:29:37.160] stored procedures, and the binary,
+[00:29:39.320] right? And screenshots.
+[00:29:40.920] >> Mhm.
+[00:29:41.360] >> And
+[00:29:42.480] uh it was really impressive and
+[00:29:44.280] satisfying how quickly you could get a
+[00:29:46.480] really comprehensive description that
+[00:29:48.560] also made sense,
+[00:29:49.920] >> Mhm.
+[00:29:50.680] >> And even um it was also really cool to
+[00:29:53.200] see uh
+[00:29:54.840] like two of my colleagues went deep into
+[00:29:56.880] the decompiled binary and like fed the
+[00:29:59.600] assembly code to AI
+[00:30:01.920] and navigated the assembly code together
+[00:30:03.880] and tried to find the function that, you
+[00:30:05.600] know, when you click this button, what
+[00:30:06.960] is the function that is being called,
+[00:30:08.360] right? Um and
+[00:30:10.600] >> on.
+[00:30:11.120] >> Did AI navigate the assembly code there?
+[00:30:14.120] So, uh there was a lot of manual
+[00:30:16.200] preparation work at first that they had
+[00:30:18.280] to do. So, to kind of like split
+[00:30:20.240] everything in more into multiple pieces
+[00:30:21.920] because you couldn't feed it like
+[00:30:23.120] everything at once. Assembly is also
+[00:30:24.680] super verbose, right?
+[00:30:25.960] >> Yeah.
+[00:30:26.280] >> Um and then you know, there were some
+[00:30:28.040] like uh
+[00:30:29.360] hints of where things were because you
+[00:30:31.440] could like see string names of stored
+[00:30:34.000] procedures or something, you know, so
+[00:30:35.600] you could have some hints. And then my
+[00:30:38.280] colleagues basically paired with AI to
+[00:30:41.160] try and like reason about the assembly
+[00:30:43.560] code and come up with hypotheses and
+[00:30:45.720] theories where this is and then to
+[00:30:47.760] actually find the code where they were
+[00:30:49.800] pretty confident that's that's where it
+[00:30:51.680] is. And so ultimately it was more like a
+[00:30:53.600] confidence booster for the results that
+[00:30:55.560] we already had from before where we had
+[00:30:57.520] AI infer what is happening, right? And
+[00:31:00.240] we would have later also been able to do
+[00:31:02.080] some change data capture which would
+[00:31:03.640] have given us even more confidence. But
+[00:31:06.400] like I said, they found things like,
+[00:31:07.560] "Oh, there seems to be a mainframe call
+[00:31:08.920] here. We should find out what what's
+[00:31:10.320] happening there, right?"
+[00:31:12.400] Yeah, and it was just super interesting
+[00:31:14.120] to see how well a large language model
+[00:31:16.640] could reason about what like could turn
+[00:31:19.400] the assembly code into pseudo code so
+[00:31:21.640] that we could read that as humans,
+[00:31:23.200] right? So
+[00:31:24.200] >> Yeah. It's It's amazing. It's kind of
+[00:31:26.080] scary at the same time when you say,
+[00:31:27.800] "Oh, look, there's a mainframe call
+[00:31:28.960] there." That's like It frightens the
+[00:31:30.440] heck out of me thinking, "Oh, gosh." All
+[00:31:32.520] these things that you wouldn't expect or
+[00:31:33.880] just just like find out.
+[00:31:36.000] It's incredible.
+[00:31:37.320] >> And also something in terms of the
+[00:31:38.640] confidence, something that we saw
+[00:31:41.720] we sometimes saw the large language
+[00:31:43.000] model that we were using often like
+[00:31:45.240] wasn't following our instructions very
+[00:31:46.800] well.
+[00:31:47.400] >> Right.
+[00:31:47.880] >> So
+[00:31:49.040] then what you would do is like you kind
+[00:31:52.400] of prepare your problems, what you want
+[00:31:53.720] to do, you know, so problems that say,
+[00:31:55.560] "Here's the front-end code. Here's the
+[00:31:57.200] screenshot.
+[00:31:58.960] You know, here's the schema. Try to
+[00:32:00.880] infer what's happening or like what are
+[00:32:02.840] the validations." You know, that's kind
+[00:32:04.400] of the questions the prompts would ask.
+[00:32:06.680] And then we would run those
+[00:32:09.240] multiple times for the same form, right?
+[00:32:12.040] To see like how different are these
+[00:32:13.880] results so that we could kind of see if
+[00:32:16.280] we get like basically the same result
+[00:32:18.280] every time, then we were relatively
+[00:32:20.400] confident that it was okay.
+[00:32:22.920] And
+[00:32:23.800] together with the human sanity check,
+[00:32:25.240] right? But so that's how you can kind of
+[00:32:27.760] see like the fidelity of your tool,
+[00:32:29.480] right? Is it like totally off the rails
+[00:32:31.640] or
+[00:32:32.640] does it give you something that seems to
+[00:32:34.000] make sense?
+[00:32:34.680] >> Yeah. And what are examples of like I
+[00:32:36.520] guess, you know, some of the some of the
+[00:32:38.320] more major changes that you've made in
+[00:32:40.120] terms of the legacy modernization?
+[00:32:42.600] You mentioned from COBOL to Java,
+[00:32:44.160] obviously, kind of pretty pretty major
+[00:32:46.760] pretty major, but also, I guess it's
+[00:32:49.000] it's a it's a fairly common but when you
+[00:32:50.960] think about modernization, it's it you
+[00:32:53.160] know, a COBOL to Java isn't the the most
+[00:32:55.640] unusual um
+[00:32:57.080] path, I suspect.
+[00:32:58.680] But is it like, you know, would you also
+[00:33:00.600] do things like framework updates and
+[00:33:02.480] things like that? Do you have complete
+[00:33:04.840] changes of architectures?
+[00:33:07.920] Anything anything kind of like more
+[00:33:09.440] major in terms of your forward
+[00:33:11.600] engineering?
+[00:33:12.840] >> Yeah. I mean, the framework upgrade was
+[00:33:15.160] kind of the example I
+[00:33:16.480] talked about before with Angular 1 to
+[00:33:18.360] React and then but then there was also
+[00:33:19.960] additional modernization that needed to
+[00:33:21.600] happen, right?
+[00:33:23.240] Um I think there's probably a lot of
+[00:33:26.200] different things that you can do when
+[00:33:28.320] you think about this as like, what are
+[00:33:30.320] my data sources that give me a
+[00:33:32.160] description?
+[00:33:33.520] Right? Which can be like a lot of
+[00:33:35.280] different things, right? Um
+[00:33:39.120] But maybe like when you talk about
+[00:33:40.280] framework upgrades, like there's a
+[00:33:41.880] slightly different category, I think as
+[00:33:44.000] well. Like when you just really think
+[00:33:45.440] like upgrade in the sense of just a
+[00:33:47.160] technical upgrade, right? Like Java
+[00:33:48.800] language upgrade or framework version
+[00:33:51.960] upgrade that's maybe not quite as uh
+[00:33:54.840] uh jarring as Angular 1 to the latest
+[00:33:57.040] Angular version, right? There's actually
+[00:34:00.120] uh tools that help you do that as well,
+[00:34:02.160] right? Deterministic software, right?
+[00:34:03.880] So, code mods like uh Open Rewrite or uh
+[00:34:07.960] uh Source Graph can do a lot of that
+[00:34:09.480] stuff. So, there's like
+[00:34:11.040] lots of tools that can help you write
+[00:34:12.600] recipes and advanced patterns to do
+[00:34:14.639] this, right?
+[00:34:15.240] >> Mhm.
+[00:34:15.600] >> And um
+[00:34:17.280] there's also really interesting
+[00:34:18.280] potential in combining large language
+[00:34:20.200] models with those code mod tools.
+[00:34:22.800] >> Mhm.
+[00:34:23.040] >> So, kind of either letting them help you
+[00:34:25.080] write the patterns that you need to do
+[00:34:27.040] the to do the upgrade.
+[00:34:29.240] Um
+[00:34:30.560] Yeah, or like like do that, right? Kind
+[00:34:32.480] of or and then where the where the where
+[00:34:34.560] the deterministic software that the
+[00:34:36.440] pattern
+[00:34:38.480] patterns just don't are not enough, then
+[00:34:40.560] maybe you try to fill that in with LLMs,
+[00:34:42.280] right? So, I don't know if you remember
+[00:34:44.040] a lot sometime last year there was big
+[00:34:46.040] headline by Amazon that they had saved
+[00:34:48.360] thousands of developer years
+[00:34:50.520] by using AI to do a Java upgrade.
+[00:34:53.520] But under the hood they were using
+[00:34:54.919] OpenRewrite.
+[00:34:55.919] >> Yeah.
+[00:34:56.280] >> Which is like one of those code mod
+[00:34:57.480] frameworks.
+[00:34:58.080] >> Yeah.
+[00:34:58.440] >> And my suspicion is that OpenRewrite was
+[00:35:00.320] doing a lot of the heavy lifting, right?
+[00:35:02.800] >> Fair enough, probably together with AI.
+[00:35:04.720] I'm not saying that whole setup, that
+[00:35:06.240] whole tool by Amazon was a bad tool,
+[00:35:08.200] right? Um
+[00:35:09.600] but I just found it a bit misleading to
+[00:35:11.400] say that AI has saved all of those
+[00:35:13.200] developer years, right?
+[00:35:14.520] >> Yeah, yeah, yeah.
+[00:35:15.120] >> The the pairing up of AI and like
+[00:35:18.280] good old software tools that we have,
+[00:35:19.760] that's where the magic happens, right?
+[00:35:21.320] >> And and I think that's where you kind of
+[00:35:22.680] like mix the creativity alongside the
+[00:35:25.080] determinism, which is really important.
+[00:35:27.000] And I think this is In fact, we had the
+[00:35:29.000] we had the the the CEO of Modern, who
+[00:35:32.280] they do a lot of
+[00:35:34.600] uh on on OpenRewrite on just the other
+[00:35:36.840] just the other day on the podcast. And
+[00:35:39.120] um yeah, he was talking about using how
+[00:35:41.560] they essentially use the AST, the
+[00:35:43.120] abstract syntax tree of the of the of
+[00:35:45.040] the application. And they're able to
+[00:35:47.720] kind of like truly understand the
+[00:35:49.520] deterministic flows through the app. And
+[00:35:52.040] I think particularly when we look at
+[00:35:53.720] something like this, when you think,
+[00:35:55.120] "Okay, there's a big there's a big
+[00:35:56.360] change that needs to be made. I want to
+[00:35:58.320] make sure the flows are going to be the
+[00:35:59.960] same uh or or or you know,
+[00:36:02.720] perhaps
+[00:36:03.760] in a slightly different more abstract
+[00:36:05.320] way, but
+[00:36:06.520] it it needs to effectively be a
+[00:36:08.560] deterministic yes, this is working the
+[00:36:10.920] same or no, it's not. And AI can't give
+[00:36:13.440] you that, but
+[00:36:14.680] mixing I love I love that you kind of
+[00:36:16.640] like mentioned that. Mixing this like
+[00:36:18.520] deterministic AST or existing tools that
+[00:36:21.400] we've been using for so long with with
+[00:36:23.640] the creativity of an LLM and being able
+[00:36:25.840] to kind of like, you know, make those
+[00:36:27.680] suggested fixes and and and and then we
+[00:36:29.840] test against more deterministic methods
+[00:36:31.800] I think is a is a really strong a really
+[00:36:34.000] strong plan. We've seen it time and time
+[00:36:35.600] again. Sneak does that as well and and
+[00:36:37.600] and Sneak code and many other tools have
+[00:36:40.040] that combination of determinism in in in
+[00:36:42.800] their AI solutions.
+[00:36:44.320] >> Yeah. And we have to think a lot more in
+[00:36:46.240] probabilities now in like on the meter
+[00:36:48.440] level as software developers, right?
+[00:36:50.240] Because of this. So if you think about
+[00:36:51.760] that situation where you cannot upgrade
+[00:36:53.520] an application anymore, which is a huge
+[00:36:55.160] risk, right? So it's better to replace
+[00:36:58.560] it and risk some bugs than not do
+[00:37:00.800] anything, right? But now you but you can
+[00:37:03.720] employ different things to accelerate
+[00:37:05.600] that replacement and to increase the
+[00:37:07.520] probability that you're getting it
+[00:37:08.880] right. Yeah? And then you constantly
+[00:37:10.920] have to kind of think about those
+[00:37:11.960] trade-offs and
+[00:37:14.120] and risks and how you fill the gaps and
+[00:37:16.080] so on.
+[00:37:16.840] >> That's a really good point. So like
+[00:37:18.000] obviously AI can kind of like will
+[00:37:22.320] you know more and more generate
+[00:37:26.200] more reasonable applications at scale.
+[00:37:29.480] Will we do you feel like we'll get to a
+[00:37:31.320] stage where a legacy app won't won't
+[00:37:33.680] ever exist anymore? It's just an app
+[00:37:35.960] that at some point we can just kind of
+[00:37:37.720] like it particularly for the you know
+[00:37:39.480] some of the smaller ones. Why would I
+[00:37:41.080] try and do all of this? Why wouldn't I
+[00:37:42.440] just why wouldn't I just rebuild this
+[00:37:44.360] from scratch? Do do you think like
+[00:37:46.640] that's in the in the near term going to
+[00:37:48.760] be a realistic approach
+[00:37:53.600] again you know you can build it on a
+[00:37:55.240] more modern app much much or a more
+[00:37:57.320] modern stack much much more quickly and
+[00:38:00.000] and the risk of what you know why pull
+[00:38:01.840] something from a legacy an old code
+[00:38:03.960] base? Why not just rebuild it from
+[00:38:05.360] scratch and understand exactly what's
+[00:38:06.680] happening under the covers?
+[00:38:08.040] >> Yeah.
+[00:38:09.600] Yeah, I think that that might happen,
+[00:38:11.880] right? Like it's
+[00:38:13.680] it's this effect that we can already see
+[00:38:15.680] with like organizations that have like
+[00:38:17.880] hundreds or thousands of microservices,
+[00:38:19.800] right?
+[00:38:20.120] >> Yeah. Yeah.
+[00:38:20.760] >> What I often see happening with
+[00:38:22.080] developers is they're working on a
+[00:38:23.680] service and when it gets to a certain
+[00:38:26.040] size, often that's not even that big.
+[00:38:28.680] They're like, "Ugh, this is too big. We
+[00:38:30.640] need to split this up. We need to create
+[00:38:32.160] a new one." "Ugh, we don't understand it
+[00:38:34.120] anymore. We can't reason about it
+[00:38:35.520] anymore." And then you end up with like
+[00:38:37.000] two entities in every service, right?
+[00:38:39.400] Which is also not the right way, right?
+[00:38:40.840] Like maybe we should just get a little
+[00:38:42.200] bit better at modularizing inside of our
+[00:38:44.440] services, right? But this psychological
+[00:38:47.880] uh how do you say uh reflex, this reflex
+[00:38:51.120] shows you that this might actually now
+[00:38:52.800] happen that, you know, people's reflex
+[00:38:55.320] will be to like, "Ugh, we don't
+[00:38:56.680] understand this anymore. Let's just
+[00:38:58.120] quickly rewrite it with AI, right?"
+[00:39:00.240] >> Yeah.
+[00:39:00.960] >> Which
+[00:39:02.080] maybe sometimes the, you know, sitting
+[00:39:04.560] down and actually seeing how can we make
+[00:39:07.440] this better might be the more effective
+[00:39:10.040] way to do it, right? Let's see.
+[00:39:12.280] >> Yeah.
+[00:39:13.160] Well, let's talk about humans and and
+[00:39:15.360] talk about how we as developers in the
+[00:39:18.480] loop, humans in the loop as we call it.
+[00:39:20.840] Um how we need to change to be better in
+[00:39:24.800] this process, to actually continue to,
+[00:39:27.360] you know, run this process.
+[00:39:29.400] There's a ton of stuff that we need to
+[00:39:31.720] be good at in order for us to actually
+[00:39:34.280] uh own the process and and and run the
+[00:39:36.520] process. Uh you mentioned a ton there in
+[00:39:38.960] terms of like getting a bunch of those
+[00:39:40.600] metrics and actually working with AI,
+[00:39:42.840] almost like pairing with AI to get all
+[00:39:44.600] that correct information. I guess it's
+[00:39:47.400] it's still an understanding of knowing
+[00:39:49.960] what information we need, what
+[00:39:51.800] information is important, uh and really
+[00:39:54.080] I guess understanding the application.
+[00:39:55.680] But um what else do we need to be better
+[00:39:58.040] at in order to
+[00:39:59.720] um or or learn new skills we need to
+[00:40:02.360] learn to be efficient and effective in
+[00:40:04.480] this type of in this new loop.
+[00:40:06.600] >> Mhm.
+[00:40:08.680] Yeah, that's a big topic. Also,
+[00:40:09.840] everybody's worried about the new people
+[00:40:12.720] coming into the profession and you know,
+[00:40:15.040] who who don't have the scars from like
+[00:40:17.720] from the past and you know how do we
+[00:40:20.360] build up new skills and I also don't
+[00:40:22.280] have the answers
+[00:40:23.880] to all of those things. It will be very
+[00:40:26.320] interesting definitely and I think for
+[00:40:28.560] experienced senior
+[00:40:30.800] developers and software engineers it's
+[00:40:32.520] now our responsibility to figure out how
+[00:40:35.440] we can do that for the next generation,
+[00:40:37.200] right? Because like experienced
+[00:40:39.000] developers don't just grow on trees like
+[00:40:41.160] we all develop by running into problems
+[00:40:44.360] and you know have being called up at
+[00:40:46.720] 2:00 a.m. in the morning and then
+[00:40:48.000] thinking I'm not going to do that again,
+[00:40:49.720] you know.
+[00:40:50.840] Um
+[00:40:52.200] So yeah, like what are the skills? I
+[00:40:53.480] mean
+[00:40:54.600] um
+[00:40:56.760] One big challenge that we were talking
+[00:40:58.520] about this before will be this like when
+[00:41:00.800] we don't
+[00:41:02.200] understand what's going on in our code
+[00:41:03.720] base anymore, will that be a problem or
+[00:41:05.320] not, right? Some people are saying oh
+[00:41:07.560] that's not a problem because AI will
+[00:41:09.120] also maintain it, right?
+[00:41:11.200] But I've also run into situations where
+[00:41:13.440] I've used a prompt and because of my
+[00:41:15.960] lack of knowledge of what was going on
+[00:41:17.720] in the code base
+[00:41:19.320] I
+[00:41:21.120] it was a let's say subpar prompt and AI
+[00:41:23.560] actually deleted important code
+[00:41:25.600] because I wasn't aware of that
+[00:41:28.120] impact of that you know that oh I should
+[00:41:31.320] tell it but don't touch that, right?
+[00:41:33.600] Because so um
+[00:41:35.800] So that's going to be a challenge,
+[00:41:37.920] right? I think we should still
+[00:41:40.240] roughly understand what are the
+[00:41:41.360] components in our code, what is the
+[00:41:43.320] dependencies, what is when I change
+[00:41:45.400] this, how many other places are calling
+[00:41:47.160] that, so how risky is it to change that
+[00:41:49.120] and so on. Um
+[00:41:52.080] And then
+[00:41:53.560] uh
+[00:41:54.360] yeah, we
+[00:41:55.640] I hope we will get better tools to help
+[00:41:58.000] us review
+[00:42:00.360] large change sets, right? So we're used
+[00:42:02.720] to just reviewing text diffs.
+[00:42:05.320] Um
+[00:42:06.600] but maybe that's not scalable anymore.
+[00:42:08.640] And maybe there's even like new ways
+[00:42:10.160] with AI to help us
+[00:42:11.960] visualize more, to help us pull together
+[00:42:15.080] lots of like automated information that
+[00:42:17.320] before we didn't put together because we
+[00:42:19.160] thought, oh, I I went through all this
+[00:42:20.840] code, I wrote it myself. I don't need
+[00:42:22.520] that static code analysis, that coverage
+[00:42:24.560] information. I know what I did. But now
+[00:42:26.840] if I go for lunch
+[00:42:28.600] uh and I send off an agent and I come
+[00:42:30.360] back and it has changed 50 files, you
+[00:42:32.840] know, maybe I want a dashboard that
+[00:42:35.560] shows me
+[00:42:36.840] everything like uh you know, like an
+[00:42:39.560] impact analysis or uh you know, um
+[00:42:43.440] yeah, so I'm wondering about that. I
+[00:42:44.760] think we need more tools like that and
+[00:42:46.480] not just rely on this like text diff.
+[00:42:49.360] >> Um it's really interesting cuz I guess
+[00:42:51.080] it's it's the question of what we're
+[00:42:52.640] reviewing. Are we are we trying to
+[00:42:54.520] review code, which actually
+[00:42:57.080] testing would be a better validator for
+[00:42:59.320] or are we trying to test decisions? Are
+[00:43:01.200] we trying to review decisions? Um
+[00:43:04.160] uh and we almost like want to level up
+[00:43:05.960] uh
+[00:43:06.520] uh code uh uh reviewing to that decision
+[00:43:09.320] level and have almost like your your
+[00:43:12.240] code more tested through or validated
+[00:43:14.800] through tests. I think there's probably
+[00:43:16.400] a a
+[00:43:17.440] a journey that we need to go on for that
+[00:43:19.200] for that to be true, but
+[00:43:21.160] >> You have to review the tests.
+[00:43:22.800] >> Yeah. Yeah, 100%.
+[00:43:24.200] >> generates the test and I've seen AI do
+[00:43:26.400] make so many mistakes when building
+[00:43:28.760] tests like tests that, you know, don't
+[00:43:30.800] do anything, too much mocking.
+[00:43:33.080] >> Yeah.
+[00:43:34.960] >> Uh
+[00:43:35.560] maybe making the wrong assumptions in
+[00:43:37.840] the test data and then you think I have
+[00:43:40.040] a uh test that is green,
+[00:43:41.680] >> Yeah.
+[00:43:42.040] >> but the tests are actually testing
+[00:43:43.080] something that is wrong.
+[00:43:44.520] >> Yeah.
+[00:43:44.800] >> Right? Um so, that's on the next level.
+[00:43:47.680] Yeah, okay, generate all these tests,
+[00:43:49.080] but how do I actually know know know
+[00:43:51.640] that it did what I wanted, right? And
+[00:43:53.880] especially when it changed a lot of
+[00:43:55.280] things, how do I find out quickly?
+[00:43:57.720] >> Mhm.
+[00:43:58.560] >> And well
+[00:44:00.240] >> I was going to say biases is another
+[00:44:02.080] area in and around there, right? Where
+[00:44:04.200] where
+[00:44:05.320] you know, there's going to be
+[00:44:07.080] if we're if we're allowing AI to
+[00:44:11.320] could generate tests and do all these
+[00:44:13.080] things, generate code, and make
+[00:44:14.640] decisions, we need to be very aware of
+[00:44:17.320] our of the biases that in the decisions
+[00:44:20.120] that are being made within AI.
+[00:44:22.640] Is that something
+[00:44:24.520] you know, or rather, it is something
+[00:44:26.160] that we should absolutely be aware of.
+[00:44:28.120] How can we though? How how can we train
+[00:44:30.240] ourselves to to really look out for when
+[00:44:33.880] biases within the AI
+[00:44:36.240] having an adverse effect of you know, of
+[00:44:38.680] of what is being generated?
+[00:44:40.200] >> Yeah.
+[00:44:41.080] Yeah, there's the biases in the AI and
+[00:44:42.880] our biases as well, right?
+[00:44:44.440] >> Very true.
+[00:44:45.120] >> Like
+[00:44:45.720] in the in the AI when it comes to
+[00:44:47.440] coding, I don't know if I would call it
+[00:44:49.280] biases, but I've seen it do things like
+[00:44:52.000] fill in gaps in what I prompted it with,
+[00:44:54.280] fill those gaps with assumptions, right?
+[00:44:56.480] Like that's a thing or as we all know,
+[00:44:58.440] they're very sycophantic, they really
+[00:45:00.280] want to like please us and fulfill you
+[00:45:02.920] know, our task what we ask them to do.
+[00:45:08.320] So yeah, like
+[00:45:10.440] I don't I don't know if there's
+[00:45:11.640] something about biases as well when it
+[00:45:13.720] comes to domain logic. I haven't really
+[00:45:15.320] thought about that yet, right? Like
+[00:45:16.800] might it lead us to implement something
+[00:45:19.680] biased in the application, I hadn't
+[00:45:21.360] thought about that yet.
+[00:45:22.880] But then on the other side is our
+[00:45:24.200] biases, right? So for example, because
+[00:45:26.440] AI always frames everything so
+[00:45:28.760] confidently, right? That even though we
+[00:45:31.280] know it's a machine and it's a
+[00:45:32.640] stochastic parrot and all of that, we
+[00:45:34.560] still it influences us, right? Oh, it's
+[00:45:37.520] so confident confidently saying that's a
+[00:45:39.720] best practice. So it
+[00:45:41.720] must be a best practice, right? And
+[00:45:43.680] often we also just like skim over these
+[00:45:45.520] words and like our eyes see best
+[00:45:47.160] practice, blah blah, and then we're
+[00:45:48.960] like, oh yeah, sounds good, right? Or
+[00:45:53.480] you know, once we get a solution from
+[00:45:55.240] AI, we might be anchored to it, right?
+[00:45:57.480] And then it makes it harder for us
+[00:45:59.320] ourselves to imagine other solutions
+[00:46:01.880] when things go wrong, right? Or there's
+[00:46:04.280] a
+[00:46:05.240] strange sunk cost fallacy at play here
+[00:46:07.240] as well, right? Like AI generates a lot
+[00:46:09.240] of code and it doesn't really work and
+[00:46:11.760] then sometimes we spend 2 hours trying
+[00:46:14.320] to fix it instead of throwing it away.
+[00:46:16.720] Because it's already there, right? Ah,
+[00:46:18.760] but it's almost working. And so often
+[00:46:20.880] it's it's it's similar to like
+[00:46:23.040] fixing forward when your production is
+[00:46:24.960] broken versus reverting it, right? Just
+[00:46:28.360] reverting is so much faster just to fix
+[00:46:30.920] it, right? And that's what you have to
+[00:46:32.440] do with AI code a lot as well. So yeah,
+[00:46:34.560] critical thinking, going back to your
+[00:46:36.800] question about the skills, right?
+[00:46:38.440] Critical thinking and
+[00:46:41.280] yeah, understanding all these
+[00:46:42.360] probabilities and um
+[00:46:44.920] constantly getting over ourselves with
+[00:46:47.920] um
+[00:46:49.880] all of these psychological effects of
+[00:46:51.640] this manipulative technology, right?
+[00:46:54.160] Going to be
+[00:46:55.400] interesting.
+[00:46:56.360] >> Absolutely. And and of course it's not
+[00:46:58.160] just going to be us
+[00:46:59.640] that need to be better in in, you know,
+[00:47:02.080] as the human in the loop, but as a team
+[00:47:05.400] everything's going to you know, the
+[00:47:06.920] delivery's going to change. Um
+[00:47:09.200] the the speed at which we deliver, the
+[00:47:11.520] quality, um and and I guess from a
+[00:47:14.360] delivery manager point of view, when
+[00:47:16.760] everything's happening so so much faster
+[00:47:19.520] uh around around us, what do we need to
+[00:47:21.840] be more conscious of? What do we need to
+[00:47:23.960] What do
+[00:47:24.680] What
+[00:47:25.720] Are there any new best practices or
+[00:47:27.200] things that we need to be better at as a
+[00:47:28.760] team in order to do this uh delivery
+[00:47:32.560] um in more effectively?
+[00:47:34.600] >> I mean, all of the good engineering
+[00:47:36.320] practices that we've developed over the
+[00:47:38.320] decades, right? Still very much matter
+[00:47:40.320] and Jenny AI
+[00:47:42.440] amplifies indiscriminately, right? So if
+[00:47:44.920] you have like a bad setup, you might
+[00:47:46.520] just amplify that bad setup, right? And
+[00:47:48.720] if you have a good one
+[00:47:50.160] everything might go well, right? So this
+[00:47:52.600] speed that you were talking about,
+[00:47:53.920] that's going to be the linchpin kind of,
+[00:47:56.680] right? Like can you actually in your
+[00:47:58.160] organization with your pipelines, with
+[00:47:59.840] your processes, can you support
+[00:48:02.560] an increase in throughput, right? So, um
+[00:48:07.440] when, you know, can you test faster? Can
+[00:48:09.960] you fill the backlog faster? Um
+[00:48:13.560] can you actually deal with that when
+[00:48:15.480] you're starting from a continuous
+[00:48:17.280] integration setup that is flaky?
+[00:48:19.840] Right? Or test setup that is flaky,
+[00:48:21.920] right? So, um I think a lot of
+[00:48:24.480] organizations are still underestimating
+[00:48:26.520] foundation that you need and also good
+[00:48:29.040] repeatable automation to make safety
+[00:48:31.800] net, to make sure that things are still
+[00:48:33.880] going well. And um yeah, I mean, me as a
+[00:48:36.880] developer when I see AI go off the
+[00:48:39.240] rails, I often roll back, like I was
+[00:48:41.720] just saying, right? I try to like let go
+[00:48:43.680] and roll back.
+[00:48:45.040] But when you are a delivery manager or
+[00:48:46.640] product owner and suddenly your team is
+[00:48:48.960] like constantly like turning out more
+[00:48:52.080] stuff and all the moving pieces around
+[00:48:54.160] here are moving even faster, you can't
+[00:48:55.800] just roll back, right?
+[00:48:58.080] So, um yeah, I have a feeling that
+[00:49:01.160] uh we're still underestimating this
+[00:49:04.400] the control that we're losing, right?
+[00:49:06.240] Like, maybe that's just like
+[00:49:08.920] I mean, as humans we want to be in
+[00:49:10.360] control and maybe we also have to let go
+[00:49:12.360] in some places and just let AI do its
+[00:49:14.360] thing, but I have a suspicion that
+[00:49:16.600] that's going we're going to run into
+[00:49:17.880] trouble there with like when we just
+[00:49:19.720] lose control over what's going on
+[00:49:21.400] because so many agents are running
+[00:49:22.840] around doing stuff for us, you know.
+[00:49:24.680] >> Yeah.
+[00:49:25.800] Yeah, no, absolutely. Um
+[00:49:27.960] let's finish up with uh I guess the
+[00:49:29.840] age-old question, the hardest question
+[00:49:31.440] to answer. In terms of well, what what
+[00:49:33.760] happens to me as a developer? What what
+[00:49:36.640] What do I do? Do I Do I need to
+[00:49:39.000] go be a farmer somewhere or what should
+[00:49:41.080] I do? Should I
+[00:49:42.560] How does my role look in the future?
+[00:49:46.040] >> I mean, as you said at the moment, I
+[00:49:47.480] still see a lot of need for the classic
+[00:49:50.560] experience and skills, right? When I was
+[00:49:52.840] talking about the legacy migration and
+[00:49:54.760] you called it forensics, right? For the
+[00:49:57.440] forensics, you need to know where to
+[00:49:59.160] look. You need to know
+[00:50:01.080] you know to uh
+[00:50:03.200] where where the corpses are in the
+[00:50:04.440] basement, right? And include them in
+[00:50:06.400] your data sources.
+[00:50:07.680] >> And you mentioned you mentioned about
+[00:50:08.720] the junior versus the senior dev. I'd
+[00:50:11.120] love to see like it's almost like I love
+[00:50:14.200] to call it Martin Thompson
+[00:50:16.200] used the phrase mechanical sympathy. And
+[00:50:19.320] it's about about you know
+[00:50:21.280] having that sympathy of how things are
+[00:50:22.520] built underneath to actually be able to
+[00:50:25.080] have that have that ability to actually
+[00:50:27.000] understand how to use your tools or use
+[00:50:29.200] the system. I think if you was to look
+[00:50:31.400] at a junior versus a senior
+[00:50:33.880] individual in that forensics style
+[00:50:37.040] exercise, you know that the senior
+[00:50:39.000] developer is going to go to the right
+[00:50:40.200] path, the right pieces because they know
+[00:50:42.440] what they're looking for. The junior
+[00:50:44.000] will probably ask many good questions
+[00:50:46.080] but have so many many emissions
+[00:50:49.080] as well, right? And it's it's
+[00:50:51.840] it's interesting that when you when we
+[00:50:53.480] talk about that future developer role
+[00:50:56.440] the senior developer of today will be
+[00:50:58.560] well equipped for that.
+[00:51:00.920] >> How does the how does the junior
+[00:51:02.560] developer learn some of those skills?
+[00:51:04.480] >> exactly.
+[00:51:05.040] >> Do they do they just follow the
+[00:51:06.600] forensics of the developer of the senior
+[00:51:08.680] developer? It's it's a different level
+[00:51:10.760] of learning, I guess.
+[00:51:11.840] >> Yeah, yeah, yeah. And then I mean legacy
+[00:51:13.560] migration is a specific case where
+[00:51:15.080] you've always needed people who maybe
+[00:51:16.680] are still familiar with some of like
+[00:51:18.600] what is an application server, right?
+[00:51:20.320] >> Right. Yeah.
+[00:51:21.160] >> But
+[00:51:22.440] then in the like let's say in just that
+[00:51:24.160] day-to-day of building a current
+[00:51:25.720] application,
+[00:51:27.360] you need those skills when you're doing
+[00:51:28.760] those risk assessments I talked about
+[00:51:30.200] before, right? Like I constantly have to
+[00:51:31.720] ask myself, can I trust this code? How
+[00:51:33.400] much review should I do?
+[00:51:35.280] You have to think about do I have a
+[00:51:37.000] safety net? What can go wrong? What is
+[00:51:39.080] the business impact? How critical is
+[00:51:41.240] this piece of code? Is this complex? Is
+[00:51:43.800] this not complex, right? Those are also
+[00:51:45.840] very traditional developer skills,
+[00:51:47.640] right? So you're better at like
+[00:51:50.000] you're less reckless, let's say, maybe,
+[00:51:52.160] right? And but at the same time like as
+[00:51:54.840] as more experienced developers, we still
+[00:51:56.440] have to build up that experience with AI
+[00:51:58.320] to understand when can I trust it, when
+[00:52:00.200] can I not trust it, and so on, right?
+[00:52:02.440] And I mean, my hope is
+[00:52:04.920] that the people coming into the
+[00:52:06.360] profession now will learn just the way
+[00:52:08.480] we did. They will make mistakes and
+[00:52:11.120] learn from them, right?
+[00:52:13.360] Um and I just hope that the period in
+[00:52:16.680] which like maybe everybody's a bit more
+[00:52:18.840] reckless and like the you know, we just
+[00:52:21.400] increase the throughput of those
+[00:52:22.720] mistakes is going to be as short as
+[00:52:24.400] possible and then we all develop a lot
+[00:52:25.880] of critical thinking about this and it's
+[00:52:27.640] going to be better, right? But I
+[00:52:29.720] I mean, when I was an intern even before
+[00:52:32.160] I had gone to university, I was an
+[00:52:34.600] intern at a startup and I deleted the
+[00:52:36.480] production database,
+[00:52:39.040] >> It happens.
+[00:52:39.560] >> I mean, it's like ultimately their fault
+[00:52:41.440] for letting somebody who
+[00:52:42.920] was just like a beginner There was just
+[00:52:45.400] one environment at the time. There
+[00:52:46.640] weren't even multiple ones, right? But I
+[00:52:48.640] learned from that. I learned from that
+[00:52:50.320] that I cannot just run a random script
+[00:52:53.600] that might override all the tables,
+[00:52:55.280] right?
+[00:52:55.720] >> you I bet the first thing you said was I
+[00:52:57.640] bet the first thing you said wasn't why
+[00:52:59.560] did you let me do that? It was oh crap,
+[00:53:01.440] I've deleted the production database.
+[00:53:02.920] How do I get this back? And then you you
+[00:53:04.640] learn. Oh, okay.
+[00:53:06.320] >> Yeah, exactly. Yeah. The first thing The
+[00:53:08.600] first thing that happened is I had the
+[00:53:09.880] reddest face I ever had in my life.
+[00:53:13.760] No, but that's an extreme case, of
+[00:53:14.880] course, but that's how I learned, right?
+[00:53:16.120] Like I've done things wrong or I've seen
+[00:53:18.440] other people make mistakes in the past
+[00:53:20.000] and then go like and then that kind of
+[00:53:22.160] trained my intuition, my reflexes, my
+[00:53:24.760] like oh, maybe you should look over
+[00:53:26.240] there, look over there, right? So I hope
+[00:53:28.240] that that will still happen and that
+[00:53:30.560] still in teams will have that
+[00:53:32.040] environment where we can help others not
+[00:53:35.160] make those mistakes. That's my like
+[00:53:37.360] positive view of how we will still learn
+[00:53:39.640] this, right? But
+[00:53:40.600] >> Yeah. Yeah.
+[00:53:41.560] >> Let's see. In a way kind of like a lot
+[00:53:43.440] of these things that you were saying
+[00:53:44.640] about what we as developers will need to
+[00:53:47.120] still do,
+[00:53:49.240] remaining consistent, is great because
+[00:53:50.840] those are the hard things. The things in
+[00:53:52.640] which will change is how we go about
+[00:53:54.560] doing that. And instead of us writing
+[00:53:56.800] the code to to achieve those things or
+[00:53:58.680] building the infrastructure or the the
+[00:54:00.480] architecture to do those things, a lot
+[00:54:02.600] of those things can be done similarly
+[00:54:05.160] with AI. I think, you know, part of me
+[00:54:08.560] kind of like thinks, well, will we get
+[00:54:10.400] to those Will we get to those pain
+[00:54:12.640] points and problems quicker?
+[00:54:14.680] Um you know, if I was a If I was a
+[00:54:16.760] junior developer and I just allow AI to
+[00:54:18.840] do whatever, I'll still hit those
+[00:54:20.320] problems. I'll still learn about those
+[00:54:22.440] kind of things, and I'll maybe even do
+[00:54:24.320] it quicker.
+[00:54:25.200] >> But it might It might actually bring the
+[00:54:26.800] pain forward, yeah.
+[00:54:27.720] >> Yeah. I I I just I just won't be I can
+[00:54:30.400] blame AI versus me actually typing that
+[00:54:32.760] command to do whatever in the production
+[00:54:34.320] database. But but it's Yeah, it's It'll
+[00:54:36.680] be interesting to see how that how that
+[00:54:38.840] appears. But great to
+[00:54:40.400] I think great
+[00:54:41.960] great advice and great forethought in
+[00:54:43.760] kind of like seeing actually the harder
+[00:54:45.920] things that we need to do as developers
+[00:54:47.480] today,
+[00:54:48.720] irrespective of the implementations, are
+[00:54:51.000] still the hardest things that we need
+[00:54:52.600] that we will need to do in future. And I
+[00:54:54.120] think those I think I agree I think
+[00:54:55.880] those those those same needs will exist
+[00:54:58.440] and and and be there for us for
+[00:55:00.720] for many years to come, certainly.
+[00:55:02.920] Um
+[00:55:03.880] Brigitte, this has been This has been
+[00:55:05.200] very very enlightening, and it's good I
+[00:55:06.720] think it's really good to talk about
+[00:55:08.920] what is a real problem for so many,
+[00:55:11.120] particularly in, you know, the larger
+[00:55:12.680] enterprises, larger larger uh
+[00:55:15.160] um
+[00:55:16.120] organizations as well, that have to deal
+[00:55:18.440] with legacy legacy code on a day-to-day
+[00:55:20.440] basis. And and it's pretty a wonderful
+[00:55:24.080] to kind of like hear, particularly in
+[00:55:26.200] the the way you were describing how to
+[00:55:29.000] how to get that information and really
+[00:55:31.600] give AI as much as information as you
+[00:55:33.720] possibly can, using AI as a as a tool as
+[00:55:36.720] well to peer peer program and peer learn
+[00:55:39.480] um from that. Wonderful, wonderful to
+[00:55:41.280] hear to hear your your tactics and how
+[00:55:43.640] you how you go about that. So, really
+[00:55:45.520] appreciate having you on to the to the
+[00:55:47.320] episode this this week, Brigitta.
+[00:55:50.520] >> Yeah, it was fun. Thanks for having me,
+[00:55:51.880] Simon.
+[00:55:52.520] >> Absolutely no problem, anytime. And
+[00:55:54.720] thanks very much for all listening.
+[00:55:57.960] Looking forward to another topic next
+[00:55:59.320] week, so tune in then. See you soon.

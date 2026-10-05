@@ -1,0 +1,414 @@
+[00:00:01.080] yeah, I don't know if anyone noticed, but
+[00:00:03.360] things go wrong all the time.
+[00:00:06.760] Anyone ever broken production?
+[00:00:09.080] instead of kind of identifying things that individuals did wrong.
+[00:00:12.440] we focus on processes that allow these situations
+[00:00:16.120] to arise in the first place.
+[00:00:23.480] Oh, no. Oh!
+[00:00:28.520] So I'm going to be discussing
+[00:00:29.560] how we built a rich text editor incident, for writing post-mortems.
+[00:00:35.320] But before I kind of get into that, I'll, add some context about what instant
+[00:00:39.560] IO does,
+[00:00:40.880] what postmortems are, and how all these things kind of relate to each other.
+[00:00:44.880] So, yeah, a bit about me. My name's Merlin.
+[00:00:47.120] I actually come from a design background originally and accidentally
+[00:00:51.080] found my way into tech.
+[00:00:52.640] Some sort of a front end leaning product engineer.
+[00:00:55.680] Some career highlights for me.
+[00:00:57.800] Co-founded and led engineering, mode at work,
+[00:01:01.800] which was recently acquired by Ukg.
+[00:01:04.760] I was an early employee at Samir, which was kind of a rag
+[00:01:08.240] for investment research, which is backed by Eric Schmidt.
+[00:01:11.680] Yes. Since
+[00:01:12.040] September, I found myself at incident, which I'm very much enjoying.
+[00:01:16.080] And shout out to Will, who helped me
+[00:01:19.440] get the job there. So,
+[00:01:24.960] So, yeah,
+[00:01:25.960] I don't know if anyone noticed, but things go wrong all the time.
+[00:01:31.480] Anyone ever broken production?
+[00:01:35.280] Good to see some.
+[00:01:36.080] Some hands go up there.
+[00:01:37.240] Yeah, the consequences can be quite big.
+[00:01:40.160] And I think as we're just looking at, like,
+[00:01:42.440] AI has really increased the rate of change.
+[00:01:44.560] And while in some cases, these feedback loops
+[00:01:47.840] might kind of help lower the change failure rate.
+[00:01:51.080] Yeah.
+[00:01:52.240] When you're kind of five zoom
+[00:01:53.640] or ten, increasing the, amount of changes you're making.
+[00:01:56.720] The situation is probably getting worse in terms of things going wrong.
+[00:02:02.960] These things may be familiar to you.
+[00:02:04.560] There's a fairly well known instance from the last few years as CrowdStrike
+[00:02:08.440] where like, a routine update,
+[00:02:10.200] caused millions machines to crash worldwide means that the systems
+[00:02:14.640] are fleeing from a cyber incident, meaning they couldn't take any orders.
+[00:02:17.640] And that was for weeks, I think.
+[00:02:20.040] And maybe hundreds of millions in lost profit.
+[00:02:23.640] Yeah.
+[00:02:23.760] And then TfL had a major outage as well.
+[00:02:27.120] These are all kind of completely different companies,
+[00:02:30.680] different tech stacks.
+[00:02:31.960] But in all three cases, you know, something breaks and suddenly a lot
+[00:02:35.480] is at stake.
+[00:02:36.560] Customers, money, reputation, regulation kind of all at once.
+[00:02:41.280] And these are incidents, but on a smaller scale,
+[00:02:44.080] we kind of deal with smaller versions of these on a fairly regular basis.
+[00:02:49.800] And on the inside, you know,
+[00:02:50.880] we see these kind of headlines in the news that these really are serious things.
+[00:02:54.120] But there's often, you know, there's poor engineers
+[00:02:57.800] who are kind of dealing with these disasters as they happen.
+[00:03:00.760] You can imagine it's 2 a.m., your phone's going off.
+[00:03:04.360] You join a call half awake.
+[00:03:06.520] You know, it's something bad.
+[00:03:08.600] There's alerts firing everywhere.
+[00:03:10.720] There's, like, three other people on the call,
+[00:03:12.200] and they've all got completely different theories.
+[00:03:13.760] No one's got the full picture.
+[00:03:15.320] And you're forced to make decisions
+[00:03:16.560] about how you're going to act with, you know, a fraction of the information
+[00:03:19.800] that you actually need to do a proper decision.
+[00:03:23.040] Every minute kind of feels expensive in that situation.
+[00:03:28.000] The longer it goes on, the worse the impact.
+[00:03:30.640] You're trying to think clearly.
+[00:03:31.960] For knowing thousands,
+[00:03:34.280] if not millions of users can be affected by, your decisions.
+[00:03:38.240] This is the worst case scenario. But, like,
+[00:03:41.400] this does apply to, like, even smaller incidents.
+[00:03:44.760] So, yeah, incidents I think are inevitable.
+[00:03:48.920] But the chaos doesn't have to be.
+[00:03:54.520] So instant io.
+[00:03:55.720] We're building an end to end platform for incident response and management.
+[00:04:00.720] So this includes, like, several products that will work together.
+[00:04:03.880] So we have our own core product, and this is about making sure
+[00:04:06.680] that the right person's phone makes a horrible noise at 3 a.m.
+[00:04:10.760] and gets them up and out of bed.
+[00:04:12.440] And allows those people to also escalate to the right people to get into the room.
+[00:04:18.520] Our response product, which kind of turns
+[00:04:20.360] slack or teams into an incident command centre,
+[00:04:23.560] allowing people to clearly communicate and delegate tasks to each other.
+[00:04:27.400] And our AI as a product, which is all about
+[00:04:29.840] kind of kickstarting this incident investigation.
+[00:04:33.240] To find out what the root causes, even before you've joined the slack channel.
+[00:04:36.800] So by the time you get there, you've got a decent context of what's gone wrong.
+[00:04:40.160] And it can also automate some of the resolution steps for you as well.
+[00:04:43.800] And then finally, status pages product, which is all about
+[00:04:47.200] keeping customers and end users informed about what's going on.
+[00:04:52.280] So yeah, this is where we are today as a company.
+[00:04:54.480] We, 180 people.
+[00:04:56.480] We've just in fact, today hit, 700,000
+[00:05:00.360] incidents across our customers. Who,
+[00:05:05.480] although I do feel sorry for them, said I don't want to celebrate too much.
+[00:05:08.640] Yes.
+[00:05:10.760] We've got about 1500 customers.
+[00:05:12.200] Headquarters and all.
+[00:05:15.080] Our product engineering is based out of London, just by Old Street roundabout.
+[00:05:18.480] And then in New York
+[00:05:19.880] and San Francisco, we've got that go to market and sales teams.
+[00:05:23.720] We do work with, amazing customers.
+[00:05:26.000] Might be some logos that you recognise as well as some of London's
+[00:05:30.000] hottest Start-Ups as well.
+[00:05:32.920] So yeah.
+[00:05:35.320] So this talk is going to be about post mortem.
+[00:05:37.120] So like, where does that fit into all of this stuff? So,
+[00:05:42.000] things don't necessarily finish when the incident resolved
+[00:05:44.680] and the dust is settled, there's debrief meetings.
+[00:05:47.840] We create and track followup tasks, and postmortems
+[00:05:50.920] are like a really key part of what happens after an incident.
+[00:05:54.760] They let you create, like, a record of events.
+[00:05:57.280] They're kind of a reflection exercise,
+[00:05:59.640] on what has happened and opportunity for learning.
+[00:06:03.520] They help you identify what the true root cause was.
+[00:06:06.520] And document any, like, preventative measures and changes you're going to make.
+[00:06:11.480] And the key part of postmortems is that they should be blameless.
+[00:06:15.160] So instead of kind of identifying things that individuals did wrong.
+[00:06:19.120] Instead we focus on processes or like lack of guardrails
+[00:06:23.920] that allow these situations to arise in the first place.
+[00:06:28.520] Okay, cool.
+[00:06:29.360] So we know what a post-mortem is.
+[00:06:30.560] This talk is about creating a modern writing experience.
+[00:06:34.720] So we'll try and define that as well.
+[00:06:37.160] I might be showing my age a bit
+[00:06:40.120] here, but like, sometimes it's easier to define things in opposition.
+[00:06:43.360] So we're going looking at some things which are not modern writing experiences.
+[00:06:48.360] Anyone remember this?
+[00:06:53.120] So yeah, like rich text.
+[00:06:54.680] I think when we used to think about rich text,
+[00:06:57.680] it used to be this kind of almost infinite styling options.
+[00:07:00.760] You could pick from lots of fonts, you pick some colours, sizes,
+[00:07:04.680] and now I think really
+[00:07:08.080] when we talk about rich text, it's about like being data rich.
+[00:07:11.320] It's dynamic.
+[00:07:12.560] It's embedded content.
+[00:07:15.640] Clutter free.
+[00:07:17.560] So this I think, in old versions of word, you could install all these
+[00:07:21.560] extra power toolbars to allow you to do stuff.
+[00:07:25.440] And yeah, I think we used to think of this
+[00:07:28.880] as empowering people with all these controls,
+[00:07:30.800] but I think now we've realised less is more.
+[00:07:33.640] And the job of software is to facilitate focus,
+[00:07:37.560] focus on the content and writing.
+[00:07:40.520] And additionally, I think UI concepts such as progressive disclosure and adaptive
+[00:07:44.520] interfaces have kind of helped replace this sort of clutter that we get here.
+[00:07:51.680] Yeah.
+[00:07:53.120] Multi-player.
+[00:07:54.000] I've worked places
+[00:07:56.840] before where we've had to send files back and forth over email.
+[00:07:59.920] And take it in turns of who's going to edit it.
+[00:08:03.120] Or if you're lucky enough to have a server to have all your files
+[00:08:06.240] on, then they would get locked
+[00:08:07.560] and you only one person could be looking at it at a time.
+[00:08:10.960] And I think in modern applications, the idea of like real time
+[00:08:13.480] collaboration is just table stakes.
+[00:08:15.200] And it's what everyone expects.
+[00:08:17.800] I native so this is it's
+[00:08:21.440] not really fair on Clippy because Cliffie wasn't actually like an AI product.
+[00:08:25.920] I think it was just a very long list of regexes.
+[00:08:30.080] But it was this idea of having a writing assistant, which in some ways
+[00:08:34.360] was kind of ahead of its time, but it was, fairly unanimously, people decided
+[00:08:39.720] that it was very annoying and distracting and not an experience that we wanted.
+[00:08:43.280] So now when we think about, like how AI weaves itself into products,
+[00:08:48.160] like it's not this sort of bolted on thing,
+[00:08:51.200] it's kind of integral to how the product works.
+[00:08:53.760] Its magic kind of sprinkled through various touchpoints.
+[00:08:57.480] Along the journey.
+[00:09:01.120] So yeah, why why bother
+[00:09:04.000] building one, incident II why why are we building a text editor?
+[00:09:09.360] I think we own the kind of whole
+[00:09:11.360] incident process, and we have all the data,
+[00:09:14.000] and we really feel this, like, makes us the best, best place
+[00:09:17.280] to kind of eliminate the busywork that comes with post-mortems.
+[00:09:22.000] I mean, yeah,
+[00:09:24.560] we have all the context for documents to be truly rich.
+[00:09:28.720] You can kind of mention and embed kind of a lot of things inside an incident
+[00:09:32.840] post-mortem doc, various services or apps that you might be in control and control
+[00:09:37.040] of, teams in your company, your customers pull requests,
+[00:09:42.080] conversations from slack, other incidents,
+[00:09:46.760] and over time, like building a corpus of,
+[00:09:50.480] like, rich incident data compound's value.
+[00:09:54.960] This data is used by humans,
+[00:09:56.360] but also increasingly AI to kind of spot common patterns and themes.
+[00:10:00.200] And is helped by, ISV product to help diagnose issues
+[00:10:06.440] when we can see that something has happened before
+[00:10:08.280] in a previous incident, with similar patterns that might be,
+[00:10:12.520] you know, the root cause to to a new incident.
+[00:10:17.040] And finally, we think
+[00:10:19.360] investing time into making postmortems
+[00:10:21.520] as good as possible helps create less incidents.
+[00:10:25.000] And we're while we are developing tools, I guess.
+[00:10:28.360] Sorry, to help resolve incidents faster.
+[00:10:31.440] Like, nothing is quicker than just avoiding it in the first place.
+[00:10:35.080] So yeah, a really strong post-mortem where you've identified
+[00:10:39.200] what the true root cause is and like sufficient
+[00:10:42.320] follow up measures to kind of stop the incident happening again.
+[00:10:47.080] We'll save you a lot of time in the long run.
+[00:10:50.080] So in terms of the project, this is, where we are at the moment.
+[00:10:53.920] So, we started this back in August.
+[00:10:57.800] We did a demo of it, sev zero conference in San Francisco in September.
+[00:11:02.360] In October, we basically had to make the demo actually work because there was
+[00:11:06.440] a lot of kind of smoke and mirrors in terms of what we demoed there.
+[00:11:11.560] We got this in the hands of an early access group in November,
+[00:11:15.080] and there's quite a lot of integration work at that point to kind of build it
+[00:11:18.080] into our platform rather than kind of a standalone demo.
+[00:11:21.880] In December, this hit general availability.
+[00:11:24.240] And we were running this in parallel to our old editor
+[00:11:27.080] experience, which then in January we kind of killed that off.
+[00:11:31.520] So that was
+[00:11:31.960] just sort of one experience in the app.
+[00:11:34.960] Currently we, in February and we're kind of working on Delight and Polish,
+[00:11:39.080] which is kind of a series of smaller but awesome new features
+[00:11:42.600] and kind of iterating on the feedback that we've got from customers so far.
+[00:11:46.240] And we're gearing up to marketing launch, next month.
+[00:11:48.920] So, I'm looking forward to that.
+[00:11:50.760] We're going to have some videos out.
+[00:11:52.120] Catch them.
+[00:11:54.040] Probably been on LinkedIn.
+[00:11:55.880] We have to find those.
+[00:11:57.960] So. Yeah.
+[00:11:58.560] How do we build it?
+[00:12:01.080] Yeah. We know what an incident is.
+[00:12:02.920] Now we know what a post-mortem is.
+[00:12:04.280] We know what a modern writing experience is.
+[00:12:06.240] And why we're building one.
+[00:12:07.320] So let's look into the how,
+[00:12:11.200] I think it's probably
+[00:12:13.760] best to start this by saying, like, rich text editors are a hard problem.
+[00:12:17.840] The content editor API has got a lot of rough edges.
+[00:12:23.400] Managing selection state in the browser is a bit of a pain
+[00:12:27.200] and doesn't like neatly fit into React's way of seeing the world.
+[00:12:33.040] And real time collaboration is a hard problem.
+[00:12:36.640] I'd also say like, these aren't really
+[00:12:39.480] like problems that we have an interest in owning.
+[00:12:42.920] So we're very, like, happy to kind of lean on open source tools where we can.
+[00:12:47.600] So we're mainly using, tip top, which is a
+[00:12:51.720] we sort of see it as a headless developer experience
+[00:12:54.920] glue layer around, kind of several other key open source components.
+[00:13:00.280] Pros mirror, which is one that's kind of the core of the editor.
+[00:13:03.880] It handles schemas, change management, stuff like that.
+[00:13:08.280] Y JS which is this conflict free replicated data type?
+[00:13:14.000] This is what's used for real time collaboration allows,
+[00:13:18.320] multiple people to edit a document at once.
+[00:13:20.560] You can sort of think of it like get for documents,
+[00:13:25.280] but the sort of difference to chain is like you never get merge conflicts.
+[00:13:29.800] It's got like, an algorithm that will always merge to some state,
+[00:13:34.840] rather than kind of having to manually resolve those conflicts.
+[00:13:39.640] Hocus pocus, which is tip tops, collaboration server,
+[00:13:42.600] which wraps up tools like, watch s
+[00:13:45.440] markdown it which we use for like markdown parsing and transforming
+[00:13:48.840] and link ify which detects links, hashtags, mentions stuff like that.
+[00:13:54.480] And I think also kind of in
+[00:13:55.480] this process it's worth mentioning, UX inspiration as well.
+[00:13:59.240] Like we talk about like what open source tools to be used.
+[00:14:01.440] But I think we're very happy to kind of lean on
+[00:14:06.840] like UX and UI patterns that we see in other tools that we really like.
+[00:14:09.880] And when we think they're relevant, we're we're happy to borrow those.
+[00:14:14.520] So yeah, we'll do a,
+[00:14:16.880] bit of a deep, deep dive into tip top.
+[00:14:19.880] So I think the there's a core part of tip top is schemas.
+[00:14:24.080] They're at the heart of pros.
+[00:14:27.560] And you can sort of think of them as like strictly defining
+[00:14:30.680] what is valid content for your document.
+[00:14:37.280] So yeah, everything is a plugin.
+[00:14:40.520] There's plenty of off the shelf plugins.
+[00:14:42.640] Tip tap has their own starter kit full of stuff.
+[00:14:46.160] And you can build your own.
+[00:14:47.600] We built lots for ourselves,
+[00:14:49.320] but you can sort of think of every single thing that can belong in your document.
+[00:14:53.120] Is a plugin.
+[00:14:55.880] Nodes are a key part of this.
+[00:14:58.160] So these are like content types
+[00:14:59.520] you can think of like headings and paragraphs will be nodes in your document.
+[00:15:04.280] But yeah, we built lots of custom nodes for stuff
+[00:15:06.600] like our timeline, and tracking follow up tasks all within the document
+[00:15:11.840] marks. Yeah.
+[00:15:13.760] Bold, italic, strikethrough.
+[00:15:15.280] You can sort of think of them as styling.
+[00:15:17.600] Inline styling.
+[00:15:18.880] But this can also include stuff like highlighting comments, inline code.
+[00:15:26.400] And then decorations.
+[00:15:27.960] These are kind of interesting
+[00:15:30.040] because they're not persisted or synced as part of your document.
+[00:15:34.600] They sort of just live on your machine
+[00:15:36.920] locally, for a short amount of time.
+[00:15:39.840] So we might use this for draft comments before you submit a comment.
+[00:15:43.400] A comment, but you want to highlight a part in the document.
+[00:15:46.240] Or suggested I changes in inserting links where you want to select the text
+[00:15:50.640] and then decide where that's linking to those kind of temporary
+[00:15:54.040] states are all handled by decorations.
+[00:15:58.560] And I think it's also worth
+[00:15:59.280] pointing out that the schema, isn't one file.
+[00:16:03.240] It's kind of collated from all the various plugins
+[00:16:07.160] that you pass into your editor.
+[00:16:11.320] And yeah, the other novelty about,
+[00:16:14.520] Tic TAC is, is this interoperability between HTML and Json.
+[00:16:18.400] The kind of the document can be represented in.
+[00:16:22.240] And this is mainly to enable copy and paste.
+[00:16:24.360] So it sort of lives on the clipboard as HTML.
+[00:16:28.360] But lives kind of in the browser stay as Json.
+[00:16:33.560] And it's slightly confusing that the HTML representation
+[00:16:36.400] that you specify isn't necessarily what you actually get in the browser,
+[00:16:40.040] like react is used to render it, but you also define what each node,
+[00:16:43.920] what will live,
+[00:16:46.880] will look like when it's on the clipboard.
+[00:16:50.800] So yeah, let's,
+[00:16:51.560] jump into some code of what this might look like.
+[00:16:55.000] So this is I'll use a mention node.
+[00:16:57.440] I'm sure you've all seen user mentions and stuff,
+[00:16:59.720] so you can kind of imagine what that might look like.
+[00:17:01.880] Yeah.
+[00:17:02.960] We'll say this is an inline node.
+[00:17:04.200] So it sits within, say, a paragraph.
+[00:17:06.360] And it's an atom, which in prose
+[00:17:09.560] Mario world basically means that you can't set your cursor inside it.
+[00:17:13.320] You can delete the whole thing
+[00:17:14.400] at once or add the whole thing at once, but you can't edit the the middle bit.
+[00:17:19.720] Here
+[00:17:21.160] we have to pass each HTML and render each HTML functions for the node.
+[00:17:24.960] And this basically instructs it how to, when you want to copy
+[00:17:29.240] everything to the clipboard, it will kind of yeah, render it into HTML.
+[00:17:33.320] And when you're pasting back into the editor it will say
+[00:17:37.160] how to turn the HTML back into, Json.
+[00:17:42.680] And then those attributes, your node can contain various attributes.
+[00:17:46.280] You kind of think of these like props in react.
+[00:17:48.800] These get persisted with the document.
+[00:17:51.840] And for each one of these you will have like, pass
+[00:17:55.400] and render method as well.
+[00:17:59.200] This part is where we kind of hand off to react.
+[00:18:01.200] So in our application, react actually handles how we want to render these.
+[00:18:07.040] And finally there's this, add HTML
+[00:18:11.680] schema awareness where each node you can add this description of how
+[00:18:16.200] this should behave, how you create one in kind of natural language.
+[00:18:19.760] And these are used to pass to an alarm.
+[00:18:22.480] So if an alarm is kind of co editing your document,
+[00:18:25.120] it knows how to do so.
+[00:18:29.520] It's a quick
+[00:18:29.960] look at, collaboration architecture.
+[00:18:33.760] So yeah, we've, we sort of fetch a token from our API.
+[00:18:39.000] We have a self-hosted, collaboration server
+[00:18:43.640] that we run in our own infrastructure.
+[00:18:45.720] And that has WebSocket connection
+[00:18:48.440] for, like, two way sync between various browsers.
+[00:18:51.600] And the collaboration server.
+[00:18:53.600] And then the collaboration server, like, lazily syncs
+[00:18:56.000] with our API and our Postgres as a sort of backup for that.
+[00:19:02.240] And as I said earlier, we're
+[00:19:03.360] using like, watches for this,
+[00:19:07.400] why this is kind of interesting.
+[00:19:08.680] So like, you can update any replica independently and concurrently
+[00:19:13.240] without having to coordinate with any of the other replicas.
+[00:19:16.240] It automatically resolves any inconsistencies.
+[00:19:20.040] And the replicas may have a different state
+[00:19:23.680] at any particular point in time, but like, they are eventually consistent.
+[00:19:30.520] Yeah.
+[00:19:30.800] And then we're gonna talk a little bit about AI native experience. So,
+[00:19:40.640] We, yeah, we kind of have this sort of like, deep
+[00:19:45.080] incident context that sort of goes into, AI.
+[00:19:48.880] So we have all, like, our alert state, telemetry,
+[00:19:52.080] ASV investigations, slack conversations, or like, messages, links, images,
+[00:19:57.120] scribe transcripts, which is, kind of,
+[00:20:00.800] meeting transcriber, the incident
+[00:20:03.480] timeline, the people involved, any updates that have been issued?
+[00:20:08.880] And this allows us to kind of
+[00:20:10.200] create a, like an initial draft of the post-mortem document.
+[00:20:13.280] Allows us to redraught it and kind of rewrite certain sections.
+[00:20:16.840] Reviewing of the document,
+[00:20:19.720] to find inaccuracies, conflicting information and missing follow ups.
+[00:20:24.040] And yeah, it's also useful for scribe our kind of meeting
+[00:20:27.120] transcriber and note taker.
+[00:20:32.320] So, yeah, we, going to do demo time
+[00:20:34.880] and was also pointing out that, yeah, we are hiring.
+[00:20:39.000] So come chat to mail.
+[00:20:40.400] Meg, if you want to find out more about that.
+[00:20:49.400] See if this works.
+[00:20:54.080] So, yeah, this is, text editor.
+[00:20:56.440] You can kind of see a list of collaborators online.
+[00:20:58.760] We can go into focus mode.
+[00:21:00.800] These are some of the mentions where you kind of get a lot of context about,
+[00:21:04.600] things within our organisation.
+[00:21:07.760] This is our timeline,
+[00:21:09.560] where you can see all the things that happened in an incident.
+[00:21:13.720] You can create tables here.
+[00:21:15.360] I'm just tidying this up.
+[00:21:18.080] We have links to pull requests.
+[00:21:20.320] You can find out a bit more about those.
+[00:21:24.840] We have a, like, a slash menu, so you can create content,
+[00:21:27.960] without leaving the keyboard.
+[00:21:33.360] We support drag and drop for image uploads.
+[00:21:45.600] Here you can see we have, ask
+[00:21:47.240] AI feature where you can highlight parts of the document,
+[00:21:51.040] and ask our AI agent to explain them or give you a review on them.
+[00:21:55.800] So in this case, we want to find out a bit more
+[00:21:57.440] about these two pull requests and what they actually did.
+[00:22:00.720] This would be working in the background.
+[00:22:02.680] I can carry on working on different parts of the document,
+[00:22:06.840] adding a follow up task here.
+[00:22:11.280] Always need some more unit tests.
+[00:22:17.360] And hey,
+[00:22:17.680] I've got my answer back from our agent of, Yeah.
+[00:22:20.800] What was included in those two pull requests?
+[00:22:25.200] There we go.
+[00:22:25.640] That's kind of a brief, brief look at what we built.
+[00:22:34.040] So, yeah.
+[00:22:34.720] That's it.
+[00:22:35.360] Happy to take any questions.
+[00:22:40.880] Thank you very much.
+[00:22:43.360] Oh, no. Oh!

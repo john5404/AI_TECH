@@ -1,0 +1,1419 @@
+[00:00:00.040] it's not a hallucination it's a fantasy
+[00:00:01.560] it's a fantasy of the user that the LM
+[00:00:03.280] can read your mind and know what it is
+[00:00:05.160] that that you wanted and to me I think
+[00:00:06.879] context is the key between where we are
+[00:00:08.960] today and where we want to go in the
+[00:00:10.759] future you might hire the world's best
+[00:00:12.840] SRE but when they join your organization
+[00:00:15.160] they don't know anything about your
+[00:00:16.240] organization so they don't know do you
+[00:00:17.960] run Windows in production re in
+[00:00:20.080] production Ubunto in production I think
+[00:00:21.920] a big missing piece here is the ability
+[00:00:24.560] to I'll call it normalize or make
+[00:00:26.720] legible what your infrastructure
+[00:00:28.400] actually looks like if you had enough
+[00:00:30.119] data then the LMS could make sense out
+[00:00:32.360] of that but because the data is not
+[00:00:34.440] public there isn't like a massive body
+[00:00:37.200] of data that they can come along and
+[00:00:39.399] identify all the loose strands that
+[00:00:42.120] connect different bits of data and the
+[00:00:44.879] data of one organization might not be
+[00:00:46.600] enough to satisfy
+[00:00:48.760] that you're listening to the AI native
+[00:00:51.239] Dev brought to you by Tesla
+[00:00:54.510] [Music]
+[00:01:08.759] hello everyone welcome back to the AI
+[00:01:10.880] native Dev today we're going to explore
+[00:01:12.960] a brand new horizon maybe of AI Dev
+[00:01:16.119] tools and how they apply to kind of
+[00:01:18.520] modern software development by going
+[00:01:20.119] into the world of devops and modern
+[00:01:22.040] infra and such basically few others can
+[00:01:24.240] be as well qualified to talk about that
+[00:01:26.400] than Armon dgar who is the co-founder of
+[00:01:29.320] Hashi Corp thanks Arman for coming here
+[00:01:31.360] onto the show talk to us about this yeah
+[00:01:33.399] thanks so much guy for having me looking
+[00:01:34.799] forward to it to start with we're gonna
+[00:01:36.720] dig into elaborate and built up this
+[00:01:39.759] sort of world of of devops sped a lot of
+[00:01:42.399] things with with terraform especially
+[00:01:44.399] when it comes to the cloud and how we
+[00:01:46.000] think about setting up modern infra
+[00:01:48.000] before we dive into AI itself maybe give
+[00:01:51.600] us a bit of a lay of the land of how to
+[00:01:53.479] think about managing or wrangling a
+[00:01:56.360] modern Cloud infrastructure today the
+[00:01:58.439] way I like to think about it is if we
+[00:02:00.079] take a step back from the specifics of
+[00:02:01.520] the tooling or the process and really
+[00:02:03.640] just think about what are the
+[00:02:04.520] fundamental steps in the life cycle of
+[00:02:06.600] managing infrastructure I think that's
+[00:02:08.200] important to understand because
+[00:02:09.360] ultimately that's the outcomes we care
+[00:02:11.080] about as opposed to the specifics of the
+[00:02:12.360] tooling or process so when I look at
+[00:02:14.239] that I think about day zero right you
+[00:02:16.480] sign up for an account with your
+[00:02:17.760] favorite hyperscaler you have to go set
+[00:02:19.599] up a foundation right so you need a
+[00:02:21.160] landing zone of your VPC your v-ets your
+[00:02:24.120] security groups your whatever so what's
+[00:02:26.200] that Landing Zone actually look like
+[00:02:27.800] that's Day Zero then you get to day one
+[00:02:29.440] where I have the blank Cloud environment
+[00:02:31.720] now I need to deploy my applications
+[00:02:33.519] into that a day one concern now you get
+[00:02:35.840] into day two where you say okay now I
+[00:02:37.160] have a bunch of existing apps running
+[00:02:39.000] now I have a patching action I have to
+[00:02:40.920] do there's a new Linux kernel version
+[00:02:42.599] that comes out okay so there's a day two
+[00:02:44.120] patch then I get to day three and now
+[00:02:46.800] I'm under scaling constraints so I need
+[00:02:48.560] to scale up or scale down or whatever
+[00:02:50.920] then you get to day four you have a
+[00:02:52.280] security incident whatever it is jdk
+[00:02:54.519] vulnerability I have to go do a bunch of
+[00:02:55.920] remediation on that and then ultimately
+[00:02:57.760] you're going to get to sort of Day end
+[00:02:58.959] of an application where now you're going
+[00:03:00.239] to decommission it right you have to
+[00:03:01.640] take it out of service so to me that's
+[00:03:03.400] how I like the thing about it there's
+[00:03:04.319] this sort of life cycle now there's many
+[00:03:06.239] techniques you can say I'm going to use
+[00:03:07.799] tools like infrastructure as code right
+[00:03:09.760] tools like terraform particularly
+[00:03:11.560] designed for things like that day zero
+[00:03:13.120] day one provisioning and the day ND
+[00:03:15.080] commissioning you have config management
+[00:03:16.720] tools Chef puppet anible they tend to be
+[00:03:19.319] more of day two day three Tools in terms
+[00:03:21.200] of hatching remediation config
+[00:03:23.000] management and then of course you have
+[00:03:24.519] other techniques like you could go
+[00:03:25.760] manually point and click you could use
+[00:03:27.640] the cloud provider by SDK whatever dire
+[00:03:29.959] so there's a bunch of techniques but
+[00:03:31.720] those life cycle points are fundamental
+[00:03:33.480] and I think that makes a lot of sense in
+[00:03:34.680] terms of the sort of the configuration
+[00:03:36.680] tools that get these changes applied to
+[00:03:39.959] it where would you classify in this
+[00:03:41.480] world the more the observability tools
+[00:03:44.360] or the the monitoring tools I guess they
+[00:03:47.040] they just later on top of that do you
+[00:03:48.400] feel like they fit that model yeah I
+[00:03:50.599] think they spand the whole thing right
+[00:03:51.760] so I think you take most observability
+[00:03:53.640] monitorial you're probably going to
+[00:03:55.200] configure them alongside the app that
+[00:03:56.879] got deployed day one right so I'm
+[00:03:58.400] deploying my app and I'm putting APM and
+[00:04:00.400] observability along with it and then I'm
+[00:04:02.079] going to operate that from day one
+[00:04:03.599] through to Day N right once I
+[00:04:05.000] decommission the app I'm probably not
+[00:04:06.200] monitoring it so I think it will span
+[00:04:08.040] that whole life cycle will be where
+[00:04:09.760] observability tools and you're probably
+[00:04:11.040] using tools like terraform to actually
+[00:04:13.640] deploy it at the same time as your
+[00:04:15.439] application gets deployed yeah I think
+[00:04:17.280] that makes sense and in general that's
+[00:04:18.560] probably true for all sorts of other
+[00:04:20.320] facets of it whatever cost controls that
+[00:04:22.240] you might have whatever security poster
+[00:04:24.360] management or other tools that you might
+[00:04:25.680] have post those yeah tools like whiz or
+[00:04:27.560] palto You' probably deploy again same
+[00:04:29.360] thing like day zero day one it's going
+[00:04:31.360] to live until Day end cost management I
+[00:04:33.639] think tends to be more of a day two day
+[00:04:35.520] three concern because until I've
+[00:04:36.600] deployed some of my I really know how
+[00:04:37.919] much cost so once I get into sort of
+[00:04:39.600] that day two day three it's hey I get my
+[00:04:41.080] cloud bill it's 30% higher than I expect
+[00:04:43.280] okay now I'm going to bring in some
+[00:04:44.120] finops tooling to figure out like why is
+[00:04:45.759] my spend higher than I thought so I
+[00:04:47.240] think that makes sense that's a useful
+[00:04:48.520] just starting point for us to talk about
+[00:04:50.080] what can we do then with AI and so we
+[00:04:52.440] built these different phases on it I
+[00:04:54.400] guess maybe for starters where do you
+[00:04:55.600] think AI is kicking in today to help
+[00:04:58.320] where have you seen it so today the way
+[00:05:00.120] I describe it I think is I'll introduce
+[00:05:02.000] a new term because we'll come back to it
+[00:05:03.280] a few times there's this notion of
+[00:05:04.479] almost context free Ai and what I mean
+[00:05:06.680] by that is I can go to Claude or GPT or
+[00:05:09.840] Gemini and say hey write me a terraform
+[00:05:12.759] script that will I don't know provision
+[00:05:14.680] let's say an S3 bucket and an ec2 VM and
+[00:05:17.840] so what I mean by that being context
+[00:05:19.240] free is I it it really doesn't need to
+[00:05:21.000] know anything about my existing
+[00:05:22.360] infrastructure I can go to a generic
+[00:05:24.280] Foundation model basically and just tell
+[00:05:26.560] it hey here's what I want and it can
+[00:05:28.120] spit out some reasonably terraform code
+[00:05:30.560] right I'd say at this point just given
+[00:05:32.120] based on pick your favorite modern model
+[00:05:34.319] it's going to be 90% pretty good in
+[00:05:36.680] terms of being able to write that
+[00:05:37.800] terraform code for you the flip side of
+[00:05:39.680] it right so that's I'll call it a
+[00:05:40.720] one-way translation from I have this
+[00:05:42.319] high level intent and that's translating
+[00:05:44.199] it to the implementation for me they're
+[00:05:45.919] also pretty good at going in the reverse
+[00:05:47.319] so I can give it an implementation and
+[00:05:49.039] say what's the intent right here's
+[00:05:51.319] 20,000 lines of terraform code I don't
+[00:05:52.880] want to read it summarize this for me
+[00:05:54.720] what do you mean you want to read it
+[00:05:55.720] that's everybody's favorite favorite
+[00:05:57.039] activity to read exactly yeah and I
+[00:05:59.919] think there's value there because you're
+[00:06:01.160] a new engineer you just started at a
+[00:06:02.840] company you don't really know how it
+[00:06:04.080] works and so you're like hey I'm
+[00:06:05.120] supposed to manage this app as a
+[00:06:06.560] starting point I could sit there and
+[00:06:07.520] read the 20,000 lines or I could say hey
+[00:06:09.759] give me a high level summary of this
+[00:06:11.080] thing I'll say okay this is deploying a
+[00:06:13.080] Java app on an ec2 VM with an S3 bucket
+[00:06:15.880] and so I think the reason the tools are
+[00:06:17.520] very good at both those directions today
+[00:06:19.360] is you really don't need any context
+[00:06:21.280] Beyond either what's captured in the
+[00:06:23.039] user's intent to do the translation or
+[00:06:25.240] what's captured in the terraform code to
+[00:06:26.759] do the summerization you don't really
+[00:06:28.639] need to know anything else and so I
+[00:06:30.520] think for those relatively constraint
+[00:06:32.720] use cases there's a lot of value today
+[00:06:34.800] right in that day zero day one it can
+[00:06:36.599] give you a huge Head Start in writing
+[00:06:38.440] the initial code cut down the time it
+[00:06:40.039] actually takes and similarly to
+[00:06:41.319] summarize what's there it gives you an
+[00:06:43.400] understanding a lot faster right and in
+[00:06:45.000] this context it's infrastructure as code
+[00:06:46.479] is just code you don't really care if it
+[00:06:48.160] was Java or python it learns it it
+[00:06:50.199] understands it the same way how how do
+[00:06:51.720] you feel though I think it's interesting
+[00:06:53.319] to think about the distinctions between
+[00:06:54.919] infrastructures code and regular code
+[00:06:56.680] and so a few thoughts about that one is
+[00:06:58.800] infrastructures code tends to be an
+[00:07:00.840] extreme example in which you can write
+[00:07:02.800] things in very few lines in terraform
+[00:07:05.199] the complexity isn't in how many lines
+[00:07:07.199] it's just in understanding the
+[00:07:08.240] implications of what you just read what
+[00:07:10.280] how did you configure the VPC and all
+[00:07:11.840] that so it's not about complexity but
+[00:07:13.960] there's this like World of data or
+[00:07:16.720] understanding it's a very it's a
+[00:07:18.360] flammable environment right like or
+[00:07:20.160] combustible environment you could pretty
+[00:07:22.240] easily blow yourself up or your
+[00:07:23.960] environment how have you seen the the
+[00:07:26.440] level of knowledge of llms in this
+[00:07:29.160] domain and in general have there been
+[00:07:31.440] tools that you've seen around that maybe
+[00:07:33.120] help you grasp what is this seemingly
+[00:07:35.720] naive code that the L generated for you
+[00:07:39.039] but I think what's interesting and what
+[00:07:40.840] we've seen is I think one of the things
+[00:07:42.400] that's nice about in some sense the
+[00:07:44.360] conciseness of something like terraform
+[00:07:46.000] Cod and the very high declarative nature
+[00:07:47.520] of it means that there's really not a
+[00:07:49.520] lot of imperative logic that the llms
+[00:07:51.960] have to understand and what I mean by
+[00:07:53.240] that is if you give an llm a very
+[00:07:55.199] complicated function with lots of
+[00:07:57.120] branching lots of different sort of
+[00:07:58.960] conditionals unless you really know what
+[00:08:00.560] the execution flow is and what the data
+[00:08:02.720] path is it's hard to actually know what
+[00:08:05.000] the result is right because it's so
+[00:08:06.759] conditional and branching terraform code
+[00:08:08.440] tends not to look like that because it's
+[00:08:09.800] very flat it's very declarative that's
+[00:08:12.000] very limited in terms of like how much
+[00:08:13.840] branching you end up having and so in
+[00:08:16.039] that sense what's nice about is that
+[00:08:17.680] that flatness actually makes it a lot
+[00:08:19.720] easier I think for the LMS to understand
+[00:08:21.800] because they don't really need to reason
+[00:08:23.000] about data flow through the models or
+[00:08:25.199] through the execution path and so in
+[00:08:26.759] that sense I think they do a better job
+[00:08:29.000] potentially
+[00:08:30.080] yeah and and we see that I think in
+[00:08:31.360] terms of generating the code that you
+[00:08:33.080] intended many examples also in in tools
+[00:08:35.919] that are dedicated to trying to make the
+[00:08:37.320] LMS work better in which they represent
+[00:08:40.279] the requirement in a sometimes even
+[00:08:42.360] pseudo code or somehow simplified
+[00:08:44.320] language more metal language and
+[00:08:45.760] terraform is not far from pseudo code
+[00:08:47.360] but it is it is a meta language it is a
+[00:08:49.040] language that is above apis and so being
+[00:08:51.560] simpler makes it more likely there's
+[00:08:53.240] basically like slightly less options and
+[00:08:55.920] maybe you know but what about the the
+[00:08:57.959] implications of that and highlighting
+[00:09:00.680] those to the user if I'm writing Java or
+[00:09:03.360] I'm writing python or writing JavaScript
+[00:09:05.480] then first of all again I think I have
+[00:09:08.000] that's combustible but also I'm going to
+[00:09:09.760] write some tests I'm going to have some
+[00:09:11.680] of these defense mechanisms if I'm
+[00:09:13.560] setting up a VPC if I'm creating
+[00:09:15.519] infrastructure as code because I don't
+[00:09:17.399] have expertise in that space and I'm
+[00:09:18.920] using the llm to generate that and it
+[00:09:21.160] creates infrastructure to me how would I
+[00:09:23.120] know that it's now open for anybody to
+[00:09:25.360] access to me I think this highlights one
+[00:09:26.959] of the biggest risks we see is the model
+[00:09:29.800] really don't have a good sense of things
+[00:09:32.320] like what are the security implications
+[00:09:33.839] of these things what is secure by
+[00:09:35.600] default and what you can't expect from
+[00:09:37.720] them is that they're going to generate
+[00:09:38.920] things that are secure by default
+[00:09:40.480] necessary like you asked it for an S3
+[00:09:42.360] bucket it's probably going to generate a
+[00:09:44.640] public S3 bucket which might be what you
+[00:09:46.600] wanted but might not be what you wanted
+[00:09:48.480] and so I think that kind of a Nuance to
+[00:09:50.079] your point that combustibility here is
+[00:09:52.160] that's a oneline difference in
+[00:09:53.519] configuration whether you said private
+[00:09:54.760] is equal to true or private is equal to
+[00:09:56.640] false or you emitted it and it defaulted
+[00:09:58.480] to True right yeah so it's not the
+[00:10:00.920] difference between a bad thing happened
+[00:10:02.519] and a good thing happened is not the
+[00:10:04.040] number of characters being a lot or the
+[00:10:06.519] logic really being wrong it's just you
+[00:10:07.920] missed a declarative private equals true
+[00:10:10.640] and it had unintended consequences and I
+[00:10:12.959] don't think the models today they don't
+[00:10:14.839] really have a an appropriate semantic
+[00:10:16.959] understanding of the sort of security
+[00:10:18.480] boundary and security implication of
+[00:10:20.160] some of those things and so one config
+[00:10:22.519] field is the same as another could field
+[00:10:23.959] in terms of importance to them and I
+[00:10:25.560] think what's happening is you just get a
+[00:10:26.959] pattern match based on the input data of
+[00:10:28.880] if it's more S3 buckets that were public
+[00:10:30.920] than were private then that's what
+[00:10:32.640] you're towards that yeah yeah just
+[00:10:35.200] gravitating towards where the training
+[00:10:36.480] data which was like I saw more public
+[00:10:38.120] than I saw private so therefore I'm
+[00:10:39.720] defaulting public right that's the
+[00:10:41.120] nature of it and so I think part of I
+[00:10:43.200] think the answer of getting some of
+[00:10:44.240] these things right is to actually trust
+[00:10:47.040] some of the output I think you actually
+[00:10:48.480] need to invest in the right security
+[00:10:50.120] guard rails on the other side of it to
+[00:10:51.680] say okay how am I going to do automated
+[00:10:53.440] reasoning around that we think we talk a
+[00:10:55.200] lot about things like policy as code
+[00:10:56.839] which is okay if I'm going to let my
+[00:10:57.800] users write ter or generate terraform in
+[00:11:00.360] this case with AI I need to actually
+[00:11:02.639] have a set of policy card rails that I
+[00:11:04.240] trust that's the belt and suspender so I
+[00:11:05.720] might put a check that says okay you're
+[00:11:06.959] provisioning S3 bucket it has to be
+[00:11:08.399] marked private and so you might have
+[00:11:10.040] generated it but then I have a belt and
+[00:11:11.360] suspenders approach hey no you're just
+[00:11:13.160] asked for a public S3 bucket try again
+[00:11:15.519] and that becomes a user in the loop now
+[00:11:17.120] who has to go and say okay I'm G to
+[00:11:18.600] either I have to change my statement to
+[00:11:20.160] the El say make it a private S3 bucket I
+[00:11:22.560] need to be expli it or I'm just going to
+[00:11:24.440] modify the generated ter from code and
+[00:11:25.959] say private equals true I really like
+[00:11:27.680] how this is a bit of an extreme example
+[00:11:30.120] of something that is happening in code
+[00:11:32.639] that is not infrastructure as code as
+[00:11:34.120] well I just had Caleb SEMA on the
+[00:11:36.920] podcast and we had a bit of a
+[00:11:38.639] conversation about is generated code
+[00:11:40.600] secure and it's hard to make any sort of
+[00:11:43.600] strong statements about that part
+[00:11:45.600] because it's not one thing and we you
+[00:11:47.480] should go check out their episode if you
+[00:11:48.720] want hear everything we said about it
+[00:11:50.720] but what's interesting is you take these
+[00:11:52.360] questions and you take them to an
+[00:11:53.560] extreme it's easier to get a sense for
+[00:11:55.800] it and so in infrastructure code I think
+[00:11:57.480] I love that example around the S3 bucket
+[00:11:59.120] which which is it's not right or wrong
+[00:12:00.760] to create that S3 bucket it's public or
+[00:12:03.680] or private it's just about being
+[00:12:05.519] contextual we'll get to that but it's
+[00:12:07.320] also it's a decision and do you
+[00:12:09.680] understand the implications of it and
+[00:12:11.000] it's also easy to not notice the omitted
+[00:12:13.320] line or to not notice that it said true
+[00:12:16.079] or false and terraform is like an
+[00:12:17.839] extreme version of it that the same
+[00:12:19.760] types of omission exist in any other
+[00:12:22.240] programming language that you create but
+[00:12:24.519] they're just less evident or less
+[00:12:26.880] blatant or maybe and in all of those
+[00:12:28.720] cases the answer is code generation is a
+[00:12:30.959] part of your stack and all your software
+[00:12:33.079] elements but if you just assume that
+[00:12:35.000] code that gets generated is magically
+[00:12:36.920] fit for purpose especially when you
+[00:12:38.040] didn't even tell it to create a secure
+[00:12:39.839] bucket or a private bucket you just said
+[00:12:42.000] create me ans3 bucket then you have to
+[00:12:43.720] have other means of validating like
+[00:12:46.920] policy as code what is right and what is
+[00:12:48.639] wrong I think one of the interesting
+[00:12:49.760] things sometimes people ask me and say
+[00:12:51.600] isn't that just because whatever we
+[00:12:53.320] didn't write like if it had generated
+[00:12:55.079] unit tests for example for the terraform
+[00:12:56.959] that would have been CAU and my view is
+[00:12:58.800] no it's fundamentally unknowable because
+[00:13:01.120] what I don't know is maybe you're making
+[00:13:03.000] a marketing site and you're hosting
+[00:13:05.120] public assets like images and it should
+[00:13:07.399] be a public bucket or maybe this is
+[00:13:09.120] hosting customer data and it should be a
+[00:13:10.839] private but the problem is input was
+[00:13:13.279] fundamentally underspecified so there's
+[00:13:15.600] no way to know this is not a
+[00:13:17.480] hallucination it's just you
+[00:13:18.680] fundamentally underspecified your input
+[00:13:21.240] and so no amount of testing can tell me
+[00:13:23.040] whether it was right or wrong because I
+[00:13:24.959] don't I don't know what you wanted I had
+[00:13:26.959] a conversation side when we're saying
+[00:13:28.600] it's not a UC ination it's a fantasy
+[00:13:30.120] it's a fantasy of the user that the llm
+[00:13:31.839] can read your mind and and know know
+[00:13:34.560] what it is that that you want clearly a
+[00:13:36.680] Tesla we talk about spec Centric
+[00:13:38.560] development talk about creating a
+[00:13:40.720] specification and not just about prompt
+[00:13:43.279] but there's this good and bad thing
+[00:13:45.120] about specs in the llm era which is
+[00:13:47.880] whatever you don't say the llm will fill
+[00:13:49.639] in the gaps and you you need proper
+[00:13:51.639] tooling to be able to highlight too you
+[00:13:53.800] the decisions the llm has made you still
+[00:13:55.959] need to pay attention you still need
+[00:13:57.560] potentially policy's codes to to decide
+[00:13:59.320] whether it conforms to your company's
+[00:14:01.120] requirements or your own requirements
+[00:14:02.880] whatever whoever sets the rules you you
+[00:14:04.920] need some form of visibility to like it
+[00:14:07.000] or not the llm is going to fill in the
+[00:14:08.440] gaps and it's not going to Red your mind
+[00:14:11.519] while doing it well I think there's this
+[00:14:13.320] interesting tension to between sort of
+[00:14:15.880] under specifying and allowing the LM to
+[00:14:18.120] fill things in and when taken to the
+[00:14:20.560] Limit if you specify everything you're
+[00:14:22.480] effectively writing the terraform code
+[00:14:24.199] so another example I gave here is I said
+[00:14:26.040] I want an ec2 VM what OS is that ec2 VM
+[00:14:28.839] running is it Windows is it Red Hat
+[00:14:31.279] Linux is it Debian is it Ubuntu I didn't
+[00:14:33.720] specify but something's going to get
+[00:14:35.519] filled in the ec2m is going to be
+[00:14:36.920] running something so you will end up
+[00:14:38.680] with an operating system now you might
+[00:14:40.440] realize it wasn't the operating system
+[00:14:42.120] you wanted and so now you're going to
+[00:14:43.399] come back and be like give me an E2 VM
+[00:14:45.320] Running Red Hat Enterprise Linux with
+[00:14:47.360] this particular version and so you can
+[00:14:49.440] start to see then there's a whole bunch
+[00:14:50.720] of other things you didn't specify like
+[00:14:51.839] the size of the VM the region of the VM
+[00:14:54.480] the availabilities the VM and so the
+[00:14:56.519] more and more you start specifying it at
+[00:14:58.320] some point actually your declarative
+[00:15:00.160] input starts to converge on effectively
+[00:15:02.480] you're writing the terraform code so
+[00:15:04.360] there's this interesting balance here
+[00:15:06.120] how much can you leave unspecified
+[00:15:08.279] particularly in a world of
+[00:15:09.160] infrastructure where Details Matter
+[00:15:11.600] right if I'm asking it to write me a
+[00:15:12.839] Java code to sort a list as long as the
+[00:15:15.279] list is sorted do I really care not
+[00:15:16.880] really you might when your end gets
+[00:15:18.480] large enough and it turned out it was
+[00:15:19.560] bubble sore but I think in
+[00:15:20.920] infrastructure in particular the details
+[00:15:22.440] actually do tend to matter and so I
+[00:15:24.079] think this is where you start to run to
+[00:15:25.440] limits of context free generation the
+[00:15:28.199] other challeng maybe in the world of
+[00:15:29.720] infrastructure code is around the body
+[00:15:31.160] of knowledge to learn from and
+[00:15:32.959] infrastructure as code holds vast amount
+[00:15:35.440] of insight and guidance and you can see
+[00:15:37.880] these things but you really you don't
+[00:15:39.399] see implications when you just look at
+[00:15:41.519] the code it's what it did it's not
+[00:15:43.040] necessarily what was right what happened
+[00:15:44.920] to it and in code arguably because you
+[00:15:48.800] can run that code without operating you
+[00:15:51.199] can run the test there's been a lot of
+[00:15:52.959] Reliance by the LM companies of using
+[00:15:55.079] that data to train their system to
+[00:15:56.880] separate good code from bad or whatever
+[00:16:00.120] somehow prioritize it so that it's
+[00:16:01.880] properly encoded say prefer to generate
+[00:16:04.160] code in this fashion in infrastructure
+[00:16:06.120] as code or really in anything sort of
+[00:16:08.240] devops in modern infra I don't think
+[00:16:10.199] there is such a buddy of knowledge that
+[00:16:12.519] exists that is public information around
+[00:16:14.759] operability around what happened around
+[00:16:17.120] it failed to deploy a thing and how was
+[00:16:19.880] that remediated what were the cost
+[00:16:22.480] characteristics with were the
+[00:16:23.880] performance characteristics security
+[00:16:25.480] characteristics of something how do you
+[00:16:26.839] think about that do you think there is a
+[00:16:28.319] body of knowledge like that you think
+[00:16:30.759] can we is that a maximum limit that we
+[00:16:33.360] basically have to hit as an industry or
+[00:16:35.360] is there a way to solve this I so it's
+[00:16:37.240] interesting I think there's a bunch of
+[00:16:38.800] there's a bunch of different competing
+[00:16:39.959] factors here right on one hand I think
+[00:16:42.319] what's valuable is that there's a pretty
+[00:16:44.319] large community when we think around
+[00:16:45.920] terraform of people writing highquality
+[00:16:48.319] modules and sharing them publicly right
+[00:16:50.079] so in particular the hyperscalers
+[00:16:51.720] themselves will publish modules on how
+[00:16:53.519] to do Landing zones how to do common
+[00:16:55.279] patterns things like that so these are
+[00:16:57.000] sort high quality modules written and
+[00:16:59.600] curated by the cloud providers and
+[00:17:01.160] shared with their customers through
+[00:17:02.800] things like our public registry and
+[00:17:04.199] GitHub so you have a bunch of these
+[00:17:06.160] highquality curated examples that are in
+[00:17:08.919] the public domain at the same time I
+[00:17:11.000] think you have things like the terraform
+[00:17:12.400] registry where you have tens of
+[00:17:13.760] thousands of community maintained
+[00:17:15.160] modules and you have reasonable signals
+[00:17:17.160] of like how much they're useful and work
+[00:17:19.520] based on things like downloads version
+[00:17:21.360] history how often they're updated so you
+[00:17:23.280] can look at that and say okay I'm going
+[00:17:24.319] to look at the subset of things that are
+[00:17:26.039] frequently updated relatively recent
+[00:17:28.240] over a certain threshold of downloads
+[00:17:30.280] that signal they're a reasonable Quality
+[00:17:31.960] Bar and so you can subset the training
+[00:17:33.960] to a set of things that are known better
+[00:17:36.039] which is still a large body right tens
+[00:17:37.840] of thousands of examples yeah it's
+[00:17:39.559] sorting of the code like it's still code
+[00:17:41.360] you don't have further Insight but
+[00:17:42.440] you're relying on community insight to
+[00:17:44.760] help you rank which code should carry
+[00:17:47.640] more weight correct and then I think
+[00:17:49.360] even internally because of things like
+[00:17:51.039] terap Cloud we actually have more sort
+[00:17:52.600] of operational insight into hey we know
+[00:17:55.080] which terraform runs fail and succeed
+[00:17:56.720] for example and we know what code bases
+[00:17:58.600] and what what module versions that
+[00:17:59.840] correlates with so you can say okay I
+[00:18:01.720] know this one failed 10 times in a row
+[00:18:03.799] probably not a great example to learn
+[00:18:05.679] from versus other code base has a very
+[00:18:08.000] high success rate so those are higher
+[00:18:09.919] quality in some sense training data so
+[00:18:11.640] you can take some of that signal and
+[00:18:13.000] then use that to look and say okay I
+[00:18:14.640] have some inputs that I believe to be
+[00:18:16.200] higher quality in terms of what I want
+[00:18:17.400] to train on yeah so I think you have a
+[00:18:18.919] few of these different things that I
+[00:18:20.159] think helps pull that together but
+[00:18:22.520] you're right I think when you think
+[00:18:23.400] about the universe of maybe Java code
+[00:18:25.480] that's out there it's going to be a lot
+[00:18:27.039] bigger than infrastructure as code the
+[00:18:29.000] flip side is because infrastructures
+[00:18:30.480] code is I think a lot simpler more
+[00:18:32.039] constrained doesn't have complex
+[00:18:34.000] branching and data paths I think you
+[00:18:35.919] actually don't need probably as much
+[00:18:37.480] training data right and I think
+[00:18:39.159] similarly because the documentation is
+[00:18:40.840] so rich it also is a pretty valuable
+[00:18:43.000] form of training data versus
+[00:18:44.320] documentation for programming language
+[00:18:46.039] TS to be very lowlevel kind of function
+[00:18:48.880] oriented versus infrastructures code
+[00:18:50.760] tends to be resource oriented so the
+[00:18:52.760] documentation is actually a much richer
+[00:18:54.880] input source than it would be for a
+[00:18:56.159] programming language yeah and I tend to
+[00:18:58.080] agree with that I infrastructure as code
+[00:19:00.720] is an easier thing for llms to generate
+[00:19:04.320] the catch being it will successfully
+[00:19:06.400] generate working terraform code is it
+[00:19:08.840] creating the infrastructure that is
+[00:19:11.120] correct is a question that's harder
+[00:19:12.679] because in Java the it's it's easier to
+[00:19:15.120] run the code and see if it passed the
+[00:19:17.520] tests and in infrastructure as code it's
+[00:19:19.919] it's doable you could set up Cloud
+[00:19:21.760] environments and have those runs and for
+[00:19:23.440] all I know maybe a bunch of these llm
+[00:19:25.360] providers are doing some of that but
+[00:19:27.000] it's a lot more elaborate and expensive
+[00:19:29.039] and I'm curious because the cloud
+[00:19:31.240] providers themselves are so deep into
+[00:19:34.159] the llm foundation model providers as
+[00:19:36.520] well how much are they able or actually
+[00:19:39.559] are using the data that they see they
+[00:19:42.159] observe on their own platforms to be
+[00:19:44.480] able to guide it on one hand I'm sure
+[00:19:46.440] organizations will be plenty annoyed if
+[00:19:48.440] they do that on the other hand in a
+[00:19:50.039] position to see that I guess that's true
+[00:19:51.960] I'm not going to challenge you on those
+[00:19:53.320] for I guess that's also true with your
+[00:19:54.840] platform in a terraform Cloud so
+[00:19:57.039] interesting to see where it goes let's
+[00:19:58.280] talk about that's sort of step two
+[00:19:59.600] context free I generation and
+[00:20:02.480] summarization or sort of reading from it
+[00:20:05.240] is very useful has a bunch of caveat
+[00:20:07.240] about you still need to maintain your
+[00:20:09.320] sort of thresholds or policy of code for
+[00:20:12.000] responsible use of it probably
+[00:20:13.880] summarization it can be very good
+[00:20:15.520] because it has all the advantages and
+[00:20:17.559] none of the disadvantages we discussed
+[00:20:19.320] where do you see this headed where what
+[00:20:20.799] do you think is the next step yes I
+[00:20:22.240] think we alluded to it right here a few
+[00:20:24.159] times with this discussion on context
+[00:20:26.200] and to me I think context is the key
+[00:20:28.080] between where we are today and where we
+[00:20:30.080] want to go in the future which is the
+[00:20:32.200] example I would use and make this
+[00:20:34.080] concept a little bit maybe more crisp
+[00:20:35.880] for people is like you might hire the
+[00:20:37.720] world's best SRE who knows terraform and
+[00:20:40.480] Cloud inside and out but when they join
+[00:20:42.440] your organization they don't know
+[00:20:43.919] anything about your organization so they
+[00:20:45.559] don't know do you run Windows in
+[00:20:47.039] production real in production Ubunto in
+[00:20:49.440] production now they might be power users
+[00:20:51.360] at all of those things but the context
+[00:20:53.480] of knowing hey as an organization we've
+[00:20:55.320] standardized on real that's critical
+[00:20:57.440] piece of context that you have to be a
+[00:20:59.440] useful S at the or right you don't want
+[00:21:01.280] to hire someone to arrest my stack is
+[00:21:03.360] Windows and all of a sudden this
+[00:21:04.400] person's writing Linux for me it doesn't
+[00:21:06.000] help me right they need to understand
+[00:21:07.880] how does the organization work what have
+[00:21:09.240] we standardized on what does my existing
+[00:21:10.880] infrastructure look like for them to
+[00:21:12.760] generate things that are then
+[00:21:13.919] contextually relevant to my environment
+[00:21:16.480] and I think that's actually that context
+[00:21:18.720] if you think about it as that SRE who
+[00:21:20.279] knows about my environment or doesn't
+[00:21:21.440] know about my environment extends to
+[00:21:23.039] every point in the life cycle so even if
+[00:21:24.600] I go all the way to that day Zero
+[00:21:25.960] example I gave if I say just give me the
+[00:21:27.799] S3 bucket in the ec2 VM if the SRE had
+[00:21:30.880] the context to say okay what type of app
+[00:21:33.039] is this oh it's your production billing
+[00:21:34.840] app okay there's a few implications to
+[00:21:36.880] that production billing app probably
+[00:21:38.640] implies it should not be public so I
+[00:21:40.279] shouldn't have to specify S3 bucket is
+[00:21:42.080] public and if I standardize on real then
+[00:21:44.080] you're not going to ask me what's the
+[00:21:45.480] operating system because you I've
+[00:21:46.760] already standardized on real in some
+[00:21:48.279] sense the word assumption is an
+[00:21:49.799] important one here it's what are the set
+[00:21:51.039] of assumptions the llm is going to be
+[00:21:53.000] making that you want to make explicit
+[00:21:55.600] because you have context and that's
+[00:21:56.960] going to be everything from production
+[00:21:58.600] environments regulatory regimes like
+[00:22:00.240] billing app might need to be PCI
+[00:22:02.039] Compliant to operating systems that I'm
+[00:22:04.480] running to what regions I'm always in Us
+[00:22:06.360] East one or I'm always in whatever
+[00:22:08.320] region right so what are those things
+[00:22:10.640] that I need to have contextual awareness
+[00:22:12.520] that is going to let me be much more
+[00:22:14.480] effective in my day Zero and day one
+[00:22:16.240] when I'm doing that sort of generation
+[00:22:18.159] it makes very natural sense to want to
+[00:22:20.159] do those how much are you envisioning
+[00:22:22.120] this being more sit down and have an
+[00:22:24.000] interview with the Chief Architect to
+[00:22:26.279] understand this versus autodiscovery and
+[00:22:29.039] I guess it's a gutfield type question
+[00:22:30.760] but what level of granularity matters
+[00:22:32.760] here is it really just hey what are your
+[00:22:34.480] primary stacks and all that and the best
+[00:22:36.120] practices really amidst 99% of those
+[00:22:38.880] that use it and know what they're doing
+[00:22:40.559] is to do these things versus you really
+[00:22:43.120] the devils in the details you need to
+[00:22:44.919] understand this organization's micro
+[00:22:47.679] choices these interactions between these
+[00:22:50.039] applications and how they work to
+[00:22:52.240] achieve something that is comparable to
+[00:22:54.360] one of your good devops Engineers I
+[00:22:57.159] think for like the most of the things I
+[00:22:58.840] think that's a 8020 rule I think 80% of
+[00:23:01.840] the value is in codifying 20% of the
+[00:23:03.919] assumptions what I mean by that is like
+[00:23:05.720] for most people if it's cloud provider
+[00:23:08.240] it's region it's operating system it's
+[00:23:11.720] course like when you say give me a
+[00:23:12.960] database okay are we in my SQL shop or a
+[00:23:14.799] post shop right so I think it's probably
+[00:23:17.279] maybe a dozen key variables when you
+[00:23:19.600] think about like core stack that if you
+[00:23:21.559] say okay these dozen things I want to be
+[00:23:23.720] well aware of that probably is 80% of
+[00:23:26.840] sort of the surface area of what you
+[00:23:28.520] care about right that last 20% probably
+[00:23:31.240] starts getting super nuanced and
+[00:23:32.799] specific to each application so you
+[00:23:34.760] might say okay this is a highfrequency
+[00:23:36.120] trading app okay that has a whole bunch
+[00:23:38.720] of different very specific implications
+[00:23:40.960] because of the nature of that workload
+[00:23:42.919] but that workload is unique it to
+[00:23:44.559] probably doesn't represent most of your
+[00:23:45.840] workload most of my workload is three-
+[00:23:47.520] tier Java application so it's fine if
+[00:23:49.840] you make if you fill in some of the
+[00:23:51.000] blanks and it's doesn't matter but maybe
+[00:23:53.559] high frequency trade I really care about
+[00:23:55.400] performance latency sizing OS a bunch of
+[00:23:58.159] those variables will matter but it'll be
+[00:24:00.360] very workload specific and have you seen
+[00:24:02.240] anyone try to take this all the way to
+[00:24:06.320] go and say I will inspect all the
+[00:24:09.320] observability data and the terraform
+[00:24:11.840] State and whatever it is that I can
+[00:24:14.480] glean out of the deployed environment
+[00:24:18.440] that you have and how your application
+[00:24:20.120] operates and maybe historical data and I
+[00:24:22.279] will find you in a model I'm making this
+[00:24:24.400] but I will find you in a local model and
+[00:24:26.600] therefore I will generate perfect very
+[00:24:30.200] tuned but also attuned to your goals
+[00:24:32.440] you're looking to reduce costs so I will
+[00:24:34.840] make the choices around that I think
+[00:24:36.760] that sounds directionally like something
+[00:24:39.559] that a startup might do have you seen
+[00:24:42.320] companies or big incumbents take a crack
+[00:24:44.520] at doing things of that nature not quite
+[00:24:46.760] yet and I think maybe this gets into the
+[00:24:48.880] Second Challenge I think when we start
+[00:24:50.279] talking about context which is I think a
+[00:24:52.919] big missing piece here is the ability to
+[00:24:55.640] I'll call it normalize or make legible
+[00:24:58.440] what your infrastructure actually looks
+[00:24:59.720] like and and what I mean by that is if
+[00:25:01.600] you think about code great it's a flat
+[00:25:03.760] text file sitting in Version Control
+[00:25:05.799] that that that's all I need to know
+[00:25:06.880] about it it's all there if you think
+[00:25:08.520] about infrastructure it lives if you
+[00:25:10.880] will in some sense in the real world the
+[00:25:13.039] cloud World however you want to think
+[00:25:14.120] about it and so there's this sort of
+[00:25:15.880] running thing that's out there that has
+[00:25:18.840] all sorts of ephemeral attributes has
+[00:25:21.240] emergent properties because has
+[00:25:23.159] accumulated over decades and how do you
+[00:25:25.640] actually make that legible to an LL M
+[00:25:29.080] right and I think a big piece of what's
+[00:25:30.559] missing is the ability to inventory if
+[00:25:32.480] you will all of that in a consistent way
+[00:25:35.200] and then appropriately vectorize it
+[00:25:37.120] categorize it whatever so that then an
+[00:25:39.399] llm can reason about it in a structured
+[00:25:41.799] way right I think as humans we're really
+[00:25:43.520] good about dealing about with the
+[00:25:45.159] ambiguity of these environments and the
+[00:25:46.679] complexity of them but llms
+[00:25:48.399] fundamentally need to work on something
+[00:25:49.880] that's much more normalized like they
+[00:25:52.039] can't you can't tell them to go log into
+[00:25:53.840] the AWS console and click around and
+[00:25:55.399] figure out what production looks like
+[00:25:57.480] yeah maybe
+[00:25:58.960] in the you could yeah I think people can
+[00:26:01.000] do that and we should talk a little bit
+[00:26:02.600] about trust I think the blast rate is
+[00:26:04.159] there the combustibility comes back to
+[00:26:06.159] get in the way of that I I I like the
+[00:26:08.200] normalization question but I guess maybe
+[00:26:10.760] to challenge that a little bit like it
+[00:26:13.200] it is still small in comparison to like
+[00:26:16.600] parameters sort of the billions of
+[00:26:18.559] languages I guess in theory and maybe
+[00:26:21.000] that's the the dissonance here if you
+[00:26:23.039] had enough data then the LMS could make
+[00:26:25.679] sense out of that but because the data
+[00:26:27.640] is not public public there isn't like a
+[00:26:29.760] massive body of data that they can come
+[00:26:32.080] along and identify all the loose strands
+[00:26:35.640] that connect different bits of data and
+[00:26:38.440] the data of one organization might not
+[00:26:40.080] be enough to satisfy that I I think it's
+[00:26:42.240] actually worse than that it's not even
+[00:26:43.480] though the data is not public it's that
+[00:26:45.240] most organizations don't have it and
+[00:26:47.200] what I mean by that is I'll take a very
+[00:26:48.760] real example right open S vulnerability
+[00:26:51.440] and we work with thousands of
+[00:26:52.520] Enterprises the vast majority of them I
+[00:26:55.279] would say when they have an issue like
+[00:26:56.600] open us all vulnerability is you create
+[00:26:58.520] a spreadsheet and you go manually
+[00:27:00.640] inventory all of your applications and
+[00:27:02.679] then you go manually figure out what's
+[00:27:04.080] in production and then you manually
+[00:27:05.559] figure out what version of open ssls
+[00:27:07.520] there and then you go manually remediate
+[00:27:09.279] that so if you think about that's the
+[00:27:11.000] universe where most of these
+[00:27:12.039] organizations are starting with what is
+[00:27:13.720] the input to the llm yeah it's there's
+[00:27:16.279] just a bunch of stuff running in
+[00:27:18.000] production that's the start point
+[00:27:19.799] someone manually create that spreadsheet
+[00:27:21.279] but until you create that there was no
+[00:27:22.919] data for the it's just there's stuff
+[00:27:24.919] that is there it's an interesting almost
+[00:27:26.880] frustrating equation a little bit the
+[00:27:29.600] data technically exists it is in API
+[00:27:32.559] accessible systems we have a
+[00:27:35.520] technology competency that knows to take
+[00:27:39.039] fairly unstructured data and connect the
+[00:27:41.440] dots ownership of that data and
+[00:27:43.519] ownership to the access to that data
+[00:27:45.279] because maybe they would do the the leg
+[00:27:46.840] work is complicated and without it
+[00:27:49.559] getting like vast quantities of it you
+[00:27:52.240] you wouldn't be able to connect the dot
+[00:27:53.440] so you have to resort to this
+[00:27:55.039] normalization which in turn gets you
+[00:27:56.840] back to this no code land so you have to
+[00:27:59.240] anticipate all the variables and
+[00:28:01.399] something it really has too many
+[00:28:02.360] variables numerate so so I don't think
+[00:28:04.240] it's intractable I think to me it's like
+[00:28:06.480] how you have to solve this is in some
+[00:28:08.080] sense first of all we have to pull that
+[00:28:09.600] data and make it more queriable in a
+[00:28:12.320] sane way right meaning okay if I can
+[00:28:14.840] create sort of a representation that
+[00:28:16.519] says okay here is all my resources that
+[00:28:18.320] are running here's all the packages that
+[00:28:20.200] are running on those things here's the
+[00:28:21.919] versions of the application that are
+[00:28:23.279] running here's the I'm going to tag some
+[00:28:25.240] things production some staging some
+[00:28:27.240] development now I have a metadata that
+[00:28:29.320] says okay I understand applications I
+[00:28:31.120] understand environments I understand
+[00:28:32.200] what resources are associated with these
+[00:28:33.799] different things in some sense it's a
+[00:28:35.000] Knowledge Graph if I I can walk that
+[00:28:36.880] tree from okay from production to
+[00:28:38.679] application to these 50 VMS to the
+[00:28:40.600] packages on those 50 VMS I can start to
+[00:28:42.679] normalize that where now I have a
+[00:28:44.240] representation of this infrastructure as
+[00:28:46.039] opposed to it's just stuff running and
+[00:28:47.840] now that representation I can start to
+[00:28:49.919] answer an open-ended set of questions
+[00:28:52.000] right but it's I've normalized if you
+[00:28:53.760] will the what does my infrastructure
+[00:28:55.000] look like from it's just stuff that's
+[00:28:56.360] running into a knowledge graph that is
+[00:28:58.360] queriable and interactable by an llm in
+[00:29:00.960] a bit more of a structured way and so to
+[00:29:02.960] me I think that then starts to enable
+[00:29:04.600] that Foundation of context full and then
+[00:29:06.760] to your earlier point of how much am I
+[00:29:08.600] going to sit there and interview the
+[00:29:09.720] user and ask all them maybe the first 10
+[00:29:11.679] variables you'll ask them but the other
+[00:29:13.519] variables you'll infer them by mining
+[00:29:15.919] the knowledge graph so even operating
+[00:29:17.760] system if I look at the knowledge graph
+[00:29:19.000] and say hey 90% of it is running real
+[00:29:21.320] okay I can probably make an inference
+[00:29:22.760] that we've standardized on rail I don't
+[00:29:24.480] even need to ask the user but if I don't
+[00:29:26.399] have that graph and it's just here's VMS
+[00:29:28.640] I have no idea what's on those 50 VMS
+[00:29:30.679] how do you make that inference right you
+[00:29:32.159] have to know what's on the VM yeah and
+[00:29:33.919] so I think that's to me is once you have
+[00:29:35.720] that you can start to simplify the user
+[00:29:37.640] experience they don't have to enumerate
+[00:29:38.880] all their assumptions you can infer them
+[00:29:40.919] but also then the LM can do much more
+[00:29:42.480] advanced reasoning oh yeah application
+[00:29:44.519] fu is impacted by open SSL because we
+[00:29:47.159] can understand that the relationship
+[00:29:48.679] between these things exists ironically I
+[00:29:51.279] think if you have anywhere near that
+[00:29:54.080] type of information at your fingertips
+[00:29:55.440] you're already pretty good at managing
+[00:29:57.440] your modern infra like you're probably
+[00:29:59.559] quite up there so this might imply that
+[00:30:02.080] it's something that further extends the
+[00:30:04.720] Gap it fits more into the making the
+[00:30:08.200] ones that are good great versus dragging
+[00:30:11.039] along the ones that weren't as good at
+[00:30:13.679] least until such time that someone can
+[00:30:15.200] create an automatic thing that plugs
+[00:30:16.919] into all these apis and classify them
+[00:30:18.600] which frankly in security has been
+[00:30:20.360] happening with the world of csbm dbm all
+[00:30:23.039] of those a lot of them rely at least
+[00:30:25.519] from a from security poster perspective
+[00:30:27.279] which is only one lens on it but they do
+[00:30:29.640] rely on automated discovery of your
+[00:30:32.320] estate and classification and all of
+[00:30:34.960] that that are like roughly correct on
+[00:30:37.679] humans of course added them and two of
+[00:30:39.720] them so maybe that can have someone Jump
+[00:30:42.960] Ahead or sort of leap ahead from having
+[00:30:45.080] all that inventory to having AI
+[00:30:46.679] classification of that inventory on top
+[00:30:48.440] of which they can have ai workflows yeah
+[00:30:50.440] I think there's a lot of different
+[00:30:51.519] techniques there but I think it's about
+[00:30:52.960] pulling it together and then helping
+[00:30:55.120] these organizations frankly cross a
+[00:30:57.159] skills Gap that a lot of them have on
+[00:30:59.720] getting there because you're right if
+[00:31:00.519] you're an organization who had all of
+[00:31:01.919] this you're easily in the top percentile
+[00:31:04.799] I would say of organizations in terms of
+[00:31:06.799] maturity so how do you bring the rest of
+[00:31:09.159] that bell curve with you I think is the
+[00:31:11.120] problem and I guess maybe leaning a
+[00:31:13.080] little bit into that further future
+[00:31:15.039] which is the a Native because it give us
+[00:31:16.519] a picture of today of tomorrow but maybe
+[00:31:19.840] five years from now when we think about
+[00:31:21.440] something that is AI native I'm curious
+[00:31:24.320] what your thoughts are around like
+[00:31:26.399] autonomous devops some cases in which
+[00:31:29.200] you can actually have that that patching
+[00:31:31.679] process or something else be done
+[00:31:33.799] automatically how far do you think we
+[00:31:36.440] are from something like that do you one
+[00:31:38.840] is like crystal ball do you think this
+[00:31:40.320] is five years or is this 20 but also I
+[00:31:43.360] guess what would be deemed initial
+[00:31:45.320] successes around workflows that we can
+[00:31:47.159] say hey we are autonomously doing this
+[00:31:50.200] piece of modern infra handing right so
+[00:31:53.519] to me I actually I think there's
+[00:31:54.679] actually a few dimensions on which if
+[00:31:56.200] I'm looking at the five plus year
+[00:31:57.399] Horizon I think we'll see Evolution one
+[00:31:59.360] is I think in terms of the specification
+[00:32:01.720] level and what I mean by that is if I
+[00:32:03.519] think about like raw Cloud you know apis
+[00:32:06.080] sdks whatever I think about that is that
+[00:32:07.799] was Assembly Language right like you can
+[00:32:09.480] make a direct API called create ec2 VM
+[00:32:12.480] but that's a very lowlevel to operate
+[00:32:14.240] then you had tools like terraform which
+[00:32:15.679] are like you moved up to python right
+[00:32:17.200] you just said I want a VM it's terraform
+[00:32:19.240] job to figure out how to create manage
+[00:32:20.639] it Mudge the sub 20 API under the hood
+[00:32:23.039] the next level up is I don't even want
+[00:32:24.320] to really write the python I just want
+[00:32:25.639] to write the specification said here's
+[00:32:27.399] my Java app it needs a mySQL database it
+[00:32:30.120] needs an S3 bucket great it should
+[00:32:32.120] generate me my python which I can review
+[00:32:34.240] and potentially modify but I don't need
+[00:32:35.799] to directly author it and then that's
+[00:32:37.720] intermediating me from the Assembly
+[00:32:39.080] Language so I think on one dimension
+[00:32:40.559] it's we're going to move up the stack in
+[00:32:42.519] that order what that enables though is
+[00:32:45.039] if I say hey the way I specified my app
+[00:32:47.200] day one I going back to the sort of life
+[00:32:49.360] cycle was Java app with mySQL with
+[00:32:51.240] whatever then now when I start talking
+[00:32:53.200] about the day two day three day four
+[00:32:54.919] operational activities to your point how
+[00:32:57.480] many of those can I now automate away
+[00:33:00.960] without breaking the contract you've
+[00:33:02.720] given me your contract was this Java app
+[00:33:04.880] with my SQL or whatever day two I know
+[00:33:07.039] okay there was a I can watch the CBE
+[00:33:09.039] list that comes from jdk I know there's
+[00:33:11.320] a jdk vulnerability that needs to be
+[00:33:13.480] patched so you can look at and say
+[00:33:15.039] there's only so many operational
+[00:33:16.399] workflows a very key one is things like
+[00:33:18.480] patching and Vol management so can I
+[00:33:20.639] take something like that which is a huge
+[00:33:22.120] chore for most organizations I can
+[00:33:24.000] automatically subscribe to the feed of
+[00:33:25.600] vulnerabilities or new version releases
+[00:33:27.240] of Linux internal or whatever and really
+[00:33:29.760] the core should be okay I should be able
+[00:33:31.039] to take the app take the new version of
+[00:33:32.600] the OS and jdk I can deploy you into a
+[00:33:35.039] lower environment like staging I can
+[00:33:37.039] look at your observability if nothing
+[00:33:38.480] broke your unit test passed metrics look
+[00:33:41.039] consistent plus minus some margin I I
+[00:33:43.519] then tee it up and give it to the user
+[00:33:45.000] and say hey I did the patch here's the
+[00:33:47.000] change in the code I ran it in staging
+[00:33:49.080] here's the delta in your testing and
+[00:33:50.679] your metrics everything looks nominal
+[00:33:52.279] plusus 1% do you want to push this
+[00:33:54.200] button and merge it to production and I
+[00:33:55.880] think a system like that then gives you
+[00:33:57.559] the user a lot of control and confidence
+[00:33:59.639] because you're not saying I'm going to
+[00:34:00.559] go Auto patch prod for you and maybe
+[00:34:02.600] blow up your Universe yeah eventually if
+[00:34:04.399] you said yes a 100 times and never had
+[00:34:06.320] to say no you might say you know what
+[00:34:08.280] just go ahead automatically maybe under
+[00:34:10.440] these conditions or maybe you segregate
+[00:34:12.280] your tier one application maybe my core
+[00:34:14.159] bank I would don't whatever my mobile
+[00:34:16.040] API okay whatever and so you might tier
+[00:34:18.000] at tier one tier two or whatever and
+[00:34:19.800] over time you build the confidence but I
+[00:34:21.599] think it's like what's the amount of
+[00:34:23.079] work when you think about day two
+[00:34:24.399] patching every app in the exists in the
+[00:34:26.159] world how much of that can I autom make
+[00:34:28.159] probably like 99% of it if not 100% of
+[00:34:30.960] it and that is a tremendous amount of
+[00:34:32.800] value add when you think about just one
+[00:34:34.280] very specific thing which is just patch
+[00:34:35.760] and vulner management then you think
+[00:34:37.359] about right sizing I don't think I've
+[00:34:38.800] ever met a developer who right sized any
+[00:34:40.359] app ever and it's it's tedious you're
+[00:34:42.200] going to deploy the app then you're
+[00:34:43.720] going to go look at Telemetry metrics
+[00:34:45.200] then you're going to go try a different
+[00:34:46.359] size out it's just who's going to do
+[00:34:48.119] this right so there's a whole bunch of
+[00:34:49.320] automated tools but the whole process of
+[00:34:51.720] saying okay I'm going to try it in an
+[00:34:53.399] automated way maybe I think I should be
+[00:34:55.480] at 5 VMS instead of 10 so I'm going to
+[00:34:57.240] increment delete VMS monitor it make
+[00:34:59.280] sure nothing breaks it's just tedious
+[00:35:00.960] and timec consuming but if the AI could
+[00:35:02.680] just do it for me and say hey I saw that
+[00:35:04.760] you were underutilized you're at 2% CPU
+[00:35:07.160] utilization I right sized you from 10
+[00:35:09.240] VMS to five and I stayed within some
+[00:35:11.119] guardrail if CPU utilization stays under
+[00:35:13.119] 50% do you care probably not like that
+[00:35:16.000] type of day three right sizing cost
+[00:35:17.760] optimization you can probably have it
+[00:35:18.920] fully automated so when I start looking
+[00:35:20.760] at those day3 day4 type actions it's a
+[00:35:23.200] lot of things like that right it's
+[00:35:25.000] runbook automation hey you saw my logs
+[00:35:27.079] are getting my disc is getting full
+[00:35:28.880] based on my data dog observability or
+[00:35:30.560] whatever just go run anible
+[00:35:32.200] automatically and clear the log files
+[00:35:34.240] you don't need to tell me to just go do
+[00:35:35.839] it it feels a promising future and it's
+[00:35:38.920] interesting it feels like a place in
+[00:35:41.440] which a modern startup that creates
+[00:35:44.920] themselves can tee themselves up to
+[00:35:46.359] automate a bunch of these processes on
+[00:35:48.000] it more so than an Enterprise that has a
+[00:35:51.440] environment it's a little bit like the
+[00:35:53.040] Advent of infrastructures code if you do
+[00:35:55.079] it from the beginning you find yourself
+[00:35:57.040] in a very different place but once
+[00:35:59.200] you've allowed drift to happen not even
+[00:36:01.560] drift you've just done a bunch of things
+[00:36:02.880] manual it's actually very hard to
+[00:36:04.240] Wrangle it back which by the way is
+[00:36:06.319] another piece that a bunch of AI develop
+[00:36:08.960] startups are trying to do which is I
+[00:36:10.480] will read your state in production and I
+[00:36:13.160] will generate infrastructure as code to
+[00:36:14.839] do that once again needing to be
+[00:36:16.720] manually verified that they're correct
+[00:36:18.839] but I think I like the the destination
+[00:36:21.319] it's clearly very aligned with with what
+[00:36:23.040] we do here at tesel and It Gos down to
+[00:36:25.359] these small set of things which is I
+[00:36:27.200] need a specification that says what is
+[00:36:29.680] it that I want to do with a certain
+[00:36:31.240] level of degrees of freedom around how
+[00:36:33.240] much is within your RIT to decide versus
+[00:36:35.359] how much do I want to dictate there is
+[00:36:37.040] some generation ability of the actual
+[00:36:38.880] code which as we discussed in terraform
+[00:36:41.280] especially is is more doable even than
+[00:36:43.800] in other types of code and then
+[00:36:45.440] eventually when deployed key key key
+[00:36:47.720] here is the ability to verify and to see
+[00:36:50.319] that nothing broke that it is okay and
+[00:36:52.920] and I think that's true in many things
+[00:36:55.359] operational but I think what's
+[00:36:57.000] interesting in is that the best
+[00:36:58.760] practices in this world actually have
+[00:37:00.920] handled this not just by understanding
+[00:37:03.280] all the variables and anticipating
+[00:37:04.520] everything but also through these Canary
+[00:37:05.920] releases of hey just apply this to some
+[00:37:08.680] small fraction of your traffic and then
+[00:37:10.920] monitor to see nothing significantly
+[00:37:13.040] deviated and then go on and on and so a
+[00:37:15.440] lot of this is around existing best
+[00:37:17.599] practices at scale it's just hard to fit
+[00:37:20.440] it in if you don't do them all which
+[00:37:22.599] sort of smells of digital transformation
+[00:37:24.680] type type motion where you really you
+[00:37:27.200] have to
+[00:37:28.040] go in it's a little bit harder to dable
+[00:37:30.319] I think that's 100% right it's the the
+[00:37:32.040] way you put it before is that the Divide
+[00:37:33.760] between the hav and Have Nots gets wider
+[00:37:35.920] and I think the Enterprises that grew up
+[00:37:38.079] on itail sort of ticket driven manual
+[00:37:40.920] process for them it makes it that much
+[00:37:43.319] harder because I think if to your point
+[00:37:45.520] it's like the ones that started Dev opsy
+[00:37:47.359] native or infrastructure is code native
+[00:37:49.440] however you want to think about it but
+[00:37:50.640] then the leap into the sort of world
+[00:37:51.880] that I'm describing isn't that hard
+[00:37:53.800] because the fundamental building blocks
+[00:37:55.640] will be the same right at the end of the
+[00:37:57.119] day the high level specification will
+[00:37:58.640] generate infrastructure as code the
+[00:38:00.280] infrastructure's code can also help
+[00:38:01.920] synthesize what the higher level
+[00:38:03.160] intentions are but if you're starting
+[00:38:04.880] from a universe of no intentionality
+[00:38:07.200] basically it was just a bunch of tickets
+[00:38:08.680] that created a bunch of infrastructure
+[00:38:10.480] then yeah there's tools out there that
+[00:38:11.960] will reverse engineer but what's always
+[00:38:13.720] missing is intent right I can't discern
+[00:38:16.400] what's an accidental property of your
+[00:38:18.200] environment versus something that was an
+[00:38:19.640] intentional property of your environment
+[00:38:21.720] was the S3 bucket public because it was
+[00:38:23.119] a mistake or you intended it to be
+[00:38:24.720] public right there's almost no way right
+[00:38:26.760] you're trying to put Humpty Dumpty back
+[00:38:28.440] together from a thousand pieces and you
+[00:38:30.599] don't know what Humpty ever looked like
+[00:38:32.839] yeah and I think and the problem in a
+[00:38:34.160] lot of these big Enterprises is nobody
+[00:38:35.920] does because this infrastructure has
+[00:38:37.280] been running for 30 years and the people
+[00:38:38.839] who provisioned it have been retired I
+[00:38:40.640] think that's true know again the good
+[00:38:42.079] news is AI can slightly help you with
+[00:38:44.680] that as well they can go there and autoc
+[00:38:46.880] classify and learn a bunch of these
+[00:38:48.200] things but it's a process that has to
+[00:38:49.800] happen I think so so we've painted the
+[00:38:52.040] timeline over here starting from the AI
+[00:38:55.280] generated infrastructure as Cod or
+[00:38:57.440] summarization on it onto hopefully like
+[00:39:00.240] a fairly imminent contextualization of
+[00:39:02.800] that generation doesn't feel that far
+[00:39:04.800] out for at least sort of the base level
+[00:39:06.599] of it and then can evolve into it into
+[00:39:08.520] maybe these sort of native autonomous
+[00:39:10.440] workflows that maybe they do require
+[00:39:13.119] having all the pieces in place to enact
+[00:39:15.000] maybe let's talk a little bit about
+[00:39:16.160] people just end is what does this all
+[00:39:18.560] mean to someone working in this domain
+[00:39:20.440] if you're an Sr today versus an SRE in
+[00:39:24.599] five years time I don't think it's more
+[00:39:26.280] than that I think it's five years would
+[00:39:27.480] already be substantial guess what's your
+[00:39:29.200] view around the difference in skills you
+[00:39:31.680] might need and if you're in that
+[00:39:33.400] position right now what would you go
+[00:39:35.400] learn and invest in I would say this is
+[00:39:37.079] like a three to five year timeline for a
+[00:39:38.680] lot of the stuff we're talking about
+[00:39:39.720] it's not a 20 year timeline it's
+[00:39:41.160] interesting because I think it actually
+[00:39:43.000] if you think about what infrastructure
+[00:39:44.319] as code did for a lot of sres sort of
+[00:39:46.680] moves you out from I'll call it sitting
+[00:39:48.560] at the receiving end of a ticketing
+[00:39:49.880] queue and saying hey you're going to
+[00:39:50.920] manually go orchestrate things to really
+[00:39:53.200] what your job is to really design and
+[00:39:55.119] assess what the outcome was and then to
+[00:39:56.960] some translate that to things like
+[00:39:58.640] infrastructure as code and build
+[00:40:00.200] Automation and pipelines and things like
+[00:40:01.920] that around it so this really does is
+[00:40:03.560] actually it's just a longer lever for
+[00:40:05.160] those people I think the people who are
+[00:40:06.560] already thinking that's what their job
+[00:40:08.000] is if my job is design assessment
+[00:40:10.040] optimization I'm going to give you a
+[00:40:11.760] much longer lever if you think your job
+[00:40:13.760] is writing of terraform code or
+[00:40:15.880] execution of infrastructure activities
+[00:40:17.920] then in many ways some of the stuff will
+[00:40:19.520] obviate that right because you'll move
+[00:40:21.359] away from really even today we shouldn't
+[00:40:23.200] be in a place where we're manually
+[00:40:25.040] filing tickets and someone's updating a
+[00:40:26.520] firewall rule by hand right a lot of
+[00:40:28.440] that happens we still see a ton of that
+[00:40:30.040] in industry but really we already have
+[00:40:32.119] the tools when you think about things
+[00:40:33.079] like infrastructures code that you
+[00:40:34.079] shouldn't be doing that the next level
+[00:40:35.839] up is should you even write the
+[00:40:36.920] infrastructure as code or should you
+[00:40:38.040] just manage those set of intents and
+[00:40:39.520] specifications so I think from a skill
+[00:40:41.480] set perspective what's still relevant is
+[00:40:43.440] you have to know the domain you have to
+[00:40:44.839] know what a firewall is you have to know
+[00:40:46.200] what a VPC is indications that the the
+[00:40:48.960] llm might not know as well you have to
+[00:40:50.839] know that a public bucket is less secure
+[00:40:52.520] than a private bucket okay maybe that's
+[00:40:53.880] basic but and more yeah but I think
+[00:40:56.040] what's key is it's the domain knowledge
+[00:40:58.240] that's valuable of the SR and then
+[00:41:00.240] helping focus on an automation driven
+[00:41:02.359] approach of how I'm enabling the
+[00:41:03.720] business to achieve its outcomes because
+[00:41:05.359] infrastructure at the end of the day
+[00:41:06.359] nobody cares about infrastructure as an
+[00:41:07.839] ends infrastructure is a means
+[00:41:09.640] fundamentally so if you put yourself in
+[00:41:11.560] that role as an say okay when I'm
+[00:41:13.280] delivering is a means for my business to
+[00:41:15.000] deliver its applications or to operate
+[00:41:17.079] its business or whatever how do I do
+[00:41:18.920] that most efficiently through automation
+[00:41:20.720] through an upleveling of the
+[00:41:22.119] specification and apply a certain domain
+[00:41:24.359] knowledge to make sure we're doing in a
+[00:41:25.359] way that's secure compliant cost
+[00:41:27.000] effective
+[00:41:28.000] then this world becomes a much longer
+[00:41:29.480] lever for you we had a couple of
+[00:41:31.119] conversations on the podcast around the
+[00:41:33.200] evolving role of a software developer or
+[00:41:34.800] an app Dev in this and talked about
+[00:41:37.200] these sort of two routes one which they
+[00:41:38.839] go more towards the product management
+[00:41:41.079] side and understanding what the business
+[00:41:42.760] needs and the other goes more towards
+[00:41:44.520] the architect route and and seeing
+[00:41:46.720] things a higher level and it's possible
+[00:41:49.319] that in the world of sres they need to
+[00:41:51.920] do both because really a lot of the work
+[00:41:54.960] converges and so they need to have the
+[00:41:57.319] domain expertise look at things
+[00:41:58.680] architecturally to be able to make those
+[00:42:00.800] trade-off decisions through their
+[00:42:02.119] subject matter knowledge but also
+[00:42:04.160] understand the the motivations of the
+[00:42:05.960] business and what are like what is
+[00:42:08.480] indeed the current initiative and and
+[00:42:10.000] trajectory which I guess I I I hope for
+[00:42:12.240] many people is a positive transition but
+[00:42:15.440] it is yet another jump for those who
+[00:42:17.920] really are CIS admins at their core it
+[00:42:20.319] moves them further and further away from
+[00:42:22.040] that correct yeah I think that's fair
+[00:42:24.119] and I think that notion of when you look
+[00:42:25.599] at the very best sres they really are
+[00:42:27.520] some combination of a PM and an
+[00:42:29.520] architect because that's what they're
+[00:42:31.000] doing they're translating the business's
+[00:42:32.559] needs and requirements into an
+[00:42:34.119] architecture and then into a road map
+[00:42:36.079] from the infrastructure perspective and
+[00:42:38.319] I think it's you're right that's what
+[00:42:39.440] it'll become I think in appdev there's a
+[00:42:41.079] stronger distinction between a PM which
+[00:42:42.680] is more user customer facing versus an
+[00:42:45.040] architect in infrastructure your user
+[00:42:47.319] customers the internal app so the
+[00:42:49.240] architect and PM are one of the same to
+[00:42:51.040] a large extent and I think for the CIS
+[00:42:52.559] ad folks I think the nice thing in some
+[00:42:55.000] sense is some of these tools will
+[00:42:56.400] actually be I a lower learning curve I
+[00:42:58.599] would expect than maybe the jump from
+[00:43:01.119] CIS admin to infrastructure as code in
+[00:43:02.800] some sense was a higher bar because you
+[00:43:05.359] have to actually learn a bunch of syns
+[00:43:07.040] and learn a new set of tools and
+[00:43:08.559] workflows where it's in some sense going
+[00:43:10.200] to the AI driven world of it it'll be a
+[00:43:11.960] little bit more NLP driven but what
+[00:43:14.160] there's no escape from is actually your
+[00:43:15.839] value is you still have to understand a
+[00:43:17.280] much broader domain if all I was doing
+[00:43:19.079] was CIS admin and updating firewall
+[00:43:21.160] rules my domain that I understood was a
+[00:43:22.920] very small domain you're probably not
+[00:43:24.920] going to want an architect that only
+[00:43:26.440] knows about fire rules it's a bit too
+[00:43:28.240] narrow so I think your scope necessarily
+[00:43:31.040] I think I'm giving you a much longer
+[00:43:32.200] lever in some sense I expect you to be
+[00:43:34.040] live lifting a bigger rock it also feels
+[00:43:35.920] like the ability to be data driven or to
+[00:43:38.640] understand sort of those broader
+[00:43:40.079] implications is important even a sense
+[00:43:42.200] of some form of gut feeling around the
+[00:43:44.640] types of mistakes that the llm might do
+[00:43:47.359] because those are really the two ways in
+[00:43:48.920] which you don't get yourself in trouble
+[00:43:50.440] when the llm performs or the AI performs
+[00:43:52.839] more of the actions is one is be able to
+[00:43:55.480] observe that with data and so you
+[00:43:58.000] probably need to sharpen that skill even
+[00:44:00.559] more than you do today and two is maybe
+[00:44:02.800] a little bit anticipatory just like any
+[00:44:05.200] experience as will have this sort of
+[00:44:07.119] tingling feeling of I think this is
+[00:44:09.079] going to cause trouble like I think the
+[00:44:10.400] system will not like this choice of
+[00:44:12.640] allocation they would benefit from
+[00:44:14.920] having some form of of gut fill for how
+[00:44:17.280] the LM might respond or act in those
+[00:44:19.319] instem like with any technology we work
+[00:44:20.839] with and I think a lot of it will come
+[00:44:22.200] to process design and what I mean by
+[00:44:24.000] that is if you think about hey I test
+[00:44:26.000] everything by deploying to prodog
+[00:44:27.680] okay You're vulnerable to a whole class
+[00:44:29.359] of mistake if that's your process first
+[00:44:32.119] if you say hey I have this more
+[00:44:33.440] regimented I send it to test then I
+[00:44:35.520] promote to Stage then I promote to prod
+[00:44:37.800] and we have a data driven validation in
+[00:44:39.440] each of those environments or maybe
+[00:44:40.720] we're doing traffic shadowing into
+[00:44:42.319] staging or whatever there's a process
+[00:44:44.400] design aspect of that which actually
+[00:44:46.119] would Shield you from a lot of those
+[00:44:47.559] types of mistakes in llm might make
+[00:44:49.000] because you're going to catch them at an
+[00:44:50.559] earlier phase versus YOLO deploy prod we
+[00:44:53.040] caught it in prod and it's same thing
+[00:44:54.520] with human developer writing code
+[00:44:56.000] there's some false positive rate of them
+[00:44:57.680] writing errors or whatever you're not
+[00:44:59.240] going to catch everything so that's why
+[00:45:00.640] we have staging environments so I think
+[00:45:02.920] it becomes there's even more pressure on
+[00:45:04.520] being that doing that in a bit more of a
+[00:45:06.240] rigorous disciplined way where I think
+[00:45:09.040] you know some organizations are really
+[00:45:10.480] good at it and lots are fairly sloppy
+[00:45:12.800] right yeah and I guess the positive sort
+[00:45:14.760] of spin on that is that it's more about
+[00:45:16.800] automated processes and I think more of
+[00:45:18.880] these steps can can pass automatically
+[00:45:20.359] in because the hope is that llms take
+[00:45:22.640] away the grind take away the the grunt
+[00:45:24.880] work that we have to do but they do
+[00:45:26.559] require us to understand what we want
+[00:45:28.680] better and to define the methodology to
+[00:45:30.599] achieve it exactly Arman this was a
+[00:45:32.720] great conversation thanks for the the
+[00:45:34.000] insights of where the world of
+[00:45:35.559] intruction code is going in this with
+[00:45:37.079] respect to to Ai and sharing a bunch of
+[00:45:38.800] these learnings yeah my pleasure thanks
+[00:45:40.480] so much and looking forward to all the
+[00:45:41.960] stuff you guys are doing to make some of
+[00:45:43.040] this stuff for reality we'll try to help
+[00:45:44.559] a little bit with this domain as well
+[00:45:45.920] ready for tuning in and I hope you join
+[00:45:47.559] us for the next one
+[00:45:51.390] [Music]
+[00:46:01.079] thanks for tuning in join us next time
+[00:46:03.040] on the AI native Dev brought to you by
+[00:46:05.400] tessla

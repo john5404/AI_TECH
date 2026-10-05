@@ -1,0 +1,2045 @@
+WEBVTT
+
+1
+00:00:01.080 --> 00:00:04.520
+Then we shipped it to production and someone came to me and said,
+
+2
+00:00:04.680 --> 00:00:08.200
+this is wonderful, but you haven't accounted for the context length at all.
+
+3
+00:00:08.280 --> 00:00:10.320
+when I'm trying to set a threshold for this kernel,
+
+4
+00:00:10.320 --> 00:00:13.440
+I have to change it all the time because not normalized.
+
+5
+00:00:13.440 --> 00:00:15.760
+So then I had to go away and go, okay, well, fine.
+
+6
+00:00:15.760 --> 00:00:17.880
+Let's normalize by the sequence length of kV,
+
+7
+00:00:17.880 --> 00:00:19.800
+which is where the divide in that slide comes from.
+
+8
+00:00:19.800 --> 00:00:21.040
+Was basically because somebody sent me
+
+9
+00:00:21.040 --> 00:00:24.040
+an angry message on slack and said, this is really hard to use.
+
+10
+00:01:20.200 --> 00:01:20.920
+This this talk
+
+11
+00:01:20.920 --> 00:01:22.480
+might give us a little bit of whiplash, actually,
+
+12
+00:01:22.480 --> 00:01:24.600
+because I feel like we're going to go from very high level
+
+13
+00:01:24.600 --> 00:01:26.240
+kind of AI stuff to right,
+
+14
+00:01:26.240 --> 00:01:30.320
+right into the depths of attention kernels and optimization and stuff.
+
+15
+00:01:30.320 --> 00:01:33.200
+So it should be fun.
+
+16
+00:01:33.200 --> 00:01:36.040
+I will also give some credit to Claude,
+
+17
+00:01:36.040 --> 00:01:39.960
+probably like everybody here is going to have to do at some point.
+
+18
+00:01:39.960 --> 00:01:42.080
+I did take a different approach that.
+
+19
+00:01:42.080 --> 00:01:45.320
+So what I tend to do is write the slides myself, and then I have Claude
+
+20
+00:01:45.360 --> 00:01:49.080
+tell me just how terrible they are, and then then go through and fix them all.
+
+21
+00:01:49.280 --> 00:01:53.080
+So a quick agenda on this talk really.
+
+22
+00:01:53.080 --> 00:01:57.960
+So this is all about what I refer to as long context inference.
+
+23
+00:01:57.960 --> 00:02:01.440
+And it's not an optimization exercise
+
+24
+00:02:01.440 --> 00:02:04.440
+for the attention kernel in Cuda.
+
+25
+00:02:04.440 --> 00:02:08.880
+Some benchmark results and a kind of takeaways really.
+
+26
+00:02:09.120 --> 00:02:11.200
+So I talk about long context.
+
+27
+00:02:11.200 --> 00:02:13.680
+So what do I mean by long context.
+
+28
+00:02:13.680 --> 00:02:14.880
+And why is it important.
+
+29
+00:02:14.880 --> 00:02:19.120
+So not so long ago really kind of like an 8000 token context window.
+
+30
+00:02:19.120 --> 00:02:21.080
+It was considered a really big deal.
+
+31
+00:02:21.080 --> 00:02:25.760
+And today now like frontier models like like Claude Opus, they ship with,
+
+32
+00:02:25.800 --> 00:02:29.480
+you know, context windows up to a million, million tokens.
+
+33
+00:02:29.520 --> 00:02:32.080
+So that shift isn't really just a number either.
+
+34
+00:02:32.080 --> 00:02:35.160
+It kind of changes what you can do with the model.
+
+35
+00:02:35.160 --> 00:02:39.680
+I know certainly for me as a developer, the way I work now is totally different
+
+36
+00:02:39.680 --> 00:02:43.800
+to the way I worked probably 18 months, two years ago.
+
+37
+00:02:44.960 --> 00:02:47.440
+Just very rapid pace of change.
+
+38
+00:02:47.440 --> 00:02:50.480
+So some of the kind of things we can do now are listed on this slide.
+
+39
+00:02:50.480 --> 00:02:54.640
+So more complicated system prompts document analysis.
+
+40
+00:02:54.800 --> 00:02:59.160
+One of my favorite uses is probably is summarizing those horrendously long email
+
+41
+00:02:59.160 --> 00:03:03.040
+chains that I come into in the morning that I definitely do not have time to read
+
+42
+00:03:04.040 --> 00:03:06.320
+really large code bases.
+
+43
+00:03:06.320 --> 00:03:09.960
+Probably a big one for me is a as a dev tech, I work on all three
+
+44
+00:03:09.960 --> 00:03:13.800
+of the inference libraries, so SG lang VLM, tree Elm.
+
+45
+00:03:13.880 --> 00:03:17.080
+I've probably touched all of those in the last 3 or 4 months,
+
+46
+00:03:17.080 --> 00:03:19.720
+and every time I come back to one of them, it looks completely different.
+
+47
+00:03:19.720 --> 00:03:21.080
+So usually the first thing I do
+
+48
+00:03:21.080 --> 00:03:25.160
+is ask core to tell me what's changed and how do I find what I'm looking for
+
+49
+00:03:26.640 --> 00:03:27.960
+and kind of attention.
+
+50
+00:03:27.960 --> 00:03:32.320
+Costs, like the cost of the attention kernel, scales linearly
+
+51
+00:03:32.360 --> 00:03:35.720
+with like sequence length per token, which means it's quadratic, really.
+
+52
+00:03:36.000 --> 00:03:41.080
+And kind of every new token generated has to attend to the previous context
+
+53
+00:03:41.080 --> 00:03:44.760
+and at 1 million context, basically that gets really expensive.
+
+54
+00:03:44.760 --> 00:03:48.520
+And this is what this talk is about, kind of addressing in a way.
+
+55
+00:03:49.240 --> 00:03:53.400
+So anybody who's super familiar with the math behind attention
+
+56
+00:03:53.440 --> 00:03:55.200
+is probably going to be really bored by this slide,
+
+57
+00:03:55.200 --> 00:03:58.680
+but I didn't want to assume that everybody would know exactly how it works,
+
+58
+00:03:58.720 --> 00:04:00.040
+because if you don't kind of
+
+59
+00:04:00.040 --> 00:04:03.960
+have an idea of this diagram, you don't really understand the optimization.
+
+60
+00:04:04.040 --> 00:04:07.360
+So kind of the intuition
+
+61
+00:04:07.640 --> 00:04:10.360
+is obviously the every token that the model is processing.
+
+62
+00:04:10.360 --> 00:04:14.000
+Attention is basically asking which of the other tokens in this sequence
+
+63
+00:04:14.000 --> 00:04:17.080
+are relevant to me, and what does that tell me?
+
+64
+00:04:17.120 --> 00:04:20.960
+So Q is your queries, which is the question that each token is asking.
+
+65
+00:04:21.040 --> 00:04:25.120
+K is kind of a label associated with each token, and v
+
+66
+00:04:25.120 --> 00:04:29.400
+the value is what that token contributes if it's selected.
+
+67
+00:04:29.560 --> 00:04:32.840
+So if you multiply q by the transpose of k,
+
+68
+00:04:32.880 --> 00:04:35.880
+you get what we call like a matrix of attention scores.
+
+69
+00:04:36.040 --> 00:04:37.600
+And this is a sequence length
+
+70
+00:04:37.600 --> 00:04:41.440
+by sequence length matrix of compatible compatibility.
+
+71
+00:04:41.720 --> 00:04:44.680
+And then you do an operation called softmax
+
+72
+00:04:44.680 --> 00:04:47.840
+which we're going to come to to in more detail in a second.
+
+73
+00:04:47.880 --> 00:04:52.000
+A key in the title of this talk, softmax is kind of important here.
+
+74
+00:04:52.000 --> 00:04:56.080
+And that gives you basically a probability distribution
+
+75
+00:04:56.080 --> 00:05:00.000
+Q times the transpose of K is a matrix multiplication, which we really like.
+
+76
+00:05:00.040 --> 00:05:03.040
+On GPUs we have ten scores that make those really fast.
+
+77
+00:05:03.320 --> 00:05:06.520
+And then softmax has this exponential.
+
+78
+00:05:07.440 --> 00:05:10.760
+And it's interesting because actually on some of our hardware
+
+79
+00:05:10.760 --> 00:05:13.760
+we're actually bottleneck by the exponential more than we are
+
+80
+00:05:13.920 --> 00:05:15.440
+by the matrix multiply
+
+81
+00:05:16.800 --> 00:05:18.320
+kind of
+
+82
+00:05:18.320 --> 00:05:21.040
+on the right here we have what we call multi-headed attention,
+
+83
+00:05:21.040 --> 00:05:24.480
+which is this attention process applied to multiple heads in parallel.
+
+84
+00:05:26.960 --> 00:05:28.320
+Yeah.
+
+85
+00:05:28.320 --> 00:05:30.680
+So now a little bit about softmax.
+
+86
+00:05:30.680 --> 00:05:33.160
+I've just said that softmax is really important.
+
+87
+00:05:33.160 --> 00:05:36.680
+And the algorithm here like online softmax
+
+88
+00:05:37.440 --> 00:05:41.600
+came up with the by guy I've cited on this slide, Maxim Malakhov.
+
+89
+00:05:41.640 --> 00:05:43.160
+He's in my team. He's super smart.
+
+90
+00:05:43.160 --> 00:05:45.360
+And I think he probably gets some personal satisfaction
+
+91
+00:05:45.360 --> 00:05:48.360
+every time I mention his paper at one of these talks.
+
+92
+00:05:49.800 --> 00:05:51.640
+So the problem with naive
+
+93
+00:05:51.640 --> 00:05:55.280
+softmax is basically that you need a global max across all of the keys.
+
+94
+00:05:55.800 --> 00:05:59.520
+And that means in order to keep your numerical stability
+
+95
+00:05:59.560 --> 00:06:00.880
+so that you don't overflow.
+
+96
+00:06:00.880 --> 00:06:03.960
+The problem is you don't know the max until you've already processed
+
+97
+00:06:03.960 --> 00:06:06.520
+all the elements, which means you need at least two passes.
+
+98
+00:06:06.520 --> 00:06:08.000
+And over this big matrix.
+
+99
+00:06:08.000 --> 00:06:09.760
+I think it's really expensive.
+
+100
+00:06:09.760 --> 00:06:14.480
+So thanks to Maxim, we have this online softmax which allows you to process this
+
+101
+00:06:14.520 --> 00:06:15.520
+in a single pass.
+
+102
+00:06:15.520 --> 00:06:20.680
+And the idea is basically you have to keep a running max and do some checking.
+
+103
+00:06:20.720 --> 00:06:22.680
+That means you can do a correction at the end.
+
+104
+00:06:22.680 --> 00:06:25.640
+Now this running max really is a super important
+
+105
+00:06:25.640 --> 00:06:29.160
+because we use it to check whether we can skip the softmax later.
+
+106
+00:06:29.160 --> 00:06:31.920
+So we should really pay attention to that.
+
+107
+00:06:34.840 --> 00:06:37.640
+So there's kind of three properties to keep in mind.
+
+108
+00:06:37.640 --> 00:06:38.680
+Single pass.
+
+109
+00:06:38.680 --> 00:06:42.440
+Which means we don't have to materialize the full attention matrix in memory
+
+110
+00:06:42.600 --> 00:06:43.440
+in any one time.
+
+111
+00:06:43.440 --> 00:06:46.560
+This is kind of one of the key optimizations behind flash attention.
+
+112
+00:06:46.600 --> 00:06:50.120
+It's like reading that matrix over and over again is really expensive.
+
+113
+00:06:50.240 --> 00:06:53.280
+Numerically stable is super important as well.
+
+114
+00:06:58.240 --> 00:07:00.560
+So naive
+
+115
+00:07:00.560 --> 00:07:04.960
+softmax requires two passes, three operations per tensor element.
+
+116
+00:07:05.160 --> 00:07:09.280
+Safe softmax subtracts the max to eliminate the overflow,
+
+117
+00:07:09.280 --> 00:07:10.320
+but that also requires
+
+118
+00:07:10.320 --> 00:07:14.760
+that requires three passes and four memory operations per element.
+
+119
+00:07:14.800 --> 00:07:17.800
+Online reduces this back to three.
+
+120
+00:07:18.200 --> 00:07:21.600
+So we talked about attention being expensive.
+
+121
+00:07:21.640 --> 00:07:24.800
+The really interesting part about attention is that despite
+
+122
+00:07:24.840 --> 00:07:28.080
+being super expensive, it's actually also very sparse.
+
+123
+00:07:28.080 --> 00:07:31.280
+So this kind of diagram on the slide here is showing you
+
+124
+00:07:31.280 --> 00:07:34.280
+basically the result of queue times k.
+
+125
+00:07:34.920 --> 00:07:37.360
+And these kind of squares that are highlighted in
+
+126
+00:07:37.360 --> 00:07:40.560
+gray are the ones that are like I don't know really what to say.
+
+127
+00:07:40.600 --> 00:07:43.440
+It's kind of like an informal term but important.
+
+128
+00:07:44.880 --> 00:07:47.920
+So it's kind of weird is that we do all of this work,
+
+129
+00:07:47.960 --> 00:07:51.600
+and yet a lot of it doesn't really contribute to the result.
+
+130
+00:07:53.440 --> 00:07:57.760
+So oftentimes attention I think I've cited on the slide here.
+
+131
+00:07:57.800 --> 00:08:00.880
+In some cases it can be up to 96% of your workload.
+
+132
+00:08:00.880 --> 00:08:03.880
+So the idea that I'm saying that a lot of this work is actually wasted
+
+133
+00:08:03.920 --> 00:08:06.920
+is kind of really not ideal, right.
+
+134
+00:08:11.400 --> 00:08:16.160
+So this is taking a changing of tack a little bit.
+
+135
+00:08:16.160 --> 00:08:19.200
+So the kernel I'm trying to say this,
+
+136
+00:08:19.720 --> 00:08:22.800
+this presentation is basically an exercise in kernel optimization.
+
+137
+00:08:22.800 --> 00:08:25.840
+And the kernel that I worked on is a kernel from Nvidia
+
+138
+00:08:25.840 --> 00:08:29.880
+that we called FMA, which is a fuzed multi-headed attention.
+
+139
+00:08:29.880 --> 00:08:33.120
+It's a bit like flash attention, except I think we support a bit more.
+
+140
+00:08:33.160 --> 00:08:36.160
+I think a lot of the key optimizations are the same.
+
+141
+00:08:36.280 --> 00:08:40.280
+And it turns out that actually in order to write a good attention
+
+142
+00:08:40.320 --> 00:08:42.280
+kernel, you can't really do that in one kernel.
+
+143
+00:08:42.280 --> 00:08:43.680
+You need like hundreds of attention.
+
+144
+00:08:43.680 --> 00:08:45.880
+Kernels are optimized for different scenarios.
+
+145
+00:08:45.880 --> 00:08:49.480
+So for your context kernel versus your generation
+
+146
+00:08:49.480 --> 00:08:52.560
+phase kernel require a very different optimizations.
+
+147
+00:08:52.560 --> 00:08:56.080
+Because when you're doing generation you only generate one token
+
+148
+00:08:56.080 --> 00:08:58.840
+and then you're attending to the entire previous cave cache.
+
+149
+00:08:58.840 --> 00:09:01.840
+And that changes the shape of your matrix multiply.
+
+150
+00:09:02.440 --> 00:09:05.240
+So basically
+
+151
+00:09:05.240 --> 00:09:09.040
+what we decided to do was we wrote a code generator called TR.
+
+152
+00:09:10.000 --> 00:09:11.680
+And basically we use that to
+
+153
+00:09:11.680 --> 00:09:14.960
+help us maintain all of these kernels because we realized it would be easier
+
+154
+00:09:14.960 --> 00:09:17.960
+to write one generator and then generate the kernel we need,
+
+155
+00:09:17.960 --> 00:09:23.600
+versus have me maintain potentially thousands of attention kernels.
+
+156
+00:09:23.600 --> 00:09:28.600
+I think currently off the top of my head inside tensor RT Elm on GitHub,
+
+157
+00:09:28.600 --> 00:09:32.040
+I think we have 4000 kernel binaries for attention,
+
+158
+00:09:32.600 --> 00:09:35.800
+and that often blows up even more when somebody like me comes along
+
+159
+00:09:35.800 --> 00:09:38.920
+and says, hey, can we get a skips off max variant of all of these, please?
+
+160
+00:09:39.680 --> 00:09:42.280
+And then you multiply it by two.
+
+161
+00:09:42.280 --> 00:09:46.320
+The kernel is warp specialized for anybody who doesn't know what that means.
+
+162
+00:09:46.440 --> 00:09:50.920
+A warp is basically a group of 32 threads that operate in parallel on GPU.
+
+163
+00:09:50.920 --> 00:09:55.480
+And when we say warp specialized, we mean each warp gets a different job to do.
+
+164
+00:09:55.520 --> 00:10:00.000
+And this is kind of a method to allow us to keep all the different execution
+
+165
+00:10:00.000 --> 00:10:01.240
+units on the GPU busy.
+
+166
+00:10:01.240 --> 00:10:05.920
+So memory may your softmax unit, not softmax unit
+
+167
+00:10:05.960 --> 00:10:09.400
+and multifunction unit, which you used to calculate softmax.
+
+168
+00:10:09.960 --> 00:10:13.360
+So for example, in attention, in flash attention, often what happens
+
+169
+00:10:13.360 --> 00:10:17.120
+is we use one warp to load tiles of the matrices, another warp.
+
+170
+00:10:17.120 --> 00:10:18.640
+What we do in matrix multiplies.
+
+171
+00:10:18.640 --> 00:10:20.920
+Somebody else will be doing softmax, and then somebody else
+
+172
+00:10:20.920 --> 00:10:22.160
+is writing out the output.
+
+173
+00:10:22.160 --> 00:10:26.760
+And kind of synchronizing all of these very different stages of the pipeline
+
+174
+00:10:26.760 --> 00:10:31.360
+is super hard to do by hand, which also kind of lends itself to a code generation
+
+175
+00:10:32.280 --> 00:10:36.720
+kind of method just because it's so much to holding your head
+
+176
+00:10:36.720 --> 00:10:40.880
+as a programmer, I don't necessarily think it's feasible to do by yourself.
+
+177
+00:10:43.120 --> 00:10:44.000
+So there are more
+
+178
+00:10:44.000 --> 00:10:47.240
+tasks in the kernel than listed on this slide.
+
+179
+00:10:47.240 --> 00:10:49.160
+But basically when I say a task,
+
+180
+00:10:49.160 --> 00:10:52.160
+I mean, this is something we're getting a specialized warp to do.
+
+181
+00:10:52.240 --> 00:10:55.480
+And the key ones that we care about are kind of listed in this table.
+
+182
+00:10:55.480 --> 00:10:57.560
+So like the load task does.
+
+183
+00:10:57.560 --> 00:10:58.800
+Well, it's kind of in the name really.
+
+184
+00:10:58.800 --> 00:11:00.960
+It loads data from global memory.
+
+185
+00:11:00.960 --> 00:11:05.680
+And this is basically for reading QQ and V we have the main task
+
+186
+00:11:05.680 --> 00:11:09.920
+which issues instructions to the tensor cores softmax task.
+
+187
+00:11:09.920 --> 00:11:13.640
+And that reads the result of what we call BM one which means
+
+188
+00:11:13.680 --> 00:11:17.880
+batch to matrix multiply and BM one refers to q times k.
+
+189
+00:11:18.120 --> 00:11:20.280
+So if I say bm one, that's what I mean.
+
+190
+00:11:20.280 --> 00:11:24.720
+If I say two, it's the p times v matrix multiply.
+
+191
+00:11:24.720 --> 00:11:28.520
+And we finally have the correction task which is relevant to
+
+192
+00:11:28.640 --> 00:11:30.760
+Maxim's online softmax.
+
+193
+00:11:32.320 --> 00:11:34.040
+So it's kind of.
+
+194
+00:11:34.040 --> 00:11:39.720
+Get an idea of why this works or what this optimization is going to be.
+
+195
+00:11:39.720 --> 00:11:43.560
+And I promise this is the only maths we're going to do together
+
+196
+00:11:43.560 --> 00:11:45.080
+in this presentation.
+
+197
+00:11:45.080 --> 00:11:49.320
+I said before that a lot of the attention values that we are
+
+198
+00:11:49.320 --> 00:11:53.480
+calculating are end up being zero after softmax or close to zero.
+
+199
+00:11:53.480 --> 00:11:57.240
+So that means then when you do your p times v bm two,
+
+200
+00:11:57.280 --> 00:11:59.440
+that's something interesting happens.
+
+201
+00:11:59.440 --> 00:12:03.320
+Say you have a row of this matrix that is all zeros.
+
+202
+00:12:03.360 --> 00:12:06.000
+What does that mean for your result.
+
+203
+00:12:06.000 --> 00:12:08.760
+Well it turns out that that also means
+
+204
+00:12:08.760 --> 00:12:12.480
+that the result of that matrix multiply for that row is also zero.
+
+205
+00:12:12.480 --> 00:12:15.440
+So what if I told you we could just, you know, not bother doing it?
+
+206
+00:12:15.440 --> 00:12:16.440
+Because what's the point.
+
+207
+00:12:16.440 --> 00:12:18.480
+It's not changing the answer anyway.
+
+208
+00:12:20.120 --> 00:12:23.400
+So I think anybody who's familiar with flash
+
+209
+00:12:23.400 --> 00:12:26.400
+attention would have seen a diagram like this before.
+
+210
+00:12:26.400 --> 00:12:30.880
+Basically, to avoid realizing
+
+211
+00:12:30.880 --> 00:12:34.080
+the full attention matrix in memory, we break it up into tiles.
+
+212
+00:12:34.080 --> 00:12:34.840
+That's kind of shown
+
+213
+00:12:34.840 --> 00:12:38.520
+in this diagram here, where you do one q times k for a given tile,
+
+214
+00:12:38.800 --> 00:12:43.280
+and then you softmax that tile, multiply it by v and accumulate it into the output.
+
+215
+00:12:45.000 --> 00:12:46.240
+So that's kind of the loop.
+
+216
+00:12:46.240 --> 00:12:49.240
+It makes it very memory efficient.
+
+217
+00:12:49.240 --> 00:12:54.200
+What it doesn't do, however, is work out whether that attention calculation
+
+218
+00:12:54.200 --> 00:12:57.280
+is actually worth doing, which is kind of what I keep coming back to.
+
+219
+00:12:57.320 --> 00:13:01.640
+So many of these tiles are producing softmax values that are essentially zero
+
+220
+00:13:01.640 --> 00:13:03.160
+or close to zero.
+
+221
+00:13:03.160 --> 00:13:05.040
+And something, something that we'll come back to you
+
+222
+00:13:05.040 --> 00:13:08.120
+later is the idea that you can tune how aggressive this skip is,
+
+223
+00:13:08.160 --> 00:13:11.520
+but that obviously has trade offs in terms of accuracy and performance.
+
+224
+00:13:13.120 --> 00:13:14.880
+So this isn't a corner case either.
+
+225
+00:13:14.880 --> 00:13:18.120
+Like I said before, attention is sparse.
+
+226
+00:13:18.120 --> 00:13:22.360
+If we go back to that vertical slash diagram from before, most of those are
+
+227
+00:13:22.680 --> 00:13:25.680
+squares were white not gray.
+
+228
+00:13:26.160 --> 00:13:30.480
+So essentially we have a really complicated kernel that processes
+
+229
+00:13:30.480 --> 00:13:35.440
+loads of tiles, but a workload where most of those tiles don't actually matter.
+
+230
+00:13:35.640 --> 00:13:38.680
+And we call this kind of skip softmax.
+
+231
+00:13:38.680 --> 00:13:42.840
+It turns out, actually, that we're skipping a lot more than the softmax.
+
+232
+00:13:42.840 --> 00:13:44.680
+And oftentimes
+
+233
+00:13:44.680 --> 00:13:47.880
+softmax is not actually the most expensive operation that we're skipping.
+
+234
+00:13:47.880 --> 00:13:50.880
+But, well, we've named it now. So
+
+235
+00:13:51.600 --> 00:13:55.520
+so the key insight here is how can we skip the tiles
+
+236
+00:13:55.560 --> 00:13:59.480
+cheaply using information that we've already calculated.
+
+237
+00:13:59.480 --> 00:14:03.600
+We have this running max that we're keeping for softmax for online softmax.
+
+238
+00:14:03.640 --> 00:14:08.080
+And that's that's a result of q times k which we've already done.
+
+239
+00:14:08.200 --> 00:14:12.320
+So kind of calculating this value is not additional work.
+
+240
+00:14:12.920 --> 00:14:17.160
+So when a new tile arrives we do this batch matrix multiply.
+
+241
+00:14:17.160 --> 00:14:21.560
+And you take a row wise maximum of each tile that's a local max.
+
+242
+00:14:21.560 --> 00:14:23.280
+And you compare that to the running max.
+
+243
+00:14:23.280 --> 00:14:26.280
+Now this is cheap because we were doing this reduction anyway.
+
+244
+00:14:26.720 --> 00:14:31.320
+Anyway we see in this kind of equation here, the key is
+
+245
+00:14:31.400 --> 00:14:35.120
+if your local max is much less than your running max,
+
+246
+00:14:35.120 --> 00:14:38.960
+and by much less I mean the difference would be a large negative number.
+
+247
+00:14:39.280 --> 00:14:42.560
+Then the result of the exponential is basically zero.
+
+248
+00:14:43.720 --> 00:14:44.480
+Now that means
+
+249
+00:14:44.480 --> 00:14:48.040
+if all of the softmax values for that tile would be near zero,
+
+250
+00:14:48.080 --> 00:14:51.120
+that entire tile contributes nothing to the output.
+
+251
+00:14:51.120 --> 00:14:55.120
+So we can just set them to zero and not do a bunch of extra work.
+
+252
+00:14:55.120 --> 00:14:57.360
+So if you kind of look at this diagram here,
+
+253
+00:14:57.360 --> 00:15:01.200
+you're asking yourself this question have we triggered this threshold or not?
+
+254
+00:15:01.320 --> 00:15:05.480
+If we haven't triggered it then we're very sad and we have to do all this work.
+
+255
+00:15:05.680 --> 00:15:09.480
+And if we do trigger it, we can skip the exponential, the normalization
+
+256
+00:15:09.480 --> 00:15:13.360
+loading of the v tile, a matrix multiply, and the correction step.
+
+257
+00:15:13.600 --> 00:15:16.040
+And the kind of really nice thing about this
+
+258
+00:15:16.040 --> 00:15:18.440
+is that you don't need to do any additional training on your models.
+
+259
+00:15:18.440 --> 00:15:19.800
+It's just an inference time thing.
+
+260
+00:15:19.800 --> 00:15:22.360
+You can just deploy it and use it
+
+261
+00:15:23.600 --> 00:15:25.640
+so you save in various ways really.
+
+262
+00:15:25.640 --> 00:15:28.640
+And that's kind of what this slide is trying to say.
+
+263
+00:15:29.160 --> 00:15:31.160
+You may hear like a kernel developer
+
+264
+00:15:31.160 --> 00:15:34.160
+talk about a kernel being compute bound versus memory bound.
+
+265
+00:15:34.400 --> 00:15:38.240
+When we say that if you're compute bound, it means you spend most much of your time
+
+266
+00:15:38.240 --> 00:15:40.160
+doing math. And that's kind of your bottleneck.
+
+267
+00:15:40.160 --> 00:15:41.320
+Whereas if you're memory bound,
+
+268
+00:15:41.320 --> 00:15:44.440
+you're kind of bottlenecked by, well, the memory subsystem.
+
+269
+00:15:44.680 --> 00:15:47.880
+Now, if we kind of walk through this, basically
+
+270
+00:15:47.880 --> 00:15:51.040
+what I've got is a diagram here that shows you all the different parts.
+
+271
+00:15:51.040 --> 00:15:55.360
+I've just said we're skipping and what exactly you save from skipping them.
+
+272
+00:15:55.360 --> 00:15:59.080
+So when you skip the softmax and the normalization, that's a compute saving.
+
+273
+00:15:59.640 --> 00:16:02.280
+You also have to keep statistics to do your correction.
+
+274
+00:16:02.280 --> 00:16:04.160
+That's also a compute saving.
+
+275
+00:16:04.160 --> 00:16:08.680
+The really interesting one is the V tile because that's the only memory
+
+276
+00:16:08.680 --> 00:16:09.800
+saving here.
+
+277
+00:16:09.800 --> 00:16:13.840
+And in fact for some some versions of this kernel, we don't actually skip this
+
+278
+00:16:13.840 --> 00:16:18.080
+because if it's a compute bound kernel you're not bottlenecked by that load.
+
+279
+00:16:18.200 --> 00:16:21.280
+So delaying the war but then has to decide whether to skip
+
+280
+00:16:21.280 --> 00:16:24.600
+or not actually hurts you more because it doesn't buy you anything.
+
+281
+00:16:24.600 --> 00:16:27.240
+In a non memory bound situation,
+
+282
+00:16:27.240 --> 00:16:31.440
+P times V saves you tensor cores, which obviously we care about.
+
+283
+00:16:31.520 --> 00:16:34.520
+And then the correction we've kind of already talked about.
+
+284
+00:16:34.560 --> 00:16:39.800
+Interestingly skipping the correction is an optimization that already existed.
+
+285
+00:16:39.840 --> 00:16:43.760
+We did it prior and I think flash attention does it as well.
+
+286
+00:16:43.760 --> 00:16:45.680
+But it turns out if you're skipping softmax
+
+287
+00:16:45.680 --> 00:16:48.320
+you can also combine it with this other optimization.
+
+288
+00:16:49.960 --> 00:16:52.360
+So kind of the skip condition like how does it work?
+
+289
+00:16:52.360 --> 00:16:56.400
+I said before, a warp is basically a group of 32 threads.
+
+290
+00:16:56.680 --> 00:17:00.000
+So each thread needs to decide whether to individually skip,
+
+291
+00:17:00.000 --> 00:17:03.480
+because the way we kind of write this kernel or the version
+
+292
+00:17:03.480 --> 00:17:06.880
+of the kernel that I care about, each thread basically has a row of the tile.
+
+293
+00:17:06.880 --> 00:17:10.920
+When you're doing this softmax calculation, and you do this exponential
+
+294
+00:17:10.960 --> 00:17:14.960
+that is effectively measuring how much smaller is this tile
+
+295
+00:17:15.120 --> 00:17:17.240
+maximum versus the running global max.
+
+296
+00:17:17.240 --> 00:17:20.040
+And this threshold is is user tunable.
+
+297
+00:17:20.040 --> 00:17:23.600
+It turns out actually that picking a good value for the threshold is really hard.
+
+298
+00:17:23.920 --> 00:17:24.800
+When I was
+
+299
+00:17:24.800 --> 00:17:27.760
+when I was developing the kernel, I didn't really fully appreciate that.
+
+300
+00:17:27.760 --> 00:17:27.960
+Right?
+
+301
+00:17:27.960 --> 00:17:31.240
+I would just set a value for my unit test to check it against a reference
+
+302
+00:17:31.240 --> 00:17:32.600
+and then go, great.
+
+303
+00:17:32.600 --> 00:17:36.320
+Then we shipped it to production and someone came to me and said, this
+
+304
+00:17:36.320 --> 00:17:39.680
+is wonderful, but you haven't accounted for the context length at all.
+
+305
+00:17:39.680 --> 00:17:43.400
+So it turns out that when when I'm trying to set a threshold for this kernel,
+
+306
+00:17:43.400 --> 00:17:47.400
+I have to change it all the time because it's not normalized.
+
+307
+00:17:47.440 --> 00:17:50.120
+So then I had to go away and go, okay, well, fine.
+
+308
+00:17:50.120 --> 00:17:52.280
+Let's normalize by the sequence length of kV,
+
+309
+00:17:52.280 --> 00:17:54.200
+which is where the divide in that slide comes from.
+
+310
+00:17:54.200 --> 00:17:55.440
+Was basically because somebody sent me
+
+311
+00:17:55.440 --> 00:17:58.120
+an angry message on slack and said, this is really hard to use.
+
+312
+00:17:59.440 --> 00:18:01.360
+So after
+
+313
+00:18:01.360 --> 00:18:05.200
+that, basically what you need is all of the threads
+
+314
+00:18:05.520 --> 00:18:08.840
+or all of the warps that are processing a tile need to agree.
+
+315
+00:18:09.320 --> 00:18:12.640
+So to do that within a warp we have this handy intrinsic called all sync,
+
+316
+00:18:12.640 --> 00:18:16.000
+which is really fast, but it turns out to do softmax effectively.
+
+317
+00:18:16.000 --> 00:18:18.800
+You need four warps and multiple warps.
+
+318
+00:18:18.800 --> 00:18:21.240
+Can't talk to each other, so you have to do some atomics
+
+319
+00:18:21.240 --> 00:18:25.000
+and shared memory, which is a bit slower, but that's just the way it is.
+
+320
+00:18:26.360 --> 00:18:28.560
+So I've probably spent now close to 15 minutes
+
+321
+00:18:28.560 --> 00:18:30.800
+telling you all about this kernel and how it works.
+
+322
+00:18:30.800 --> 00:18:33.160
+And really the question that everybody probably has is, well,
+
+323
+00:18:33.160 --> 00:18:35.960
+this is all well and good, but does it actually work in practice?
+
+324
+00:18:37.040 --> 00:18:38.120
+So the does it work?
+
+325
+00:18:38.120 --> 00:18:40.840
+Part of the presentation is basically the next few slides.
+
+326
+00:18:40.840 --> 00:18:45.440
+And I'm going to frame it essentially a specific questions that we need to answer.
+
+327
+00:18:45.480 --> 00:18:49.000
+These questions being well what's the overhead when we don't skip.
+
+328
+00:18:49.360 --> 00:18:52.720
+And how fast is it for context or pre-filled kernels,
+
+329
+00:18:52.720 --> 00:18:56.680
+and how fast is it for generational what we call decode kernels?
+
+330
+00:18:56.680 --> 00:18:59.440
+And even if your attention kernel is faster,
+
+331
+00:18:59.440 --> 00:19:01.800
+does this actually show up end to end when you run a model?
+
+332
+00:19:01.800 --> 00:19:03.240
+Because if your bottleneck is something else,
+
+333
+00:19:03.240 --> 00:19:04.680
+you can make attention as fast as you want.
+
+334
+00:19:04.680 --> 00:19:07.680
+It doesn't really doesn't really help you in any way.
+
+335
+00:19:08.720 --> 00:19:11.720
+So this kind of graph shows overhead analysis
+
+336
+00:19:11.760 --> 00:19:15.320
+and basically what we're kind of seeing, or what
+
+337
+00:19:15.320 --> 00:19:19.240
+I saw when I profiled this is certainly
+
+338
+00:19:19.240 --> 00:19:22.800
+a lot of the time that the overhead is basically a function of profiling noise.
+
+339
+00:19:22.800 --> 00:19:25.560
+And it's actually really hard to capture. This is not so much
+
+340
+00:19:25.560 --> 00:19:28.640
+the case for generation kernels where it's a bit slower.
+
+341
+00:19:29.600 --> 00:19:31.040
+What this graph is showing is basically
+
+342
+00:19:31.040 --> 00:19:34.880
+one is no overhead and then lower than that is slower.
+
+343
+00:19:35.000 --> 00:19:38.240
+But for generation case we're still actively optimizing this.
+
+344
+00:19:38.280 --> 00:19:39.280
+It turns out
+
+345
+00:19:39.280 --> 00:19:42.440
+the memory bound case is really hard because the matrices are really small.
+
+346
+00:19:44.240 --> 00:19:48.480
+So there are two kernels or two types of kernels we really care about.
+
+347
+00:19:48.800 --> 00:19:50.840
+Context is when you do your pre-filled.
+
+348
+00:19:50.840 --> 00:19:52.480
+So this is before you've got your cave cache.
+
+349
+00:19:52.480 --> 00:19:56.400
+And when you generate your KB cash for this, I, I will
+
+350
+00:19:56.400 --> 00:19:59.400
+I focus mostly on BFF 16 and PHP.
+
+351
+00:19:59.440 --> 00:20:02.320
+And what this is, is I'm on the x axis.
+
+352
+00:20:02.320 --> 00:20:04.080
+We have what we call sparsity.
+
+353
+00:20:04.080 --> 00:20:08.280
+And sparsity is effectively what percentage of the attention tiles
+
+354
+00:20:08.280 --> 00:20:09.320
+have we skipped.
+
+355
+00:20:09.320 --> 00:20:13.520
+So 100% is we did no work and 0% is we didn't skip at all.
+
+356
+00:20:14.840 --> 00:20:16.280
+You can never skip the first tile.
+
+357
+00:20:16.280 --> 00:20:17.960
+Otherwise the threshold check doesn't work.
+
+358
+00:20:17.960 --> 00:20:21.680
+And I suspect that if you skip all of the tiles, everything
+
+359
+00:20:21.680 --> 00:20:23.440
+probably collapses into garbage anyway.
+
+360
+00:20:23.440 --> 00:20:26.800
+So I think the extremes are either end of this graph are not particularly useful.
+
+361
+00:20:26.800 --> 00:20:30.400
+What we care about probably is this this area in the middle.
+
+362
+00:20:31.120 --> 00:20:34.600
+Speedups are lower than what we got for BFF 16.
+
+363
+00:20:34.600 --> 00:20:37.080
+And that's kind of a consistent theme throughout this talk.
+
+364
+00:20:37.080 --> 00:20:40.080
+And we're still kind of investigating that
+
+365
+00:20:40.800 --> 00:20:45.280
+generation is a very different kernel to to a pre fill.
+
+366
+00:20:45.280 --> 00:20:50.840
+It turns out basically because you're attending to the entire kV cache,
+
+367
+00:20:50.840 --> 00:20:54.040
+but you're only receiving or processing one new token.
+
+368
+00:20:54.080 --> 00:20:56.160
+Your Q matrix is really skinny.
+
+369
+00:20:56.160 --> 00:20:57.600
+And the work then becomes
+
+370
+00:20:57.600 --> 00:21:01.360
+dominated by loading k and v instead of your matrix multiply.
+
+371
+00:21:02.480 --> 00:21:02.920
+This kind of
+
+372
+00:21:02.920 --> 00:21:06.920
+brings us back to the cascade like savings diagram I had before.
+
+373
+00:21:07.160 --> 00:21:10.160
+Stage three is basically when you skip a tile,
+
+374
+00:21:10.160 --> 00:21:15.560
+the V tile is not loaded and kind of in the context kernels most of the time.
+
+375
+00:21:15.560 --> 00:21:16.480
+I think I mentioned before,
+
+376
+00:21:16.480 --> 00:21:20.280
+we just don't bother doing this because the extra extra weighting is not worth it.
+
+377
+00:21:20.280 --> 00:21:24.320
+But on a generation kernels like this, if you don't do the
+
+378
+00:21:24.640 --> 00:21:27.640
+the load skip, you get no benefit at all.
+
+379
+00:21:28.520 --> 00:21:30.520
+I think partly as well.
+
+380
+00:21:30.520 --> 00:21:34.920
+Why fate benefits, at least less in this case is I think we're just moving
+
+381
+00:21:34.920 --> 00:21:38.800
+less data, but that's a bit more clear to me than the pre-filled case.
+
+382
+00:21:39.880 --> 00:21:41.960
+Finally, end to end testing.
+
+383
+00:21:41.960 --> 00:21:43.200
+I didn't run these tests,
+
+384
+00:21:43.200 --> 00:21:46.920
+but I think an esteemed colleague of mine tested, I think it was Queen
+
+385
+00:21:47.000 --> 00:21:51.880
+three on two benchmarks that I called Long Bench V1 and Long Bench V2.
+
+386
+00:21:52.000 --> 00:21:54.920
+I think it would have been negligent of us
+
+387
+00:21:54.920 --> 00:21:57.920
+to not use a long context kernel to test this.
+
+388
+00:21:57.920 --> 00:22:00.840
+So for long bench v1
+
+389
+00:22:00.840 --> 00:22:05.920
+versus b2 v2 for v2, we could only fit a batch size of one.
+
+390
+00:22:05.920 --> 00:22:07.680
+Just because the context is so long,
+
+391
+00:22:07.680 --> 00:22:11.240
+you end up in the GPU if you try to run multiple prompts.
+
+392
+00:22:11.480 --> 00:22:15.920
+The speed up shown in this graph is based on time to first token.
+
+393
+00:22:16.440 --> 00:22:17.640
+We're still working on the time
+
+394
+00:22:17.640 --> 00:22:20.640
+per output case, and I think what's really interesting
+
+395
+00:22:21.440 --> 00:22:24.760
+is that you can actually get a large amount of the speedup
+
+396
+00:22:25.680 --> 00:22:29.080
+shown in this graph without taking too much of hits your accuracy.
+
+397
+00:22:29.240 --> 00:22:29.920
+The problem is,
+
+398
+00:22:29.920 --> 00:22:31.520
+is that because this is model dependent,
+
+399
+00:22:31.520 --> 00:22:34.200
+it means whoever's deploying that has to spend a load of time
+
+400
+00:22:34.200 --> 00:22:37.320
+calibrating it to try and work out what their acceptable threshold
+
+401
+00:22:37.320 --> 00:22:40.800
+is, though maybe, maybe now you just get clawed to do it.
+
+402
+00:22:43.280 --> 00:22:45.440
+So where can you use this?
+
+403
+00:22:45.440 --> 00:22:49.360
+So right now it's in Tensor Realm and in a library
+
+404
+00:22:49.400 --> 00:22:53.600
+I think that Nvidia maintains called flash info.
+
+405
+00:22:54.240 --> 00:22:55.200
+It used to be.
+
+406
+00:22:55.200 --> 00:22:59.080
+I think it was the result of a PhD project, but somehow we ended up
+
+407
+00:22:59.200 --> 00:23:00.480
+taking it over.
+
+408
+00:23:00.480 --> 00:23:04.440
+But we flash infer has basically become
+
+409
+00:23:04.440 --> 00:23:07.440
+the library that we open source all of our kernels through
+
+410
+00:23:07.760 --> 00:23:10.920
+and through flashing for this is available in SG lang as well.
+
+411
+00:23:11.360 --> 00:23:13.360
+It's going to be available in VLM.
+
+412
+00:23:13.360 --> 00:23:15.240
+I happen to work with the guy who's adding it.
+
+413
+00:23:15.240 --> 00:23:17.280
+I think he's like halfway through.
+
+414
+00:23:17.280 --> 00:23:20.440
+There are some PR numbers on this slide if he's interested,
+
+415
+00:23:22.120 --> 00:23:23.600
+and there is some code snippets here.
+
+416
+00:23:23.600 --> 00:23:25.040
+And what's kind of nice about this,
+
+417
+00:23:25.040 --> 00:23:28.000
+we don't really need to walk through them in detail.
+
+418
+00:23:28.000 --> 00:23:30.640
+What's kind of nice basically, is that to use this,
+
+419
+00:23:30.640 --> 00:23:32.960
+the only thing you need to specify is this threshold.
+
+420
+00:23:32.960 --> 00:23:34.400
+Your API doesn't really change.
+
+421
+00:23:34.400 --> 00:23:37.920
+There's no like hairy kind of change to all of your scripts or anything.
+
+422
+00:23:37.920 --> 00:23:41.680
+You can just set a value and kind of go, you just need to spend
+
+423
+00:23:41.680 --> 00:23:44.840
+some time deciding whether you're happy with the results or not.
+
+424
+00:23:45.960 --> 00:23:47.560
+So what are the key takeaways.
+
+425
+00:23:47.560 --> 00:23:51.840
+So doing this like skip softmax
+
+426
+00:23:52.080 --> 00:23:55.120
+eliminates loads of redundant compute and memory traffic.
+
+427
+00:23:55.280 --> 00:23:59.560
+The threshold is designed to basically be a really clean knob that you can tune.
+
+428
+00:23:59.560 --> 00:24:00.520
+It's kind of easy.
+
+429
+00:24:00.520 --> 00:24:05.040
+I've got I think I have scripts at home that are just loops over this threshold
+
+430
+00:24:05.040 --> 00:24:06.760
+measuring different performance things.
+
+431
+00:24:06.760 --> 00:24:10.040
+That's how we kind of got most of the graphs in this presentation.
+
+432
+00:24:10.040 --> 00:24:13.920
+And it's most impactful for long context workloads.
+
+433
+00:24:13.920 --> 00:24:19.000
+So for the ones we mentioned at the start for future work,
+
+434
+00:24:19.000 --> 00:24:23.160
+I'm kind of interested in what could we do like an adaptive threshold
+
+435
+00:24:23.160 --> 00:24:26.880
+or could we potentially set different thresholds per layer?
+
+436
+00:24:26.960 --> 00:24:30.400
+I think somebody tried that, but it turned out getting the correct
+
+437
+00:24:30.400 --> 00:24:33.480
+threshold is really hard, but maybe we just need to look a bit deeper.
+
+438
+00:24:33.600 --> 00:24:35.840
+I'd also be curious to see if we could combine it
+
+439
+00:24:35.840 --> 00:24:38.400
+with some of the existing smart attention techniques,
+
+440
+00:24:38.400 --> 00:24:41.480
+whether we could benefit in multiple ways at once.
+
+441
+00:24:42.840 --> 00:24:44.840
+There are some links on this slide.
+
+442
+00:24:44.840 --> 00:24:47.840
+I think we have a paper and various blogs I appreciate.
+
+443
+00:24:47.840 --> 00:24:50.840
+You can't really click them while it's on this projector.
+
+444
+00:24:52.960 --> 00:24:55.960
+Yeah, I think that's my last slide.
+
+445
+00:25:02.200 --> 00:25:04.800
+Make me for the cube are you know.
+
+446
+00:25:04.800 --> 00:25:07.800
+You got some questions are excellent.
+
+447
+00:25:08.360 --> 00:25:09.440
+Oh sorry.
+
+448
+00:25:09.440 --> 00:25:10.400
+You can't ask you a question.
+
+449
+00:25:10.400 --> 00:25:13.120
+No you didn't catch it.
+
+450
+00:25:13.120 --> 00:25:13.840
+Thanks for the door.
+
+451
+00:25:13.840 --> 00:25:16.080
+That was super interesting.
+
+452
+00:25:16.080 --> 00:25:18.520
+Can you use this during model training?
+
+453
+00:25:18.520 --> 00:25:20.760
+And if you did. That's a great question.
+
+454
+00:25:20.760 --> 00:25:24.960
+I think I'm an inference person, so I'm not the best person to ask about that.
+
+455
+00:25:24.960 --> 00:25:27.640
+I think in the paper that I've linked there,
+
+456
+00:25:27.640 --> 00:25:30.640
+there is a mention to training, so it might be worth having a read.
+
+457
+00:25:30.680 --> 00:25:31.840
+I can also probably speak
+
+458
+00:25:31.840 --> 00:25:33.960
+to some of the training people at work and get back to you.
+
+459
+00:25:33.960 --> 00:25:34.560
+Get back to you.
+
+460
+00:25:34.560 --> 00:25:36.240
+So if you want to talk to me during the networking,
+
+461
+00:25:36.240 --> 00:25:40.400
+we can exchange details and find out.
+
+462
+00:25:44.480 --> 00:25:45.280
+Thanks again.
+
+463
+00:25:45.280 --> 00:25:46.520
+A lot of that went above my head,
+
+464
+00:25:46.520 --> 00:25:51.920
+but I noticed in one of your parameters you use instruct model.
+
+465
+00:25:52.000 --> 00:25:55.120
+So is this what you're trying to do restricted to?
+
+466
+00:25:55.120 --> 00:25:58.760
+I think it shouldn't be, but is it a secret to model types or model category?
+
+467
+00:25:58.800 --> 00:26:01.640
+No, I think. You use it on all flavors of models.
+
+468
+00:26:01.640 --> 00:26:02.400
+You can.
+
+469
+00:26:02.400 --> 00:26:04.920
+It's basically a drop in replacement for attention.
+
+470
+00:26:04.920 --> 00:26:07.520
+I see no reason why you couldn't use it for anything else.
+
+471
+00:26:07.520 --> 00:26:11.480
+You'd obviously have to do your own testing on whether you'd be happy
+
+472
+00:26:11.480 --> 00:26:14.480
+with the results or not, but there is nothing.
+
+473
+00:26:15.080 --> 00:26:17.880
+I guess what you're actually asking me is, is there some constraint in the kernel
+
+474
+00:26:17.880 --> 00:26:20.160
+that means this wouldn't work with a non instruct model?
+
+475
+00:26:20.160 --> 00:26:22.640
+And to my knowledge, the answer is no.
+
+476
+00:26:22.640 --> 00:26:25.360
+It should be fine. Cool. Thank you.
+
+477
+00:26:27.440 --> 00:26:30.440
+Any other questions?
+
+478
+00:26:32.000 --> 00:26:35.000
+They're making you work really hard.
+
+479
+00:26:38.880 --> 00:26:40.360
+Tom. Really worried behind.
+
+480
+00:26:40.360 --> 00:26:40.880
+The camera.
+
+481
+00:26:40.880 --> 00:26:42.640
+You said you used.
+
+482
+00:26:42.640 --> 00:26:45.640
+To code while.
+
+483
+00:26:46.320 --> 00:26:50.640
+Yes. Because honestly, because the day I wrote this presentation
+
+484
+00:26:50.640 --> 00:26:55.240
+was the first day I got a Claude coworker license, and I decided to try it out.
+
+485
+00:26:57.920 --> 00:26:58.560
+What's the.
+
+486
+00:26:58.560 --> 00:27:00.600
+What's the mic?
+
+487
+00:27:00.600 --> 00:27:03.240
+I feel like every time I go to work, we've got access to another
+
+488
+00:27:03.240 --> 00:27:04.600
+AI tool that's amazing.
+
+489
+00:27:04.600 --> 00:27:09.160
+At another Thing and my, my toolbox of like my toolbox of AI tools to use
+
+490
+00:27:09.160 --> 00:27:12.160
+at work is so large, I always struggle to pick the correct one.
+
+491
+00:27:13.080 --> 00:27:14.120
+If no one's.
+
+492
+00:27:14.120 --> 00:27:15.960
+There's one.
+
+493
+00:27:15.960 --> 00:27:18.960
+Since you got a whole suite of models
+
+494
+00:27:19.160 --> 00:27:22.280
+access to internally and externally, have you tried to benchmark
+
+495
+00:27:23.080 --> 00:27:25.360
+across a whole bunch of these models, and
+
+496
+00:27:25.360 --> 00:27:28.360
+do you have like a result set somewhere that you can do that?
+
+497
+00:27:28.520 --> 00:27:31.520
+There may be a spreadsheet internally I would need to check.
+
+498
+00:27:31.680 --> 00:27:35.200
+Certainly when we were developing this, we had we had interest from clients.
+
+499
+00:27:35.200 --> 00:27:38.880
+I think there was a few times I got an email from some people,
+
+500
+00:27:39.040 --> 00:27:41.280
+some someone's asking me about skip softmax.
+
+501
+00:27:41.280 --> 00:27:42.240
+Is it really?
+
+502
+00:27:42.240 --> 00:27:44.960
+I think a lot of the SG lang community were interested in it,
+
+503
+00:27:44.960 --> 00:27:48.720
+which is probably why that PR went out so, so quickly before VLM.
+
+504
+00:27:49.320 --> 00:27:52.240
+But I think, yeah, there probably is some data,
+
+505
+00:27:52.240 --> 00:27:55.240
+but if if it exists, I haven't seen it.
+
+506
+00:27:55.600 --> 00:27:57.720
+Okay. Interested in that if you can.
+
+507
+00:28:00.120 --> 00:28:00.600
+Awesome.
+
+508
+00:28:00.600 --> 00:28:03.600
+Any other questions?
+
+509
+00:28:04.880 --> 00:28:05.560
+All good.
+
+510
+00:28:05.560 --> 00:28:08.560
+Please give it up for.
+
+511
+00:28:10.200 --> 00:28:10.720
+Some water.

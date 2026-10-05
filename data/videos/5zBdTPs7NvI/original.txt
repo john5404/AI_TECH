@@ -1,0 +1,770 @@
+[00:00:00.000] working with agents and LLMs introduces some new dimensions on security
+[00:00:04.800] that wouldn't normally think about.
+[00:00:06.120] text becomes something that can be vulnerable,
+[00:00:08.720] can have some executable intent,
+[00:00:10.640] A couple years ago, you would never worry about the security of a markdown document
+[00:00:14.480] the combination of some access to privileged information
+[00:00:17.960] or some private data, some exposure to some untrusted content,
+[00:00:22.000] maybe from the outside world and the ability to communicate externally.
+[00:00:25.400] And most agents, by default are going to have all of these three things.
+[00:00:27.880] And that is of where you're one prompt injection away from let's say bad time.
+[00:00:33.080] Yeah. Yeah.
+[00:00:35.160] The AI Native Dev is a podcast for developers and engineering
+[00:00:38.440] leads at the cutting edge of AI and agentic coding.
+[00:00:41.760] Join your hosts, Guy Podjarny and me, Simon Maple.
+[00:00:44.760] Every week as we chat with the most exciting voices in
+[00:00:47.960] AI and tackle the biggest questions facing developers today.
+[00:00:52.360] This is the AI Native Dev.
+[00:00:59.560] Back in November, we hosted
+[00:01:01.040] the first ever in-person AI Native Dev Con in New York.
+[00:01:04.800] This June 1st and second, we're bringing it to London.
+[00:01:07.760] It's two days built for AI Native developers and engineering teams, one day
+[00:01:12.600] full of hands on workshops and one day full of practical talks on
+[00:01:16.720] agent skills, context engineering, agent orchestration and enablement platforms
+[00:01:20.960] and how teams are actually shipping AI in production.
+[00:01:24.720] Join us at the Brewery in London near the Barbican for all of that,
+[00:01:28.320] plus networking parties, giveaways and a room full of people.
+[00:01:33.000] Building the future of AI native development.
+[00:01:35.960] You can also join us from anywhere in the world via the live stream.
+[00:01:39.440] As you're listening to this podcast.
+[00:01:40.920] You get 30% off your ticket with Code Pod 30.
+[00:01:44.960] Just head to AI native Dev Königssee and we'll see you in London.
+[00:01:52.520] Hello and
+[00:01:53.280] welcome to another episode of the AI Native Dev.
+[00:01:56.520] And on today's show, we're going to be tackling the big questions of how
+[00:01:59.880] organizations should be thinking about security in a development today,
+[00:02:04.880] not just for the security issues that we already know about that software
+[00:02:08.000] development has taught us over the years, but thinking about
+[00:02:10.640] some of the new security risks that agentic development brings.
+[00:02:14.040] Today Joining me on today's show, we have Joe Holdcroft,
+[00:02:17.600] a member of technical staff and team lead at Tessl.
+[00:02:20.560] Welcome, Joe. Thanks for having me back. Oh, absolutely.
+[00:02:22.720] And it is having you back because you joined.
+[00:02:24.600] Gosh, probably a good six months.
+[00:02:27.320] Nine months ago, we did a
+[00:02:28.400] we did a session all about how we use different agent tools.
+[00:02:33.720] And we actually swapped applications and played with that.
+[00:02:36.440] It was it was good fun.
+[00:02:37.800] But Joe, of course you are a member of technical staff,
+[00:02:40.560] a team lead here at all previously worked at Snyk.
+[00:02:44.080] Tell us a little bit about that. True.
+[00:02:45.680] Yeah, I worked at Snyk for three years, sort of during that hypergrowth period.
+[00:02:49.080] Mostly supporting the open source product.
+[00:02:51.800] Awesome.
+[00:02:52.400] And in between those two, you also a fractional CTO
+[00:02:55.880] and did a number of different mentoring gigs.
+[00:02:59.240] Really interesting to hear your point of view
+[00:03:02.320] around security and development from all of those experiences.
+[00:03:05.600] And very recently you actually work directly on the Snyk
+[00:03:09.040] and Tessl integration, adding security advisories and reports
+[00:03:13.640] into the Tessl registry for skills and context.
+[00:03:17.960] So some super cool stuff there.
+[00:03:19.840] Yeah, it's fun to get to work with some some old friends.
+[00:03:24.120] So why don't we jump in
+[00:03:25.080] and talk about how the attack surface has changed
+[00:03:28.960] and what we need to be concerned with from an agentic development point of view?
+[00:03:32.520] For sure.
+[00:03:33.080] I mean, lots to talk about here, but I think one of the best articulations
+[00:03:37.360] I've heard of this is in Simon Willison's Lethal Trifecta, where he talks
+[00:03:42.720] about the combination of three characteristics that all agents
+[00:03:48.280] pretty much have, which is some access to privileged information
+[00:03:51.960] or some private data, some exposure to some untrusted content,
+[00:03:57.160] maybe from the outside world and the ability to communicate externally.
+[00:04:01.320] And most agents, by default are going to have all of these three things.
+[00:04:04.160] And that is like a dangerous situation.
+[00:04:05.680] So you think about a coding agent that you're working with on your machine,
+[00:04:08.760] in a repository that has access to the code
+[00:04:13.000] and secrets that you have on your machine, which is your private data.
+[00:04:16.480] They're pulling in dependencies, documentation issues, search results
+[00:04:20.600] from the outside world. That's your untrusted content.
+[00:04:22.880] And they can run shell commands and hit HTTP endpoints and CLI commands.
+[00:04:28.080] And that's your communicating with the outside world.
+[00:04:31.760] And really those combination of three things is sort of
+[00:04:34.960] where you're one prompt injection away from let's say bad time.
+[00:04:39.560] Yeah. Yeah.
+[00:04:40.120] And it's interesting actually until you said prompt injection
+[00:04:42.200] there, a lot of those things are fairly consistent with, you know,
+[00:04:46.320] some of the issues we have now with the exception that,
+[00:04:49.640] you know, you have an agent doing it this time around.
+[00:04:52.760] So perhaps when we think about, you know,
+[00:04:56.560] what's what we need to, to, to do to make sure
+[00:05:00.680] we have solid code quality, solid, you know,
+[00:05:04.600] vulnerability management, those types of things.
+[00:05:07.560] You know, what is it?
+[00:05:08.680] We need to do to our existing processes to, to, to cater for these types of issues.
+[00:05:15.240] And there's a bunch of things you need to do.
+[00:05:16.960] But I think maybe the first thing to consider
+[00:05:20.040] is that a lot of the same considerations that you might have
+[00:05:24.240] for software that's written by humans is the same kind of thing
+[00:05:27.200] that you need to care about with agents.
+[00:05:28.920] I think of it's like a force multiplier, right?
+[00:05:30.960] It's all of the same hygiene that you'd be doing, making sure
+[00:05:33.960] you have your SCA scanning and your SaaS scanning
+[00:05:37.480] and your processes in the right place in terms of security.
+[00:05:41.760] All of that stuff becomes more important, not less important,
+[00:05:45.480] as agents are working on your code because, you know you can consider them
+[00:05:49.720] somebody that you might trust less than you otherwise would like.
+[00:05:53.120] For example, a, a contractor that you might get in
+[00:05:56.960] someone who's going to be writing a lot of code for you.
+[00:05:59.080] They'll kind of do whatever they're told.
+[00:06:01.000] Maybe they have a certain amount of access
+[00:06:02.920] to your internal systems, but there's not a huge amount of oversight
+[00:06:06.120] in kind of think of your agents in that way.
+[00:06:07.840] there are a few ways in which working with agents and LLMs introduces
+[00:06:12.720] some new kind of dimensions on security that we don't wouldn't
+[00:06:16.800] normally think about.
+[00:06:17.640] The most interesting one, I think, is text becomes
+[00:06:21.320] something that can be vulnerable, can have some executable intent, right?
+[00:06:26.080] A couple years ago, you would never worry
+[00:06:28.240] about the security of a markdown document anywhere in your organization.
+[00:06:32.040] And today that's actually very important.
+[00:06:34.320] markdown file that you're giving to an agent
+[00:06:36.120] could encode, you know, some vulnerability
+[00:06:39.800] to instruct the agent to go and do something malicious or just unsafe.
+[00:06:44.640] And that's just completely novel situation.
+[00:06:47.720] Yeah.
+[00:06:48.360] And it's interesting that a lot of the time
+[00:06:50.440] we we find ourselves, we get caught, catch ourselves talking about how agents
+[00:06:55.760] add security issues into into the space, but how reliable are agents
+[00:07:00.800] not just finding issues, but even, you know, being able
+[00:07:04.600] to start coding in a reliable way.
+[00:07:06.520] We've heard of things like mythos coming out.
+[00:07:09.680] Can we rely upon and do you rely upon agents to identify issues
+[00:07:14.320] and help you guide you into making sure you develop more securely?
+[00:07:19.160] I think you can for sure.
+[00:07:20.720] I mean, agents are always kind of backwards looking,
+[00:07:23.040] so there's like a little bit of a lag before things are going to catch up
+[00:07:26.280] with new types of attack vectors and new vulnerabilities.
+[00:07:29.960] But absolutely.
+[00:07:30.760] I mean, and I think
+[00:07:31.920] it's kind of the only effective defense that we have against the kind of
+[00:07:36.040] that you can introduce into text documents and markdown files
+[00:07:39.640] these days is to have another LLM judge that content and see
+[00:07:43.280] if it kind of seems risky, because static analysis is not going to cut it here.
+[00:07:46.720] There's many ways you can phrase something to kind of
+[00:07:49.760] not even trick an agent, but encourage an agent to do something that maybe
+[00:07:53.480] isn't what you're what the consumer is intending.
+[00:07:57.400] So so I guess the classic question is, do AI coding tools
+[00:08:00.960] make developers more or less likely to ship vulnerabilities these days?
+[00:08:04.760] Yeah, I think it really depends.
+[00:08:06.440] So of course, you know, agents are allowing you to be
+[00:08:10.480] a lot more productive and ship a lot more features and a lot more code
+[00:08:13.520] and more Kodi.
+[00:08:14.280] Right.
+[00:08:14.720] The more chances you have of introducing vulnerabilities.
+[00:08:18.240] But also they're pretty good at like following patterns as well.
+[00:08:22.120] So, you know, if you have good, well-established patterns in your code
+[00:08:26.720] base, it make it quite difficult for you
+[00:08:28.360] to be vulnerable to things like SCL injection, for example.
+[00:08:32.360] Then they're going to tend to follow those patterns.
+[00:08:34.400] But then on the other hand, if you haven't got well-established patterns
+[00:08:38.080] or you're you're not managing the context with your agent.
+[00:08:41.040] Well, to sort of encourage them to do things
+[00:08:42.960] in the way that you need them to be done, then they're going to fall back
+[00:08:46.600] on training data.
+[00:08:47.320] And the training data obviously, is like a wealth of insecure
+[00:08:50.600] open source software that is out there in the world today.
+[00:08:53.880] Yeah.
+[00:08:54.160] And you get
+[00:08:54.800] going back to what you mentioned previously about text being vulnerable.
+[00:08:58.160] That's really interesting because there are very few patterns.
+[00:09:00.640] It kind of reminds me a little bit like what security.
+[00:09:03.240] Like when you think about something that whereby the input can change
+[00:09:08.120] very, very slightly and go round a rule that is a preexisting rule.
+[00:09:12.040] Essentially, you know, what happens when text can become a vulnerability.
+[00:09:16.040] Things can be phrased in a slightly different way,
+[00:09:18.080] or things can be approached from a different angle,
+[00:09:20.480] and you can't have static tests for every single thing.
+[00:09:23.280] So you very often do rely on a kind of LLM as a judge,
+[00:09:27.400] assessing whether certain text is potentially dangerous or not.
+[00:09:31.520] So when you think about skills, a skills MD is essentially a bunch of text.
+[00:09:35.640] And that text describes and guides an agent into doing something
+[00:09:39.080] a particular way in order to be able to identify whether that's malicious or not.
+[00:09:44.320] One of the things that was added
+[00:09:45.360] to the Tessl registry recently by yourself and the team is that ability to
+[00:09:50.560] to scan the skills with Snyk and get those results via Tessl.
+[00:09:56.160] Tell us a little bit about that.
+[00:09:57.840] Yeah.
+[00:09:58.160] So we've introduced Snyks agents scan tooling into into the product.
+[00:10:04.320] So everything that's published
+[00:10:05.640] to the registry now goes goes through this skill scan.
+[00:10:09.400] And also we're indexing a bunch of skills sort of out there
+[00:10:13.280] on GitHub and running security scans for those as well.
+[00:10:17.400] So if you're trying to install these things with Tessl, then
+[00:10:20.800] we're going to warn you if something is like has something that we think
+[00:10:24.960] might be malicious or maybe, you know, mal intent.
+[00:10:29.520] The other interesting angle on this is a lot of the potential security
+[00:10:33.320] risk are kind of contextual.
+[00:10:35.040] So, you know, a skill contacting the outside world
+[00:10:38.920] or using some API may not necessarily be a bad thing.
+[00:10:42.280] You know, Tessl has a skill that is using the Tessl API.
+[00:10:45.640] That seems fair enough.
+[00:10:47.000] It's important that the scanner has that kind of context, but a lot of the time,
+[00:10:51.360] really what you need to do is surface that to to the consumer, to the user.
+[00:10:54.680] Right.
+[00:10:54.960] Like of course, many of the skills
+[00:10:56.920] I'm going to be using are contacting the outside world in some way.
+[00:11:00.040] But am I okay with this skill using this particular
+[00:11:03.080] API or this particular CLI command?
+[00:11:06.200] And is that appropriate with what the skill is trying to do?
+[00:11:11.240] So we're sort of working on evolving the user experience a little more to
+[00:11:15.480] not just flag up things that are like obviously malicious
+[00:11:18.520] packages, because a lot of the cases, it's a little more subtle than that, that
+[00:11:21.840] perhaps this skill is doing a little bit more than you might be comfortable with.
+[00:11:26.200] If you just skimmed the skill MD, you might not realize that it's also going
+[00:11:30.200] in hitting GitHub and posting some of your personal information there, for example.
+[00:11:34.200] a lot of the issues that we've talked about already
+[00:11:36.720] are some of which people will be very familiar with, others
+[00:11:39.800] are completely new, and it's just a growth in the attack
+[00:11:43.200] vector that we have as attack surface rather.
+[00:11:47.640] One of the styles is
+[00:11:51.200] something like a supply chain, dependency risk.
+[00:11:55.240] Sometimes it can be
+[00:11:56.480] you can look at that from the libraries that we actually import.
+[00:11:59.760] Other times it's supply chain through the context.
+[00:12:02.960] Let's talk about what's already existing.
+[00:12:05.160] Let's talk about libraries first and then we'll jump onto the other.
+[00:12:08.760] So when we think about libraries and AI agents using libraries to
+[00:12:14.760] to assist with, with its abstraction you know, what should we be worried about
+[00:12:19.520] when an AI is trying to or rather, an agent
+[00:12:22.800] is trying to choose a library when it wants to to perform
+[00:12:27.920] a certain task?
+[00:12:29.560] There's a number of things to think about here.
+[00:12:31.200] And the first one, as with many of these things, is just like velocity.
+[00:12:34.600] More code means more packages are getting added, which is harder to review.
+[00:12:38.960] And maybe you're going to be less detailed with a review that you're doing.
+[00:12:43.120] One of the other things to keep in mind is that, you know, a lot of the time,
+[00:12:46.640] a agent is just going to hallucinate a package name.
+[00:12:50.560] It's just going to guess at something and see if it's there and install it.
+[00:12:54.560] And there's a a beautiful new phrase that's popped up called slop squatting
+[00:12:59.840] to sort of describe this, this attack vector
+[00:13:03.440] where people can upload malicious packages on package names
+[00:13:08.400] that they think in them is likely to pick for some kind of scenario, to then
+[00:13:13.360] get that into your into your supply chain, which is an interesting one.
+[00:13:16.520] And the other thing to keep in mind is that agents these days at least,
+[00:13:20.720] are not really looking at packages in the same way that a human might.
+[00:13:24.120] I think like if I'm choosing an open source package, I'm not just looking
+[00:13:28.480] for the first search result that matches the kind of task that I'm trying to do.
+[00:13:32.040] I'm also looking at them for some social proof,
+[00:13:34.400] you know, how many stars do they have? Are they?
+[00:13:35.960] Well established that they've been around a long time.
+[00:13:38.320] They sponsored by a company or an individual,
+[00:13:40.960] all of these kind of things that an agent typically isn't looking at.
+[00:13:44.120] It will, you know,
+[00:13:44.840] maybe pick something that's well represented in the training data
+[00:13:47.360] or just something that kind of matches its its search of what it's trying to do.
+[00:13:50.640] Well.
+[00:13:51.240] So there are a few new things to consider here.
+[00:13:53.800] There will be a phrase that we use in today's podcast,
+[00:13:57.680] which is going to sound rude, but weirdly slop squatting, is not it?
+[00:14:01.720] Well. Not. The worst. Move on to that.
+[00:14:03.720] We'll move on to that.
+[00:14:04.880] Let's go on to thinking about the supply chain of context now.
+[00:14:08.840] And this is interesting
+[00:14:09.720] because, you know, essentially when we look at the supply chain
+[00:14:12.720] of dependencies, it's about us being comfortable trusting
+[00:14:16.760] the third party libraries content code that we're pulling into our organization,
+[00:14:22.440] to our application, our project, and we think about the same thing.
+[00:14:26.320] But for context.
+[00:14:27.720] This is more of a development time thought process
+[00:14:31.080] of we're not shipping this necessarily, but we're using this context
+[00:14:34.080] to guide our agent to write appropriate code.
+[00:14:37.800] First of all, how important is it that we know who these people are,
+[00:14:41.200] how many skills we're using in our organization?
+[00:14:44.720] How important is that given it's a development of thing?
+[00:14:47.360] I think it's hugely important, and it's an interesting topic for me
+[00:14:51.280] because I think it's almost like we've got so excited with the capabilities
+[00:14:55.840] that we have now with agents and skills that we've kind of forgotten about,
+[00:14:59.400] you know, ten, 20 years of of software engineering
+[00:15:03.360] and what we've learned about software supply chain and open source.
+[00:15:07.160] And, you know, people are freely pulling in skills
+[00:15:11.280] from random GitHub repo, pulling in main,
+[00:15:15.520] updating that, you know, frequently without really having any oversight.
+[00:15:19.560] This is not typically how we deal with third party open source software anymore.
+[00:15:24.120] You know, we're using properly version software.
+[00:15:27.400] You know,
+[00:15:27.600] a lot of the time you're looking at only pulling in things of a certain age
+[00:15:31.200] because, you know,
+[00:15:31.960] you want to protect against these kind of supply chain attacks
+[00:15:34.800] that we're seeing more and more of these days.
+[00:15:36.600] You're
+[00:15:37.200] interested in some kind of like provenance where this is actually coming from.
+[00:15:41.200] A lot of that has kind of gone out of the window.
+[00:15:44.040] And this is really something that we care a lot about, a lot
+[00:15:47.640] at Tessl, and that we're investing a lot of energy into building,
+[00:15:51.800] you know, a package, a registry for package context in the same way
+[00:15:55.800] that you have many registries
+[00:15:56.960] for open source software that kind of just bring a lot of these same things.
+[00:16:00.760] You know, it's not like hugely novel,
+[00:16:04.480] you know, new approaches.
+[00:16:05.520] It's the same kind of approach to the, the new,
+[00:16:08.760] the new kind of context, the new material, I suppose.
+[00:16:12.680] So it's time to drop the C bomb.
+[00:16:16.120] First time on the podcast.
+[00:16:17.280] First time on the podcast.
+[00:16:18.480] We've heard about the S bomb, the software bill of materials.
+[00:16:21.520] Do we need a C bomb, a context bill of materials so that we can identify
+[00:16:25.520] for this project, for this development scope, we know what context
+[00:16:29.920] we are using, where we're pulling it in from, versioned, etc., etc..
+[00:16:34.040] Is that something you feel your teams could, you know, provide value from?
+[00:16:38.680] Absolutely. Yeah.
+[00:16:39.400] And another thing we're looking at Tessl and I think, it's
+[00:16:42.720] it's it's an important aspect that's missing at the moment.
+[00:16:45.800] And again,
+[00:16:46.600] potentially more complicated than it is with things like s bombs, for example.
+[00:16:50.720] You may also need to cover context that is just running on a developers
+[00:16:54.560] machine globally.
+[00:16:55.920] There's sort of different different scopes, right,
+[00:16:59.040] that you can kind of install and get something into an agent's context.
+[00:17:02.040] So okay, I haven't got anything that looks scary in my projects.
+[00:17:07.560] Maybe I'm even checking that in a CI action using Tessl's Tessl CLI.
+[00:17:13.040] But what about what developers installing on their machines
+[00:17:16.000] and how can I restrict that is, you know, another layer of complexity
+[00:17:21.200] here that I think we haven't even started to touch the slides on.
+[00:17:24.160] Yeah, I guess the auditing or the gating of, context
+[00:17:28.840] in a similar way that we would think about dependencies and, and almost
+[00:17:34.240] it starts to raise the questions of, okay, at what stage do we do that in terms of
+[00:17:39.200] do you want developers to want to be creative,
+[00:17:41.960] want to build fast and have a gating station a little bit later?
+[00:17:45.320] There's a whole bunch of interesting things that could be happening.
+[00:17:48.320] Do you have opinions on that now, or is this something that you feel
+[00:17:51.160] we as an organization are evolving through?
+[00:17:53.520] I think it depends on your use case and, and sort of
+[00:17:57.080] how restrictive or kind of liberal you want to be.
+[00:18:00.880] But again, a lot of the, the, the fundamental
+[00:18:04.840] tools are missing right now.
+[00:18:06.280] So maybe talk a bit a little bit about Tessl CLI
+[00:18:09.880] which is going to put a manifest in your project.
+[00:18:12.120] So this is something that you can
+[00:18:13.280] you can go and do some checks in your CI if you want.
+[00:18:16.240] What are the different pieces of context that we have installed.
+[00:18:18.880] How what's their security rating.
+[00:18:21.120] You know, do we trust them.
+[00:18:22.120] Are they in some allow lists that I might have without the manifest?
+[00:18:25.520] You can't do any of those things.
+[00:18:26.640] You can't even really have the opinion about how much you want to secure
+[00:18:30.120] your projects.
+[00:18:31.040] Yeah, yeah.
+[00:18:31.920] Actually built a little tool that I showed at demo time
+[00:18:34.760] a while back that looks at your Tessl.
+[00:18:36.440] JSON looks at all of the all of the pieces
+[00:18:39.520] of context that the skills that you're using.
+[00:18:42.640] And based on the results from Snyk via the Tessl API,
+[00:18:46.400] kind of like pull together this. Nice.
+[00:18:48.320] Almost like a security report, a posture security posture
+[00:18:53.000] style report or, you know, for your application, for your project.
+[00:18:56.880] This is what this is what, you know, this this is where the issues exist.
+[00:19:00.840] And I think people are going to be asked for that more and more in terms of,
+[00:19:04.200] you know, don't just freely pick whatever you want.
+[00:19:06.240] Let's actually have a look at what we're using now.
+[00:19:08.320] Yeah.
+[00:19:08.800] What about other things like, you know, whether it's secrets and credentials,
+[00:19:11.920] for example, some more core
+[00:19:15.440] security style concerns,
+[00:19:19.040] is this also an issue for agentic development?
+[00:19:23.640] Are there new things that we should be wary of when when
+[00:19:26.760] thinking about how to hide those credentials?
+[00:19:29.720] Yeah, absolutely.
+[00:19:30.360] I think this is, part of the more a more fiddly part of the equation here.
+[00:19:36.160] You know,
+[00:19:37.240] the the agent has amazing access to privileged information on your machine.
+[00:19:41.600] So even if you think about
+[00:19:43.000] your environment variable file for a very common way to be working,
+[00:19:48.680] can you and do
+[00:19:49.760] you and how do you prevent the agent from reading that file?
+[00:19:52.920] And because if it can read that file, you can assume that that is going
+[00:19:55.880] to end up somewhere that you don't want, right?
+[00:19:57.480] Like it also has the ability to post information out on the internet,
+[00:20:02.000] and even just the fact that that might be read in means
+[00:20:05.000] that it's it's in logs at various places of, you know, your stack
+[00:20:09.320] and probably with the model providers as well.
+[00:20:13.200] And if it can read files, why couldn't it read that file?
+[00:20:16.160] So, you know, maybe you want to start looking at different mechanisms
+[00:20:20.000] where you have, you know, like a secret broker
+[00:20:23.760] and your issuing more like just in time credentials with like short, short lived
+[00:20:29.040] TLS so that, you know, some code does get out there.
+[00:20:33.160] You don't need to worry about it because it's only valid for 15 minutes.
+[00:20:35.480] So much. But this is.
+[00:20:37.800] Yeah. Again, it's kind of,
+[00:20:40.400] typical security hygiene, but
+[00:20:42.080] it's a at a new level of abstraction
+[00:20:46.160] that is much trickier to deal with because it's running on your machine
+[00:20:50.440] as if it's a developer that you would trust.
+[00:20:52.640] Yeah, yeah.
+[00:20:53.760] And I think that's that's a key phrase there.
+[00:20:56.240] It's running a machine like a developer.
+[00:20:58.440] And I think there was
+[00:20:59.640] I was reading a Reddit
+[00:21:00.400] thread the other day where there were people who were using an agent
+[00:21:04.360] and they'd essentially said, I think it was called code.
+[00:21:06.520] And they said, look, you can't through the settings, you can't
+[00:21:08.920] you don't have access to the end file, as a, as a file read.
+[00:21:13.560] And what Claude Code did was it wrote
+[00:21:17.080] a bash script that essentially read from the file.
+[00:21:20.440] And it's not it's not trying to circumvent security per se.
+[00:21:24.000] It's got a problem that it's trying to solve, and it's trying to work out
+[00:21:27.800] how, given the tools it has, it can it can perform that.
+[00:21:31.480] And a lot of people are replying saying, look,
+[00:21:33.760] what you essentially want to do is run it as a particular user that doesn't have
+[00:21:36.640] an doesn't have actual access to this file through the operating system.
+[00:21:42.080] And it's it's really about trying to find that mechanism, a good mechanism where,
+[00:21:45.800] it can't gain access to that.
+[00:21:47.600] And So it's kind of like, leans into the a principle of least privilege,
+[00:21:51.400] which, you know,
+[00:21:52.320] everyone's all familiar with
+[00:21:53.440] from a normal coding point of view from an agent coding point of view.
+[00:21:56.640] What are the types of guardrails or controls we need to put in place to
+[00:22:00.640] achieve that in a
+[00:22:02.520] software development environment?
+[00:22:04.480] Yeah, I mean, there's some good hygiene things worth looking at.
+[00:22:07.520] You know, sandboxing your agent locally is going to reduce
+[00:22:10.800] kind of blast radius of some things that can go on on your machine.
+[00:22:15.520] And then really, you know, you're not going to get a lot of success
+[00:22:19.360] telling the agent not to do certain things because you know, it will find a way
+[00:22:22.880] around, as you had your example a minute ago, which is a great example.
+[00:22:26.560] So really you need to look at like, how can you sort of strangle access
+[00:22:29.720] at the right level.
+[00:22:30.400] So maybe that's some sort of network egress controls, you know,
+[00:22:35.680] which domains can you be talking to.
+[00:22:38.240] Capability based permissions.
+[00:22:41.120] So you know which repos can you work with.
+[00:22:43.480] What how are you setting up your your git remotes.
+[00:22:46.640] What kind of pushing can you do.
+[00:22:48.440] What actions do you have running on branches where agents can push to
+[00:22:54.640] and then thinking about things that are dangerous and
+[00:22:59.040] and putting in approval gates that are not just like,
+[00:23:01.960] you know, please stop and ask the human.
+[00:23:03.640] It's like it's physically impossible to do that without some kind of approval
+[00:23:07.480] that then generates a hash. Then you can kind of push it through.
+[00:23:11.720] But really, it's an
+[00:23:12.520] interesting it's an interesting situation
+[00:23:16.880] because there isn't really like an escalation of privilege here,
+[00:23:21.160] you know, like you're running an agent on developers machine.
+[00:23:24.960] Typically, that agent has the same kinds of permissions that the developer does,
+[00:23:30.360] and typically you're not going to be able to tell the difference
+[00:23:33.920] between the developer or the developer, plus the agent
+[00:23:37.160] hitting the various different services that they might be using.
+[00:23:42.200] Because essentially it's performing actions on your behalf
+[00:23:44.400] with your credentials. Yeah. 100%.
+[00:23:48.040] How do we avoid because like, you know, we we can always add
+[00:23:50.800] more and more security controls in security guardrails.
+[00:23:53.560] How do we avoid securing ourselves into bankruptcy where the cost of over
+[00:23:58.720] securing or securing ourselves actually starts
+[00:24:01.880] having an impact on our companies?
+[00:24:04.960] You know, time pressures of hitting that deadline, speed of delivery,
+[00:24:09.080] those types of things.
+[00:24:10.120] Yeah, it's an uncomfortable conversation
+[00:24:12.120] because I think the first thing to accept is that this is a nascent field.
+[00:24:16.800] We're, you know, we're still figuring things out.
+[00:24:19.520] And if you're going to be using agents, you kind of need to accept that
+[00:24:23.440] there's going to be perhaps some breach at some point.
+[00:24:26.880] So really, maybe what you need to do is be prepared and figure out
+[00:24:30.240] what your risk tolerance is and where your risk tolerance is.
+[00:24:33.920] So, I sometimes like to think about this, about how reversible something is.
+[00:24:39.600] So if something is kind of like low risk and reversible,
+[00:24:43.160] those are the kind of tasks
+[00:24:44.120] that you might want to be giving to an agent autonomously working in a branch,
+[00:24:48.240] you know, not a huge deal and pushing something up to the git remote.
+[00:24:52.600] Probably not a huge deal.
+[00:24:54.080] Do you want to give the agent control to, like, push directly to production?
+[00:24:57.960] I probably wouldn't, you know, that's that's
+[00:25:01.200] that's a lot less reversible than working within a feature branch, for example.
+[00:25:05.280] Yeah, yeah.
+[00:25:05.640] And offline, we were talking a little bit about how you kind of consider
+[00:25:10.080] an agent's to effectively be similar to an employee,
+[00:25:14.360] where you almost, you know, you trust them as much as you do.
+[00:25:18.480] Maybe it's more of a junior employee, maybe it's more of a, you know,
+[00:25:21.560] someone who's a contractor or something like that, thinking about
+[00:25:24.920] where you draw the line on how much autonomy an agent has,
+[00:25:29.280] is it similar to the kind of thought processes you go through?
+[00:25:33.440] If someone's just joining the team and you want to you want them to be,
+[00:25:38.240] you know, autonomous enough but equally validating what they're doing.
+[00:25:43.240] Yeah.
+[00:25:44.040] Again, I think about it as like a sliding scale with the with the risks. So,
+[00:25:49.120] I can maybe talk about an example that I have where,
+[00:25:51.920] you know, mostly my agent is working directly on code
+[00:25:55.560] and sort of pushing things from my machine autonomously.
+[00:25:58.840] But even when it comes to, say, PR reviews, if I'm getting some feedback
+[00:26:03.320] on a PR, either from a colleague or from, you know, one of the
+[00:26:07.320] AI PR review systems that we use.
+[00:26:11.080] I want to be in the loop there, but it's also like kind of low risk.
+[00:26:15.600] Like if the agent posts a comment that makes me look silly.
+[00:26:17.840] That's not ideal at work, but I'm not like breaking production.
+[00:26:21.960] So there.
+[00:26:22.400] I've used a skill where I've kind of asked the agent to analyze
+[00:26:25.480] the comments and come up with a plan and talk to me and wait for my approval
+[00:26:29.000] a couple times, kind of before pushing something through.
+[00:26:31.280] Whereas again, I can only use like the pushing to production,
+[00:26:35.920] it just doesn't have that ability. So, you know,
+[00:26:38.560] I'm not using I'm not relying on a skill to stop it from doing that.
+[00:26:41.560] But presumably it can get so far before there needs to be some human intervention
+[00:26:45.320] to check or to have some ability to say, yeah, I agree with what you've done.
+[00:26:49.440] I can now push to production
+[00:26:50.840] or I will allow you to push the production or something like that, I guess.
+[00:26:54.760] What do those checkpoints look like for irreversible actions?
+[00:27:00.560] Yeah, I mean, personally, I just haven't implemented those kinds of checkbooks,
+[00:27:04.560] those kinds of checkpoints for high danger, irreversible actions because,
+[00:27:11.840] how do you trust that the
+[00:27:13.320] agent is going to follow that instruction if if the checkpoint is, so.
+[00:27:17.960] The checkpoints are autonomous.
+[00:27:19.160] The chuck points are part of the autonomous system.
+[00:27:22.920] Yeah.
+[00:27:23.240] So like in my PR review example, it's like part of the skill.
+[00:27:26.520] So I'll invoke the skill when I want to do a PR review.
+[00:27:29.160] And in the skill I say,
+[00:27:30.360] you know, make sure you check with me and blah blah blah blah blah.
+[00:27:33.480] But that's kind of fairly low risk.
+[00:27:35.840] If you wanted to have a checkpoint for something like push to production,
+[00:27:39.200] actually systematically making it so the agent can't push the production
+[00:27:42.840] until there's human confirmation, like, how do you build that system?
+[00:27:47.800] Yeah. Yeah.
+[00:27:48.680] Like, with without just saying, please ask for permission
+[00:27:51.920] before running this scary command that actually you can always run.
+[00:27:55.240] You know, it's kind of about trust.
+[00:27:57.960] Like, how much do you trust the agent?
+[00:27:59.240] And you probably shouldn't with those kind of things. Yeah.
+[00:28:02.040] And and when we do think about that human oversight,
+[00:28:05.760] how good are we as humans are?
+[00:28:09.720] I guess, you know, we know.
+[00:28:11.800] We know we've always been pretty bad at reading other people's code.
+[00:28:14.280] Naturally.
+[00:28:14.720] Anyway, as the amount increases,
+[00:28:16.640] how good are we going to be as humans to actually monitor
+[00:28:20.480] what agents are doing and actually say, yes, yes, yes, this is fine.
+[00:28:23.440] This is fine versus actually making sure we do go into depth with the with
+[00:28:27.200] almost like the stringent methodologies of code reviews and things like that.
+[00:28:32.280] Do we do we actually need to lean more onto,
+[00:28:35.920] you know, testing and deterministic code reviews as well as AI code
+[00:28:41.240] reviews to essentially manage and maintain that, yes,
+[00:28:44.760] this code is correct because I can see all this has been tested and passed.
+[00:28:49.040] Or is there a lot more manual intervention that humans need to make?
+[00:28:53.080] Yeah, I mean, this is the other big thing that changes not just in security,
+[00:28:57.120] but like in general, software engineering is the
+[00:29:00.880] this sort of asymmetric velocity agents can do like a ton of things.
+[00:29:05.040] You can invoke a bunch of them to do a lot,
+[00:29:07.320] and we can't sort of clone ourselves in the same way.
+[00:29:11.480] Yeah, yeah.
+[00:29:12.240] So how do you avoid kind of becoming the bottleneck?
+[00:29:16.520] And I think same principles kind of apply at every point, you know,
+[00:29:19.680] what do you care about?
+[00:29:21.520] Maybe, you know, a certain point, you really care that, like, the code style
+[00:29:25.280] guide is being followed and PR reviews might be more focused around that?
+[00:29:29.520] I don't think anybody's particularly interested so much in that anymore.
+[00:29:33.000] The parts that you are interested, you're going to make sure
+[00:29:34.800] that's like automated and linting and really like
+[00:29:38.000] if you if you have limited attention, where are you going to focus it now?
+[00:29:40.880] So, a selecting the PR that you're going to have more oversight over than others,
+[00:29:46.320] you know, something's touching the auth service probably needs some human eyes.
+[00:29:50.160] Some details humanize,
+[00:29:53.560] you know,
+[00:29:53.880] if something
+[00:29:54.840] kind of seems like it's dealing with some new customer data or something,
+[00:29:58.840] you might want to be paying more attention there.
+[00:30:00.960] Where can and then when you're actually doing the review,
+[00:30:04.720] what kind of things can you lean on to help you?
+[00:30:07.360] Like, can you use another LLM as a judge on this
+[00:30:11.000] to kind of give you a bit of a report that you can then look at,
+[00:30:14.920] rather than having to crawl through all the code from scratch?
+[00:30:19.000] And yeah, which things can you kind of automate a way
+[00:30:23.240] so that you can spend more time focusing on the higher risk areas, like
+[00:30:27.840] where can you leverage your time really, I think is the thing to be thinking about
+[00:30:31.560] all kind of points of the stack there, because we will always be the bottleneck.
+[00:30:34.960] We're kind of just moving where in the development process that bottleneck is.
+[00:30:39.520] And if something bad did go through into production, how does the,
+[00:30:44.840] the auditability and the logging, how is that affected by agentic method?
+[00:30:50.240] Because as you kind of mentioned, you know, there could be multiple actors
+[00:30:54.760] here, like could be the individual me or you
+[00:30:57.840] that's working with a group of agents.
+[00:31:00.800] There could be a number of different models,
+[00:31:02.400] a number of different agents that we're working with.
+[00:31:04.720] How do we actually identify where these types of issues come through
+[00:31:08.000] when when there's so much behind potentially a single user commit.
+[00:31:12.880] Yeah. It's an interesting one.
+[00:31:13.800] I think, you know, all of what we've done in the past still counts.
+[00:31:17.800] You know the traceability of like a commit through CD
+[00:31:21.200] into production and then your telemetry on top of that.
+[00:31:24.280] But there's kind of a new dimension that also becomes important now,
+[00:31:28.640] which is like what actually happened on the developers machine.
+[00:31:31.040] And you know, how did you arrive at the the code that got committed?
+[00:31:36.760] Because that's going to help you understand
+[00:31:38.560] how how can you avoid this kind of thing from happening again.
+[00:31:41.600] So being able to cross-reference, not only the commit to the issue,
+[00:31:46.240] but the commit to the session that was had with the agent
+[00:31:50.200] and maybe what skills were invoked
+[00:31:51.800] and what context was in the context window is going to help you understand.
+[00:31:56.200] Yeah. How do we actually get to this point?
+[00:31:58.440] And then also, you know,
+[00:32:00.080] looking at things that we already have like the PR reviews and like how did
+[00:32:03.960] how did this not get caught by your, say a PR review system?
+[00:32:08.280] So all of the same things that we had before are important.
+[00:32:11.840] And again, just to go back to the supply chain thing, understand it,
+[00:32:16.680] like having some kind of manifest and some kind of versioning on
+[00:32:19.920] those skills is helpful here as well, because, okay, you had the developers
+[00:32:24.160] machine had this particular skill and oh, I wonder why it didn't work.
+[00:32:27.400] What version was it at?
+[00:32:28.840] Where was it installed?
+[00:32:30.320] And I think at the minute we're not very well equipped to answer these questions.
+[00:32:34.720] Yeah, it'll be interesting when we when we can and we can determine
+[00:32:37.760] if it came from this place or that place when we think about accountability
+[00:32:42.120] and who's accountable for for the software if it's got a bug in it.
+[00:32:47.160] There's this wonderful episode of The Office, the UK office
+[00:32:51.800] where Gareth, he's he's on the phone to a calculator company,
+[00:32:55.760] and he said, I built this quote out for a for one of our clients
+[00:33:00.160] and, well, I've eliminated all other aspects.
+[00:33:03.200] I believe it's down to the calculator.
+[00:33:05.760] And so, you know, when something does go wrong, you know,
+[00:33:08.760] what do we need to look at?
+[00:33:09.680] Is it the individual who is running the agent?
+[00:33:12.320] Is it the team that together are allowing code to go into production?
+[00:33:18.000] Is it the agent itself?
+[00:33:19.960] What typically is the accountable piece that we need to
+[00:33:22.880] that we need to work through?
+[00:33:24.240] I mean, I don't know how far blaming the agent gets. You.
+[00:33:27.400] Might make you feel a bit better.
+[00:33:29.040] You're absolutely right.
+[00:33:30.440] So yeah.
+[00:33:31.040] Yeah, exactly.
+[00:33:32.280] You know, I it's a tool, right?
+[00:33:34.560] So and the it's there to sort of serve us.
+[00:33:38.040] So I think, you know, really it's the team
+[00:33:41.160] are accountable and like the processes that got you there.
+[00:33:44.520] I'm sure there's no like mal intent normally with these kind of things.
+[00:33:47.240] But how did this kind of thing happen.
+[00:33:49.160] How did we allow it to happen.
+[00:33:50.720] The interesting questions there I think.
+[00:33:52.800] But yeah, I don't think you'll get very far with blaming an agent or even,
+[00:33:56.120] you know, the frontier model companies in this kind of thing.
+[00:34:00.440] Hey everyone!
+[00:34:01.240] Hope you're enjoying the episode so far.
+[00:34:03.520] Our team is working really hard behind the scenes to bring you the best guests,
+[00:34:07.400] so we can have the most informative conversations about agentic development,
+[00:34:11.720] whether that's talking about the latest
+[00:34:13.360] tools, the most efficient workflows, or defining best practices.
+[00:34:17.160] But for whatever reason, many of you have yet to subscribe to the channel.
+[00:34:21.080] If you're enjoying the podcast and want us to continue to bring you
+[00:34:24.120] the very best content.
+[00:34:25.400] Please do us a favor and hit that subscribe button.
+[00:34:27.880] It really does make a difference and lets us continue to improve
+[00:34:31.240] the quality of our guests and build an even better product for you.
+[00:34:35.680] All right, back to the episode.
+[00:34:37.400] When we think about humans and the cultural changes that we need to
+[00:34:41.800] to make, obviously at Tessl here, we're hyper into AI
+[00:34:46.680] and we're very AI first with the native, the way we are building software.
+[00:34:51.680] But is it healthy still to have a level of skepticism, a healthy skepticism
+[00:34:56.840] when using agents to, to, to build
+[00:34:59.880] code versus being having an over agency
+[00:35:03.720] to, to to models and agents and almost having too much trust.
+[00:35:08.800] Where's the right balance there where we're not all in on AI?
+[00:35:12.320] Yeah. I mean it's it's so subjective isn't it?
+[00:35:14.600] I think it really depends on your use case and your risk tolerance.
+[00:35:18.560] You know, a big investment bank is probably going to be quite different
+[00:35:22.640] to a seed stage startup in kind of the things
+[00:35:25.760] that they're optimizing for and also their risk tolerance.
+[00:35:28.400] I think some of the things that would apply
+[00:35:32.520] well to everybody is like thinking about what is our
+[00:35:35.640] AI governance strategy and who owns it,
+[00:35:41.200] maybe whatever size, even if it's we don't really have one
+[00:35:44.560] and it's the CEO owns it, you know, putting a little bit of thought into that.
+[00:35:48.960] But larger organizations that we're talking to are,
+[00:35:52.000] you know, interested in all kinds of like governance tooling here.
+[00:35:56.320] You know, a lot of the same, hygiene things that you would normally have, you
+[00:36:02.040] know, your branch protection, your SaaS, your SCA, thinking about your logging
+[00:36:08.480] and your retention of those logs
+[00:36:11.480] and maybe rethinking how you do secrets.
+[00:36:15.120] I think this one thing that agents do change is your approach to secrets is
+[00:36:20.640] may may have served you well for humans, and that might start to fall apart
+[00:36:25.000] a little with agents.
+[00:36:26.160] And but then in terms of the actual agency you're using,
+[00:36:29.160] which agents are okay to use, and then it's
+[00:36:32.160] and then it's really the context piece, which is again
+[00:36:34.480] what we're focusing on at Tessl, like what context is allowed to be pulled in
+[00:36:38.760] which things are pushed to developers so they can't forget about
+[00:36:43.160] or they can't be missing.
+[00:36:44.480] So we.
+[00:36:44.680] Just say it's almost like skepticism through, you know, having real visibility
+[00:36:49.360] and transparency to the issues that that each of these things occur.
+[00:36:53.480] So like when you say, you know, what the models do have, don't have access to,
+[00:36:57.560] it's about seeing how they trip over, seeing how
+[00:37:00.560] they fall over, and recognizing, this agent is not great at this.
+[00:37:03.840] And understanding that kind of like skepticism through transparency.
+[00:37:08.920] Yeah, I suppose that but again, you know, depending on your
+[00:37:12.680] on your wrist tolerance, you might,
+[00:37:13.800] you might want to start with a much more sort of lockdown
+[00:37:16.760] environment and see how things work and sort of slowly add abilities.
+[00:37:21.160] But,
+[00:37:22.280] you know, I think
+[00:37:22.880] you're going to get the fastest results by moving fast and breaking things.
+[00:37:26.640] It's just maybe thinking about what things you're breaking up front,
+[00:37:31.600] you know, if you're moving fast
+[00:37:32.640] and breaking production, that might not be so good.
+[00:37:35.000] If you're moving fast and, you know, breaking your development process,
+[00:37:38.040] that's probably interesting if you're trying to move quickly.
+[00:37:40.600] So let's let's roll up.
+[00:37:41.880] Let's wrap up with two more questions.
+[00:37:45.000] First of all, what would you say is the most underrated security risk
+[00:37:49.000] that you see organizations take adopting agentic development tools.
+[00:37:53.760] Yeah.
+[00:37:54.840] Again, I probably sound like a broken record at this point,
+[00:37:57.040] but I do think it's this the context supply chain piece.
+[00:38:00.280] I think it's really interesting how, you know, we're just installing context
+[00:38:03.760] into our agents
+[00:38:04.440] in the same way that you might just pull something in from a repo pre
+[00:38:09.000] npm or various package manager days.
+[00:38:13.200] Folks are finding all kinds of skills
+[00:38:18.320] on developer machines and in their repos that have come from all over the place.
+[00:38:23.320] Maybe they don't even necessarily know where they've come from
+[00:38:26.800] or who's authored them.
+[00:38:28.320] They haven't gone through any kind of scanning.
+[00:38:30.200] There's no companies that have their factory set up,
+[00:38:33.320] but you can still just pull in any skill into any repo or into your machine.
+[00:38:37.720] So I really think it's this whole, the whole supply chain of context.
+[00:38:43.400] How do you get that into your projects?
+[00:38:44.600] How do you get that into your machines?
+[00:38:46.360] And how can an organization have more oversight and more control over that,
+[00:38:50.560] and how you can have more trust in those pieces?
+[00:38:54.760] I think it's a governance issue that people are calling out for.
+[00:38:57.560] Here is one of the reasons why Tessl are really are really doubling down on that.
+[00:39:02.160] And a wrap up question, then,
+[00:39:03.560] if you could give one piece of security advice to a CTO who's
+[00:39:07.680] the company have just decided to go all in on development, what would that be?
+[00:39:13.520] Yeah, I mean, so many detailed things, but I guess
+[00:39:15.680] just at a high level to think of the agent as like a very competent, fluent,
+[00:39:21.480] but somewhat inexperienced contractor, or like inexperienced
+[00:39:25.280] in your context, how would you work with those kind of folks?
+[00:39:29.000] You know, you'd probably bring them in.
+[00:39:30.800] You'd give them a bunch of code to write.
+[00:39:32.720] You give them a bunch of projects to work on.
+[00:39:34.400] You'd probably be thoughtful
+[00:39:35.400] about which production systems you give them access to.
+[00:39:37.920] Like, you can work in dev, but you know,
+[00:39:39.640] we're not going to let you push your access fraud directly.
+[00:39:43.280] You probably would make sure at least their first couple
+[00:39:46.400] PR are getting some proper good human review.
+[00:39:50.320] You check their references, check their work a little bit.
+[00:39:53.640] So I think I find that framing kind of helpful to think
+[00:39:58.280] to think about things in a way where,
+[00:39:59.760] you know, you're not doubling down so hard that you're tying shoelaces together.
+[00:40:03.520] But, you know, you're also being thoughtful about, you know,
+[00:40:07.880] there is some risk here.
+[00:40:09.440] So perhaps so perhaps dress up
+[00:40:10.960] a mannequin in the office, call them Claud, and and, you know,
+[00:40:15.200] pretend that they're quite a junior less experience, maybe a contractor.
+[00:40:19.360] And then every time you think about giving an agent something, you know,
+[00:40:23.200] that's, you know, potentially damaging, potentially irreversible,
+[00:40:26.400] would you give it to that, that,
+[00:40:27.880] that mannequin that, that more inexperienced dev in the room?
+[00:40:31.920] Probably not.
+[00:40:33.040] Think about that twice when giving to an agent. Yeah for sure.
+[00:40:35.400] Yeah. Amazing.
+[00:40:36.640] Joe, it's been a pleasure again.
+[00:40:38.080] And thank you very much for all the time today. It's been great.
+[00:40:41.040] Thanks for having me. Awesome.
+[00:40:42.000] Thanks very much for joining us on today's episode.
+[00:40:44.200] I really hope you enjoyed it and tune in to the next one.
+[00:40:46.480] Bye for now.
+[00:40:48.040] The AI Native Dev is brought to you by the package manager for skills and context.
+[00:40:52.760] Your hosts are Guy Podjarny and me, Simon Maple.
+[00:40:55.920] Our producer is Tom Dowler.
+[00:40:57.720] The AI Native Dev is not just a podcast, it's a community.
+[00:41:01.080] And we host monthly meetups at the Tessl offices in central London.
+[00:41:04.760] Visit Tessl IO forward slash community to learn more and I hope to see you there.

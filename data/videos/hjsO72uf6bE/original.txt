@@ -1,0 +1,517 @@
+[00:00:00.480] [Music]
+[00:00:13.679] Hey Nick, how are you doing? Pretty
+[00:00:16.160] good. How about yourself? Yes, all good.
+[00:00:18.480] Thank you so much. Um, thank you for
+[00:00:20.720] joining uh the conference. uh really
+[00:00:23.039] excited to have uh you share with us
+[00:00:26.080] your expertise on how to build a GitHub
+[00:00:29.359] compiler extension. Um I'll just preface
+[00:00:32.320] this by saying that Nick is a developer
+[00:00:34.320] advocate at Polarium and and is pretty
+[00:00:36.719] much an expert uh in the open source and
+[00:00:39.760] zero trust space. Um so that said, let's
+[00:00:43.360] with that said, let's uh I'll switch it
+[00:00:45.600] to you Nick. Okay,
+[00:00:48.280] perfect. Cool. Awesome. Hey everybody,
+[00:00:51.680] thanks for joining. So yeah, so today
+[00:00:54.640] we're gonna create a GitHub copilot
+[00:00:56.800] extension. Uh I've given this talk uh a
+[00:00:59.920] few times. Sometimes it's an hour,
+[00:01:01.680] sometimes it's 30 minutes. This is the
+[00:01:03.199] first time doing it. 15 minutes, so
+[00:01:05.439] which is totally fine, but uh you know,
+[00:01:07.840] we're gonna not speedrun, but uh we're
+[00:01:10.640] we're gonna we're gonna get to it. Okay.
+[00:01:13.520] All right. Would help if I'm on the
+[00:01:14.799] right screen clicking button. So uh I
+[00:01:17.119] won't intro myself again. Uh B already
+[00:01:19.520] did that. But here's all the places you
+[00:01:21.439] can find me. Uh
+[00:01:23.000] nikkiet.online has all my links. Uh from
+[00:01:26.240] Montreal, Quebec, Canada. So if you like
+[00:01:28.320] poutine, you are my
+[00:01:30.759] friend. So uh you know before we get
+[00:01:34.320] into what is a GitHub co-pilot
+[00:01:36.479] extension, I'll just talk briefly about
+[00:01:38.320] GitHub copilot. Uh probably most of you
+[00:01:41.119] have heard of it. Um if you haven't,
+[00:01:43.280] it's like a coding assistant that is
+[00:01:47.119] more than just a coding assistant. They
+[00:01:48.799] have like an agent mode where it can
+[00:01:50.399] keep iterating on things now these days.
+[00:01:52.320] But the interesting about GitHub copilot
+[00:01:54.720] is like many of you probably use VS
+[00:01:57.119] Code. It's available in there, but it's
+[00:01:59.119] actually also available on github.com.
+[00:02:01.840] If you're a net developer, it's
+[00:02:03.840] available in uh Visual Studio. Uh also,
+[00:02:07.759] if you are a uh a developer for iOS
+[00:02:11.599] apps, it's actually available in Xcode
+[00:02:14.000] as well. Now uh there's a CLI for it and
+[00:02:18.400] uh they released a whole SDK uh so that
+[00:02:21.520] you can actually implement uh co-pilot
+[00:02:24.319] in any editor now. So I know Jetrains
+[00:02:27.520] has this as well but if you wanted to
+[00:02:29.360] create an editor if you're that
+[00:02:30.640] ambitious you can go ahead and add
+[00:02:32.239] C-pilot to it. Um so that's just a
+[00:02:34.720] little preamble about GitHub Copilot but
+[00:02:36.959] let's talk about what a GitHub copilot
+[00:02:39.120] extension
+[00:02:40.519] is. So the name kind of says it all. It
+[00:02:43.519] literally extends GitHub copilot. Um, so
+[00:02:46.800] you can create custom AI powered tools.
+[00:02:49.360] You can integrate with thirdparty
+[00:02:50.920] services. Uh, you can also access files
+[00:02:53.440] in editor
+[00:02:55.000] context. There's two types of co-pilot
+[00:02:57.519] extensions. There's one that's a skill
+[00:02:59.519] set and this is like uh makes it easy to
+[00:03:02.560] connect thirdparty services and custom
+[00:03:04.239] APIs into the co-pilot workflow. You can
+[00:03:06.720] think of those like tools. And there's
+[00:03:09.360] also this agent mode and that's the one
+[00:03:10.959] we're going to go through today. um we
+[00:03:12.879] don't have time to build out one of
+[00:03:14.800] each. Um and the agent just provides
+[00:03:17.200] complete control over the whole request
+[00:03:19.840] response within a GitHub co-pilot
+[00:03:22.720] session. Um and you can enable custom
+[00:03:25.599] workflows. You can connect to other LLMs
+[00:03:28.239] APIs and have access to the entire
+[00:03:31.040] conversation context and user
+[00:03:33.000] interactions. That sounds pretty fancy
+[00:03:35.840] the way I said that, but basically it
+[00:03:38.159] knows what files you're working with if
+[00:03:39.760] you allow that permission. And you can
+[00:03:41.920] kind of get the message history as
+[00:03:44.120] well. And the cool thing about the
+[00:03:46.640] extensions are they pretty much work
+[00:03:49.040] everywhere that GitHub Copilot is. So I
+[00:03:51.280] mentioned github.com. You can actually
+[00:03:53.360] use it there. You could use a Visual
+[00:03:55.360] Studio or VS Code, etc., etc. The only
+[00:03:58.400] place it's not available at the moment
+[00:04:01.439] copilot extensions is in the co-pilot ex
+[00:04:04.720] uh the co GitHub copilot CLI as far as I
+[00:04:07.200] know. Uh cool. Uh, I'm just going to
+[00:04:09.840] switch over to the comments for a sec
+[00:04:11.599] just so I can see what's going on. Cool.
+[00:04:14.000] Um, yeah. So, one interesting thing is,
+[00:04:17.280] you know, security is important. So, the
+[00:04:19.519] first time you interact with a co-pilot
+[00:04:21.199] extension,
+[00:04:22.800] um, you know, oh, that's the wrong
+[00:04:24.960] slide. Sorry. U,, this is kind of what
+[00:04:26.720] it looks like when you first start off.
+[00:04:28.880] So, if you want to use a co-pilot
+[00:04:31.280] extension, you'll have like your chat
+[00:04:32.960] area for copilot. And you have to
+[00:04:36.160] actually start off with at and the name
+[00:04:39.040] of the copilot extension and then
+[00:04:40.720] whatever your question is or whatever
+[00:04:42.160] you're trying to do. Uh if you actually
+[00:04:45.199] say something like hey GitHub
+[00:04:47.960] copilot at lama copilot memoize this
+[00:04:50.960] function it's actually just going to use
+[00:04:53.040] copilot itself and not the extension. So
+[00:04:55.680] you just have to remember whenever you
+[00:04:58.080] want to leverage a co-pilot extension,
+[00:04:59.759] you always have to start it with at
+[00:05:01.600] whatever the co-pilot extension is and
+[00:05:03.360] then what you're trying to
+[00:05:05.800] do. Cool. All right. So let's just talk
+[00:05:09.440] a bit about the anatomy of a co-pilot
+[00:05:11.680] extension.
+[00:05:13.600] Now, I will preface this with uh Visual
+[00:05:16.720] Studio Code specifically, at least when
+[00:05:19.360] I looked at this last year, has GitHub
+[00:05:22.320] Copilot extensions that are specific to
+[00:05:25.280] uh Visual Studio Code. I'm not going to
+[00:05:27.520] focus on those today, uh just for time
+[00:05:29.960] reasons. But also, uh I actually like
+[00:05:33.440] the the more general C-pilot extension
+[00:05:35.520] because this can be used everywhere. And
+[00:05:38.479] basically what you need to have a
+[00:05:40.080] working co-pilot extension is you need a
+[00:05:43.199] publicly accessible web application or
+[00:05:46.240] something that can serve endpoints.
+[00:05:48.639] That's number one. The other thing is
+[00:05:51.120] you need to register a GitHub
+[00:05:52.800] application. And those things together
+[00:05:55.120] with whatever permissions you decide to
+[00:05:57.120] set is what compromises a copilot
+[00:06:01.240] extension. And the bare bones
+[00:06:04.880] permissions. And I'll I'll I'll show you
+[00:06:06.720] this in a bit, but basically the minimal
+[00:06:10.160] thing you need to have for it to
+[00:06:12.479] actually work as a co-pilot extension is
+[00:06:14.720] you have to give access to the user's
+[00:06:17.360] co-pilot chat uh history. And this is
+[00:06:20.800] read only and it's required and there's
+[00:06:23.280] no write mode. It's only always read
+[00:06:25.120] only. That's the bare bones one. If you
+[00:06:28.080] want to have access to like the context
+[00:06:30.319] of the editor like what files are being
+[00:06:32.240] edited, etc., You also have to add the
+[00:06:35.520] context uh permission which is also read
+[00:06:39.080] only. Now when you're interacting with a
+[00:06:43.280] copilot extension the first time you ask
+[00:06:46.560] it about something where you might be
+[00:06:48.720] referencing an uh a file for example
+[00:06:51.840] here I have
+[00:06:53.000] index.ts it's going to ask me uh you
+[00:06:56.000] know can can I actually access your
+[00:06:58.720] context. So saying I would like to read
+[00:07:00.880] your active file and selection. Uh so
+[00:07:03.840] initially it says it failed to give me a
+[00:07:05.759] 401. I have to allow it and I can allow
+[00:07:08.400] it for the specific project I'm in or I
+[00:07:10.319] can allow for all workspaces if you're
+[00:07:12.160] just like yolo let's do this. Um and
+[00:07:15.599] that's just a nice thing. You just don't
+[00:07:17.039] want it all of a sudden just reading
+[00:07:18.560] stuff without you knowing that it didn't
+[00:07:20.560] that it was doing that. So that's a
+[00:07:22.960] little bit of security there. Just take
+[00:07:24.880] a quick sip of
+[00:07:27.240] water. Okay. Yeah, I'm just looking in
+[00:07:29.120] the chat. There's extensions transform
+[00:07:31.840] copilot from a code assistant into a
+[00:07:33.520] developer workflow engine. Yeah, it's
+[00:07:35.360] pretty cool. Yeah, stay staying
+[00:07:37.440] hydrated, B. Thanks. Cool. So, for
+[00:07:41.599] getting your development in environment
+[00:07:43.360] set up, uh you know, we just need to
+[00:07:45.599] install the dependencies of this
+[00:07:47.039] template that I'll show you in a second.
+[00:07:49.120] Uh we also need to expose the local
+[00:07:52.319] development server to the internet. I'll
+[00:07:54.240] show you how to do that as well. and we
+[00:07:55.680] need to create and configure a GitHub
+[00:07:58.919] application. We're also going to
+[00:08:00.800] leverage the Copilot extension preview
+[00:08:03.199] SDK and I'll show you how you can debug
+[00:08:05.360] the
+[00:08:06.360] extension. One thing I'll mention about
+[00:08:09.280] C-Pilot extensions
+[00:08:11.319] is right now with the preview SDK, it's
+[00:08:14.319] specific to JavaScript TypeScript, but a
+[00:08:17.120] C-pilot extension that serves endpoints,
+[00:08:20.400] it can be literally in any language. be
+[00:08:22.479] Go, Elixir, I don't know, Assembly if
+[00:08:25.919] you're ambitious maybe. Uh, but at the
+[00:08:29.120] time, uh, for the time being, as far as
+[00:08:31.440] I know, there's only a preview SDK for
+[00:08:34.560] all things JavaScript. Um, but that
+[00:08:37.200] said, you know, it's open source. If
+[00:08:38.880] you're interested in like leveraging
+[00:08:40.640] your own language to leverage what's in
+[00:08:42.800] the preview SDK, you could always uh
+[00:08:45.040] maybe use Copilot to port it to another
+[00:08:47.760] language. So, we're going to go ahead
+[00:08:49.920] and take a uh do the demo here now, but
+[00:08:52.480] I just want to show you this is the
+[00:08:53.839] template I'm using. So, this is uh my
+[00:08:56.959] GitHub copilot extension template. Um
+[00:08:59.920] feel free to give it a star if you'd
+[00:09:01.360] like to. This is like uh JavaScript
+[00:09:04.720] JavaScript based project. It's
+[00:09:06.399] leveraging the preview SDK and it's just
+[00:09:08.800] like a bare bones to kind of get you up
+[00:09:11.040] and running. Um, for the sake of time,
+[00:09:14.880] I'm going to show you a co-pilot
+[00:09:17.040] extension I built with it, but I'm going
+[00:09:18.560] to talk through the pieces in it. All
+[00:09:20.720] right, so immediately sharing this. All
+[00:09:23.680] right, awesome. Cool. So, let's go ahead
+[00:09:26.720] and move over to the editor. And I know
+[00:09:29.600] some people are probably going to say,
+[00:09:31.360] light mode, my eyes, but uh I find I
+[00:09:34.160] live stream a lot and I find uh light
+[00:09:36.160] mode actually works better for uh
+[00:09:37.920] sharing screens and stuff. Okay, so
+[00:09:41.120] let's back up a bit here. Okay, that's
+[00:09:44.560] the debug environment, but let's go back
+[00:09:46.240] to here for a second and let's go
+[00:09:49.760] through what you need to do to actually
+[00:09:51.839] configure the GitHub copilot extension
+[00:09:54.640] uh from the GitHub app perspective. So,
+[00:09:56.800] you want to go to your settings and then
+[00:09:59.440] you come down here and it's developer
+[00:10:02.080] settings. And I'll zoom this in a bit.
+[00:10:04.160] You can see uh I've I've done this a few
+[00:10:06.480] times. Uh I'm just going to walk you
+[00:10:09.000] through the what you need to have here.
+[00:10:11.920] So this is the one we're going to demo.
+[00:10:13.920] So I've already created it, but
+[00:10:15.519] essentially when you go to create it,
+[00:10:17.040] it's the same kind of flow. There's a
+[00:10:19.360] few things here and the required field.
+[00:10:21.360] So you have to give it a name. So I call
+[00:10:22.959] it the product manager. Spoiler alert,
+[00:10:25.440] we have a copilot extension that's going
+[00:10:27.519] to be a product manager for us. And when
+[00:10:30.399] you actually reference it in the copilot
+[00:10:32.720] chat, this name is what's going to be
+[00:10:34.560] used, but it'll be like at
+[00:10:37.480] the-rmgr for example. Um, oh, cool.
+[00:10:40.800] Thanks for sharing the template. Um, so
+[00:10:42.720] you need to have a name obviously. Uh
+[00:10:44.800] the homepage URL, I'm using the same URL
+[00:10:47.120] that I'm using as the endpoints that I'm
+[00:10:49.360] going to be using in Copilot. But if
+[00:10:50.959] this was like you're deploying this to
+[00:10:53.120] production, you would probably have like
+[00:10:54.720] a branded page on your website or maybe
+[00:10:57.360] it's part of the Copilot extension. For
+[00:10:59.600] now, it's a required field. So I'm just
+[00:11:01.440] putting it there. So like if I come to
+[00:11:03.040] this, you should see Okay. Yeah, I have
+[00:11:05.600] to say continue. Uh but you can see here
+[00:11:08.079] it just says welcome to the co-pilot
+[00:11:09.519] extension template. That's that's my
+[00:11:11.279] branding. Um, but let's close that. Um,
+[00:11:15.920] the other things just to note, uh, you
+[00:11:18.720] need to add a callback URL even if
+[00:11:20.560] you're not using OOTH. Um, I hung out
+[00:11:23.040] with a bunch of the folks from GitHub at
+[00:11:26.160] one point to go through this when this
+[00:11:28.160] came out last summer. And this is
+[00:11:30.000] apparently still a required field even
+[00:11:31.600] though it's not used. So, you just fill
+[00:11:32.880] it in. I just put the same URL. I think
+[00:11:35.360] from a UX perspective, they're going to
+[00:11:37.360] they're going to ask that at some point
+[00:11:38.720] if you're using a Copilot extension. um
+[00:11:42.160] do not have a web hook active and that's
+[00:11:44.560] pretty much all you need to do
+[00:11:46.440] there. And then let's talk about
+[00:11:49.240] permissions. So I mentioned before, so
+[00:11:51.519] we need account
+[00:11:52.680] permissions. So at a minimum, you need
+[00:11:55.440] this co-pilot chat and you need to have
+[00:11:57.519] it set to read only. There's only two
+[00:11:59.279] options, no access or readon. Without
+[00:12:01.920] this one, it's just not going to work. I
+[00:12:05.120] have this other one also added and this
+[00:12:07.440] is so I can get access to the editor
+[00:12:09.200] context. This one is optional. It
+[00:12:10.880] depends what you're doing with your
+[00:12:12.279] extension. So those two things there.
+[00:12:14.560] And then we come to this new tab that's
+[00:12:17.040] been in I guess GitHub apps for about a
+[00:12:19.519] year maybe. And by default it's select
+[00:12:22.560] it's set at disabled. We want it as
+[00:12:25.120] agent for this particular one. But you
+[00:12:27.360] can also do skill set which I mentioned
+[00:12:29.200] which is kind of like a bunch of tools
+[00:12:30.720] that copilot can access. We're going to
+[00:12:33.440] focus on the agent one. And then
+[00:12:36.079] basically the main thing is we need to
+[00:12:38.560] have an endpoint here and this is where
+[00:12:41.200] your extension is actually going to like
+[00:12:44.079] from GitHub copilot. Copilot is going to
+[00:12:46.320] do a form post to this URL and then you
+[00:12:50.000] know I just have like what is what is
+[00:12:52.240] this extension and I say you are a wacky
+[00:12:54.800] project manager that you know suggests
+[00:12:57.360] wacky humorous product feature ideas. Uh
+[00:12:59.920] you kind of get the idea. So it's a bit
+[00:13:01.600] of a spoiler. Um, okay. Let's go ahead
+[00:13:06.320] here and move over here now. So, uh, the
+[00:13:11.040] other thing I want to talk about is we
+[00:13:12.320] have the preview SDK stuff. I'm using
+[00:13:14.240] some nice features in here. So, they
+[00:13:16.959] have all these helper functions. So, you
+[00:13:18.480] can say like create an acknowledge
+[00:13:20.240] event. Um, what this does is when the
+[00:13:23.279] request comes in, it will notify the
+[00:13:26.720] co-pilot UI that like okay, something's
+[00:13:29.279] happening. And then you'll see like the
+[00:13:31.360] UI adjust to show that something's
+[00:13:33.360] happening. And when you're done whatever
+[00:13:35.200] your request was, you can say done and
+[00:13:37.360] that'll notify the co-pilot UI to just
+[00:13:39.839] say like stop spinning or stop doing
+[00:13:41.440] what you're doing. And there's some
+[00:13:43.600] other nice things here. You can get like
+[00:13:45.040] the user message, which is the the
+[00:13:47.040] latest question you ask or the latest
+[00:13:49.000] prompt. Um there's some security
+[00:13:51.519] features to verify and parse the request
+[00:13:53.680] to make sure you know it's still an
+[00:13:55.600] endpoint so people can actually post to
+[00:13:57.600] it. So, you know, there's that, too. I'm
+[00:14:00.320] using Hano. Again, you don't have to use
+[00:14:02.160] this. This is just what I decided to go
+[00:14:03.680] with the template. Now, a few things to
+[00:14:06.959] notice here. Uh, I'm just going to stop
+[00:14:09.680] this for a second. We need, as I
+[00:14:12.000] mentioned, we need to make this publicly
+[00:14:13.600] accessible on the internet. So, I'll
+[00:14:16.160] drop this in the chat, but if all of you
+[00:14:18.880] go to, well, not not all of you. Well,
+[00:14:21.199] it doesn't matter, I guess, but if you
+[00:14:22.800] go to this URL I just posted in the
+[00:14:24.959] comments, you should be okay. I can't
+[00:14:27.680] post it. Uh oh, there it goes. Uh you
+[00:14:30.079] should be able to go to that URL and you
+[00:14:31.680] should see like a welcome to the Copilot
+[00:14:33.560] extension. Uh the way I do that, and
+[00:14:35.920] there's many tools you can use to do
+[00:14:37.600] this, but since I'm in VS Code most of
+[00:14:39.839] the time, I basically go with the
+[00:14:41.760] built-in stuff, they have port
+[00:14:43.199] forwarding. So, I've decided to port
+[00:14:45.600] forward port 3000, which is what my web
+[00:14:48.160] app is running on. And I'm just going to
+[00:14:50.959] make it public. By default, it's
+[00:14:52.720] private. And those are the two criteria
+[00:14:54.720] there. Now, I'm just going to go ahead
+[00:14:57.040] and start the dev server. I've got the
+[00:14:59.600] debugger running here, too. And on the
+[00:15:02.480] right here, I'm going to ask a question.
+[00:15:04.720] Well, I'm going to say like at the
+[00:15:07.440] product manager slashfeature because I
+[00:15:09.600] want it to give me a new
+[00:15:11.000] feature. And this is going to start
+[00:15:13.199] thinking. Okay. And now we're in the
+[00:15:15.279] debugger here. And this might time out
+[00:15:17.519] because I'm in here, but uh basically
+[00:15:19.920] there's some security checks. So, I'm
+[00:15:21.360] checking if it's a valid request. It is.
+[00:15:23.760] It verified the payload that came in. So
+[00:15:25.920] there's like special headers from GitHub
+[00:15:28.160] to just verify the authenticity. That's
+[00:15:30.720] a nice out of the box thing. Let's go
+[00:15:32.880] ahead and let it run. And so what this
+[00:15:35.920] extension does is it's just going to
+[00:15:38.800] create a wacky product idea. So uh I was
+[00:15:43.360] talking to my friend Gant Labour because
+[00:15:45.120] I give this talk at All Things OpenAI
+[00:15:47.040] and he's like, "Love the talk, but it'd
+[00:15:48.800] be cool if you had like a wacky
+[00:15:50.480] extension." And so I decided to make the
+[00:15:52.480] the crazy uh product man not crazy
+[00:15:56.000] product manager but wacky ideas product
+[00:15:58.079] manager. So says sure introduce the
+[00:16:00.320] procrastinators pause button and I can
+[00:16:02.560] give feedback on this. So let's say like
+[00:16:05.440] awesome
+[00:16:06.959] uh let's only let them press it every
+[00:16:12.959] five minutes. So now I'm interacting
+[00:16:15.600] with the co-pilot extension. I'm going
+[00:16:17.199] to detach here uh just so that it can
+[00:16:20.440] run and we can close the side panel here
+[00:16:23.360] just to get a bit more real estate. This
+[00:16:25.360] is running on my local machine so it
+[00:16:27.279] could be a little slower but you can see
+[00:16:29.279] here it's I'm interacting with it. It's
+[00:16:31.440] suggested like okay that's great. Let's
+[00:16:33.360] add the five minutes and stuff. So okay
+[00:16:36.399] at this point I'm like okay I'm pretty
+[00:16:38.320] happy with that. So I'm going to say
+[00:16:40.000] slashdone.
+[00:16:43.560] Now I'm like, this is a great idea.
+[00:16:46.920] Perfect. Okay. Now, the nice thing here
+[00:16:49.519] is I just got a prompt. And this is
+[00:16:51.759] actually another thing that comes with
+[00:16:53.279] the preview SDK. I can actually output
+[00:16:56.720] instructions for Copilot to give me a
+[00:16:58.880] prompt. So, I'm going to say, do I want
+[00:17:00.639] to generate a products requirements
+[00:17:02.639] document? And you can say yes or no. I'm
+[00:17:05.120] going to say yes, uh, just to show the
+[00:17:07.520] rest of what I did here. And this is a
+[00:17:09.039] goofy demo, I know, but I was thinking
+[00:17:11.679] about it after I built this demo. This
+[00:17:13.360] could actually be very valuable as a
+[00:17:15.199] real PRD generator, just not with wacky
+[00:17:18.160] ideas. And so I'm able to just generate
+[00:17:21.679] this and this is like a way for me to
+[00:17:24.480] extend GitHub Copilot with something
+[00:17:26.720] bespoke that I needed, you know, cuz
+[00:17:28.799] like who doesn't need a a wacky product
+[00:17:31.600] manager coming up with uh wild ideas?
+[00:17:34.559] But you can see it it took our whole
+[00:17:36.160] discussion. It consolidated into like
+[00:17:38.640] what the core of the idea is. It took my
+[00:17:41.360] suggestions in there and then it talks
+[00:17:44.480] about the requirements. And so that's
+[00:17:47.280] pretty cool. Um uh we still got a little
+[00:17:50.240] bit of time before we get to Q&A, but I
+[00:17:52.080] just kind of want to show you like those
+[00:17:53.840] other neat things here. So we're
+[00:17:55.280] streaming the event. So this is the
+[00:17:56.720] acknowledge. So this is what allows
+[00:17:58.960] C-pilot to just start that spinner or
+[00:18:01.360] whatever the UI is because it's
+[00:18:02.640] different depending if you're on like
+[00:18:04.280] github.com or GitHub copilot. And then
+[00:18:07.760] you can see here I just have this
+[00:18:09.679] template. I did this all in line. That's
+[00:18:12.000] generally probably not a best approach
+[00:18:14.720] in terms of like if you're programming
+[00:18:16.559] something, but this is a a small demo.
+[00:18:19.200] Uh, but basically I've I've just have
+[00:18:22.000] this kind of hash table of like all the
+[00:18:24.480] brainstorming sessions and the ideas and
+[00:18:27.360] then I just generate it in there and put
+[00:18:29.520] it in a nice way, you know, and then I
+[00:18:31.440] do some cleanup if there's markdown and
+[00:18:33.360] stuff. That's a TypeScript error that I
+[00:18:35.760] guess I need to fix, but you know, I'll
+[00:18:37.840] get um we got about a minute here left,
+[00:18:40.480] but uh so this is what's nice. So like
+[00:18:43.679] this create confirmation event. So like
+[00:18:45.600] let's just do this again real quick. I'm
+[00:18:47.919] going to say
+[00:18:48.840] feature. Oh, I actually have to start
+[00:18:50.960] the dev server again. Sorry. This is
+[00:18:53.520] going to probably stop in a sec. Let's
+[00:18:55.360] do another one. And let's do
+[00:18:59.240] slashfeature. And I think it'll hit that
+[00:19:02.000] break point. Yes, it did. Okay. Let's
+[00:19:04.400] just click play. Okay. And it's going to
+[00:19:07.840] go ahead and do its thing. It's going to
+[00:19:09.840] give us a wacky idea again. I'm just
+[00:19:11.919] going to get rid of this one.
+[00:19:15.360] Now again it's it's my own website
+[00:19:18.960] running on my local machine that
+[00:19:20.559] GitHub's interacting with or GitHub
+[00:19:22.480] copilot. Okay, I'm gonna say slashdone
+[00:19:24.400] again. And this is where we should see a
+[00:19:27.520] breakpoint if I put it in the right
+[00:19:29.520] place. Yes, I did. Okay, so where where
+[00:19:33.840] did it go? Uh here. There we go. You can
+[00:19:36.960] see here I've created the confirmation
+[00:19:38.559] event and just let it run. I'll detach
+[00:19:41.280] here because I know we're at time. But
+[00:19:42.960] then you're gonna see the prompt and I'm
+[00:19:44.400] just gonna say accept. And there we go.
+[00:19:46.799] Hey Bob.
+[00:19:48.799] Amazing. Thank you so much. Like
+[00:19:51.679] extremely insightful session. Uh and
+[00:19:54.400] also I I want to say like that template
+[00:19:57.200] is a little gem. Like um I was trying to
+[00:20:00.080] click on it but I think it doesn't allow
+[00:20:01.760] me to. But you definitely I owe you a
+[00:20:04.080] star for sure. Okay. Cool. Cool. Thanks
+[00:20:07.120] man. Yeah. Yeah. Um now uh the one thing
+[00:20:11.360] is and this is why we didn't want to
+[00:20:13.039] stop you because this was like extremely
+[00:20:14.559] valuable but um we've run out of the Q&A
+[00:20:17.760] uh time. However, like um I mean no no
+[00:20:22.799] problem there because I think uh the the
+[00:20:24.960] last minutes were were really important,
+[00:20:27.039] right? Especially to to close it up. Uh
+[00:20:29.600] now to the audience, if there's anyone
+[00:20:32.080] who wants to follow up, uh please go
+[00:20:34.080] start the repo by the way. It looks
+[00:20:35.360] really cool. Uh but if you want to
+[00:20:36.880] follow up on uh on on this with Nick uh
+[00:20:40.720] please reach out to him. Um and yeah,
+[00:20:43.120] just wanted to personally thank you for
+[00:20:45.200] uh this uh practical uh live demo. Cool.
+[00:20:49.039] Thanks, Bob. And thanks everybody.

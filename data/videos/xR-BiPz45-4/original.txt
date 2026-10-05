@@ -1,0 +1,706 @@
+[00:00:01.040] agentic analytics or basically anything
+[00:00:03.040] using AI, you're moving on more of a conversation pace, Right?
+[00:00:06.040] I mean, you have a conversation and you ask me a question, I take ten minutes.
+[00:00:10.120] I just think about it and say it's not a very good conversation.
+[00:00:12.960] your pipelines will probably error out and your waste tokens, things like this.
+[00:00:16.320] So you want a subsecond kind of response for this stuff to work.
+[00:00:25.480] Oh, no. Oh!
+[00:00:28.040] Okay.
+[00:00:28.520] Hi everybody.
+[00:00:29.880] I'm here to talk about data harnesses, so I've gone with a belabored pun
+[00:00:35.720] billion, but I'm going to talk about getting data
+[00:00:40.080] optimized and efficient and delivered it in a way that really helps
+[00:00:43.120] whatever you're doing, whether it's engineering,
+[00:00:45.160] which will talk about later, or analytics, which is kind of
+[00:00:48.160] more Dremio in my area of expertise.
+[00:00:51.800] So my name is Will Martin.
+[00:00:53.240] I'm the data and AI evangelist at Dremio.
+[00:00:56.240] I started out doing statistical analysis
+[00:00:58.160] at the Large Hadron Collider, and since then I've spent about 15 years
+[00:01:01.480] in the data industry doing pretty much every role that starts with the word data.
+[00:01:05.720] So I've been a scientist, engineer, consultant, analyst,
+[00:01:08.840] and now I am specifically the data and AI evangelist.
+[00:01:13.480] And most recently I wrote
+[00:01:14.680] the book Agentic AI for Dummies.
+[00:01:18.480] In terms of, I hear you ask, who are they?
+[00:01:20.520] So we call ourselves the lake house provider.
+[00:01:23.800] We are a lake house provider, much like these more familiar logos here on screen.
+[00:01:28.920] But there is one key difference between them and us.
+[00:01:33.360] We have the better mascot.
+[00:01:34.840] His name is Gnarly.
+[00:01:36.240] He's very cute and much easier to personalize for blogs and events.
+[00:01:41.200] Talking of cute logos and cute mascots, we also have this guy here.
+[00:01:45.000] Is anyone familiar with this?
+[00:01:49.760] You can see, correct?
+[00:01:50.840] Yes. So.
+[00:01:53.800] Yeah.
+[00:01:55.880] Yes, we based it.
+[00:01:56.640] He's got a little Scottish hat.
+[00:01:58.160] I don't know the word for it.
+[00:02:01.680] It's arguable if he ever existed at all.
+[00:02:03.680] Nessie in particular.
+[00:02:05.480] But this is the mascot, the logo for an open source data catalog.
+[00:02:09.360] And Dremio created it, which not a lot of people make that connection.
+[00:02:14.240] Other open source logos we are associated with
+[00:02:16.600] are these two Apache Arrow and Apache Polaris.
+[00:02:20.200] So while we do sell a data lake house, we heavily invest in open source standards.
+[00:02:25.280] So these three projects in particular we have Apache Arrow back in 2016,
+[00:02:29.480] which was co-founded by the same people who founded in the same year,
+[00:02:33.480] which is a crazy popular in-memory format
+[00:02:36.800] and now a transport format for processing columnar data.
+[00:02:39.800] So great for analytics.
+[00:02:42.160] There's a little stat there, 100 million plus downloads per month.
+[00:02:45.280] That is specifically just the Python library implementation.
+[00:02:48.880] Just pi Arrow.
+[00:02:49.760] For some reason they don't track the other libraries, but a stats
+[00:02:53.000] are pretty crazy that in 2017 Apache Iceberg came out.
+[00:02:57.080] We did not create this in any way, but we're big educators and users of this
+[00:03:02.200] ways.
+[00:03:02.520] We contribute as I go and talk about it, and then we have engineers on staff
+[00:03:06.280] who develop the code and contribute to the project.
+[00:03:08.760] And then most recently we have Apache Polaris.
+[00:03:11.320] So this is another metadata catalog similar to Nessie.
+[00:03:14.320] And we launched this in 2024 with Snowflake.
+[00:03:18.000] And originally it was meant for Iceberg metadata
+[00:03:21.240] only if you're familiar with that.
+[00:03:22.760] But now it does other stuff. In particular it does Delta.
+[00:03:25.560] So if you want an open source Delta Lake catalog,
+[00:03:28.600] this is a great thing to go for rather than something like Glue.
+[00:03:32.520] And to prove the educational aspects.
+[00:03:35.080] We wrote the book on Apache Iceberg for O'Reilly,
+[00:03:37.160] and we wrote the book on Polaris as well.
+[00:03:41.280] So who here is familiar with data?
+[00:03:44.000] Lake houses
+[00:03:46.560] should be a lot of people, but there's a little distinction.
+[00:03:48.880] It gets confused with lakes quite a lot.
+[00:03:51.000] So data warehouses are great for analyzing data,
+[00:03:55.400] but they're a little painful for storing because of costs.
+[00:03:58.120] And if your size goes up, your cost goes up quite a lot.
+[00:04:01.240] So data lakes came along, which are great for storage,
+[00:04:04.200] but the painful for analytics.
+[00:04:06.360] The idea was to do the best of both worlds and bring them together.
+[00:04:09.120] So Lake plus house from warehouse is Lake house.
+[00:04:12.120] It's as simple as that.
+[00:04:13.520] No idea is to combine the two together and you get the strengths of both.
+[00:04:16.880] So you've got the low cost, scalable storage of say, S3 or something like this,
+[00:04:21.640] but you've got reliable asset transactions
+[00:04:23.800] you would only typically get in a warehouse.
+[00:04:25.920] So you have this kind of layout here.
+[00:04:28.840] You've got your lake, and your computers would be a kind of data lake layout.
+[00:04:32.600] To turn this into a lake house, you had two components.
+[00:04:36.440] You've got a metadata catalog, which provides the right version of your data
+[00:04:40.240] set from your lake to your compute.
+[00:04:42.440] And then you have a metadata format, also known as a table format.
+[00:04:46.160] And this is metadata about your data defines
+[00:04:50.240] things such as your schema, your history, things like this.
+[00:04:53.640] It's great for rollback, great for just
+[00:04:58.120] getting around kind of issues with Parquet,
+[00:05:01.560] which you may get in an analytic space, especially a fast moving analytic space.
+[00:05:06.760] So a general layout looks like this.
+[00:05:08.560] Really you have Iceberg data in some kind of lake variety of catalogs.
+[00:05:12.600] You can be using, variety of engines you can be using.
+[00:05:16.960] So a data lake house is made in quite
+[00:05:20.000] the same way you would make it in real life.
+[00:05:22.640] Lake house. You find yourself a data lake.
+[00:05:25.440] You add a little bit of structure in terms of a catalog and submitted data,
+[00:05:28.880] and you have yourself a lake house.
+[00:05:32.120] So a typical data lake, well, a general data lake house platform looks like this.
+[00:05:36.360] You have your your file format for storing your data in.
+[00:05:40.480] You have your metadata format for storing your metadata.
+[00:05:44.840] You have a catalog.
+[00:05:46.120] And this acts as a kind of middleman and sends the right information.
+[00:05:49.000] You want to look at to your compute, which will be a query engine.
+[00:05:52.760] So for me we look like this.
+[00:05:55.480] We write data in Parquet because it's columns and columns are fast.
+[00:05:58.840] We use Iceberg.
+[00:06:00.000] It's the only format we use.
+[00:06:01.680] We've been using it for a long time.
+[00:06:03.120] And now every other lakehouse in this space is using it, including Databricks.
+[00:06:07.560] We have our own open catalog, which is powered by Apache Polaris,
+[00:06:11.120] and we have our own query engine which uses Apache Arrow.
+[00:06:14.000] So on the right you can see
+[00:06:17.600] the OSS talk isn't a bunch of marketing.
+[00:06:19.880] We actually invest in it and we use it in every part of our stack
+[00:06:23.760] because it's really performant and it's good to use.
+[00:06:26.200] And there's other benefits, which I'll talk about shortly.
+[00:06:30.160] Okay.
+[00:06:30.360] So what's this actually got to do with the topic of today?
+[00:06:32.240] We're talking about harness engineering.
+[00:06:34.000] So typical layouts.
+[00:06:36.080] If you're not using a lake house you typically got something like a lake
+[00:06:38.960] here you've got some sort of data silos or your data in different places.
+[00:06:43.160] Maybe it's another database, maybe a catalog,
+[00:06:46.320] some object storage, God forbid, in Excel.
+[00:06:49.480] Or you may be using a warehouse.
+[00:06:51.760] So the old fashioned kind of analytics space.
+[00:06:55.040] So legacy analytics a couple of years ago you were kind of moving at an email base.
+[00:07:00.200] So you'd write a query
+[00:07:01.720] and it would take minutes to ours was was seen as acceptable.
+[00:07:05.360] Right.
+[00:07:06.120] So like you're emailing a colleague, they'll get back to you.
+[00:07:08.640] Shortly hopefully that within the day.
+[00:07:11.880] And that's fine for people right.
+[00:07:14.000] That's fine. It will work with this.
+[00:07:15.600] It works if your data silos
+[00:07:16.920] and you're pipelining at around definitely works for a warehouse,
+[00:07:22.000] but for a
+[00:07:23.160] genetic analytics or basically anything using AI,
+[00:07:27.200] you're moving on more of a conversation pace, right?
+[00:07:30.200] Even if you exclude sort of chat interfaces.
+[00:07:32.960] Right?
+[00:07:33.320] I mean, you have a conversation and you ask me a question, I take ten minutes.
+[00:07:37.400] I just think about it and say
+[00:07:39.720] it's not a very good conversation. Right.
+[00:07:41.240] And your pipelines will probably error out and your waste tokens, things like this.
+[00:07:47.000] So you want a subsecond kind of response for this stuff to work.
+[00:07:50.560] And it's not really I want really it's a requirement.
+[00:07:55.160] Right.
+[00:07:55.480] You need this kind of speed because if you're working
+[00:07:59.160] in the old style stuff takes minutes or hours for a person, that's fine.
+[00:08:02.640] I'll go make a cup of tea.
+[00:08:03.680] I'll come back, but it's not going to work for agents.
+[00:08:07.480] So things like a lake, a lake in particular isn't going to cut it
+[00:08:11.280] for this kind of work.
+[00:08:14.000] So today I'm going to talk a
+[00:08:15.360] little bit about making a quality data foundation
+[00:08:19.120] and a platform that kind of delivers this to whatever your needs are.
+[00:08:22.000] So whether you're doing analytics or you're doing engineering,
+[00:08:24.960] the needs are very similar.
+[00:08:27.040] You data needs to be accessible to be able to see your whole data estate
+[00:08:31.040] so you can get the right
+[00:08:32.360] well need to see all the information so you get the full picture.
+[00:08:36.200] So any assessments or analytics or anything you build is accurate.
+[00:08:41.160] It needs to be understandable by whatever's accessing it.
+[00:08:43.520] So you don't have to ask people you know what the data means
+[00:08:46.480] and it needs to be performant. Right.
+[00:08:47.760] You need this conversational pace.
+[00:08:50.000] And I'm going to put forward that.
+[00:08:53.000] The modern data Lake House does this and all counts.
+[00:08:55.840] And it also uses it with open source standards.
+[00:08:58.720] So you're not locked into any vendor.
+[00:09:01.040] You will see a few specific features.
+[00:09:03.440] I've put a little Gnarly there so you know what they are,
+[00:09:05.840] but I'm mostly not going to talk about them because I'm not here to sell you a.
+[00:09:10.600] But this is what Romeo looks like.
+[00:09:13.320] This is the full platform.
+[00:09:15.560] So your data layers at the bottom layer, whether it's object storage.
+[00:09:19.120] So you're kind of lake or any other kind of system.
+[00:09:22.120] You've got warehouses, catalogs, you name it, you've got your execution layer.
+[00:09:25.800] And at the top you've got the things that are actually using it.
+[00:09:29.360] But of course we're talking about AI. So I've scrubbed
+[00:09:31.440] by off all of these slides because it's not relevant.
+[00:09:35.400] But starting with AI, right.
+[00:09:37.400] Whether you're doing engineering or analytics, you're connecting stuff to AI.
+[00:09:42.320] We integrate three ways.
+[00:09:45.920] We have an agent built in if you don't want to build anything.
+[00:09:48.720] So a big thing for analytics is the push for democratization of data.
+[00:09:53.360] It was Databricks is slogan for quite a while, and this is for people
+[00:09:57.320] who don't want to build and just what he use.
+[00:09:59.320] They don't have to do anything.
+[00:10:00.760] It's just a tab in the UI.
+[00:10:03.000] There's the model context protocol, which everybody uses again open source.
+[00:10:07.720] So fantastic.
+[00:10:09.160] And you've got to develop a CLI.
+[00:10:10.920] So if you're doing
+[00:10:11.680] more programmatic stuff doing stuff for terminal you've got this.
+[00:10:15.240] So the full breadth of how you want to connect
+[00:10:18.320] your data estate to an AI, whatever you want to do it.
+[00:10:22.480] You have it from very business focused, evade technical focused.
+[00:10:25.360] And I think for you, everyone here in this room, it's
+[00:10:27.120] probably these two on the right that are more relevant,
+[00:10:30.760] but it doesn't really matter.
+[00:10:32.280] Right?
+[00:10:32.600] It's just we connect to AI but like it doesn't matter if you integrate,
+[00:10:36.960] if what you're integrating with isn't very good.
+[00:10:39.080] So the focus of the talk is this execution layer.
+[00:10:43.160] So the things inside that make the lake house the query engine,
+[00:10:46.360] the semantic layer and the open catalog.
+[00:10:50.640] So and together these form the performance data harness.
+[00:10:53.520] So really help you do your work with AI.
+[00:10:56.200] So the catalog straight up.
+[00:10:58.200] So we have the Dremio Open Catalog I call the open catalog
+[00:11:02.320] because Snowflake also have an open catalog.
+[00:11:05.720] It is also powered by Apache Polaris.
+[00:11:08.080] I'm not sure why we all decided to do that.
+[00:11:11.240] It's a little confusing, but the idea here is Polaris
+[00:11:15.120] is a great open source project.
+[00:11:17.440] It became came out of incubation in February this year
+[00:11:21.840] and delivers all of these great features you would want from a data catalog.
+[00:11:25.600] And on top of that we add a few things.
+[00:11:27.280] We have something like
+[00:11:28.320] Iceberg clustering, which is a nice alternative to partitioning.
+[00:11:32.800] So what happens here is you cluster up similar values in your rows.
+[00:11:38.040] You cluster your rose by similar values,
+[00:11:40.080] but you're not splitting up your data into partitions, physical partitions.
+[00:11:44.240] So you get improved read performance.
+[00:11:46.680] And it's a bit more easy to sort of understand and and
+[00:11:50.880] get your head around, especially for business users, which is a lot of people.
+[00:11:54.600] We go towards your table maintenance features such as garbage
+[00:11:58.280] collection and compaction, things that are essential for a lake house.
+[00:12:02.760] And everybody does.
+[00:12:03.720] I'll talk a bit more about them later.
+[00:12:05.400] And then there's also role
+[00:12:06.560] based access controls, which is part of essential governance.
+[00:12:09.520] If you're doing this kind of thing, you can restrict what people are looking
+[00:12:13.160] at based on roles or even down to the very fine grained level rows and columns.
+[00:12:19.320] So optimization
+[00:12:20.160] is a very common across the industry, whatever lakehouse you're using.
+[00:12:23.160] So there's a thing called the small file problem.
+[00:12:26.440] I'm sure probably anybody a lot of people here have heard about it.
+[00:12:29.960] If your data comes in and it's in lots of files, these files
+[00:12:33.040] take a while to open and it makes stuff slow and expensive to do.
+[00:12:36.360] So you want all your stuff in one big file that makes things more performant.
+[00:12:39.800] And that's what it is.
+[00:12:41.000] It just smooches things together into more compact files.
+[00:12:46.120] Vacuuming gets rid of unused metadata, sort of from failed attempts
+[00:12:50.520] or things you're not really using anymore, gets cleaned up and save you storage.
+[00:12:54.800] And then you have something called variant shredding, which is a bit more recent.
+[00:12:58.120] So is anybody familiar with Apache Iceberg or uses it?
+[00:13:02.920] Okay, so with V3 evade the modern spec for Iceberg.
+[00:13:06.520] There's a new data type included called variant.
+[00:13:09.360] And this basically puts semi-structured data into a cell of your table.
+[00:13:13.840] So this is something that's been in Delta Lake for a long time.
+[00:13:16.520] It's been added to Iceberg. And in fact it's been added to Parquet.
+[00:13:19.160] So anything that runs off Parquet, any metadata format can use this part
+[00:13:23.880] of the the secret sauce for why Iceberg and table formats and lake houses
+[00:13:29.760] are so performant is because of something called predicate pushdown.
+[00:13:33.520] You know, if you're looking for certain values, say you're looking at
+[00:13:37.400] software developers age 20 to 35.
+[00:13:41.240] The metadata knows which files and which partitions,
+[00:13:44.440] including those files, have the data you're looking for.
+[00:13:47.120] But if you're shoving JSON into a cell,
+[00:13:50.080] you can't pull that information out until you have variant shredding.
+[00:13:53.600] So this is a way of pulling out
+[00:13:55.080] this nested or sort of compressed or structured information out of a cell,
+[00:13:59.080] so you can efficiently only open the partitions
+[00:14:02.720] that contain the data you need and in the files you need.
+[00:14:05.480] It's what make things quick.
+[00:14:08.760] And then the catalog
+[00:14:09.880] also gives you end to end access control.
+[00:14:13.520] So both thing is governance giving your users.
+[00:14:16.000] And likewise any AI or AI agents access to the right information.
+[00:14:20.560] And it can do it at every level.
+[00:14:22.160] So Polaris provides credential vending for the major hyperscalers.
+[00:14:27.680] So you get storage level access to anything inside your storage,
+[00:14:31.520] and it goes all the way along to column and row level access
+[00:14:35.040] through masking and filtering.
+[00:14:36.760] So you can really tune stuff down specifically to
+[00:14:39.760] to any kind of user.
+[00:14:43.360] And likewise the agents are doing their work for them
+[00:14:45.440] or the agents you are training or the agents
+[00:14:48.720] you are developing or the are you working with.
+[00:14:52.720] Okay.
+[00:14:53.000] Second, sandwiched in between, we have the AI semantic layer.
+[00:14:56.200] The AI isn't really too essential here.
+[00:14:59.520] It's not too different than what it's always been.
+[00:15:02.360] But the idea is really that terms of subjective, right?
+[00:15:05.560] So many, many business terms are not universal.
+[00:15:08.440] If you talk to one company and then talk to another company,
+[00:15:11.640] what they call a customer isn't necessarily the same.
+[00:15:15.080] And then things that include money, I have to be calculated on the metrics,
+[00:15:18.480] like revenue in particular is very different company to company.
+[00:15:22.120] Then you get stuff like this, which if you've been a consultant
+[00:15:24.880] or an analyst like me, you've seen a lot, right?
+[00:15:28.240] I've got over 15 years experience.
+[00:15:30.120] I have no idea what this is unless I talk to somebody.
+[00:15:33.080] Claude's not going to be any better.
+[00:15:35.000] It's trained on a lot of data, but it's not trained specifically
+[00:15:37.640] on a company's data.
+[00:15:41.800] So yeah, these
+[00:15:43.120] definitions vary a lot, and you are lucky if your company just has one.
+[00:15:47.160] So if you talk to, say, your customer support team, their view of what
+[00:15:52.000] a customer is, their definition is going to be very different to your sales team.
+[00:15:56.040] And a lot of times these definitions aren't even in your tool, right?
+[00:15:59.520] They're downstream quite a lot of the times, a lot of times
+[00:16:03.160] in by tools or separate spreadsheets, data dictionaries, things like this, things
+[00:16:08.640] where your AI or any kind of downstream tool isn't really looking.
+[00:16:12.840] Having it separate from your data is not a good idea.
+[00:16:16.040] So you have no definitions.
+[00:16:18.120] You're just going to guess.
+[00:16:20.280] I would guess your model will guess with confidence
+[00:16:24.680] and then anything you get out of the process,
+[00:16:27.680] any kind of analytics or anything you've engineered and built,
+[00:16:30.080] you're going to have to question and drill down
+[00:16:32.000] and figure out what you're actually looking at,
+[00:16:33.600] what definition you were using, and if you have multiple definitions,
+[00:16:37.560] it's pretty much the same, right?
+[00:16:38.800] You just got to you're going to pick one
+[00:16:40.600] thing, you're going to argue over whether you pick the right thing and
+[00:16:46.240] you still can't trust what you've got.
+[00:16:47.680] It's the same problem.
+[00:16:49.880] So really you need to consolidate your context into a single layer,
+[00:16:52.480] a semantic layer, if you will, and put it in your platform.
+[00:16:55.680] It just makes things simpler.
+[00:16:57.320] You're connecting whatever system you've got downstream for your AI use cases.
+[00:17:01.040] It's far nicer just to connect to one place,
+[00:17:03.280] keep your data and your metadata together.
+[00:17:07.920] And just write down what a column actually means,
+[00:17:10.400] what a metric is defined as, and then how your tables relate
+[00:17:13.920] and how which is really easy in a lot of places are doing
+[00:17:16.400] because a lot of tables are defined as SQL, right?
+[00:17:19.760] It defines how you derive a gold layer data set from a silver layer.
+[00:17:24.360] It's right there in in the SQL.
+[00:17:29.040] And actually just source of truth.
+[00:17:30.600] So you can ask your agent whatever question you like.
+[00:17:33.200] So we have a question here
+[00:17:34.160] which is laden with a bunch of very specific business terms.
+[00:17:38.480] Q2 you would think isn't too different from one company to another,
+[00:17:42.920] but we've just been bought by SAP and our Q2 is are very different
+[00:17:45.960] to each other.
+[00:17:46.880] So it varies within a company.
+[00:17:49.080] But you can see this as your prompt.
+[00:17:51.200] You're asking your agent your prompts.
+[00:17:52.440] It breaks it down to tasks.
+[00:17:54.440] And with a semantic layer it can reliably take action.
+[00:17:56.880] So it can go and find metric definitions which are defined in one place.
+[00:18:01.240] It knows what your sales table is compared to the others
+[00:18:03.720] because they're named properly or identified or tagged.
+[00:18:06.520] And they can explain what the table means
+[00:18:08.600] because it knows what the column definitions are.
+[00:18:10.640] So this can be anything from very simple things such as a label,
+[00:18:14.400] which is like just tagging your data set as something to a wiki
+[00:18:18.240] to have a more elaborate stuff like knowledge glow offs.
+[00:18:21.280] I think there's a lot of consolidation in the industry,
+[00:18:24.160] and talk about standardizing a lot of the semantic layer.
+[00:18:27.160] You've probably heard of OSI, which is the Open Semantic Interchange.
+[00:18:31.080] So this was launched
+[00:18:32.000] last year with a couple of companies like Salesforce and Snowflake.
+[00:18:35.920] It has recently turned into an Apache Software Foundation project called OSI.
+[00:18:40.360] The logo is a kangaroo.
+[00:18:42.000] It's not very cute.
+[00:18:42.680] It hasn't got a face, but the idea there is to standardize
+[00:18:46.760] how to share semantic information between tools.
+[00:18:49.960] But in terms of the implementation within tools, it can vary quite a lot.
+[00:18:54.720] Still, we'll see what happens as as the space develops.
+[00:18:59.560] Okay, that's 2 to 3 features.
+[00:19:01.880] The last component is the query engine.
+[00:19:05.040] So does data Federation.
+[00:19:08.400] So hands up if you were born in the 90s
+[00:19:13.720] okay.
+[00:19:14.080] So we've been talking about tearing down data silos as long as you've been alive.
+[00:19:17.720] But they are still around and for good reason.
+[00:19:20.960] People have kind of given up now on trying to tear them down.
+[00:19:23.480] They're there for a reason.
+[00:19:25.160] Data goes in and data comes out.
+[00:19:26.880] So they are kind of painful to get rid of.
+[00:19:28.600] So Federation's the way it's at.
+[00:19:30.680] So like with a lake house where you're querying the data,
+[00:19:33.320] where it lives, query your data, where it lives in these other systems.
+[00:19:37.080] So data federation, you can support multiple table formats
+[00:19:40.880] thanks to something like Apache Polaris.
+[00:19:43.520] Other data catalogs thanks to something I'll talk about shortly.
+[00:19:47.840] Object storage, databases, you name it.
+[00:19:49.760] The idea is to get the data accessible from one location,
+[00:19:54.480] so centralized your access and your governance, but not physically
+[00:19:58.440] centralizing your data because that's the trap warehouses fell into.
+[00:20:02.320] That's the pain point there.
+[00:20:05.000] Down here we have reflections.
+[00:20:07.320] This is a custom query acceleration feature
+[00:20:10.440] which I won't talk about, but we do do caching.
+[00:20:13.400] A lot of people do caching.
+[00:20:15.400] We have query plan caching.
+[00:20:17.600] So if you're writing data queries
+[00:20:20.800] your query is the same but your data is changed.
+[00:20:23.080] You can just use the same query plan halves the amount of work you're doing.
+[00:20:27.200] Likewise, we have results sets that are saved.
+[00:20:30.160] So if you're running the same query, the query is the same,
+[00:20:32.880] the data is the same.
+[00:20:34.400] Just give you back the same results.
+[00:20:35.920] And then the custom side we have Columnar Cloud Cache
+[00:20:39.400] we always struggle with what to call it — I prefer C3.
+[00:20:42.520] The idea here is we just put data.
+[00:20:44.440] You frequently look at the access and we store that in the storage.
+[00:20:48.000] It's on your clusters on your nodes and it sits right next to the compute.
+[00:20:51.920] So for some customers you're getting like costs dropped by 90%.
+[00:20:55.400] There's something really basic right.
+[00:20:56.560] We're just using stuff that's not being used.
+[00:21:02.360] So that's the performance data harness.
+[00:21:04.240] Then we have the open data harness.
+[00:21:05.960] I've talked about open software a bit.
+[00:21:08.560] So a little bit more is these bits are kind of grayed out.
+[00:21:12.400] So for us in particular we we have our own query engine.
+[00:21:17.080] It's very performant.
+[00:21:18.040] It's fun to use. Well funds a strong word.
+[00:21:21.720] But there's other things on the market too.
+[00:21:23.440] There's Kafka, there's open source stuff like Spark.
+[00:21:27.640] And likewise we support other query engines.
+[00:21:31.440] So things like Snowflake, Athena, Trino, open source Fabric, very much
+[00:21:36.360] not so, but
+[00:21:39.280] we permit full read and write access to the data catalog
+[00:21:42.800] and the underlying storage, which is unique in the market.
+[00:21:46.800] And we do this because we're using open standards.
+[00:21:50.800] Right.
+[00:21:51.120] So at the beginning I showed this as other sort of general layout of Dremio.
+[00:21:56.000] I just moved it left a little bit.
+[00:21:57.960] So this is the dream Lakehouse platform.
+[00:22:00.360] But if you're using Iceberg, your platform can look like this, right?
+[00:22:04.840] Specifically like Parquet doesn't matter so much.
+[00:22:07.840] But if you're using Iceberg, you have a whole range of catalogs you can use.
+[00:22:11.200] You can use the cuteness, you can use something else.
+[00:22:13.920] There's quite a few cute catalogs in the market, to be honest,
+[00:22:17.240] and then lots of query engines,
+[00:22:18.680] so you can really build the structure and the data platform that works for you.
+[00:22:22.600] Thanks to these open standards, you build them for performance.
+[00:22:27.080] You build them for cost, you build it for preference,
+[00:22:30.000] or you build it because that's you've moved to a new company
+[00:22:32.400] and that's what they're doing and they won't budge.
+[00:22:34.240] But really it's up to you.
+[00:22:36.480] You don't have to sacrifice performance by locking yourself in with someone.
+[00:22:40.520] And this is thanks to Apache Iceberg and specifically the Apache Iceberg Rest spec.
+[00:22:46.120] So this is how engines and catalogs talk to each other, basically.
+[00:22:49.160] So all these engines on the left can easily talk
+[00:22:53.080] out of the box to all these catalogs on the right, because they use the spec.
+[00:22:56.560] There's 1 or 2 caveats with some of the catalogs for there's
+[00:23:01.560] some sort of right issues in some of them, maybe around unity, a little bit
+[00:23:06.280] about Glue, but you have a lot of options and this is fantastic.
+[00:23:09.720] It really blows open the space to build things you want to do.
+[00:23:13.080] If you don't want to just buy a solution.
+[00:23:16.040] And it's really like in this
+[00:23:18.480] comic in action, the entire modern analytic space is propped up by this.
+[00:23:22.520] So even stuff like Fabric is using the Rest spec.
+[00:23:25.960] And now so is someone like Databricks, whose entire platform is built around
+[00:23:30.960] competing format Delta Lake.
+[00:23:35.360] So in summary, data analytics
+[00:23:37.320] and engineering have the same data needs, right?
+[00:23:40.320] Data has to be accessible.
+[00:23:41.440] So it needs to be widely available to everybody in your company, but
+[00:23:44.640] also safely through governance features such as RBAC, role based access control
+[00:23:49.240] and fine grained access control that you can put at every single level
+[00:23:53.280] from the bucket to the row needs to be understandable.
+[00:23:56.760] So you need rock solid, you know, definitions you agree on.
+[00:24:01.360] So you're not leaving people to interpret stuff
+[00:24:03.240] because that's when things go wrong and it needs to be performing.
+[00:24:06.800] So you query the data where it is, you're not moving it, you're not cleaning it,
+[00:24:10.600] and you're not waiting for stuff to read.
+[00:24:12.200] You're not at the most, you have some IOPs pains and all of this is delivered
+[00:24:17.320] a really performant technology which isn't tied to a specific vendor.
+[00:24:21.240] It's thanks to open standards, in particular, Arrow and Iceberg.
+[00:24:24.080] But there are others involved too.
+[00:24:27.360] Yeah.
+[00:24:27.680] So you're not locked into to anybody else, but you can actually deliver
+[00:24:33.240] the kind of infrastructure and data delivery and data quality
+[00:24:36.280] you need to send to your whatever you're engineering or analyzing.
+[00:24:42.160] That's it for me.
+[00:24:43.040] Thank you.
+[00:24:52.320] We have time for questions
+[00:24:53.400] if you want to do questions.
+[00:25:03.320] Since we talked about the data that
+[00:25:05.640] I have to ask the question here and there. Yes.
+[00:25:10.200] And my question, of course, is
+[00:25:13.600] a lot of data queries, especially the execution by agents
+[00:25:17.520] specifically, the scenario would be let's say that you have, let's say capital
+[00:25:22.880] calculations of thinking about it, nicely created formatted version of right one.
+[00:25:27.880] But then you also give the data primitives
+[00:25:30.920] that that are required to calculate, let's say the cap.
+[00:25:34.920] How do you prevent the AI from wasting time and tokens
+[00:25:39.240] and trying to do it from scratch, instead of using the right
+[00:25:42.040] to determine the right data path? Yes.
+[00:25:45.040] So part of the setup is you've got your tools and prompts and templates
+[00:25:48.840] to try and hem in performance or the kind of queries you do.
+[00:25:54.280] So ours is kind of focused on analytics in that space.
+[00:25:57.600] But in terms of MCP in general, the intent is it's more for builders, right?
+[00:26:01.640] You're building your own setup.
+[00:26:03.200] Bring whichever model you like to the table.
+[00:26:05.480] So implementation of guardrails and stuff like that.
+[00:26:08.800] It's more on the builders in particular.
+[00:26:11.720] So we give you discrete actions.
+[00:26:14.280] You can take in data sets you can access based on the credentials
+[00:26:18.040] you're accessing with.
+[00:26:19.160] But in terms of burning tokens
+[00:26:22.160] that's your problem as well I'm afraid.
+[00:26:26.240] But for the agent we have in the UI that's
+[00:26:29.400] that's limited more and we have a very clear spend for that.
+[00:26:33.560] And they should bring again, you bring your own agent for that.
+[00:26:36.720] But again we track we track the spend their.
+[00:26:42.720] Yes. Oh
+[00:26:47.520] sorry I was looking the wrong way.
+[00:26:51.320] I like to start with.
+[00:26:52.640] So one of the questions I have for you, if you look at what you have
+[00:26:56.080] on your platform, one of the things I'm interested in is in general contrast in.
+[00:27:00.640] It's kind of environment.
+[00:27:04.200] You've just got the NBA, but what I'm trying to understand is
+[00:27:08.680] how can you expose some of the functionality of the capability
+[00:27:11.880] so that you can stack so much of the data?
+[00:27:15.200] So one of the things that we're building
+[00:27:16.360] is the ability to have data agents you have tend to get across.
+[00:27:21.200] But one of the things we want to do is you have a bunch of suite domains on there
+[00:27:24.200] and you've got data range which accessing the data.
+[00:27:27.720] But it has to understand how
+[00:27:30.440] any of the data that's in there and protected data.
+[00:27:33.280] How do you respond to that so that the the agent
+[00:27:36.680] during the work and understand what the hell out works in that sense.
+[00:27:41.640] So I'm the let's say Claude is doing a query to the query.
+[00:27:46.920] And if it doesn't know anything about what it's doing,
+[00:27:50.280] it's going to have to figure it out.
+[00:27:52.000] How do you expose that data and how can you have it set that
+[00:27:55.360] layer that can then be wrong to use them?
+[00:27:58.480] Okay, well, the query engine is just the execution.
+[00:28:00.800] So in terms of our MCP, Claude would right, would connect
+[00:28:05.000] to that, understand the kind of actions it can take like execute SQL
+[00:28:08.600] analytics is, is is nice and simple in that regard.
+[00:28:12.120] Really you're writing SQL for a lot of stuff you're doing,
+[00:28:14.960] and the semantic layer provides the information it needs.
+[00:28:17.120] So it can search for schemas and keywords in what you're asking for.
+[00:28:20.480] And the semantic layer and vector search will help you find the right things.
+[00:28:24.080] And it's execute across against that.
+[00:28:26.440] But in terms of understanding a bit more specifically about what sort of
+[00:28:30.760] tools do as well, the CLI does similar, right?
+[00:28:33.440] You got you got the JSON structure comes back
+[00:28:36.000] and your agent or your model can understand what you can do
+[00:28:40.840] and what to expect from from certain actions and then act accordingly.
+[00:28:46.720] Yeah.
+[00:28:47.200] Because I'm just there's a, there's a missing piece of
+[00:28:49.800] if I'm running a small rebellion, I'm running a task which is accepting
+[00:28:54.360] data, composing a data, cleaning, looking at the data and then composing,
+[00:28:58.200] creating a data product, which is then fell into place,
+[00:29:02.200] where I'm trying to figure out is, how can you do that with what you have?
+[00:29:06.440] So I you saying you've got a bunch of MCP, bunch of endpoints.
+[00:29:11.200] Yeah.
+[00:29:11.440] And that's how you would do it.
+[00:29:13.480] So you have to construct yourself.
+[00:29:15.640] What you're saying is it's all there.
+[00:29:17.040] But you got to construct
+[00:29:18.440] there's no way there's no more intelligent way of exposing.
+[00:29:22.560] The infrastructure.
+[00:29:25.200] So you don't have to do the work that makes sense.
+[00:29:27.800] And the work you mean is creating a data product or understanding what's in the.
+[00:29:33.720] Self has to act as a way to data
+[00:29:35.520] that looks in the in the catalog.
+[00:29:39.600] At the moment
+[00:29:41.240] where you're describing it, and you have to do that.
+[00:29:44.080] You can composer from your endpoints.
+[00:29:46.360] So you have to work that out yourself and execute.
+[00:29:48.760] You don't mind pieces to work it out.
+[00:29:52.360] Well, it doesn't have to.
+[00:29:54.040] You ask it to do something.
+[00:29:55.440] It accesses through the semantic layer.
+[00:29:57.680] So the layering is a little.
+[00:30:01.120] Little skewed here really.
+[00:30:02.400] Everything goes through the semantic layer and it gets the context
+[00:30:05.360] and the understanding of your
+[00:30:06.960] the estate what data sets you have, what things are open to you as a user
+[00:30:11.040] and relates what you're asking to do to what's available.
+[00:30:14.280] It knows what actions to take because of MCP like it does.
+[00:30:17.240] You want to.
+[00:30:20.280] And how much you
+[00:30:21.120] do you have run into because of all the employees?
+[00:30:23.880] One of the things that we're working on is being able to have such
+[00:30:27.440] a scripture meditate to some of the aging consumer standard of this point.
+[00:30:32.560] Yeah,
+[00:30:34.280] yeah. So
+[00:30:36.080] it sounds like you'd be more interested
+[00:30:37.200] in a CLI kind of approach, which is more structured and detailed.
+[00:30:41.040] And the idea here is to give a workloads and multi-agent workflows stuff
+[00:30:45.920] where you don't want a person involved sort of overseeing and micromanaging.
+[00:30:50.160] You give it that, and that provides information in a way that's more cost
+[00:30:54.080] effective and efficient for an AI doing its own thing.
+[00:30:58.920] So yeah, looking to I can share some links about the CLI
+[00:31:02.280] if you like or that's that's the way I would do it.
+[00:31:05.320] It's better value for money and less work for you.
+[00:31:10.880] Yes. Sorry.
+[00:31:12.760] And then you.
+[00:31:16.440] How do you deal or do you have the machinery
+[00:31:20.040] access control and
+[00:31:22.080] how do you make something like an agent
+[00:31:25.600] even just for what they do, rules where it needs to because,
+[00:31:29.600] you know, there's all this uncertainty inherently.
+[00:31:32.960] So you can just go in and says something. Yes.
+[00:31:36.000] You got to give you a vote and get it back.
+[00:31:38.040] I work in genomics.
+[00:31:39.800] That's a big problem with this is just, you know, people can see that.
+[00:31:46.600] Those people cannot see that,
+[00:31:48.720] you know, because I want to do so you have that machinery or.
+[00:31:52.640] Yeah. Yeah.
+[00:31:53.240] So actually we work with Genomics England, the big customer of us.
+[00:31:55.920] And they're doing work using our platform.
+[00:31:59.600] But actually it's kind of basic.
+[00:32:00.960] So I mean, I mean, I said earlier, the AI semantic layer is
+[00:32:04.160] basically the semantic layer with fancy term on the front.
+[00:32:07.560] And the agent access is kind of also just repurposing stuff that's there.
+[00:32:12.480] Right?
+[00:32:12.840] It accesses through a user account like your user account.
+[00:32:15.880] So whether I'm querying information or masking agent to do it on my behalf,
+[00:32:20.240] it can see the same things through. Yeah,
+[00:32:24.680] yeah.
+[00:32:26.440] This guy in front was waiting longer.
+[00:32:34.600] You went to about the Open Semantic.
+[00:32:38.280] Interchange interchange.
+[00:32:40.440] I was wondering how it relates with semantic Web technologies
+[00:32:44.600] like from our
+[00:32:48.520] top of those and starting from scratch.
+[00:32:51.560] It's a I'm not too sure the answer.
+[00:32:54.680] I'm not too similar with the semantic web, but in terms of OSI.
+[00:32:59.880] So I talked about Arrow.
+[00:33:01.040] Actually, it's a good example app at the top.
+[00:33:04.280] And it makes always, always think about Arrow
+[00:33:06.000] when I think about it, because Arrow started out as a in-memory format
+[00:33:09.600] and then so they got every system using and sort of processing data in memory
+[00:33:14.840] the same way, but in getting it between the systems was a pain
+[00:33:17.880] because columns and system A, columns and system B,
+[00:33:21.080] you have to turn it to Rose to get across and back to columns.
+[00:33:23.920] So then the transport format came along and that was the next extension.
+[00:33:28.160] Whereas OSI, as far as I'm up to date, is the reverse.
+[00:33:32.160] So it's the idea of a standardized format to share information between systems.
+[00:33:37.000] And that's as far as it's really got.
+[00:33:38.640] So JSON is the main one at the moment.
+[00:33:41.000] There are issues of JSON. It's not very efficient.
+[00:33:43.560] I think more specs will come out or get more interesting,
+[00:33:47.480] but in terms of what it looks like when it's in system A and system B,
+[00:33:51.920] I don't think there's any any hard requirements on that.
+[00:33:54.320] It's just I think it really came out of trying to not vendor lock
+[00:33:58.520] your business context to a certain tool.
+[00:34:01.840] So I'll research the web and find out.
+[00:34:06.640] Yes.
+[00:34:21.480] In my experience in case.
+[00:34:23.920] When you support
+[00:34:26.920] like different data sources are like, let me quit all the data
+[00:34:31.080] and then you have the fun out like tens of different ways.
+[00:34:35.240] Unlimited groups. Yes.
+[00:34:37.400] Is there any tricks around, like kind of making the agents aware
+[00:34:41.120] of the latency of the queries so that they can be more
+[00:34:44.400] sophisticated about, okay, let me do the fast access first
+[00:34:48.320] and then do the federated calls like manually,
+[00:34:52.080] then offloading everything into the engine self.
+[00:34:55.720] They may be in some tools, I know, sort of higher end
+[00:34:59.360] sort of federation focused platforms do do stuff like that.
+[00:35:03.640] We don't so much.
+[00:35:05.120] Instead we have so that the basic approach is like, okay,
+[00:35:09.880] if you want it to be fast, create a table
+[00:35:13.040] in a data table, sort of linked copy
+[00:35:16.440] that you'll run from in your lake, and you get rid of the dependencies.
+[00:35:20.080] And also you get rid of
+[00:35:21.120] the sort of hammering the source system when you're running queries.
+[00:35:25.120] The more interesting thing the workaround we've done is reflections.
+[00:35:27.920] So this is a will.
+[00:35:29.800] Look at any queries you're running that are taking too long.
+[00:35:31.800] So this will include other systems.
+[00:35:33.800] And it makes materialized tables that will speed up those queries
+[00:35:37.920] and then sub them in.
+[00:35:39.400] So you can still keep say questioning your Hadoop system.
+[00:35:43.040] Say it takes a minute and a minute and eight seconds.
+[00:35:45.520] Something like that will make a table that gives you a better performance,
+[00:35:49.520] and it will sub it into your query without you having to change your SQL,
+[00:35:53.640] and that will get you to performance you want without messing around.
+[00:35:57.280] So quite a few of the sort of features we have and things are again are around
+[00:36:01.480] making the user experience and nicer for people who aren't technically minded.
+[00:36:05.000] So you can optimize hands on.
+[00:36:07.600] But for some people, like I don't want to.
+[00:36:10.080] Do you right to that.
+[00:36:12.720] No. It
+[00:36:15.400] just doesn't realize
+[00:36:17.920] that you're supposed to be.
+[00:36:19.480] You don't have to do anything.
+[00:36:20.400] Basically,
+[00:36:20.880] don't look at anything that runs too slow and it will speed up those queries
+[00:36:24.360] for you.
+[00:36:25.600] So you asked the same.
+[00:36:27.960] And then when when it's executing the query, the query panel will sub
+[00:36:30.960] in its other table and execute against that.
+[00:36:35.800] It tells you it's doing it, but you don't have to do anything around it.
+[00:36:43.160] I think that is.
+[00:36:45.400] Okay if you have no questions.
+[00:36:47.960] I'm sure the whole time after it.
+[00:36:49.640] Sure, yeah.
+[00:36:49.960] And I'm also around, so come get me.
+[00:36:53.400] Thank you.
+[00:37:01.480] Oh, no. Oh!

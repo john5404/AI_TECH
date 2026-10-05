@@ -1,0 +1,185 @@
+[00:00:00.120] Back in June at AI DevCon in London, we had several talks
+[00:00:03.160] about the part that tends to get left out of the demo.
+[00:00:06.400] The bill.
+[00:00:07.480] Let's first hear from Amit
+[00:00:09.000] Kushwaha, a principal solutions architect at Nvidia, on the two things
+[00:00:13.400] that decide how much of an agent's work you actually pay for,
+[00:00:17.000] whether your context is cached, and whether the request
+[00:00:19.920] comes back to the machine holding that cash.
+[00:00:23.040] My name is Amit.
+[00:00:24.080] I'm a solutions architect at Nvidia,
+[00:00:27.080] and we live in the
+[00:00:30.200] Defense Department.
+[00:00:31.640] So looking at that workload, there are few optimizations
+[00:00:35.000] that are already kind of present in the production systems.
+[00:00:39.560] And these are very critical to make that workload work.
+[00:00:43.480] Again, going back to kind of the current
+[00:00:47.560] setup that
+[00:00:48.080] I shared in the previous slide, in the first turn,
+[00:00:52.080] this is your user input and you get an output in the second term.
+[00:00:57.360] This whole thing could be cached.
+[00:00:59.600] And this is the optimization
+[00:01:02.040] that I'm talking about for most of the agent workloads.
+[00:01:04.920] Caching becomes very, very important because what you are doing is pilot.
+[00:01:09.400] By the time you are at the 40th turn,
+[00:01:12.360] a lot of context has been created, but you don't need to do all the work.
+[00:01:17.520] If you are caching your output inputs properly, then you only need to do
+[00:01:22.120] work on the new tokens that are being generated in this whole workflow.
+[00:01:27.080] So at the end of kind of this, this fourth term, for example,
+[00:01:31.520] most of this is cached and you don't have to do any work on it.
+[00:01:35.640] The new part is only where you run your GPUs and actually to make the work,
+[00:01:40.000] if the caching was not enabled, you can imagine
+[00:01:42.920] a lot more work needs to be done, and there's consequences
+[00:01:45.640] on one performance on time to first token and different kinds of metrics.
+[00:01:49.280] So caching becomes kind of a must have in most of these agentic developments.
+[00:01:55.360] And as you see, the
+[00:01:57.200] vast majority of output input tokens by the end could be cached
+[00:02:01.520] because it's just building up on the previous display.
+[00:02:06.280] The caching itself is not the full story,
+[00:02:10.200] especially when you are serving these models on multiple replicas.
+[00:02:14.800] Your terms have to kind of get on the right replica.
+[00:02:18.960] For example, if you turn one in, the previous slide landed on replica one,
+[00:02:23.560] and this is just an example of you could have a model serving multiple times.
+[00:02:27.560] So these are three replicas
+[00:02:29.200] of the same model that you are using neural network things.
+[00:02:32.520] So turn one ended up on replica K.
+[00:02:36.200] If you do a round robin kind of a setup
+[00:02:38.480] the turn you might end up on some other replica.
+[00:02:41.600] But this replica does not have the cash that we talked about.
+[00:02:45.080] So the other thing that becomes very important in a
+[00:02:48.400] kind of setup is to make sure that your turns
+[00:02:52.400] land on the same replica where your cash is stored.
+[00:02:56.240] So this is what is kind of shown here in the cave where routing,
+[00:02:59.960] where turn one lands on replica one, we make sure that the turn
+[00:03:03.960] two also lands on replica one, so that we can leverage the cache
+[00:03:07.680] that is stored already on that side.
+[00:03:10.960] We also heard from Tammuz Dubnov
+[00:03:13.040] of Autonomy AI, with the numbers that made the room go quiet.
+[00:03:16.840] Uber increased its AI budget by six times
+[00:03:19.520] and got through the whole increase in four months.
+[00:03:22.840] And of every $100 spent on AI,
+[00:03:25.640] about 18 reaches code that actually ships.
+[00:03:28.840] Now, in the rush to AI Native, some people are doing it wrong
+[00:03:32.960] and it can be really, really expensive.
+[00:03:34.840] Everybody heard of Uber and what's going on there?
+[00:03:38.360] Okay.
+[00:03:38.800] So this came out just to I think 3 or 4 days ago.
+[00:03:42.320] Uber has increased the area spend since 2024 by six x.
+[00:03:47.560] Now that seeks X growth was completely used within four months.
+[00:03:51.560] They are out of AI budget for the rest of the year.
+[00:03:55.880] And we asked them what the impact is of training with like fully a need
+[00:03:59.120] that everybody get all the tokens you want.
+[00:04:00.720] That's like the upward CFO conversation that you guys have magically not had.
+[00:04:04.680] You will get an answer saying
+[00:04:08.240] AI costs are getting harder to justify, people are more and more tokens.
+[00:04:12.120] But me as a business leader, I'm
+[00:04:14.320] not seeing how there's a link to actually moving faster on features.
+[00:04:18.720] And that's the really, really big gap.
+[00:04:22.000] It's just throwing more LLM compute that's not fixed organization.
+[00:04:25.320] You actually want to be a native and give the people who can decide
+[00:04:28.800] the ability to execute
+[00:04:31.800] Microsoft.
+[00:04:33.960] And a similar phenomenon, they gave everybody cloud code.
+[00:04:36.600] And now they're taking it away.
+[00:04:38.360] Because just giving cloud code to more
+[00:04:40.400] and more people in an organization is a wonderful way to burn money.
+[00:04:43.440] It is not the right way to speed up the work.
+[00:04:47.440] And now if we actually want to see like
+[00:04:48.800] what is all these token budget, where is this bending going to?
+[00:04:52.800] Somebody is not a deep dive managing over 2400 companies and how they use AI.
+[00:04:58.200] And you can see from any $100 that you spend on AI, only $18
+[00:05:03.480] actually goes to meaningful code
+[00:05:07.000] that actually gets shipped to users.
+[00:05:09.960] A lot of it goes to stuff that gets reworked bugs that AI also generated,
+[00:05:15.040] and you get this wonderful loop of spending more and more money in less
+[00:05:19.120] because of the alignment and basically how the model is trained.
+[00:05:23.600] Luke Marsden, CEO of Helix ML, is running
+[00:05:26.640] a bootstrapped company, so he feels every token.
+[00:05:29.920] His finding is that open weight models on hardware you own
+[00:05:33.400] now handle about 80% of the work.
+[00:05:36.480] So take three months of token budget by the machine and keep the ability
+[00:05:40.720] to reach for a frontier model when you genuinely need it.
+[00:05:44.560] most of my day now when I'm doing technical work
+[00:05:48.080] is that I'm reviewing these specs, and I find the two lines in the spec
+[00:05:52.720] where the agent got it wrong, or is making a poor design decision, or
+[00:05:56.920] is unaware of some other area of the code, and you just comment on those two lines,
+[00:06:01.960] and then it then becomes fairly mechanical
+[00:06:05.240] for the agent to get the code change all the way through to
+[00:06:10.800] to being close to being ready to merge.
+[00:06:14.480] So and then the pull requests that come out of it are quite nice,
+[00:06:19.000] because we put quite a lot of effort into telling the agent
+[00:06:22.120] to take screenshots of changes that it's made.
+[00:06:25.720] So I quite often review pull requests
+[00:06:28.400] now by just looking at whether I like the change.
+[00:06:31.040] And that's quite powerful.
+[00:06:33.320] And you can also link, we also link automatically to the spec
+[00:06:37.000] that was used to to construct it.
+[00:06:41.320] Now I want to talk briefly about token costs, privacy and Donald Trump.
+[00:06:47.240] The total costs are exploding.
+[00:06:51.120] We spent a lot of money now on tokens,
+[00:06:53.880] which as a bootstrap startup is kind of painful.
+[00:06:57.680] But we also have one of these machines,
+[00:07:01.400] these open weights models like GLM 5.1 and so on, and can now
+[00:07:06.520] do pretty much 80% of the work that you need to do.
+[00:07:11.440] And so
+[00:07:13.680] if you
+[00:07:14.160] take as a meaningfully sized organization kind of your next three month
+[00:07:18.360] token budget and instead invest in some hardware with like eight
+[00:07:22.600] RTX six K pros in it, and then you use something
+[00:07:26.920] or you build something that allows you
+[00:07:28.280] to easily switch between different agents and different models.
+[00:07:32.440] Then you can avoid getting locked into, like the OpenAI anthropic ecosystem,
+[00:07:36.920] but you can still kind of burst out to like Claude
+[00:07:41.160] Opus 4.8 if you've got something really hard.
+[00:07:45.080] But for all of the tedious stuff, you should be using local models
+[00:07:48.760] where you just have to pay for the electricity, in my opinion.
+[00:07:52.560] to close, John Groetzinger at Cisco, on
+[00:07:55.160] spending your humans as carefully as you spend your tokens.
+[00:07:58.360] When a knowledge base article changes,
+[00:08:00.440] a model, rewrites the matching skill and runs the evaluations.
+[00:08:04.240] Small changes that pass release themselves.
+[00:08:07.440] A person only gets pulled in for the big ones.
+[00:08:11.040] So a lot of people will say wikis over docs go to die.
+[00:08:14.160] And of course, largely I do agree with that
+[00:08:16.600] because people just don't really maintain docs.
+[00:08:18.480] But when you have a strong culture like we do, our docs are not really dying
+[00:08:22.360] or actually seeing the opposite.
+[00:08:23.840] Our docs are becoming more important to ground the agents,
+[00:08:26.280] but what we're seeing is that a lot of people are building agentic systems
+[00:08:30.240] that blindly try to use any content, or they'll have agents that build
+[00:08:34.280] their own memories on supporting stuff, using that, and then the memories drift
+[00:08:37.520] from the content, and then you end up having some answer come out to a customer.
+[00:08:41.040] And that's just completely unaligned with the article that it says
+[00:08:44.720] it uses a source, and then everyone just loses faith in the entire system.
+[00:08:47.960] Right?
+[00:08:48.160] And that's the problem we've been struggling with
+[00:08:49.720] for the last couple of years.
+[00:08:50.920] So we're trying to figure out
+[00:08:51.720] how do we keep these more in sync in a way that we can actually trust it.
+[00:08:54.880] And that's what the system
+[00:08:56.280] that these engineers built is that when the article changes,
+[00:08:59.320] we kind of pipeline that, right.
+[00:09:00.520] Think of like a GitHub action triggering when we update a knowledge base article
+[00:09:04.200] that goes into a pipeline with an LLM that reviews the changes, determines
+[00:09:08.480] if it's a minor change, moderate major, and then makes the change for itself
+[00:09:12.240] to update its skill. And then it runs the evals.
+[00:09:15.120] If the evals pass, great, everything's good.
+[00:09:17.280] If it's a minor change, just changing a typo or wording
+[00:09:19.800] and the evils pass, I don't really need to have my human gate.
+[00:09:22.880] That new version, just let it automatically release.
+[00:09:25.680] But if you're doing a more complex
+[00:09:27.200] change, a major change, maybe you're introducing a new topic.
+[00:09:30.240] Maybe that's something that you need some more quality control.
+[00:09:32.640] And that's where you insert your human right.
+[00:09:34.480] Your humans either go far on the left or far on the right, but in between
+[00:09:38.160] you should not be wasting your time, should not be caring about a text diff.
+[00:09:41.840] If your engineers are reviewing
+[00:09:43.200] text diffs on a skill, you are wasting a lot of time.
+[00:09:45.800] That is just unnecessary, at least in my experience.
+[00:09:49.160] So new topic means new eval, right?
+[00:09:51.840] You need to build a new evaluation.
+[00:09:53.440] Of course you can let the LM do that, but you need to really tell it what success
+[00:09:56.480] looks like in order for it to build a good evaluation.
+[00:09:59.520] Thanks for watching.
+[00:10:00.840] Be sure to join us for the next AI DevCon this November in New York City.
+[00:10:06.040] Visit ainativedev.io to learn more and book your ticket

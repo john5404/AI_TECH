@@ -1,0 +1,3081 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:04.800
+working with agents and LLMs introduces some new dimensions on security
+
+2
+00:00:04.800 --> 00:00:06.120
+that wouldn't normally think about.
+
+3
+00:00:06.120 --> 00:00:08.720
+text becomes something that can be vulnerable,
+
+4
+00:00:08.720 --> 00:00:10.640
+can have some executable intent,
+
+5
+00:00:10.640 --> 00:00:14.360
+A couple years ago, you would never worry about the security of a markdown document
+
+6
+00:00:14.480 --> 00:00:17.960
+the combination of some access to privileged information
+
+7
+00:00:17.960 --> 00:00:21.960
+or some private data, some exposure to some untrusted content,
+
+8
+00:00:22.000 --> 00:00:25.400
+maybe from the outside world and the ability to communicate externally.
+
+9
+00:00:25.400 --> 00:00:27.880
+And most agents, by default are going to have all of these three things.
+
+10
+00:00:27.880 --> 00:00:33.040
+And that is of where you're one prompt injection away from let's say bad time.
+
+11
+00:00:33.080 --> 00:00:35.160
+Yeah. Yeah.
+
+12
+00:00:35.160 --> 00:00:38.440
+The AI Native Dev is a podcast for developers and engineering
+
+13
+00:00:38.440 --> 00:00:41.680
+leads at the cutting edge of AI and agentic coding.
+
+14
+00:00:41.760 --> 00:00:44.760
+Join your hosts, Guy Podjarny and me, Simon Maple.
+
+15
+00:00:44.760 --> 00:00:47.960
+Every week as we chat with the most exciting voices in
+
+16
+00:00:47.960 --> 00:00:51.520
+AI and tackle the biggest questions facing developers today.
+
+17
+00:00:52.360 --> 00:00:54.960
+This is the AI Native Dev.
+
+18
+00:00:59.560 --> 00:01:01.040
+Back in November, we hosted
+
+19
+00:01:01.040 --> 00:01:04.680
+the first ever in-person AI Native Dev Con in New York.
+
+20
+00:01:04.800 --> 00:01:07.760
+This June 1st and second, we're bringing it to London.
+
+21
+00:01:07.760 --> 00:01:12.560
+It's two days built for AI Native developers and engineering teams, one day
+
+22
+00:01:12.600 --> 00:01:16.720
+full of hands on workshops and one day full of practical talks on
+
+23
+00:01:16.720 --> 00:01:20.960
+agent skills, context engineering, agent orchestration and enablement platforms
+
+24
+00:01:20.960 --> 00:01:24.480
+and how teams are actually shipping AI in production.
+
+25
+00:01:24.720 --> 00:01:28.320
+Join us at the Brewery in London near the Barbican for all of that,
+
+26
+00:01:28.320 --> 00:01:32.960
+plus networking parties, giveaways and a room full of people.
+
+27
+00:01:33.000 --> 00:01:35.960
+Building the future of AI native development.
+
+28
+00:01:35.960 --> 00:01:39.280
+You can also join us from anywhere in the world via the live stream.
+
+29
+00:01:39.440 --> 00:01:40.920
+As you're listening to this podcast.
+
+30
+00:01:40.920 --> 00:01:44.880
+You get 30% off your ticket with Code Pod 30.
+
+31
+00:01:44.960 --> 00:01:48.720
+Just head to AI native Dev Königssee and we'll see you in London.
+
+32
+00:01:52.520 --> 00:01:53.280
+Hello and
+
+33
+00:01:53.280 --> 00:01:56.480
+welcome to another episode of the AI Native Dev.
+
+34
+00:01:56.520 --> 00:01:59.840
+And on today's show, we're going to be tackling the big questions of how
+
+35
+00:01:59.880 --> 00:02:04.840
+organizations should be thinking about security in a development today,
+
+36
+00:02:04.880 --> 00:02:08.000
+not just for the security issues that we already know about that software
+
+37
+00:02:08.000 --> 00:02:10.640
+development has taught us over the years, but thinking about
+
+38
+00:02:10.640 --> 00:02:14.040
+some of the new security risks that agentic development brings.
+
+39
+00:02:14.040 --> 00:02:17.560
+Today Joining me on today's show, we have Joe Holdcroft,
+
+40
+00:02:17.600 --> 00:02:20.560
+a member of technical staff and team lead at Tessl.
+
+41
+00:02:20.560 --> 00:02:22.720
+Welcome, Joe. Thanks for having me back. Oh, absolutely.
+
+42
+00:02:22.720 --> 00:02:24.600
+And it is having you back because you joined.
+
+43
+00:02:24.600 --> 00:02:27.320
+Gosh, probably a good six months.
+
+44
+00:02:27.320 --> 00:02:28.400
+Nine months ago, we did a
+
+45
+00:02:28.400 --> 00:02:33.720
+we did a session all about how we use different agent tools.
+
+46
+00:02:33.720 --> 00:02:36.440
+And we actually swapped applications and played with that.
+
+47
+00:02:36.440 --> 00:02:37.800
+It was it was good fun.
+
+48
+00:02:37.800 --> 00:02:40.560
+But Joe, of course you are a member of technical staff,
+
+49
+00:02:40.560 --> 00:02:44.040
+a team lead here at all previously worked at Snyk.
+
+50
+00:02:44.080 --> 00:02:45.680
+Tell us a little bit about that. True.
+
+51
+00:02:45.680 --> 00:02:49.080
+Yeah, I worked at Snyk for three years, sort of during that hypergrowth period.
+
+52
+00:02:49.080 --> 00:02:51.800
+Mostly supporting the open source product.
+
+53
+00:02:51.800 --> 00:02:52.400
+Awesome.
+
+54
+00:02:52.400 --> 00:02:55.880
+And in between those two, you also a fractional CTO
+
+55
+00:02:55.880 --> 00:02:59.200
+and did a number of different mentoring gigs.
+
+56
+00:02:59.240 --> 00:03:02.320
+Really interesting to hear your point of view
+
+57
+00:03:02.320 --> 00:03:05.600
+around security and development from all of those experiences.
+
+58
+00:03:05.600 --> 00:03:09.040
+And very recently you actually work directly on the Snyk
+
+59
+00:03:09.040 --> 00:03:13.640
+and Tessl integration, adding security advisories and reports
+
+60
+00:03:13.640 --> 00:03:17.960
+into the Tessl registry for skills and context.
+
+61
+00:03:17.960 --> 00:03:19.840
+So some super cool stuff there.
+
+62
+00:03:19.840 --> 00:03:22.800
+Yeah, it's fun to get to work with some some old friends.
+
+63
+00:03:24.120 --> 00:03:25.080
+So why don't we jump in
+
+64
+00:03:25.080 --> 00:03:28.920
+and talk about how the attack surface has changed
+
+65
+00:03:28.960 --> 00:03:32.440
+and what we need to be concerned with from an agentic development point of view?
+
+66
+00:03:32.520 --> 00:03:33.080
+For sure.
+
+67
+00:03:33.080 --> 00:03:37.360
+I mean, lots to talk about here, but I think one of the best articulations
+
+68
+00:03:37.360 --> 00:03:42.720
+I've heard of this is in Simon Willison's Lethal Trifecta, where he talks
+
+69
+00:03:42.720 --> 00:03:48.280
+about the combination of three characteristics that all agents
+
+70
+00:03:48.280 --> 00:03:51.960
+pretty much have, which is some access to privileged information
+
+71
+00:03:51.960 --> 00:03:57.120
+or some private data, some exposure to some untrusted content,
+
+72
+00:03:57.160 --> 00:04:01.320
+maybe from the outside world and the ability to communicate externally.
+
+73
+00:04:01.320 --> 00:04:04.160
+And most agents, by default are going to have all of these three things.
+
+74
+00:04:04.160 --> 00:04:05.680
+And that is like a dangerous situation.
+
+75
+00:04:05.680 --> 00:04:08.760
+So you think about a coding agent that you're working with on your machine,
+
+76
+00:04:08.760 --> 00:04:13.000
+in a repository that has access to the code
+
+77
+00:04:13.000 --> 00:04:16.440
+and secrets that you have on your machine, which is your private data.
+
+78
+00:04:16.480 --> 00:04:20.600
+They're pulling in dependencies, documentation issues, search results
+
+79
+00:04:20.600 --> 00:04:22.880
+from the outside world. That's your untrusted content.
+
+80
+00:04:22.880 --> 00:04:28.080
+And they can run shell commands and hit HTTP endpoints and CLI commands.
+
+81
+00:04:28.080 --> 00:04:31.760
+And that's your communicating with the outside world.
+
+82
+00:04:31.760 --> 00:04:34.920
+And really those combination of three things is sort of
+
+83
+00:04:34.960 --> 00:04:39.520
+where you're one prompt injection away from let's say bad time.
+
+84
+00:04:39.560 --> 00:04:40.120
+Yeah. Yeah.
+
+85
+00:04:40.120 --> 00:04:42.200
+And it's interesting actually until you said prompt injection
+
+86
+00:04:42.200 --> 00:04:46.280
+there, a lot of those things are fairly consistent with, you know,
+
+87
+00:04:46.320 --> 00:04:49.560
+some of the issues we have now with the exception that,
+
+88
+00:04:49.640 --> 00:04:52.760
+you know, you have an agent doing it this time around.
+
+89
+00:04:52.760 --> 00:04:56.560
+So perhaps when we think about, you know,
+
+90
+00:04:56.560 --> 00:05:00.680
+what's what we need to, to, to do to make sure
+
+91
+00:05:00.680 --> 00:05:04.560
+we have solid code quality, solid, you know,
+
+92
+00:05:04.600 --> 00:05:07.560
+vulnerability management, those types of things.
+
+93
+00:05:07.560 --> 00:05:08.680
+You know, what is it?
+
+94
+00:05:08.680 --> 00:05:14.200
+We need to do to our existing processes to, to, to cater for these types of issues.
+
+95
+00:05:15.240 --> 00:05:16.960
+And there's a bunch of things you need to do.
+
+96
+00:05:16.960 --> 00:05:20.040
+But I think maybe the first thing to consider
+
+97
+00:05:20.040 --> 00:05:24.200
+is that a lot of the same considerations that you might have
+
+98
+00:05:24.240 --> 00:05:27.200
+for software that's written by humans is the same kind of thing
+
+99
+00:05:27.200 --> 00:05:28.920
+that you need to care about with agents.
+
+100
+00:05:28.920 --> 00:05:30.960
+I think of it's like a force multiplier, right?
+
+101
+00:05:30.960 --> 00:05:33.960
+It's all of the same hygiene that you'd be doing, making sure
+
+102
+00:05:33.960 --> 00:05:37.480
+you have your SCA scanning and your SaaS scanning
+
+103
+00:05:37.480 --> 00:05:41.560
+and your processes in the right place in terms of security.
+
+104
+00:05:41.760 --> 00:05:45.440
+All of that stuff becomes more important, not less important,
+
+105
+00:05:45.480 --> 00:05:49.600
+as agents are working on your code because, you know you can consider them
+
+106
+00:05:49.720 --> 00:05:53.120
+somebody that you might trust less than you otherwise would like.
+
+107
+00:05:53.120 --> 00:05:56.960
+For example, a, a contractor that you might get in
+
+108
+00:05:56.960 --> 00:05:59.080
+someone who's going to be writing a lot of code for you.
+
+109
+00:05:59.080 --> 00:06:01.000
+They'll kind of do whatever they're told.
+
+110
+00:06:01.000 --> 00:06:02.920
+Maybe they have a certain amount of access
+
+111
+00:06:02.920 --> 00:06:06.040
+to your internal systems, but there's not a huge amount of oversight
+
+112
+00:06:06.120 --> 00:06:07.840
+in kind of think of your agents in that way.
+
+113
+00:06:07.840 --> 00:06:12.640
+there are a few ways in which working with agents and LLMs introduces
+
+114
+00:06:12.720 --> 00:06:16.800
+some new kind of dimensions on security that we don't wouldn't
+
+115
+00:06:16.800 --> 00:06:17.640
+normally think about.
+
+116
+00:06:17.640 --> 00:06:21.280
+The most interesting one, I think, is text becomes
+
+117
+00:06:21.320 --> 00:06:26.080
+something that can be vulnerable, can have some executable intent, right?
+
+118
+00:06:26.080 --> 00:06:28.240
+A couple years ago, you would never worry
+
+119
+00:06:28.240 --> 00:06:32.040
+about the security of a markdown document anywhere in your organization.
+
+120
+00:06:32.040 --> 00:06:34.320
+And today that's actually very important.
+
+121
+00:06:34.320 --> 00:06:36.120
+markdown file that you're giving to an agent
+
+122
+00:06:36.120 --> 00:06:39.760
+could encode, you know, some vulnerability
+
+123
+00:06:39.800 --> 00:06:44.640
+to instruct the agent to go and do something malicious or just unsafe.
+
+124
+00:06:44.640 --> 00:06:47.640
+And that's just completely novel situation.
+
+125
+00:06:47.720 --> 00:06:48.360
+Yeah.
+
+126
+00:06:48.360 --> 00:06:50.440
+And it's interesting that a lot of the time
+
+127
+00:06:50.440 --> 00:06:55.760
+we we find ourselves, we get caught, catch ourselves talking about how agents
+
+128
+00:06:55.760 --> 00:07:00.800
+add security issues into into the space, but how reliable are agents
+
+129
+00:07:00.800 --> 00:07:04.600
+not just finding issues, but even, you know, being able
+
+130
+00:07:04.600 --> 00:07:06.520
+to start coding in a reliable way.
+
+131
+00:07:06.520 --> 00:07:09.520
+We've heard of things like mythos coming out.
+
+132
+00:07:09.680 --> 00:07:14.320
+Can we rely upon and do you rely upon agents to identify issues
+
+133
+00:07:14.320 --> 00:07:18.920
+and help you guide you into making sure you develop more securely?
+
+134
+00:07:19.160 --> 00:07:20.720
+I think you can for sure.
+
+135
+00:07:20.720 --> 00:07:23.040
+I mean, agents are always kind of backwards looking,
+
+136
+00:07:23.040 --> 00:07:26.280
+so there's like a little bit of a lag before things are going to catch up
+
+137
+00:07:26.280 --> 00:07:29.960
+with new types of attack vectors and new vulnerabilities.
+
+138
+00:07:29.960 --> 00:07:30.760
+But absolutely.
+
+139
+00:07:30.760 --> 00:07:31.920
+I mean, and I think
+
+140
+00:07:31.920 --> 00:07:35.480
+it's kind of the only effective defense that we have against the kind of
+
+141
+00:07:36.040 --> 00:07:39.640
+that you can introduce into text documents and markdown files
+
+142
+00:07:39.640 --> 00:07:43.280
+these days is to have another LLM judge that content and see
+
+143
+00:07:43.280 --> 00:07:46.720
+if it kind of seems risky, because static analysis is not going to cut it here.
+
+144
+00:07:46.720 --> 00:07:49.720
+There's many ways you can phrase something to kind of
+
+145
+00:07:49.760 --> 00:07:53.440
+not even trick an agent, but encourage an agent to do something that maybe
+
+146
+00:07:53.480 --> 00:07:56.920
+isn't what you're what the consumer is intending.
+
+147
+00:07:57.400 --> 00:08:00.960
+So so I guess the classic question is, do AI coding tools
+
+148
+00:08:00.960 --> 00:08:04.720
+make developers more or less likely to ship vulnerabilities these days?
+
+149
+00:08:04.760 --> 00:08:06.440
+Yeah, I think it really depends.
+
+150
+00:08:06.440 --> 00:08:10.480
+So of course, you know, agents are allowing you to be
+
+151
+00:08:10.480 --> 00:08:13.480
+a lot more productive and ship a lot more features and a lot more code
+
+152
+00:08:13.520 --> 00:08:14.280
+and more Kodi.
+
+153
+00:08:14.280 --> 00:08:14.720
+Right.
+
+154
+00:08:14.720 --> 00:08:18.160
+The more chances you have of introducing vulnerabilities.
+
+155
+00:08:18.240 --> 00:08:22.080
+But also they're pretty good at like following patterns as well.
+
+156
+00:08:22.120 --> 00:08:26.680
+So, you know, if you have good, well-established patterns in your code
+
+157
+00:08:26.720 --> 00:08:28.360
+base, it make it quite difficult for you
+
+158
+00:08:28.360 --> 00:08:32.080
+to be vulnerable to things like SCL injection, for example.
+
+159
+00:08:32.360 --> 00:08:34.400
+Then they're going to tend to follow those patterns.
+
+160
+00:08:34.400 --> 00:08:38.040
+But then on the other hand, if you haven't got well-established patterns
+
+161
+00:08:38.080 --> 00:08:41.040
+or you're you're not managing the context with your agent.
+
+162
+00:08:41.040 --> 00:08:42.960
+Well, to sort of encourage them to do things
+
+163
+00:08:42.960 --> 00:08:46.600
+in the way that you need them to be done, then they're going to fall back
+
+164
+00:08:46.600 --> 00:08:47.320
+on training data.
+
+165
+00:08:47.320 --> 00:08:50.560
+And the training data obviously, is like a wealth of insecure
+
+166
+00:08:50.600 --> 00:08:53.840
+open source software that is out there in the world today.
+
+167
+00:08:53.880 --> 00:08:54.160
+Yeah.
+
+168
+00:08:54.160 --> 00:08:54.800
+And you get
+
+169
+00:08:54.800 --> 00:08:57.960
+going back to what you mentioned previously about text being vulnerable.
+
+170
+00:08:58.160 --> 00:09:00.640
+That's really interesting because there are very few patterns.
+
+171
+00:09:00.640 --> 00:09:03.240
+It kind of reminds me a little bit like what security.
+
+172
+00:09:03.240 --> 00:09:08.120
+Like when you think about something that whereby the input can change
+
+173
+00:09:08.120 --> 00:09:12.000
+very, very slightly and go round a rule that is a preexisting rule.
+
+174
+00:09:12.040 --> 00:09:16.000
+Essentially, you know, what happens when text can become a vulnerability.
+
+175
+00:09:16.040 --> 00:09:18.080
+Things can be phrased in a slightly different way,
+
+176
+00:09:18.080 --> 00:09:20.480
+or things can be approached from a different angle,
+
+177
+00:09:20.480 --> 00:09:23.280
+and you can't have static tests for every single thing.
+
+178
+00:09:23.280 --> 00:09:27.280
+So you very often do rely on a kind of LLM as a judge,
+
+179
+00:09:27.400 --> 00:09:31.440
+assessing whether certain text is potentially dangerous or not.
+
+180
+00:09:31.520 --> 00:09:35.640
+So when you think about skills, a skills MD is essentially a bunch of text.
+
+181
+00:09:35.640 --> 00:09:39.040
+And that text describes and guides an agent into doing something
+
+182
+00:09:39.080 --> 00:09:44.280
+a particular way in order to be able to identify whether that's malicious or not.
+
+183
+00:09:44.320 --> 00:09:45.360
+One of the things that was added
+
+184
+00:09:45.360 --> 00:09:50.520
+to the Tessl registry recently by yourself and the team is that ability to
+
+185
+00:09:50.560 --> 00:09:56.120
+to scan the skills with Snyk and get those results via Tessl.
+
+186
+00:09:56.160 --> 00:09:57.840
+Tell us a little bit about that.
+
+187
+00:09:57.840 --> 00:09:58.160
+Yeah.
+
+188
+00:09:58.160 --> 00:10:04.280
+So we've introduced Snyks agents scan tooling into into the product.
+
+189
+00:10:04.320 --> 00:10:05.640
+So everything that's published
+
+190
+00:10:05.640 --> 00:10:09.400
+to the registry now goes goes through this skill scan.
+
+191
+00:10:09.400 --> 00:10:13.240
+And also we're indexing a bunch of skills sort of out there
+
+192
+00:10:13.280 --> 00:10:16.880
+on GitHub and running security scans for those as well.
+
+193
+00:10:17.400 --> 00:10:20.800
+So if you're trying to install these things with Tessl, then
+
+194
+00:10:20.800 --> 00:10:24.920
+we're going to warn you if something is like has something that we think
+
+195
+00:10:24.960 --> 00:10:29.520
+might be malicious or maybe, you know, mal intent.
+
+196
+00:10:29.520 --> 00:10:33.320
+The other interesting angle on this is a lot of the potential security
+
+197
+00:10:33.320 --> 00:10:35.040
+risk are kind of contextual.
+
+198
+00:10:35.040 --> 00:10:38.920
+So, you know, a skill contacting the outside world
+
+199
+00:10:38.920 --> 00:10:42.240
+or using some API may not necessarily be a bad thing.
+
+200
+00:10:42.280 --> 00:10:45.480
+You know, Tessl has a skill that is using the Tessl API.
+
+201
+00:10:45.640 --> 00:10:47.000
+That seems fair enough.
+
+202
+00:10:47.000 --> 00:10:51.360
+It's important that the scanner has that kind of context, but a lot of the time,
+
+203
+00:10:51.360 --> 00:10:54.640
+really what you need to do is surface that to to the consumer, to the user.
+
+204
+00:10:54.680 --> 00:10:54.960
+Right.
+
+205
+00:10:54.960 --> 00:10:56.920
+Like of course, many of the skills
+
+206
+00:10:56.920 --> 00:11:00.000
+I'm going to be using are contacting the outside world in some way.
+
+207
+00:11:00.040 --> 00:11:03.080
+But am I okay with this skill using this particular
+
+208
+00:11:03.080 --> 00:11:06.200
+API or this particular CLI command?
+
+209
+00:11:06.200 --> 00:11:11.200
+And is that appropriate with what the skill is trying to do?
+
+210
+00:11:11.240 --> 00:11:15.120
+So we're sort of working on evolving the user experience a little more to
+
+211
+00:11:15.480 --> 00:11:18.480
+not just flag up things that are like obviously malicious
+
+212
+00:11:18.520 --> 00:11:21.800
+packages, because a lot of the cases, it's a little more subtle than that, that
+
+213
+00:11:21.840 --> 00:11:26.160
+perhaps this skill is doing a little bit more than you might be comfortable with.
+
+214
+00:11:26.200 --> 00:11:30.200
+If you just skimmed the skill MD, you might not realize that it's also going
+
+215
+00:11:30.200 --> 00:11:33.960
+in hitting GitHub and posting some of your personal information there, for example.
+
+216
+00:11:34.200 --> 00:11:36.720
+a lot of the issues that we've talked about already
+
+217
+00:11:36.720 --> 00:11:39.800
+are some of which people will be very familiar with, others
+
+218
+00:11:39.800 --> 00:11:43.200
+are completely new, and it's just a growth in the attack
+
+219
+00:11:43.200 --> 00:11:46.280
+vector that we have as attack surface rather.
+
+220
+00:11:47.640 --> 00:11:50.640
+One of the styles is
+
+221
+00:11:51.200 --> 00:11:54.800
+something like a supply chain, dependency risk.
+
+222
+00:11:55.240 --> 00:11:56.480
+Sometimes it can be
+
+223
+00:11:56.480 --> 00:11:59.680
+you can look at that from the libraries that we actually import.
+
+224
+00:11:59.760 --> 00:12:02.960
+Other times it's supply chain through the context.
+
+225
+00:12:02.960 --> 00:12:05.160
+Let's talk about what's already existing.
+
+226
+00:12:05.160 --> 00:12:08.760
+Let's talk about libraries first and then we'll jump onto the other.
+
+227
+00:12:08.760 --> 00:12:14.760
+So when we think about libraries and AI agents using libraries to
+
+228
+00:12:14.760 --> 00:12:19.440
+to assist with, with its abstraction you know, what should we be worried about
+
+229
+00:12:19.520 --> 00:12:22.800
+when an AI is trying to or rather, an agent
+
+230
+00:12:22.800 --> 00:12:27.920
+is trying to choose a library when it wants to to perform
+
+231
+00:12:27.920 --> 00:12:29.560
+a certain task?
+
+232
+00:12:29.560 --> 00:12:31.200
+There's a number of things to think about here.
+
+233
+00:12:31.200 --> 00:12:34.440
+And the first one, as with many of these things, is just like velocity.
+
+234
+00:12:34.600 --> 00:12:38.960
+More code means more packages are getting added, which is harder to review.
+
+235
+00:12:38.960 --> 00:12:42.920
+And maybe you're going to be less detailed with a review that you're doing.
+
+236
+00:12:43.120 --> 00:12:46.640
+One of the other things to keep in mind is that, you know, a lot of the time,
+
+237
+00:12:46.640 --> 00:12:50.560
+a agent is just going to hallucinate a package name.
+
+238
+00:12:50.560 --> 00:12:54.440
+It's just going to guess at something and see if it's there and install it.
+
+239
+00:12:54.560 --> 00:12:59.360
+And there's a a beautiful new phrase that's popped up called slop squatting
+
+240
+00:12:59.840 --> 00:13:03.440
+to sort of describe this, this attack vector
+
+241
+00:13:03.440 --> 00:13:08.400
+where people can upload malicious packages on package names
+
+242
+00:13:08.400 --> 00:13:13.360
+that they think in them is likely to pick for some kind of scenario, to then
+
+243
+00:13:13.360 --> 00:13:16.360
+get that into your into your supply chain, which is an interesting one.
+
+244
+00:13:16.520 --> 00:13:20.720
+And the other thing to keep in mind is that agents these days at least,
+
+245
+00:13:20.720 --> 00:13:24.120
+are not really looking at packages in the same way that a human might.
+
+246
+00:13:24.120 --> 00:13:28.480
+I think like if I'm choosing an open source package, I'm not just looking
+
+247
+00:13:28.480 --> 00:13:32.000
+for the first search result that matches the kind of task that I'm trying to do.
+
+248
+00:13:32.040 --> 00:13:34.400
+I'm also looking at them for some social proof,
+
+249
+00:13:34.400 --> 00:13:35.960
+you know, how many stars do they have? Are they?
+
+250
+00:13:35.960 --> 00:13:38.320
+Well established that they've been around a long time.
+
+251
+00:13:38.320 --> 00:13:40.960
+They sponsored by a company or an individual,
+
+252
+00:13:40.960 --> 00:13:44.120
+all of these kind of things that an agent typically isn't looking at.
+
+253
+00:13:44.120 --> 00:13:44.840
+It will, you know,
+
+254
+00:13:44.840 --> 00:13:47.360
+maybe pick something that's well represented in the training data
+
+255
+00:13:47.360 --> 00:13:50.640
+or just something that kind of matches its its search of what it's trying to do.
+
+256
+00:13:50.640 --> 00:13:51.240
+Well.
+
+257
+00:13:51.240 --> 00:13:53.800
+So there are a few new things to consider here.
+
+258
+00:13:53.800 --> 00:13:57.680
+There will be a phrase that we use in today's podcast,
+
+259
+00:13:57.680 --> 00:14:01.680
+which is going to sound rude, but weirdly slop squatting, is not it?
+
+260
+00:14:01.720 --> 00:14:03.720
+Well. Not. The worst. Move on to that.
+
+261
+00:14:03.720 --> 00:14:04.880
+We'll move on to that.
+
+262
+00:14:04.880 --> 00:14:08.680
+Let's go on to thinking about the supply chain of context now.
+
+263
+00:14:08.840 --> 00:14:09.720
+And this is interesting
+
+264
+00:14:09.720 --> 00:14:12.720
+because, you know, essentially when we look at the supply chain
+
+265
+00:14:12.720 --> 00:14:16.640
+of dependencies, it's about us being comfortable trusting
+
+266
+00:14:16.760 --> 00:14:22.440
+the third party libraries content code that we're pulling into our organization,
+
+267
+00:14:22.440 --> 00:14:26.320
+to our application, our project, and we think about the same thing.
+
+268
+00:14:26.320 --> 00:14:27.720
+But for context.
+
+269
+00:14:27.720 --> 00:14:31.080
+This is more of a development time thought process
+
+270
+00:14:31.080 --> 00:14:34.080
+of we're not shipping this necessarily, but we're using this context
+
+271
+00:14:34.080 --> 00:14:37.480
+to guide our agent to write appropriate code.
+
+272
+00:14:37.800 --> 00:14:41.200
+First of all, how important is it that we know who these people are,
+
+273
+00:14:41.200 --> 00:14:44.680
+how many skills we're using in our organization?
+
+274
+00:14:44.720 --> 00:14:47.360
+How important is that given it's a development of thing?
+
+275
+00:14:47.360 --> 00:14:51.280
+I think it's hugely important, and it's an interesting topic for me
+
+276
+00:14:51.280 --> 00:14:55.840
+because I think it's almost like we've got so excited with the capabilities
+
+277
+00:14:55.840 --> 00:14:59.360
+that we have now with agents and skills that we've kind of forgotten about,
+
+278
+00:14:59.400 --> 00:15:03.360
+you know, ten, 20 years of of software engineering
+
+279
+00:15:03.360 --> 00:15:07.160
+and what we've learned about software supply chain and open source.
+
+280
+00:15:07.160 --> 00:15:11.280
+And, you know, people are freely pulling in skills
+
+281
+00:15:11.280 --> 00:15:15.400
+from random GitHub repo, pulling in main,
+
+282
+00:15:15.520 --> 00:15:19.360
+updating that, you know, frequently without really having any oversight.
+
+283
+00:15:19.560 --> 00:15:24.080
+This is not typically how we deal with third party open source software anymore.
+
+284
+00:15:24.120 --> 00:15:27.360
+You know, we're using properly version software.
+
+285
+00:15:27.400 --> 00:15:27.600
+You know,
+
+286
+00:15:27.600 --> 00:15:31.200
+a lot of the time you're looking at only pulling in things of a certain age
+
+287
+00:15:31.200 --> 00:15:31.960
+because, you know,
+
+288
+00:15:31.960 --> 00:15:34.800
+you want to protect against these kind of supply chain attacks
+
+289
+00:15:34.800 --> 00:15:36.600
+that we're seeing more and more of these days.
+
+290
+00:15:36.600 --> 00:15:37.200
+You're
+
+291
+00:15:37.200 --> 00:15:41.160
+interested in some kind of like provenance where this is actually coming from.
+
+292
+00:15:41.200 --> 00:15:44.040
+A lot of that has kind of gone out of the window.
+
+293
+00:15:44.040 --> 00:15:47.600
+And this is really something that we care a lot about, a lot
+
+294
+00:15:47.640 --> 00:15:51.720
+at Tessl, and that we're investing a lot of energy into building,
+
+295
+00:15:51.800 --> 00:15:55.760
+you know, a package, a registry for package context in the same way
+
+296
+00:15:55.800 --> 00:15:56.960
+that you have many registries
+
+297
+00:15:56.960 --> 00:16:00.720
+for open source software that kind of just bring a lot of these same things.
+
+298
+00:16:00.760 --> 00:16:02.760
+You know, it's not like hugely novel,
+
+299
+00:16:04.480 --> 00:16:05.520
+you know, new approaches.
+
+300
+00:16:05.520 --> 00:16:08.720
+It's the same kind of approach to the, the new,
+
+301
+00:16:08.760 --> 00:16:12.640
+the new kind of context, the new material, I suppose.
+
+302
+00:16:12.680 --> 00:16:15.680
+So it's time to drop the C bomb.
+
+303
+00:16:16.120 --> 00:16:17.280
+First time on the podcast.
+
+304
+00:16:17.280 --> 00:16:18.480
+First time on the podcast.
+
+305
+00:16:18.480 --> 00:16:21.520
+We've heard about the S bomb, the software bill of materials.
+
+306
+00:16:21.520 --> 00:16:25.480
+Do we need a C bomb, a context bill of materials so that we can identify
+
+307
+00:16:25.520 --> 00:16:29.880
+for this project, for this development scope, we know what context
+
+308
+00:16:29.920 --> 00:16:34.000
+we are using, where we're pulling it in from, versioned, etc., etc..
+
+309
+00:16:34.040 --> 00:16:38.640
+Is that something you feel your teams could, you know, provide value from?
+
+310
+00:16:38.680 --> 00:16:39.400
+Absolutely. Yeah.
+
+311
+00:16:39.400 --> 00:16:42.720
+And another thing we're looking at Tessl and I think, it's
+
+312
+00:16:42.720 --> 00:16:45.800
+it's it's an important aspect that's missing at the moment.
+
+313
+00:16:45.800 --> 00:16:46.600
+And again,
+
+314
+00:16:46.600 --> 00:16:50.680
+potentially more complicated than it is with things like s bombs, for example.
+
+315
+00:16:50.720 --> 00:16:54.560
+You may also need to cover context that is just running on a developers
+
+316
+00:16:54.560 --> 00:16:55.920
+machine globally.
+
+317
+00:16:55.920 --> 00:16:59.000
+There's sort of different different scopes, right,
+
+318
+00:16:59.040 --> 00:17:02.040
+that you can kind of install and get something into an agent's context.
+
+319
+00:17:02.040 --> 00:17:07.120
+So okay, I haven't got anything that looks scary in my projects.
+
+320
+00:17:07.560 --> 00:17:12.280
+Maybe I'm even checking that in a CI action using Tessl's Tessl CLI.
+
+321
+00:17:13.040 --> 00:17:16.000
+But what about what developers installing on their machines
+
+322
+00:17:16.000 --> 00:17:21.160
+and how can I restrict that is, you know, another layer of complexity
+
+323
+00:17:21.200 --> 00:17:24.160
+here that I think we haven't even started to touch the slides on.
+
+324
+00:17:24.160 --> 00:17:28.400
+Yeah, I guess the auditing or the gating of, context
+
+325
+00:17:28.840 --> 00:17:34.200
+in a similar way that we would think about dependencies and, and almost
+
+326
+00:17:34.240 --> 00:17:39.160
+it starts to raise the questions of, okay, at what stage do we do that in terms of
+
+327
+00:17:39.200 --> 00:17:41.960
+do you want developers to want to be creative,
+
+328
+00:17:41.960 --> 00:17:45.280
+want to build fast and have a gating station a little bit later?
+
+329
+00:17:45.320 --> 00:17:48.320
+There's a whole bunch of interesting things that could be happening.
+
+330
+00:17:48.320 --> 00:17:51.160
+Do you have opinions on that now, or is this something that you feel
+
+331
+00:17:51.160 --> 00:17:53.520
+we as an organization are evolving through?
+
+332
+00:17:53.520 --> 00:17:57.040
+I think it depends on your use case and, and sort of
+
+333
+00:17:57.080 --> 00:18:00.880
+how restrictive or kind of liberal you want to be.
+
+334
+00:18:00.880 --> 00:18:04.800
+But again, a lot of the, the, the fundamental
+
+335
+00:18:04.840 --> 00:18:06.280
+tools are missing right now.
+
+336
+00:18:06.280 --> 00:18:09.840
+So maybe talk a bit a little bit about Tessl CLI
+
+337
+00:18:09.880 --> 00:18:12.120
+which is going to put a manifest in your project.
+
+338
+00:18:12.120 --> 00:18:13.280
+So this is something that you can
+
+339
+00:18:13.280 --> 00:18:16.240
+you can go and do some checks in your CI if you want.
+
+340
+00:18:16.240 --> 00:18:18.880
+What are the different pieces of context that we have installed.
+
+341
+00:18:18.880 --> 00:18:21.120
+How what's their security rating.
+
+342
+00:18:21.120 --> 00:18:22.120
+You know, do we trust them.
+
+343
+00:18:22.120 --> 00:18:25.520
+Are they in some allow lists that I might have without the manifest?
+
+344
+00:18:25.520 --> 00:18:26.640
+You can't do any of those things.
+
+345
+00:18:26.640 --> 00:18:30.120
+You can't even really have the opinion about how much you want to secure
+
+346
+00:18:30.120 --> 00:18:31.040
+your projects.
+
+347
+00:18:31.040 --> 00:18:31.920
+Yeah, yeah.
+
+348
+00:18:31.920 --> 00:18:34.760
+Actually built a little tool that I showed at demo time
+
+349
+00:18:34.760 --> 00:18:36.440
+a while back that looks at your Tessl.
+
+350
+00:18:36.440 --> 00:18:39.520
+JSON looks at all of the all of the pieces
+
+351
+00:18:39.520 --> 00:18:42.520
+of context that the skills that you're using.
+
+352
+00:18:42.640 --> 00:18:46.200
+And based on the results from Snyk via the Tessl API,
+
+353
+00:18:46.400 --> 00:18:48.320
+kind of like pull together this. Nice.
+
+354
+00:18:48.320 --> 00:18:52.960
+Almost like a security report, a posture security posture
+
+355
+00:18:53.000 --> 00:18:56.880
+style report or, you know, for your application, for your project.
+
+356
+00:18:56.880 --> 00:19:00.840
+This is what this is what, you know, this this is where the issues exist.
+
+357
+00:19:00.840 --> 00:19:04.080
+And I think people are going to be asked for that more and more in terms of,
+
+358
+00:19:04.200 --> 00:19:06.240
+you know, don't just freely pick whatever you want.
+
+359
+00:19:06.240 --> 00:19:08.320
+Let's actually have a look at what we're using now.
+
+360
+00:19:08.320 --> 00:19:08.800
+Yeah.
+
+361
+00:19:08.800 --> 00:19:11.920
+What about other things like, you know, whether it's secrets and credentials,
+
+362
+00:19:11.920 --> 00:19:15.440
+for example, some more core
+
+363
+00:19:15.440 --> 00:19:19.000
+security style concerns,
+
+364
+00:19:19.040 --> 00:19:23.640
+is this also an issue for agentic development?
+
+365
+00:19:23.640 --> 00:19:26.720
+Are there new things that we should be wary of when when
+
+366
+00:19:26.760 --> 00:19:29.720
+thinking about how to hide those credentials?
+
+367
+00:19:29.720 --> 00:19:30.360
+Yeah, absolutely.
+
+368
+00:19:30.360 --> 00:19:36.160
+I think this is, part of the more a more fiddly part of the equation here.
+
+369
+00:19:36.160 --> 00:19:37.240
+You know,
+
+370
+00:19:37.240 --> 00:19:41.480
+the the agent has amazing access to privileged information on your machine.
+
+371
+00:19:41.600 --> 00:19:43.000
+So even if you think about
+
+372
+00:19:43.000 --> 00:19:47.600
+your environment variable file for a very common way to be working,
+
+373
+00:19:48.680 --> 00:19:49.760
+can you and do
+
+374
+00:19:49.760 --> 00:19:52.880
+you and how do you prevent the agent from reading that file?
+
+375
+00:19:52.920 --> 00:19:55.880
+And because if it can read that file, you can assume that that is going
+
+376
+00:19:55.880 --> 00:19:57.480
+to end up somewhere that you don't want, right?
+
+377
+00:19:57.480 --> 00:20:02.000
+Like it also has the ability to post information out on the internet,
+
+378
+00:20:02.000 --> 00:20:05.000
+and even just the fact that that might be read in means
+
+379
+00:20:05.000 --> 00:20:09.320
+that it's it's in logs at various places of, you know, your stack
+
+380
+00:20:09.320 --> 00:20:12.320
+and probably with the model providers as well.
+
+381
+00:20:13.200 --> 00:20:16.160
+And if it can read files, why couldn't it read that file?
+
+382
+00:20:16.160 --> 00:20:20.000
+So, you know, maybe you want to start looking at different mechanisms
+
+383
+00:20:20.000 --> 00:20:23.760
+where you have, you know, like a secret broker
+
+384
+00:20:23.760 --> 00:20:28.760
+and your issuing more like just in time credentials with like short, short lived
+
+385
+00:20:29.040 --> 00:20:33.120
+TLS so that, you know, some code does get out there.
+
+386
+00:20:33.160 --> 00:20:35.480
+You don't need to worry about it because it's only valid for 15 minutes.
+
+387
+00:20:35.480 --> 00:20:37.800
+So much. But this is.
+
+388
+00:20:37.800 --> 00:20:39.120
+Yeah. Again, it's kind of,
+
+389
+00:20:40.400 --> 00:20:42.080
+typical security hygiene, but
+
+390
+00:20:42.080 --> 00:20:46.160
+it's a at a new level of abstraction
+
+391
+00:20:46.160 --> 00:20:50.440
+that is much trickier to deal with because it's running on your machine
+
+392
+00:20:50.440 --> 00:20:52.640
+as if it's a developer that you would trust.
+
+393
+00:20:52.640 --> 00:20:53.760
+Yeah, yeah.
+
+394
+00:20:53.760 --> 00:20:56.240
+And I think that's that's a key phrase there.
+
+395
+00:20:56.240 --> 00:20:58.440
+It's running a machine like a developer.
+
+396
+00:20:58.440 --> 00:20:59.640
+And I think there was
+
+397
+00:20:59.640 --> 00:21:00.400
+I was reading a Reddit
+
+398
+00:21:00.400 --> 00:21:04.360
+thread the other day where there were people who were using an agent
+
+399
+00:21:04.360 --> 00:21:06.520
+and they'd essentially said, I think it was called code.
+
+400
+00:21:06.520 --> 00:21:08.920
+And they said, look, you can't through the settings, you can't
+
+401
+00:21:08.920 --> 00:21:13.520
+you don't have access to the end file, as a, as a file read.
+
+402
+00:21:13.560 --> 00:21:17.040
+And what Claude Code did was it wrote
+
+403
+00:21:17.080 --> 00:21:20.400
+a bash script that essentially read from the file.
+
+404
+00:21:20.440 --> 00:21:23.920
+And it's not it's not trying to circumvent security per se.
+
+405
+00:21:24.000 --> 00:21:27.800
+It's got a problem that it's trying to solve, and it's trying to work out
+
+406
+00:21:27.800 --> 00:21:31.480
+how, given the tools it has, it can it can perform that.
+
+407
+00:21:31.480 --> 00:21:33.760
+And a lot of people are replying saying, look,
+
+408
+00:21:33.760 --> 00:21:36.640
+what you essentially want to do is run it as a particular user that doesn't have
+
+409
+00:21:36.640 --> 00:21:41.680
+an doesn't have actual access to this file through the operating system.
+
+410
+00:21:42.080 --> 00:21:45.680
+And it's it's really about trying to find that mechanism, a good mechanism where,
+
+411
+00:21:45.800 --> 00:21:47.600
+it can't gain access to that.
+
+412
+00:21:47.600 --> 00:21:51.400
+And So it's kind of like, leans into the a principle of least privilege,
+
+413
+00:21:51.400 --> 00:21:52.320
+which, you know,
+
+414
+00:21:52.320 --> 00:21:53.440
+everyone's all familiar with
+
+415
+00:21:53.440 --> 00:21:56.600
+from a normal coding point of view from an agent coding point of view.
+
+416
+00:21:56.640 --> 00:22:00.600
+What are the types of guardrails or controls we need to put in place to
+
+417
+00:22:00.640 --> 00:22:01.520
+achieve that in a
+
+418
+00:22:02.520 --> 00:22:04.480
+software development environment?
+
+419
+00:22:04.480 --> 00:22:07.480
+Yeah, I mean, there's some good hygiene things worth looking at.
+
+420
+00:22:07.520 --> 00:22:10.720
+You know, sandboxing your agent locally is going to reduce
+
+421
+00:22:10.800 --> 00:22:15.520
+kind of blast radius of some things that can go on on your machine.
+
+422
+00:22:15.520 --> 00:22:19.320
+And then really, you know, you're not going to get a lot of success
+
+423
+00:22:19.360 --> 00:22:22.880
+telling the agent not to do certain things because you know, it will find a way
+
+424
+00:22:22.880 --> 00:22:26.360
+around, as you had your example a minute ago, which is a great example.
+
+425
+00:22:26.560 --> 00:22:29.680
+So really you need to look at like, how can you sort of strangle access
+
+426
+00:22:29.720 --> 00:22:30.400
+at the right level.
+
+427
+00:22:30.400 --> 00:22:34.720
+So maybe that's some sort of network egress controls, you know,
+
+428
+00:22:35.680 --> 00:22:38.240
+which domains can you be talking to.
+
+429
+00:22:38.240 --> 00:22:41.120
+Capability based permissions.
+
+430
+00:22:41.120 --> 00:22:43.480
+So you know which repos can you work with.
+
+431
+00:22:43.480 --> 00:22:46.640
+What how are you setting up your your git remotes.
+
+432
+00:22:46.640 --> 00:22:48.440
+What kind of pushing can you do.
+
+433
+00:22:48.440 --> 00:22:54.640
+What actions do you have running on branches where agents can push to
+
+434
+00:22:54.640 --> 00:22:58.560
+and then thinking about things that are dangerous and
+
+435
+00:22:59.040 --> 00:23:01.960
+and putting in approval gates that are not just like,
+
+436
+00:23:01.960 --> 00:23:03.640
+you know, please stop and ask the human.
+
+437
+00:23:03.640 --> 00:23:07.480
+It's like it's physically impossible to do that without some kind of approval
+
+438
+00:23:07.480 --> 00:23:10.040
+that then generates a hash. Then you can kind of push it through.
+
+439
+00:23:11.720 --> 00:23:12.520
+But really, it's an
+
+440
+00:23:12.520 --> 00:23:16.880
+interesting it's an interesting situation
+
+441
+00:23:16.880 --> 00:23:21.120
+because there isn't really like an escalation of privilege here,
+
+442
+00:23:21.160 --> 00:23:24.920
+you know, like you're running an agent on developers machine.
+
+443
+00:23:24.960 --> 00:23:30.360
+Typically, that agent has the same kinds of permissions that the developer does,
+
+444
+00:23:30.360 --> 00:23:33.920
+and typically you're not going to be able to tell the difference
+
+445
+00:23:33.920 --> 00:23:37.160
+between the developer or the developer, plus the agent
+
+446
+00:23:37.160 --> 00:23:41.160
+hitting the various different services that they might be using.
+
+447
+00:23:42.200 --> 00:23:44.400
+Because essentially it's performing actions on your behalf
+
+448
+00:23:44.400 --> 00:23:47.400
+with your credentials. Yeah. 100%.
+
+449
+00:23:48.040 --> 00:23:50.800
+How do we avoid because like, you know, we we can always add
+
+450
+00:23:50.800 --> 00:23:53.560
+more and more security controls in security guardrails.
+
+451
+00:23:53.560 --> 00:23:58.720
+How do we avoid securing ourselves into bankruptcy where the cost of over
+
+452
+00:23:58.720 --> 00:24:01.880
+securing or securing ourselves actually starts
+
+453
+00:24:01.880 --> 00:24:04.960
+having an impact on our companies?
+
+454
+00:24:04.960 --> 00:24:09.080
+You know, time pressures of hitting that deadline, speed of delivery,
+
+455
+00:24:09.080 --> 00:24:10.120
+those types of things.
+
+456
+00:24:10.120 --> 00:24:12.120
+Yeah, it's an uncomfortable conversation
+
+457
+00:24:12.120 --> 00:24:16.800
+because I think the first thing to accept is that this is a nascent field.
+
+458
+00:24:16.800 --> 00:24:19.520
+We're, you know, we're still figuring things out.
+
+459
+00:24:19.520 --> 00:24:23.240
+And if you're going to be using agents, you kind of need to accept that
+
+460
+00:24:23.440 --> 00:24:26.880
+there's going to be perhaps some breach at some point.
+
+461
+00:24:26.880 --> 00:24:30.240
+So really, maybe what you need to do is be prepared and figure out
+
+462
+00:24:30.240 --> 00:24:33.920
+what your risk tolerance is and where your risk tolerance is.
+
+463
+00:24:33.920 --> 00:24:39.600
+So, I sometimes like to think about this, about how reversible something is.
+
+464
+00:24:39.600 --> 00:24:43.120
+So if something is kind of like low risk and reversible,
+
+465
+00:24:43.160 --> 00:24:44.120
+those are the kind of tasks
+
+466
+00:24:44.120 --> 00:24:48.200
+that you might want to be giving to an agent autonomously working in a branch,
+
+467
+00:24:48.240 --> 00:24:52.600
+you know, not a huge deal and pushing something up to the git remote.
+
+468
+00:24:52.600 --> 00:24:54.080
+Probably not a huge deal.
+
+469
+00:24:54.080 --> 00:24:57.960
+Do you want to give the agent control to, like, push directly to production?
+
+470
+00:24:57.960 --> 00:25:00.960
+I probably wouldn't, you know, that's that's
+
+471
+00:25:01.200 --> 00:25:05.240
+that's a lot less reversible than working within a feature branch, for example.
+
+472
+00:25:05.280 --> 00:25:05.640
+Yeah, yeah.
+
+473
+00:25:05.640 --> 00:25:09.920
+And offline, we were talking a little bit about how you kind of consider
+
+474
+00:25:10.080 --> 00:25:14.080
+an agent's to effectively be similar to an employee,
+
+475
+00:25:14.360 --> 00:25:18.440
+where you almost, you know, you trust them as much as you do.
+
+476
+00:25:18.480 --> 00:25:21.520
+Maybe it's more of a junior employee, maybe it's more of a, you know,
+
+477
+00:25:21.560 --> 00:25:24.920
+someone who's a contractor or something like that, thinking about
+
+478
+00:25:24.920 --> 00:25:29.240
+where you draw the line on how much autonomy an agent has,
+
+479
+00:25:29.280 --> 00:25:33.400
+is it similar to the kind of thought processes you go through?
+
+480
+00:25:33.440 --> 00:25:38.040
+If someone's just joining the team and you want to you want them to be,
+
+481
+00:25:38.240 --> 00:25:43.160
+you know, autonomous enough but equally validating what they're doing.
+
+482
+00:25:43.240 --> 00:25:44.040
+Yeah.
+
+483
+00:25:44.040 --> 00:25:48.080
+Again, I think about it as like a sliding scale with the with the risks. So,
+
+484
+00:25:49.120 --> 00:25:51.920
+I can maybe talk about an example that I have where,
+
+485
+00:25:51.920 --> 00:25:55.560
+you know, mostly my agent is working directly on code
+
+486
+00:25:55.560 --> 00:25:58.840
+and sort of pushing things from my machine autonomously.
+
+487
+00:25:58.840 --> 00:26:03.320
+But even when it comes to, say, PR reviews, if I'm getting some feedback
+
+488
+00:26:03.320 --> 00:26:07.320
+on a PR, either from a colleague or from, you know, one of the
+
+489
+00:26:07.320 --> 00:26:10.320
+AI PR review systems that we use.
+
+490
+00:26:11.080 --> 00:26:15.560
+I want to be in the loop there, but it's also like kind of low risk.
+
+491
+00:26:15.600 --> 00:26:17.840
+Like if the agent posts a comment that makes me look silly.
+
+492
+00:26:17.840 --> 00:26:21.840
+That's not ideal at work, but I'm not like breaking production.
+
+493
+00:26:21.960 --> 00:26:22.400
+So there.
+
+494
+00:26:22.400 --> 00:26:25.480
+I've used a skill where I've kind of asked the agent to analyze
+
+495
+00:26:25.480 --> 00:26:28.960
+the comments and come up with a plan and talk to me and wait for my approval
+
+496
+00:26:29.000 --> 00:26:31.280
+a couple times, kind of before pushing something through.
+
+497
+00:26:31.280 --> 00:26:35.880
+Whereas again, I can only use like the pushing to production,
+
+498
+00:26:35.920 --> 00:26:38.560
+it just doesn't have that ability. So, you know,
+
+499
+00:26:38.560 --> 00:26:41.560
+I'm not using I'm not relying on a skill to stop it from doing that.
+
+500
+00:26:41.560 --> 00:26:45.320
+But presumably it can get so far before there needs to be some human intervention
+
+501
+00:26:45.320 --> 00:26:49.400
+to check or to have some ability to say, yeah, I agree with what you've done.
+
+502
+00:26:49.440 --> 00:26:50.840
+I can now push to production
+
+503
+00:26:50.840 --> 00:26:54.760
+or I will allow you to push the production or something like that, I guess.
+
+504
+00:26:54.760 --> 00:27:00.520
+What do those checkpoints look like for irreversible actions?
+
+505
+00:27:00.560 --> 00:27:04.480
+Yeah, I mean, personally, I just haven't implemented those kinds of checkbooks,
+
+506
+00:27:04.560 --> 00:27:10.520
+those kinds of checkpoints for high danger, irreversible actions because,
+
+507
+00:27:11.840 --> 00:27:13.320
+how do you trust that the
+
+508
+00:27:13.320 --> 00:27:17.960
+agent is going to follow that instruction if if the checkpoint is, so.
+
+509
+00:27:17.960 --> 00:27:19.160
+The checkpoints are autonomous.
+
+510
+00:27:19.160 --> 00:27:22.160
+The chuck points are part of the autonomous system.
+
+511
+00:27:22.920 --> 00:27:23.240
+Yeah.
+
+512
+00:27:23.240 --> 00:27:26.520
+So like in my PR review example, it's like part of the skill.
+
+513
+00:27:26.520 --> 00:27:29.160
+So I'll invoke the skill when I want to do a PR review.
+
+514
+00:27:29.160 --> 00:27:30.360
+And in the skill I say,
+
+515
+00:27:30.360 --> 00:27:33.480
+you know, make sure you check with me and blah blah blah blah blah.
+
+516
+00:27:33.480 --> 00:27:35.840
+But that's kind of fairly low risk.
+
+517
+00:27:35.840 --> 00:27:39.200
+If you wanted to have a checkpoint for something like push to production,
+
+518
+00:27:39.200 --> 00:27:42.840
+actually systematically making it so the agent can't push the production
+
+519
+00:27:42.840 --> 00:27:47.760
+until there's human confirmation, like, how do you build that system?
+
+520
+00:27:47.800 --> 00:27:48.680
+Yeah. Yeah.
+
+521
+00:27:48.680 --> 00:27:51.920
+Like, with without just saying, please ask for permission
+
+522
+00:27:51.920 --> 00:27:55.240
+before running this scary command that actually you can always run.
+
+523
+00:27:55.240 --> 00:27:57.960
+You know, it's kind of about trust.
+
+524
+00:27:57.960 --> 00:27:59.240
+Like, how much do you trust the agent?
+
+525
+00:27:59.240 --> 00:28:02.040
+And you probably shouldn't with those kind of things. Yeah.
+
+526
+00:28:02.040 --> 00:28:05.760
+And and when we do think about that human oversight,
+
+527
+00:28:05.760 --> 00:28:09.520
+how good are we as humans are?
+
+528
+00:28:09.720 --> 00:28:11.800
+I guess, you know, we know.
+
+529
+00:28:11.800 --> 00:28:14.280
+We know we've always been pretty bad at reading other people's code.
+
+530
+00:28:14.280 --> 00:28:14.720
+Naturally.
+
+531
+00:28:14.720 --> 00:28:16.640
+Anyway, as the amount increases,
+
+532
+00:28:16.640 --> 00:28:20.440
+how good are we going to be as humans to actually monitor
+
+533
+00:28:20.480 --> 00:28:23.440
+what agents are doing and actually say, yes, yes, yes, this is fine.
+
+534
+00:28:23.440 --> 00:28:27.200
+This is fine versus actually making sure we do go into depth with the with
+
+535
+00:28:27.200 --> 00:28:32.240
+almost like the stringent methodologies of code reviews and things like that.
+
+536
+00:28:32.280 --> 00:28:35.440
+Do we do we actually need to lean more onto,
+
+537
+00:28:35.920 --> 00:28:41.240
+you know, testing and deterministic code reviews as well as AI code
+
+538
+00:28:41.240 --> 00:28:44.760
+reviews to essentially manage and maintain that, yes,
+
+539
+00:28:44.760 --> 00:28:49.040
+this code is correct because I can see all this has been tested and passed.
+
+540
+00:28:49.040 --> 00:28:52.920
+Or is there a lot more manual intervention that humans need to make?
+
+541
+00:28:53.080 --> 00:28:57.120
+Yeah, I mean, this is the other big thing that changes not just in security,
+
+542
+00:28:57.120 --> 00:29:00.760
+but like in general, software engineering is the
+
+543
+00:29:00.880 --> 00:29:05.040
+this sort of asymmetric velocity agents can do like a ton of things.
+
+544
+00:29:05.040 --> 00:29:07.320
+You can invoke a bunch of them to do a lot,
+
+545
+00:29:07.320 --> 00:29:11.440
+and we can't sort of clone ourselves in the same way.
+
+546
+00:29:11.480 --> 00:29:12.240
+Yeah, yeah.
+
+547
+00:29:12.240 --> 00:29:15.880
+So how do you avoid kind of becoming the bottleneck?
+
+548
+00:29:16.520 --> 00:29:19.680
+And I think same principles kind of apply at every point, you know,
+
+549
+00:29:19.680 --> 00:29:21.520
+what do you care about?
+
+550
+00:29:21.520 --> 00:29:25.280
+Maybe, you know, a certain point, you really care that, like, the code style
+
+551
+00:29:25.280 --> 00:29:29.520
+guide is being followed and PR reviews might be more focused around that?
+
+552
+00:29:29.520 --> 00:29:32.800
+I don't think anybody's particularly interested so much in that anymore.
+
+553
+00:29:33.000 --> 00:29:34.800
+The parts that you are interested, you're going to make sure
+
+554
+00:29:34.800 --> 00:29:37.960
+that's like automated and linting and really like
+
+555
+00:29:38.000 --> 00:29:40.880
+if you if you have limited attention, where are you going to focus it now?
+
+556
+00:29:40.880 --> 00:29:46.280
+So, a selecting the PR that you're going to have more oversight over than others,
+
+557
+00:29:46.320 --> 00:29:50.160
+you know, something's touching the auth service probably needs some human eyes.
+
+558
+00:29:50.160 --> 00:29:52.560
+Some details humanize,
+
+559
+00:29:53.560 --> 00:29:53.880
+you know,
+
+560
+00:29:53.880 --> 00:29:54.840
+if something
+
+561
+00:29:54.840 --> 00:29:58.840
+kind of seems like it's dealing with some new customer data or something,
+
+562
+00:29:58.840 --> 00:30:00.960
+you might want to be paying more attention there.
+
+563
+00:30:00.960 --> 00:30:04.720
+Where can and then when you're actually doing the review,
+
+564
+00:30:04.720 --> 00:30:07.360
+what kind of things can you lean on to help you?
+
+565
+00:30:07.360 --> 00:30:11.000
+Like, can you use another LLM as a judge on this
+
+566
+00:30:11.000 --> 00:30:14.920
+to kind of give you a bit of a report that you can then look at,
+
+567
+00:30:14.920 --> 00:30:18.800
+rather than having to crawl through all the code from scratch?
+
+568
+00:30:19.000 --> 00:30:23.240
+And yeah, which things can you kind of automate a way
+
+569
+00:30:23.240 --> 00:30:27.800
+so that you can spend more time focusing on the higher risk areas, like
+
+570
+00:30:27.840 --> 00:30:31.440
+where can you leverage your time really, I think is the thing to be thinking about
+
+571
+00:30:31.560 --> 00:30:34.920
+all kind of points of the stack there, because we will always be the bottleneck.
+
+572
+00:30:34.960 --> 00:30:39.400
+We're kind of just moving where in the development process that bottleneck is.
+
+573
+00:30:39.520 --> 00:30:44.840
+And if something bad did go through into production, how does the,
+
+574
+00:30:44.840 --> 00:30:50.240
+the auditability and the logging, how is that affected by agentic method?
+
+575
+00:30:50.240 --> 00:30:54.760
+Because as you kind of mentioned, you know, there could be multiple actors
+
+576
+00:30:54.760 --> 00:30:57.800
+here, like could be the individual me or you
+
+577
+00:30:57.840 --> 00:31:00.800
+that's working with a group of agents.
+
+578
+00:31:00.800 --> 00:31:02.400
+There could be a number of different models,
+
+579
+00:31:02.400 --> 00:31:04.720
+a number of different agents that we're working with.
+
+580
+00:31:04.720 --> 00:31:07.960
+How do we actually identify where these types of issues come through
+
+581
+00:31:08.000 --> 00:31:12.000
+when when there's so much behind potentially a single user commit.
+
+582
+00:31:12.880 --> 00:31:13.800
+Yeah. It's an interesting one.
+
+583
+00:31:13.800 --> 00:31:17.640
+I think, you know, all of what we've done in the past still counts.
+
+584
+00:31:17.800 --> 00:31:21.200
+You know the traceability of like a commit through CD
+
+585
+00:31:21.200 --> 00:31:24.280
+into production and then your telemetry on top of that.
+
+586
+00:31:24.280 --> 00:31:28.640
+But there's kind of a new dimension that also becomes important now,
+
+587
+00:31:28.640 --> 00:31:31.040
+which is like what actually happened on the developers machine.
+
+588
+00:31:31.040 --> 00:31:36.760
+And you know, how did you arrive at the the code that got committed?
+
+589
+00:31:36.760 --> 00:31:38.560
+Because that's going to help you understand
+
+590
+00:31:38.560 --> 00:31:41.560
+how how can you avoid this kind of thing from happening again.
+
+591
+00:31:41.600 --> 00:31:46.240
+So being able to cross-reference, not only the commit to the issue,
+
+592
+00:31:46.240 --> 00:31:50.200
+but the commit to the session that was had with the agent
+
+593
+00:31:50.200 --> 00:31:51.800
+and maybe what skills were invoked
+
+594
+00:31:51.800 --> 00:31:56.120
+and what context was in the context window is going to help you understand.
+
+595
+00:31:56.200 --> 00:31:58.440
+Yeah. How do we actually get to this point?
+
+596
+00:31:58.440 --> 00:32:00.080
+And then also, you know,
+
+597
+00:32:00.080 --> 00:32:03.920
+looking at things that we already have like the PR reviews and like how did
+
+598
+00:32:03.960 --> 00:32:08.280
+how did this not get caught by your, say a PR review system?
+
+599
+00:32:08.280 --> 00:32:11.840
+So all of the same things that we had before are important.
+
+600
+00:32:11.840 --> 00:32:16.640
+And again, just to go back to the supply chain thing, understand it,
+
+601
+00:32:16.680 --> 00:32:19.920
+like having some kind of manifest and some kind of versioning on
+
+602
+00:32:19.920 --> 00:32:24.160
+those skills is helpful here as well, because, okay, you had the developers
+
+603
+00:32:24.160 --> 00:32:27.320
+machine had this particular skill and oh, I wonder why it didn't work.
+
+604
+00:32:27.400 --> 00:32:28.840
+What version was it at?
+
+605
+00:32:28.840 --> 00:32:30.320
+Where was it installed?
+
+606
+00:32:30.320 --> 00:32:34.680
+And I think at the minute we're not very well equipped to answer these questions.
+
+607
+00:32:34.720 --> 00:32:37.760
+Yeah, it'll be interesting when we when we can and we can determine
+
+608
+00:32:37.760 --> 00:32:41.920
+if it came from this place or that place when we think about accountability
+
+609
+00:32:42.120 --> 00:32:47.160
+and who's accountable for for the software if it's got a bug in it.
+
+610
+00:32:47.160 --> 00:32:51.480
+There's this wonderful episode of The Office, the UK office
+
+611
+00:32:51.800 --> 00:32:55.760
+where Gareth, he's he's on the phone to a calculator company,
+
+612
+00:32:55.760 --> 00:33:00.160
+and he said, I built this quote out for a for one of our clients
+
+613
+00:33:00.160 --> 00:33:03.200
+and, well, I've eliminated all other aspects.
+
+614
+00:33:03.200 --> 00:33:05.760
+I believe it's down to the calculator.
+
+615
+00:33:05.760 --> 00:33:08.760
+And so, you know, when something does go wrong, you know,
+
+616
+00:33:08.760 --> 00:33:09.680
+what do we need to look at?
+
+617
+00:33:09.680 --> 00:33:12.320
+Is it the individual who is running the agent?
+
+618
+00:33:12.320 --> 00:33:18.000
+Is it the team that together are allowing code to go into production?
+
+619
+00:33:18.000 --> 00:33:19.960
+Is it the agent itself?
+
+620
+00:33:19.960 --> 00:33:22.880
+What typically is the accountable piece that we need to
+
+621
+00:33:22.880 --> 00:33:24.240
+that we need to work through?
+
+622
+00:33:24.240 --> 00:33:27.240
+I mean, I don't know how far blaming the agent gets. You.
+
+623
+00:33:27.400 --> 00:33:29.040
+Might make you feel a bit better.
+
+624
+00:33:29.040 --> 00:33:30.440
+You're absolutely right.
+
+625
+00:33:30.440 --> 00:33:31.040
+So yeah.
+
+626
+00:33:31.040 --> 00:33:32.280
+Yeah, exactly.
+
+627
+00:33:32.280 --> 00:33:34.560
+You know, I it's a tool, right?
+
+628
+00:33:34.560 --> 00:33:38.040
+So and the it's there to sort of serve us.
+
+629
+00:33:38.040 --> 00:33:41.160
+So I think, you know, really it's the team
+
+630
+00:33:41.160 --> 00:33:44.520
+are accountable and like the processes that got you there.
+
+631
+00:33:44.520 --> 00:33:47.240
+I'm sure there's no like mal intent normally with these kind of things.
+
+632
+00:33:47.240 --> 00:33:49.160
+But how did this kind of thing happen.
+
+633
+00:33:49.160 --> 00:33:50.720
+How did we allow it to happen.
+
+634
+00:33:50.720 --> 00:33:52.800
+The interesting questions there I think.
+
+635
+00:33:52.800 --> 00:33:56.080
+But yeah, I don't think you'll get very far with blaming an agent or even,
+
+636
+00:33:56.120 --> 00:34:00.000
+you know, the frontier model companies in this kind of thing.
+
+637
+00:34:00.440 --> 00:34:01.240
+Hey everyone!
+
+638
+00:34:01.240 --> 00:34:03.520
+Hope you're enjoying the episode so far.
+
+639
+00:34:03.520 --> 00:34:07.400
+Our team is working really hard behind the scenes to bring you the best guests,
+
+640
+00:34:07.400 --> 00:34:11.680
+so we can have the most informative conversations about agentic development,
+
+641
+00:34:11.720 --> 00:34:13.360
+whether that's talking about the latest
+
+642
+00:34:13.360 --> 00:34:17.160
+tools, the most efficient workflows, or defining best practices.
+
+643
+00:34:17.160 --> 00:34:21.040
+But for whatever reason, many of you have yet to subscribe to the channel.
+
+644
+00:34:21.080 --> 00:34:24.120
+If you're enjoying the podcast and want us to continue to bring you
+
+645
+00:34:24.120 --> 00:34:25.400
+the very best content.
+
+646
+00:34:25.400 --> 00:34:27.880
+Please do us a favor and hit that subscribe button.
+
+647
+00:34:27.880 --> 00:34:31.240
+It really does make a difference and lets us continue to improve
+
+648
+00:34:31.240 --> 00:34:35.520
+the quality of our guests and build an even better product for you.
+
+649
+00:34:35.680 --> 00:34:37.400
+All right, back to the episode.
+
+650
+00:34:37.400 --> 00:34:41.760
+When we think about humans and the cultural changes that we need to
+
+651
+00:34:41.800 --> 00:34:46.640
+to make, obviously at Tessl here, we're hyper into AI
+
+652
+00:34:46.680 --> 00:34:51.680
+and we're very AI first with the native, the way we are building software.
+
+653
+00:34:51.680 --> 00:34:56.800
+But is it healthy still to have a level of skepticism, a healthy skepticism
+
+654
+00:34:56.840 --> 00:34:59.880
+when using agents to, to, to build
+
+655
+00:34:59.880 --> 00:35:03.680
+code versus being having an over agency
+
+656
+00:35:03.720 --> 00:35:08.720
+to, to to models and agents and almost having too much trust.
+
+657
+00:35:08.800 --> 00:35:12.000
+Where's the right balance there where we're not all in on AI?
+
+658
+00:35:12.320 --> 00:35:14.600
+Yeah. I mean it's it's so subjective isn't it?
+
+659
+00:35:14.600 --> 00:35:18.520
+I think it really depends on your use case and your risk tolerance.
+
+660
+00:35:18.560 --> 00:35:22.640
+You know, a big investment bank is probably going to be quite different
+
+661
+00:35:22.640 --> 00:35:25.760
+to a seed stage startup in kind of the things
+
+662
+00:35:25.760 --> 00:35:28.400
+that they're optimizing for and also their risk tolerance.
+
+663
+00:35:28.400 --> 00:35:32.520
+I think some of the things that would apply
+
+664
+00:35:32.520 --> 00:35:35.640
+well to everybody is like thinking about what is our
+
+665
+00:35:35.640 --> 00:35:41.160
+AI governance strategy and who owns it,
+
+666
+00:35:41.200 --> 00:35:44.560
+maybe whatever size, even if it's we don't really have one
+
+667
+00:35:44.560 --> 00:35:48.760
+and it's the CEO owns it, you know, putting a little bit of thought into that.
+
+668
+00:35:48.960 --> 00:35:51.960
+But larger organizations that we're talking to are,
+
+669
+00:35:52.000 --> 00:35:56.320
+you know, interested in all kinds of like governance tooling here.
+
+670
+00:35:56.320 --> 00:36:02.040
+You know, a lot of the same, hygiene things that you would normally have, you
+
+671
+00:36:02.040 --> 00:36:08.480
+know, your branch protection, your SaaS, your SCA, thinking about your logging
+
+672
+00:36:08.480 --> 00:36:11.480
+and your retention of those logs
+
+673
+00:36:11.480 --> 00:36:15.120
+and maybe rethinking how you do secrets.
+
+674
+00:36:15.120 --> 00:36:20.560
+I think this one thing that agents do change is your approach to secrets is
+
+675
+00:36:20.640 --> 00:36:24.960
+may may have served you well for humans, and that might start to fall apart
+
+676
+00:36:25.000 --> 00:36:26.160
+a little with agents.
+
+677
+00:36:26.160 --> 00:36:29.160
+And but then in terms of the actual agency you're using,
+
+678
+00:36:29.160 --> 00:36:32.160
+which agents are okay to use, and then it's
+
+679
+00:36:32.160 --> 00:36:34.480
+and then it's really the context piece, which is again
+
+680
+00:36:34.480 --> 00:36:38.640
+what we're focusing on at Tessl, like what context is allowed to be pulled in
+
+681
+00:36:38.760 --> 00:36:43.160
+which things are pushed to developers so they can't forget about
+
+682
+00:36:43.160 --> 00:36:44.480
+or they can't be missing.
+
+683
+00:36:44.480 --> 00:36:44.680
+So we.
+
+684
+00:36:44.680 --> 00:36:49.360
+Just say it's almost like skepticism through, you know, having real visibility
+
+685
+00:36:49.360 --> 00:36:53.480
+and transparency to the issues that that each of these things occur.
+
+686
+00:36:53.480 --> 00:36:57.520
+So like when you say, you know, what the models do have, don't have access to,
+
+687
+00:36:57.560 --> 00:37:00.560
+it's about seeing how they trip over, seeing how
+
+688
+00:37:00.560 --> 00:37:03.840
+they fall over, and recognizing, this agent is not great at this.
+
+689
+00:37:03.840 --> 00:37:08.280
+And understanding that kind of like skepticism through transparency.
+
+690
+00:37:08.920 --> 00:37:12.640
+Yeah, I suppose that but again, you know, depending on your
+
+691
+00:37:12.680 --> 00:37:13.800
+on your wrist tolerance, you might,
+
+692
+00:37:13.800 --> 00:37:16.760
+you might want to start with a much more sort of lockdown
+
+693
+00:37:16.760 --> 00:37:21.160
+environment and see how things work and sort of slowly add abilities.
+
+694
+00:37:21.160 --> 00:37:22.280
+But,
+
+695
+00:37:22.280 --> 00:37:22.880
+you know, I think
+
+696
+00:37:22.880 --> 00:37:26.640
+you're going to get the fastest results by moving fast and breaking things.
+
+697
+00:37:26.640 --> 00:37:31.560
+It's just maybe thinking about what things you're breaking up front,
+
+698
+00:37:31.600 --> 00:37:32.640
+you know, if you're moving fast
+
+699
+00:37:32.640 --> 00:37:35.000
+and breaking production, that might not be so good.
+
+700
+00:37:35.000 --> 00:37:38.040
+If you're moving fast and, you know, breaking your development process,
+
+701
+00:37:38.040 --> 00:37:40.600
+that's probably interesting if you're trying to move quickly.
+
+702
+00:37:40.600 --> 00:37:41.880
+So let's let's roll up.
+
+703
+00:37:41.880 --> 00:37:44.960
+Let's wrap up with two more questions.
+
+704
+00:37:45.000 --> 00:37:49.000
+First of all, what would you say is the most underrated security risk
+
+705
+00:37:49.000 --> 00:37:53.720
+that you see organizations take adopting agentic development tools.
+
+706
+00:37:53.760 --> 00:37:54.840
+Yeah.
+
+707
+00:37:54.840 --> 00:37:57.040
+Again, I probably sound like a broken record at this point,
+
+708
+00:37:57.040 --> 00:38:00.040
+but I do think it's this the context supply chain piece.
+
+709
+00:38:00.280 --> 00:38:03.760
+I think it's really interesting how, you know, we're just installing context
+
+710
+00:38:03.760 --> 00:38:04.440
+into our agents
+
+711
+00:38:04.440 --> 00:38:08.000
+in the same way that you might just pull something in from a repo pre
+
+712
+00:38:09.000 --> 00:38:12.560
+npm or various package manager days.
+
+713
+00:38:13.200 --> 00:38:18.320
+Folks are finding all kinds of skills
+
+714
+00:38:18.320 --> 00:38:23.320
+on developer machines and in their repos that have come from all over the place.
+
+715
+00:38:23.320 --> 00:38:26.800
+Maybe they don't even necessarily know where they've come from
+
+716
+00:38:26.800 --> 00:38:28.320
+or who's authored them.
+
+717
+00:38:28.320 --> 00:38:30.200
+They haven't gone through any kind of scanning.
+
+718
+00:38:30.200 --> 00:38:33.320
+There's no companies that have their factory set up,
+
+719
+00:38:33.320 --> 00:38:37.720
+but you can still just pull in any skill into any repo or into your machine.
+
+720
+00:38:37.720 --> 00:38:43.360
+So I really think it's this whole, the whole supply chain of context.
+
+721
+00:38:43.400 --> 00:38:44.600
+How do you get that into your projects?
+
+722
+00:38:44.600 --> 00:38:46.360
+How do you get that into your machines?
+
+723
+00:38:46.360 --> 00:38:50.560
+And how can an organization have more oversight and more control over that,
+
+724
+00:38:50.560 --> 00:38:54.720
+and how you can have more trust in those pieces?
+
+725
+00:38:54.760 --> 00:38:57.560
+I think it's a governance issue that people are calling out for.
+
+726
+00:38:57.560 --> 00:39:02.120
+Here is one of the reasons why Tessl are really are really doubling down on that.
+
+727
+00:39:02.160 --> 00:39:03.560
+And a wrap up question, then,
+
+728
+00:39:03.560 --> 00:39:07.480
+if you could give one piece of security advice to a CTO who's
+
+729
+00:39:07.680 --> 00:39:12.520
+the company have just decided to go all in on development, what would that be?
+
+730
+00:39:13.520 --> 00:39:15.680
+Yeah, I mean, so many detailed things, but I guess
+
+731
+00:39:15.680 --> 00:39:21.480
+just at a high level to think of the agent as like a very competent, fluent,
+
+732
+00:39:21.480 --> 00:39:25.280
+but somewhat inexperienced contractor, or like inexperienced
+
+733
+00:39:25.280 --> 00:39:28.960
+in your context, how would you work with those kind of folks?
+
+734
+00:39:29.000 --> 00:39:30.800
+You know, you'd probably bring them in.
+
+735
+00:39:30.800 --> 00:39:32.720
+You'd give them a bunch of code to write.
+
+736
+00:39:32.720 --> 00:39:34.400
+You give them a bunch of projects to work on.
+
+737
+00:39:34.400 --> 00:39:35.400
+You'd probably be thoughtful
+
+738
+00:39:35.400 --> 00:39:37.920
+about which production systems you give them access to.
+
+739
+00:39:37.920 --> 00:39:39.640
+Like, you can work in dev, but you know,
+
+740
+00:39:39.640 --> 00:39:43.280
+we're not going to let you push your access fraud directly.
+
+741
+00:39:43.280 --> 00:39:46.360
+You probably would make sure at least their first couple
+
+742
+00:39:46.400 --> 00:39:49.400
+PR are getting some proper good human review.
+
+743
+00:39:50.320 --> 00:39:53.640
+You check their references, check their work a little bit.
+
+744
+00:39:53.640 --> 00:39:58.040
+So I think I find that framing kind of helpful to think
+
+745
+00:39:58.280 --> 00:39:59.760
+to think about things in a way where,
+
+746
+00:39:59.760 --> 00:40:03.520
+you know, you're not doubling down so hard that you're tying shoelaces together.
+
+747
+00:40:03.520 --> 00:40:07.360
+But, you know, you're also being thoughtful about, you know,
+
+748
+00:40:07.880 --> 00:40:09.440
+there is some risk here.
+
+749
+00:40:09.440 --> 00:40:10.960
+So perhaps so perhaps dress up
+
+750
+00:40:10.960 --> 00:40:15.160
+a mannequin in the office, call them Claud, and and, you know,
+
+751
+00:40:15.200 --> 00:40:19.360
+pretend that they're quite a junior less experience, maybe a contractor.
+
+752
+00:40:19.360 --> 00:40:23.160
+And then every time you think about giving an agent something, you know,
+
+753
+00:40:23.200 --> 00:40:26.360
+that's, you know, potentially damaging, potentially irreversible,
+
+754
+00:40:26.400 --> 00:40:27.880
+would you give it to that, that,
+
+755
+00:40:27.880 --> 00:40:31.880
+that mannequin that, that more inexperienced dev in the room?
+
+756
+00:40:31.920 --> 00:40:33.040
+Probably not.
+
+757
+00:40:33.040 --> 00:40:35.400
+Think about that twice when giving to an agent. Yeah for sure.
+
+758
+00:40:35.400 --> 00:40:36.640
+Yeah. Amazing.
+
+759
+00:40:36.640 --> 00:40:38.080
+Joe, it's been a pleasure again.
+
+760
+00:40:38.080 --> 00:40:41.040
+And thank you very much for all the time today. It's been great.
+
+761
+00:40:41.040 --> 00:40:42.000
+Thanks for having me. Awesome.
+
+762
+00:40:42.000 --> 00:40:44.200
+Thanks very much for joining us on today's episode.
+
+763
+00:40:44.200 --> 00:40:46.480
+I really hope you enjoyed it and tune in to the next one.
+
+764
+00:40:46.480 --> 00:40:48.040
+Bye for now.
+
+765
+00:40:48.040 --> 00:40:52.720
+The AI Native Dev is brought to you by the package manager for skills and context.
+
+766
+00:40:52.760 --> 00:40:55.880
+Your hosts are Guy Podjarny and me, Simon Maple.
+
+767
+00:40:55.920 --> 00:40:57.720
+Our producer is Tom Dowler.
+
+768
+00:40:57.720 --> 00:41:01.040
+The AI Native Dev is not just a podcast, it's a community.
+
+769
+00:41:01.080 --> 00:41:04.720
+And we host monthly meetups at the Tessl offices in central London.
+
+770
+00:41:04.760 --> 00:41:09.720
+Visit Tessl IO forward slash community to learn more and I hope to see you there.

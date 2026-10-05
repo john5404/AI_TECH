@@ -1,0 +1,1326 @@
+[00:00:00.080] The challenge that I think a lot of the
+[00:00:01.839] industry has right now is there isn't an
+[00:00:03.600] agreed upon standard for storing in git
+[00:00:06.480] history like well this written by AI or
+[00:00:08.480] noting. And at a high level what we've
+[00:00:10.080] seen is engineers are generating or are
+[00:00:12.719] changing about 70% more lines of code
+[00:00:15.040] per week than what we saw at the end of
+[00:00:16.720] 2023. So we think a lot of that should
+[00:00:19.039] largely be attributable to AI.
+[00:00:20.800] >> So in this context now you can interact
+[00:00:23.199] with the LLMs through graphite. You can
+[00:00:25.119] interact with the graphite agent to edit
+[00:00:27.359] the code within the PR. And you've sort
+[00:00:29.279] of seen a bunch of Claude and others
+[00:00:31.519] introduce maybe review elements and
+[00:00:33.520] you're kind of encroaching into that
+[00:00:35.120] space. How do you see the boundaries or
+[00:00:37.360] the right scope of a product?
+[00:00:38.559] >> I could see a world where graph isn't
+[00:00:40.000] necessarily like building a firstparty
+[00:00:42.239] review agent. Our goal is very much to
+[00:00:44.160] be like the interface layer and like the
+[00:00:46.719] best place to interact with and control
+[00:00:49.200] many different agents you working on
+[00:00:50.800] your code changes. I also think then
+[00:00:52.960] there's another opportunity to be the
+[00:00:54.719] control plane for all of those agents
+[00:00:56.399] and that is really where I think we see
+[00:00:58.480] the most opportunity.
+[00:00:59.600] >> If AI is doing the review, I think I
+[00:01:02.239] would want to consume that review as
+[00:01:04.640] part of my ongoing development as
+[00:01:06.400] opposed to wait until I publish a PR.
+[00:01:08.560] Why do I need to wait until I open the
+[00:01:10.960] pull request?
+[00:01:11.920] >> Yeah, that's a great question.
+[00:01:14.930] [Music]
+[00:01:21.040] Hello everyone. Welcome back to the AI
+[00:01:23.200] native dev. Thanks for tuning back in.
+[00:01:25.200] Today we're going to review everything
+[00:01:27.360] about review and code review. And to dig
+[00:01:29.920] into that, we have the CEO and
+[00:01:32.000] co-founder of Graphite, uh, Mary
+[00:01:34.240] Llutzki. Merryill, thanks for coming on
+[00:01:36.079] and joining us here on the show.
+[00:01:37.759] >> Thanks for having me, guy.
+[00:01:39.759] >> Um, so let me say a couple of words
+[00:01:41.680] about Graphite and do kind of keep me
+[00:01:43.280] honest here if I misrepresent. So your
+[00:01:45.840] and you've been around a bunch of years.
+[00:01:47.600] Uh your kind of core innovation has been
+[00:01:49.840] on code review, but like human code
+[00:01:51.759] review before, right? You had this uh
+[00:01:53.520] smart insight and great tooling that
+[00:01:55.759] allowed these sort of stacked PRs where
+[00:01:58.479] you can create a snippet of your work
+[00:02:00.079] and start sharing it and get reviews as
+[00:02:01.920] you build those out. And that's that's
+[00:02:03.840] been great. You know, my team here at
+[00:02:05.200] Tesla has been using it, you know,
+[00:02:06.479] loving it. Uh and that was kind of a
+[00:02:08.959] great invasion. Then AI came along. uh
+[00:02:11.280] and you've been leaning much more
+[00:02:13.120] heavily into AI code review now and your
+[00:02:16.400] reviewer there uh Diamond and so uh
+[00:02:19.280] let's maybe start from just uh
+[00:02:20.879] understanding a little bit more about
+[00:02:22.319] what it is that uh that you do in that
+[00:02:24.160] sort of AI code review.
+[00:02:25.440] >> From the beginning we've been focused on
+[00:02:27.200] the problem of code review and um how we
+[00:02:29.840] unblock um the outer loop and kind of
+[00:02:32.080] the second half of the story of what
+[00:02:33.519] happens once a PR is ready like finished
+[00:02:36.560] and and you know complete or ready to to
+[00:02:38.560] be reviewed. there's still so much work
+[00:02:40.400] that needs to happen to get that from
+[00:02:42.400] you know from like that first that first
+[00:02:44.080] draft of the PR out to production and uh
+[00:02:47.280] we started you know we started from
+[00:02:49.120] taking inspiration from companies like
+[00:02:50.879] Google and meta that have built amazing
+[00:02:52.959] internal tooling um and great workflows
+[00:02:55.360] to help tens of thousands of engineers
+[00:02:57.519] coordinate uh across different time
+[00:02:59.360] zones and uh be able to ship as quickly
+[00:03:01.920] as as those companies do. Um so from the
+[00:03:04.720] beginning we we were focused on how do
+[00:03:06.319] we unblock the outer loop like
+[00:03:08.159] accelerate code review. Um taking more
+[00:03:10.319] of like a workflow and and tooling
+[00:03:11.760] approach to that. Um stack PRs was the
+[00:03:14.480] the main innovation that we we were
+[00:03:16.480] borrowing there. Um basically the idea
+[00:03:18.640] is like how do we break down big changes
+[00:03:20.400] and you know let you review and like put
+[00:03:22.959] pre changes up for review u and then
+[00:03:25.360] keep developing on top of them um while
+[00:03:27.440] you do that. So you've kind of decoupled
+[00:03:29.280] the review uh like review and
+[00:03:30.959] development processes and let those go
+[00:03:32.560] on in parallel. So the first chapter of
+[00:03:34.480] graphite was really like bringing that
+[00:03:36.000] to every company on top of GitHub. Then
+[00:03:38.239] I think you know you had you know a year
+[00:03:40.159] and a half ago you had sonnet 3.5
+[00:03:42.239] released all of a sudden everything
+[00:03:44.480] changes as far as how software is built
+[00:03:46.480] and every team is adopting cursor and
+[00:03:48.640] cloud code and these amazing tools and I
+[00:03:50.720] I think it both made the problem that we
+[00:03:52.879] were working on 10 times more important
+[00:03:55.200] um and it gave us an incredible tool to
+[00:03:57.120] go and solve it with AI. So, um, you
+[00:03:59.760] know, the problem is 10 times more
+[00:04:00.879] important because they're now 10 times
+[00:04:02.560] more PRs in some cases. Like every
+[00:04:04.080] engineer has a has a bunch of cloud code
+[00:04:06.000] windows open working simultaneously.
+[00:04:07.920] Like you're able to build Yeah. you're
+[00:04:09.920] able to build features like so much
+[00:04:11.599] faster than than ever before. Uh, but
+[00:04:14.239] the result of that is is that you just
+[00:04:16.479] have a mountain of PRs piling up waiting
+[00:04:18.400] for review. And uh we hear from a lot of
+[00:04:20.320] our our customers that you know many of
+[00:04:22.000] their most senior engineers are now just
+[00:04:23.680] buried in like mountains of PRs from
+[00:04:26.240] more you from junior folks that are just
+[00:04:27.919] turning these out um with you know with
+[00:04:29.680] AI tooling now. So uh we knew we wanted
+[00:04:32.160] to solve like our existing tooling u
+[00:04:34.080] like helps teams solve that. We also
+[00:04:36.240] knew that we needed to do more. So um we
+[00:04:38.720] created uh graphite agent u formerly
+[00:04:41.360] called diamond uh which is our AI
+[00:04:43.520] reviewer. Uh the the idea there was like
+[00:04:46.320] can we can we take you a lot of the work
+[00:04:49.440] that a human reviewer would do and just
+[00:04:52.160] like hand that to AI um have it catch
+[00:04:54.400] like many of the bugs and you know nits
+[00:04:56.720] and style inconsistencies um you know
+[00:04:59.040] follow custom rules find security
+[00:05:00.800] vulnerabilities like can it do that
+[00:05:02.560] first pass uh of at code review and kind
+[00:05:05.440] of shortcut that so that you know as an
+[00:05:07.520] author of a PR you get feedback in a few
+[00:05:09.680] seconds and then by the time you loop in
+[00:05:11.759] a human colleague like there's still a
+[00:05:13.360] human in the loop checking that, but you
+[00:05:15.520] know, fundamentally, you know, they're
+[00:05:17.120] able to then look at for like higher
+[00:05:18.880] order problems and not have to spend as
+[00:05:21.280] much time like nitpicking and reading
+[00:05:22.880] every single line of code necessarily.
+[00:05:24.720] And that's exactly what we've done uh
+[00:05:26.639] like graphite agent. Now, many of our
+[00:05:28.560] our top customers now have, you know,
+[00:05:30.240] have expanded to use graphite agent. I
+[00:05:32.639] think the big change that we've made
+[00:05:33.759] there is now bringing the chat
+[00:05:35.840] functionality into the graphite PR page.
+[00:05:38.479] So you can actually now collaborate with
+[00:05:40.639] graphite agent um live on the pull
+[00:05:43.120] request from graphite. You can have it
+[00:05:44.800] you can have it like update things for
+[00:05:46.479] you. Um you can ask it questions. Um it
+[00:05:48.960] can go into your codebase and search for
+[00:05:50.639] relevant context. Like it's much more of
+[00:05:52.560] now making it you making the PR a
+[00:05:55.039] collaborative experience rather than you
+[00:05:57.360] rather than just a point of validation.
+[00:05:59.360] And I think that's super interesting for
+[00:06:01.440] you know for working with AI. So as you
+[00:06:04.400] review and as you kind of build in and
+[00:06:05.919] you introduce this code reviewer, I'm
+[00:06:07.280] curious first just sort of understand a
+[00:06:08.800] little bit more about the substance of
+[00:06:10.080] what it does and doesn't review well. So
+[00:06:13.039] I guess what are the types of problems
+[00:06:15.840] you've seen it most successful uh
+[00:06:18.639] dealing with and maybe the other way
+[00:06:20.400] around like what are what are the gaps
+[00:06:22.160] where you say well at the moment I'm
+[00:06:24.000] sure it gets better over time but at the
+[00:06:26.000] moment uh it is its boundaries its
+[00:06:28.479] capabilities boundaries. I think the the
+[00:06:31.199] things that it's really good at um it's
+[00:06:33.199] great at finding bugs and like logic any
+[00:06:35.680] logic errors. Uh it's very good. I think
+[00:06:38.800] there's also interestingly we've seen
+[00:06:40.560] there's a class of bug where u it can be
+[00:06:43.680] it's hard for a human to spot or where
+[00:06:45.840] you know the the type checker wouldn't
+[00:06:47.600] find it u where just like looking at it
+[00:06:50.960] with your eyes you wouldn't necessarily
+[00:06:53.600] spot it immediately. And I think you
+[00:06:55.440] know AI on the other hand is very good
+[00:06:57.520] at finding at like you know finding
+[00:06:59.199] those type of bugs and calling those
+[00:07:00.720] out. So we've seen that as like an
+[00:07:02.560] interesting uh interesting class of of
+[00:07:04.720] issues that that is particularly good at
+[00:07:06.400] finding. Um it's very good at style like
+[00:07:09.039] style guide adherence. Um it's good at
+[00:07:11.520] finding security vulnerabilities. is um
+[00:07:13.520] it can pretty much do most of what uh
+[00:07:16.400] what like a human reviewer can do at
+[00:07:18.639] least at like that uh that like first
+[00:07:20.880] level of of review like looking at
+[00:07:23.280] looking at the diff itself. A couple
+[00:07:25.039] things that it's it's not great at yet.
+[00:07:27.280] Um one is like higher level architecture
+[00:07:30.319] decisions like I think that's still very
+[00:07:32.160] much in the realm of like you need you
+[00:07:33.840] know you need to have like a senior
+[00:07:35.120] engineer who's who's thinking about the
+[00:07:37.440] entire system. Uh, I don't think we yet
+[00:07:39.759] have, it's getting better certainly, but
+[00:07:41.520] it's still I don't think we yet have
+[00:07:43.120] like the context to to be able to do
+[00:07:44.880] that. Um the other piece I'd say is uh I
+[00:07:48.720] think there's a really interesting
+[00:07:49.599] opportunity and something we're actively
+[00:07:51.120] exploring is uh can we validate that
+[00:07:54.080] this change is actually doing what it
+[00:07:55.759] was what it's supposed to like end to
+[00:07:58.000] end and is that the agent is spinning
+[00:08:00.479] this up on you know on a box and u
+[00:08:03.199] clicking through it and and recording a
+[00:08:04.960] video and adding that to the change u
+[00:08:07.039] you know something like that I think is
+[00:08:08.639] is an interesting direction for you know
+[00:08:10.879] for this to go and u then I'd say the
+[00:08:12.960] other piece that's that's a little more
+[00:08:14.400] difficult right now is uh there's some
+[00:08:16.319] languages that just aren't really well
+[00:08:18.160] represented in in AI training sets and
+[00:08:20.879] um those end up being things that are
+[00:08:23.039] more esoteric end up being like a bit
+[00:08:24.720] more difficult for for the reviewer to
+[00:08:26.639] get right. Um for some reason it's like
+[00:08:29.120] it's bad it's bad at cotlin right now.
+[00:08:31.120] We don't know why exactly but we're
+[00:08:33.120] that's something we we keep getting
+[00:08:34.640] whenever we're in mobile repos we see
+[00:08:37.039] that a lot. So it sounds like the the
+[00:08:39.120] challenges are mostly on either sort of
+[00:08:40.640] LLM limitations of you know the brain is
+[00:08:43.039] still not good enough uh around it and
+[00:08:45.680] on I guess kind of breadth of context
+[00:08:47.920] like when you think about architecture
+[00:08:49.680] or end to end testing for sure but with
+[00:08:51.760] the architecture would you say that
+[00:08:53.200] today's limits are more around kind of
+[00:08:55.920] the reasoning capabilities like you can
+[00:08:57.519] you can give it all the information
+[00:08:58.800] about all that context and it's just
+[00:09:00.160] kind of not smart enough yet to to
+[00:09:02.399] extract that out or or is it or is it
+[00:09:04.959] more of a product problem still of I
+[00:09:06.959] just need like bring all the relevant
+[00:09:09.200] information uh to the hands of the LLM
+[00:09:11.600] but the intelligence is already there.
+[00:09:13.920] >> I think it's more the latter where so
+[00:09:16.320] much of this like I think the reasoning
+[00:09:18.320] is is there if you give it perfect
+[00:09:20.399] information but the challenge is that a
+[00:09:23.040] lot of the considerations that go into
+[00:09:24.800] like good architecture are you know from
+[00:09:27.200] so many like disperate sources of
+[00:09:28.640] context. that might be you know in one
+[00:09:30.720] engineer's head who built the system 2
+[00:09:32.560] years ago like u it might be in a notion
+[00:09:35.040] doc that's you know that's been lying
+[00:09:36.720] dormant for a long time like there's so
+[00:09:38.399] there's so many places where this is is
+[00:09:40.480] kind of fanned out in an organization
+[00:09:42.480] and um you know tribal knowledge that it
+[00:09:45.120] is I think I think this is one of the
+[00:09:47.120] great one of the things that that we're
+[00:09:49.120] we're working on is like how do we bring
+[00:09:51.200] all of those pieces of context and like
+[00:09:53.839] provenence for a change into the PR you
+[00:09:56.640] know more so than than ever before and
+[00:09:59.040] provide the agent with enough enough
+[00:10:00.959] context to actually actually like think
+[00:10:02.720] through the problem at at that scale.
+[00:10:04.800] And but I I do think that we're we're
+[00:10:06.880] close if not there already as far as the
+[00:10:08.880] the capabilities of the model themselves
+[00:10:11.279] um given given the right information.
+[00:10:14.240] >> Yeah, that's interesting. Although it is
+[00:10:15.519] interesting to think about whether the
+[00:10:17.600] training data connecting these two kind
+[00:10:19.360] of gaps, the training data for what is
+[00:10:21.200] good architecture is probably also kind
+[00:10:23.440] of a bit more limited.
+[00:10:24.399] >> Fair there. So as you look at this, you
+[00:10:26.720] know, you've sort of had a stretch, you
+[00:10:28.320] still do, sort of see a bunch of human
+[00:10:30.880] code uh and reviews uh and now you're
+[00:10:33.760] seeing a bunch of AI. So I guess kind of
+[00:10:35.200] two related questions. One is can you
+[00:10:36.640] tell the two apart? I mean, does the
+[00:10:38.079] system track those? I don't know if you
+[00:10:39.839] have any sort of stats or sort of data
+[00:10:41.519] around it, but in general perception
+[00:10:43.440] around, you know, the amount of AI code
+[00:10:45.279] coming in and importantly like uh are
+[00:10:48.480] there like types of mistakes or sort of
+[00:10:51.040] problems that you think are more kind of
+[00:10:52.320] AI prevalent than human prevalent? This
+[00:10:54.560] is a challenge that I think a lot of the
+[00:10:56.720] industry has right now is that there's
+[00:10:58.480] there isn't an agreed upon standard for
+[00:11:01.519] you know for like you know storing in in
+[00:11:03.600] git history like what was was this
+[00:11:05.600] written by by AI or not. I think there's
+[00:11:07.600] something that'd be something that'd be
+[00:11:08.800] very interesting and at a high level
+[00:11:11.440] what we've seen is uh engineers are are
+[00:11:14.480] generating or are are changing about 70%
+[00:11:17.279] more lines of code per week uh than what
+[00:11:19.600] we saw at the end of 2023. So, uh, we
+[00:11:22.320] think a lot of that is largely, you
+[00:11:23.920] know, will should largely be
+[00:11:25.279] attributable to AI. Um, you know, GitHub
+[00:11:27.519] has published stats in the past about
+[00:11:29.120] like, you know, over half of the code on
+[00:11:31.440] on GitHub now being AI generated. I'm
+[00:11:33.680] sure it's it's probably closer to like,
+[00:11:36.000] you know, 2/3 to to 3/4 at this point.
+[00:11:38.880] Um, given the trend, I don't think we we
+[00:11:41.120] hit Daario's like 90% by September
+[00:11:43.760] projection, but I think it's the path to
+[00:11:45.600] that I think is is fairly clear. So, um,
+[00:11:47.920] we're seeing a lot more AI generated
+[00:11:50.000] code. there's no st there's no way to
+[00:11:52.079] really tell it apart at the moment
+[00:11:54.240] especially for organizations with top
+[00:11:55.680] tier engineering talent like the quality
+[00:11:58.160] does tend to be like lower than the the
+[00:12:00.320] median engineer there
+[00:12:02.640] >> yeah yeah yeah exactly I think that
+[00:12:04.320] that's there's some organizations it's
+[00:12:06.560] interesting because I think there's some
+[00:12:07.519] organizations for which u for AI is now
+[00:12:10.480] like better than the median engineer and
+[00:12:12.320] and I think for for many of our
+[00:12:13.920] customers though like that's not that's
+[00:12:15.600] like decidedly not the case yet and uh
+[00:12:17.839] there's still like very much a need for
+[00:12:19.839] you know for us to like refine to check
+[00:12:22.160] and refine particularly AIE code.
+[00:12:24.959] >> You you mentioned that it adheres to
+[00:12:26.720] style guides and the likes. Uh I'd love
+[00:12:29.200] to talk a little bit about what is the
+[00:12:30.560] source of truth that you kind of
+[00:12:32.959] contrast the reviews uh against you know
+[00:12:35.600] where what has been sort of effective in
+[00:12:38.959] terms of of defining kind of correctness
+[00:12:42.000] and quality uh and what's the experience
+[00:12:44.959] for someone to to input this you know
+[00:12:47.200] who is it that is uh that is entering
+[00:12:49.600] this uh this gospel. Yeah. So, we've
+[00:12:52.560] we've put a lot into uh into letting
+[00:12:55.760] customers customize uh customize the
+[00:12:58.480] reviewer, add their own rules. It's like
+[00:13:00.320] so much of code review is this this kind
+[00:13:02.560] of store of institutional knowledge and
+[00:13:04.800] and style and uh we have so with with
+[00:13:08.320] graphite agent you can define you can
+[00:13:10.240] define custom rules either um in English
+[00:13:12.959] um or you you can give it you can give
+[00:13:14.560] it like reax that you wanted to look for
+[00:13:16.480] around this like helping it you helping
+[00:13:18.880] it to to like focus on particular types
+[00:13:21.200] of of issues we have more common do
+[00:13:25.040] people like the regex more because it's
+[00:13:26.959] controlled or do they like the sort of
+[00:13:28.320] the uh English. Yeah, they like they
+[00:13:31.360] like conventional the conventional
+[00:13:33.040] language. Uh we also will ingest uh
+[00:13:35.920] we'll look for if there's like a you
+[00:13:37.920] know if there's like a claw MD or like
+[00:13:40.160] you know cursor rules file um we'll
+[00:13:42.320] ingest that and add that to to context
+[00:13:44.320] as well just so that there's there's
+[00:13:45.680] consistency there. Uh this is another
+[00:13:47.600] place where I think there's a lot of
+[00:13:48.800] different a lot of like you know
+[00:13:50.639] different standards that are are
+[00:13:52.160] evolving and uh you know we we basically
+[00:13:54.560] just try to like vacuum up as many of
+[00:13:55.920] them as we have to add another one to uh
+[00:13:57.680] to roll
+[00:14:00.000] we'll say actually in the comment uh
+[00:14:02.000] like if it was attributable to a
+[00:14:03.600] particular rule and uh we show insights
+[00:14:05.600] as well in the product of like which
+[00:14:07.199] which rules are are triggering the most
+[00:14:09.680] and uh like what we're what we're
+[00:14:11.519] catching and and what we're not. So um
+[00:14:13.519] we try to have like a good feedback loop
+[00:14:15.120] there of of things that we yeah of like
+[00:14:18.160] customization and then seeing the impact
+[00:14:19.839] of of that in terms of the the AI
+[00:14:22.000] reviews. whose job is it to enter this
+[00:14:24.560] data like things like uh the claud that
+[00:14:27.199] you read from a repo for instance know
+[00:14:29.199] that is the repo's information and
+[00:14:30.880] presumably the appdev team that is
+[00:14:32.800] working on that it's building but maybe
+[00:14:34.720] the definition of what high quality code
+[00:14:36.959] is or what secure code is and all that
+[00:14:39.199] that is more some platform team's
+[00:14:41.199] responsibility of it is who who
+[00:14:43.680] configures the the rules or or the the
+[00:14:46.639] languages in uh in graphite
+[00:14:49.120] >> it's usually like a developer
+[00:14:50.720] productivity or developer developer
+[00:14:52.639] infra team, they're usually the ones who
+[00:14:54.880] are admins on the GitHub repo. They're
+[00:14:57.440] configuring graphite more generally for
+[00:14:59.440] for the organization. So, at at a large
+[00:15:02.480] company like Shopify, you know, we'll
+[00:15:04.399] work really closely with with that Dev
+[00:15:06.399] Infra team and uh you know, make sure
+[00:15:08.320] that we're that we're pulling in the
+[00:15:09.920] right sources of context and, you know,
+[00:15:11.600] setting them you setting up the the
+[00:15:13.519] right knowledge there. Um, for smaller
+[00:15:16.000] teams though, you know, it's much like
+[00:15:17.920] on on GitHub, like it's kind of a
+[00:15:19.440] free-for-all, like anybody can, you
+[00:15:21.040] know, many of them will will set it so
+[00:15:22.560] that like anybody can add a rule and
+[00:15:24.560] anyone can update it. Uh, which I think
+[00:15:26.720] there's like something nice about that
+[00:15:28.560] where, you know, you just get you get
+[00:15:30.399] like as many as many inputs as possible
+[00:15:32.639] and like you can kind of like converge
+[00:15:34.160] on uh on like the right set of rules
+[00:15:36.720] much quicker. But obviously for large
+[00:15:38.720] organizations um it makes more sense to
+[00:15:40.560] centralize it and we want to support
+[00:15:41.839] that as well. So, you know, you're not
+[00:15:43.680] alone in introducing a a a reviewer and
+[00:15:46.800] specifically a poll request reviewer,
+[00:15:48.320] but clearly you've been around before.
+[00:15:50.720] Um, I I would kind of posit that
+[00:15:53.519] Graphite's original success was very
+[00:15:55.199] much around user experience. You know,
+[00:15:56.800] it was a methodology and kind of an ease
+[00:15:59.680] and you kind of nailed some of that sort
+[00:16:01.279] of developer zeitgeist uh of uh this is
+[00:16:04.480] an elegant way of working in a way that
+[00:16:06.639] I guess we've come to appreciate that
+[00:16:08.000] it's it's hard to get simple things
+[00:16:10.880] right. uh and and build those out. Now,
+[00:16:13.360] in the AI code review, there's a certain
+[00:16:15.279] sense that, you know, everything that
+[00:16:16.560] you've described, if I was to kind of
+[00:16:18.560] bring along, you know, many many other
+[00:16:20.480] sort of code review uh builders, uh
+[00:16:22.959] there will probably be a lot of
+[00:16:24.160] repetition. What what do you think,
+[00:16:26.160] >> yes,
+[00:16:26.720] >> makes a company stand out in this space?
+[00:16:29.120] You know, what makes it, you know, not
+[00:16:31.120] just a um whatever to use the sort of
+[00:16:33.680] the cliche lingo of it, just sort of a
+[00:16:35.360] rapper on top of the LLM. Yeah, I think
+[00:16:38.480] that there's I mean I think that there
+[00:16:40.560] there's obviously a lot of interest in
+[00:16:42.480] in the space right now like you know
+[00:16:44.240] we're certainly not the only ones who
+[00:16:45.440] have recognized that the volume of AI
+[00:16:47.839] generated code is means that there will
+[00:16:49.519] be a massive opportunity to like help
+[00:16:51.680] teams like review it faster. I think the
+[00:16:54.800] thing that the thing that differentiates
+[00:16:57.600] us and and what we what we believe is
+[00:17:00.079] graphites graphite's like core advantage
+[00:17:03.040] in the space is that uh we span the
+[00:17:05.439] entire life cycle of the pull request.
+[00:17:08.319] It's not just a bot that that plugs into
+[00:17:10.559] GitHub and comments in this one this one
+[00:17:13.039] part of the life cycle. we're able to
+[00:17:14.959] go, you know, all the way from the
+[00:17:16.720] moment the PR is created of like, you
+[00:17:18.720] know, enhancing that with like you
+[00:17:20.880] describing the change, you know,
+[00:17:22.480] generating a description for it, uh,
+[00:17:25.039] pulling in the right reviewers, doing
+[00:17:27.280] the AI review certainly, but then
+[00:17:29.200] helping the author iterate on that,
+[00:17:30.799] helping reviewers like, you know,
+[00:17:32.559] understand the change better and, um,
+[00:17:34.559] walking reviewers through that on, you
+[00:17:36.640] know, on the as part of their review,
+[00:17:38.960] helping to solve CI failures as they
+[00:17:41.039] come up. um and prompting just like
+[00:17:43.039] prompting the author to you to accept
+[00:17:45.280] the change and rerun it. Um solving
+[00:17:47.520] merge conflicts like I think the the
+[00:17:49.919] view you know and we're not quite there
+[00:17:51.600] yet but I think the view of of graphite
+[00:17:53.280] agent is that it really should be this
+[00:17:55.679] you almost this like companion that's
+[00:17:57.760] that's helping to shepherd your changes
+[00:17:59.600] through all the different steps of the
+[00:18:01.440] process. I'd say the other piece is that
+[00:18:04.160] even on AI review, I don't think that
+[00:18:06.799] we're we've really seen what the, you
+[00:18:09.520] know, what the best modality here is.
+[00:18:11.440] Like, you know, for for AI code
+[00:18:13.440] generation, you know, you've seen
+[00:18:14.720] several, you know, several very quick
+[00:18:16.640] iterations on what that modality is.
+[00:18:18.799] Like you went from C-Pilot which just
+[00:18:21.039] had you just had like autocomplete to
+[00:18:23.520] you know cursor tab to cursor agent mode
+[00:18:25.760] to now like moving entirely away from
+[00:18:27.919] interfaces that focus on the code and
+[00:18:29.679] moving towards like just the prompt with
+[00:18:31.679] cloud code and now we're seeing
+[00:18:33.280] background agents. So, you know, the the
+[00:18:35.760] way that you interact with these tools
+[00:18:37.360] is evolving so rapidly. And I think I
+[00:18:39.679] think like the the bot that comments on
+[00:18:41.679] GitHub to me is is just the copilot
+[00:18:44.080] autocomplete v1 and there's still like
+[00:18:47.039] several iterations of what AI code
+[00:18:49.440] review looks like. And uh you know, I
+[00:18:51.440] think the there there's something nice
+[00:18:53.200] about it and that like it meets it meets
+[00:18:54.960] users where they are. I think it is the
+[00:18:56.400] right logical starting point here. But I
+[00:18:58.559] I think it's still so early in terms of
+[00:19:00.400] of pushing you pushing the boundaries of
+[00:19:02.559] what of like what this review experience
+[00:19:05.120] should look like in in an Aative world.
+[00:19:07.280] And um that's part of why we with with
+[00:19:09.520] bringing the graphite agent chat into
+[00:19:11.440] the pull request page. Like I think that
+[00:19:13.520] is that is our you know our our belief
+[00:19:15.440] of like what does the next step here
+[00:19:16.799] look like? you know, can it be, you
+[00:19:18.880] know, not just a static reviewer that's
+[00:19:21.200] like, you know, asynchronously leaving
+[00:19:22.640] comments, but rather like a real
+[00:19:24.480] companion that you're building with
+[00:19:26.000] that's like helping you helping you get
+[00:19:27.919] the PR ready and like iterate on it live
+[00:19:30.480] um from the PR page. And I think that's
+[00:19:32.799] why a lot of customers are really
+[00:19:34.160] excited about it. That's why we're, you
+[00:19:35.679] know, we were we're really um you know,
+[00:19:37.760] thrilled to to get that out.
+[00:19:39.360] >> So, in this context now, you can
+[00:19:41.200] interact with uh with the LLMs through
+[00:19:44.160] graphite. you can interact with the
+[00:19:45.520] graphite agent to edit the code within
+[00:19:47.919] the PR. Uh, and you've sort of seen uh a
+[00:19:50.799] bunch of know Claude and others
+[00:19:52.559] introduce maybe review elements and
+[00:19:54.640] you're you're kind of encroaching uh
+[00:19:56.720] into into that space. I guess how do you
+[00:19:59.039] how do you see this playing out uh with
+[00:20:01.280] all the caveats and as you described you
+[00:20:02.880] know this is all uh it's all theory
+[00:20:05.280] because we don't really know but still
+[00:20:07.039] how do you see the boundaries or the
+[00:20:08.960] right scope of a product? Does it need
+[00:20:10.640] to be a single product that does kind of
+[00:20:14.720] the whole agentic perspective like is it
+[00:20:16.960] eventually someone's using graphite they
+[00:20:18.799] will be using that for sort of their end
+[00:20:20.240] toend development and cloud code or a
+[00:20:22.480] devon or such will not be part of their
+[00:20:24.559] flow uh or do you think there's a
+[00:20:27.120] specific slice a specific realm of
+[00:20:29.840] responsibility that you think will be
+[00:20:31.520] will be distinct because it it
+[00:20:32.640] definitely feels like a massive blurring
+[00:20:35.120] of the lines. Yeah, I think it is. It's
+[00:20:38.720] rapidly. One thing I'll say is like it's
+[00:20:40.799] very hard to know where where this will
+[00:20:42.880] go and also like part of this is what
+[00:20:45.760] >> yeah the next week it it does it feels
+[00:20:48.960] like it changes it does change on like a
+[00:20:50.799] weekly basis but um it is also an
+[00:20:53.120] interesting I think we've seen we've
+[00:20:55.520] seen like diff different levels of
+[00:20:56.960] interest from the base model providers
+[00:20:58.880] of I think at one point it looked like
+[00:21:00.960] you know Anthropic was going to focus
+[00:21:02.559] entirely on on just code generation and
+[00:21:05.120] open AI was going to go full consumer
+[00:21:06.799] and now you know open AI has kind of
+[00:21:08.559] gone back the the direction and said
+[00:21:09.919] like no we actually want to own
+[00:21:11.039] everything which is that which is like
+[00:21:12.799] you know kind of cool and and like
+[00:21:14.640] ambitious of of them to to go that
+[00:21:16.799] direction. But I think there is this
+[00:21:18.400] this question of like to what extent do
+[00:21:20.000] the base model providers like remain
+[00:21:22.640] base model providers or do they you know
+[00:21:24.480] do they continue to go you to go like
+[00:21:26.880] upstack and and own more of the
+[00:21:28.559] application layer. Um my my belief there
+[00:21:31.200] is that they at least at least so far um
+[00:21:35.200] you know they they mostly want to they
+[00:21:37.440] only own applications in so far as it it
+[00:21:40.080] feeds back training data to them. So I
+[00:21:42.400] think that's the that's kind of the
+[00:21:43.760] logical you know boundary for for some
+[00:21:46.000] of those company base models is like
+[00:21:48.480] what what is like the the minimum scope
+[00:21:50.640] needed to to get good training data back
+[00:21:53.200] so they can RL. So um I think for for us
+[00:21:56.799] u our view is that we'll likely have a
+[00:21:59.039] lot of competition among among who is
+[00:22:01.200] generating the code even who is
+[00:22:03.200] providing like the review agents. I
+[00:22:05.039] could see a world where graphite isn't
+[00:22:06.720] necessarily like building a firstparty
+[00:22:08.960] review agent if if others get good
+[00:22:10.720] enough. Like um our our goal is very
+[00:22:12.799] much to be you know to be like the
+[00:22:14.640] interface layer and um the place where
+[00:22:17.360] like the best place to interact with and
+[00:22:19.440] control you know many different agents
+[00:22:21.679] on you know working on your your code
+[00:22:23.520] changes. So u you know we think the
+[00:22:25.600] winning platform I think there will be
+[00:22:27.120] opportunities to build the best-in-class
+[00:22:29.520] you know agents for each task in in the
+[00:22:32.159] software development life cycle. I also
+[00:22:33.760] think then there's another opportunity
+[00:22:35.679] to be the control plane for all of those
+[00:22:37.600] agents and that is really where where I
+[00:22:39.840] think we you know we see the the most
+[00:22:41.840] opportunity in some of these cases like
+[00:22:43.679] with AI review I think you have to build
+[00:22:45.280] the agent because there just aren't
+[00:22:46.640] there aren't good opportunity like
+[00:22:48.320] aren't good alternatives out there but
+[00:22:49.760] like as you you know for instance we we
+[00:22:52.400] don't really there's a ton of companies
+[00:22:53.919] doing like background agents for code
+[00:22:55.600] generation we're not super interested in
+[00:22:57.679] getting into you know building like a
+[00:22:59.280] graphite like codegen agent like we
+[00:23:01.840] would much rather be you know be like
+[00:23:03.919] the place where you know you prompt you
+[00:23:06.000] prompt your agents um they go off create
+[00:23:08.720] PRs for you hand you back you review
+[00:23:10.880] them in graphite you merge them in
+[00:23:12.400] graphite like that entire create review
+[00:23:14.480] merge process um all happens from you
+[00:23:16.799] know from our control plane
+[00:23:18.159] >> I'm interpreting what you're saying as
+[00:23:19.600] as more of the user experience and you
+[00:23:22.720] know maybe that sort of core element of
+[00:23:25.360] >> of what you started graphite with is
+[00:23:27.200] where you where you feel there's an
+[00:23:28.640] opportunity to kind of orchestrate this
+[00:23:30.400] activity
+[00:23:31.520] >> um but and I I guess to to to challenge
+[00:23:34.000] like stepping out of that a little bit.
+[00:23:36.080] Uh it it feels to me and feel free to
+[00:23:38.480] sort of you know call me an idiot on
+[00:23:39.840] this but uh that um that like the
+[00:23:43.120] stacked PRs for instance that you
+[00:23:44.880] started with uh in in in sort of the
+[00:23:48.480] human review or reality were very still
+[00:23:50.880] are very necessary because you're
+[00:23:53.280] working on something big and you publish
+[00:23:54.720] this sort of piece of work so that
+[00:23:56.720] humans can review it. Um, if AI is doing
+[00:23:59.760] the review, I think I would want to
+[00:24:02.240] consume that review as part of my
+[00:24:04.559] ongoing development as opposed to wait
+[00:24:06.240] until I publish a PR. Maybe it even like
+[00:24:08.720] reduces the value of that stacked PR uh
+[00:24:11.919] because the AI is already reviewing it
+[00:24:13.760] over uh as I build. Uh but but even even
+[00:24:16.640] for that first bit like why when you
+[00:24:19.279] have review and and the review is done
+[00:24:20.960] by AI, why do I need to wait until I
+[00:24:23.600] open the pull request, why is that point
+[00:24:26.240] in time
+[00:24:28.000] needed for the AI review. I get why it's
+[00:24:30.400] needed for the human review, but why why
+[00:24:32.159] for the AI review?
+[00:24:33.600] >> We're going to jump into the second half
+[00:24:34.880] of our conversation, but first, a quick
+[00:24:36.960] shout out to AI Native DevCon. Two days
+[00:24:39.520] of hands-on sessions, deep dives, and
+[00:24:41.919] honest conversations about what it means
+[00:24:43.919] to build AI native software. November
+[00:24:46.240] 18th and 19th in New York, or join
+[00:24:48.559] virtually from anywhere. Tickets and
+[00:24:50.480] details at a native.io/devcon.
+[00:24:54.480] See you there.
+[00:24:55.120] >> I'd say a couple things. Like one I I
+[00:24:56.799] would challenge the assumption that
+[00:24:58.240] stack PRs are less valuable in a world
+[00:25:00.880] where AI is generating the code because
+[00:25:02.400] I think if anything what we've seen is
+[00:25:04.400] that uh especially for for like
+[00:25:07.200] background agents if you just kind of
+[00:25:09.840] let them run wild the result is you get
+[00:25:12.400] you know multi,000line you know
+[00:25:14.559] unintelligible PRs and uh you certainly
+[00:25:17.200] there's something there are things that
+[00:25:18.400] we can do on the PR interface itself to
+[00:25:22.000] to like guide you through the change and
+[00:25:23.600] help you understand it. Um, but I think
+[00:25:25.919] fundamentally, especially as you're as
+[00:25:28.240] you're building with with multiple
+[00:25:29.760] agents or as you're having these agents
+[00:25:31.360] do longer, you know, autonomous tracks
+[00:25:34.159] of of work. Uh, I I think that it is
+[00:25:37.120] really it will be increasingly important
+[00:25:39.039] to have those changes be understandable
+[00:25:41.760] and digestible by, you know, by the
+[00:25:43.679] humans that that need to check it. So,
+[00:25:45.520] um, we've built we built the graphite
+[00:25:47.039] MCP. uh we have like we have a lot of
+[00:25:49.360] our a lot of our our customers are now
+[00:25:51.360] using actually having their agents
+[00:25:53.039] create stack PRs uh precisely because it
+[00:25:55.679] makes them easier to review on the other
+[00:25:57.120] side. Yeah, that's actually super
+[00:25:58.880] interesting and and I can totally relate
+[00:26:00.559] which is uh the agents when they do a
+[00:26:03.039] long work. If you think of stackr is a
+[00:26:04.799] way for you to continue working while
+[00:26:06.559] you are submitting stuff to review is
+[00:26:09.039] kind of the core of it actually these
+[00:26:10.960] sort of agents are a great example of
+[00:26:12.880] that because they don't want to wait and
+[00:26:14.880] you want to be able to review their work
+[00:26:17.279] incrementally and and I guess probably
+[00:26:19.919] there will be interfaces of once they
+[00:26:21.600] did submit something if there was
+[00:26:22.960] substantial correction in the review
+[00:26:24.799] they might kind of revert back to that
+[00:26:26.400] point and continue the work from there
+[00:26:28.720] uh which is something that humans will
+[00:26:30.080] probably be quite uh annoyed uh at doing
+[00:26:32.880] >> exactly Exactly. And I think the the
+[00:26:34.559] revertability piece is another good
+[00:26:36.080] point there of like having you know
+[00:26:37.600] having like you know smaller you know
+[00:26:39.360] smaller pieces and and like a clear
+[00:26:41.520] history I think enables you to like more
+[00:26:44.080] easily figure out like where was what
+[00:26:46.240] was the change that that introduced this
+[00:26:48.080] problem like lets you roll back more
+[00:26:49.840] precisely like there's a lot of benefits
+[00:26:51.760] there to you know to having your agents
+[00:26:54.240] work in in smaller pieces and stacking
+[00:26:56.880] like a fantastic workflow uh to to
+[00:26:59.840] enable them to do that. Uh the second
+[00:27:01.600] point that I I wanted to make though was
+[00:27:03.200] that I I think a lot of folks like
+[00:27:05.039] really uh kind of get stuck on the idea
+[00:27:07.279] of like code review being the only value
+[00:27:09.520] of code review being this validation
+[00:27:11.440] step. And I think that that's that's
+[00:27:13.760] certainly you know one of the main
+[00:27:15.440] benefits of it. But I think the the
+[00:27:17.360] other piece, you know, the other two
+[00:27:18.720] pieces I'd say that are often missed of
+[00:27:20.720] this is that uh I think code review is
+[00:27:22.960] is also a great is also super important
+[00:27:25.760] in like sharing like sharing knowledge
+[00:27:28.400] across the team of uh helping you know
+[00:27:30.640] helping other engineers understand like
+[00:27:32.559] what is you know what is actually you
+[00:27:34.720] know going out to production what is
+[00:27:36.240] changing. Uh it's also a great moment of
+[00:27:38.400] teaching where you know where you f you
+[00:27:40.960] get a lot of feedback and um you you're
+[00:27:43.120] able to you're able to like improve u
+[00:27:45.440] the way that you're approaching
+[00:27:46.720] approaching your projects. So um those
+[00:27:49.120] two you know certainly the there's like
+[00:27:50.640] the validation quality piece u I think
+[00:27:53.039] AI can can take on but I think the the
+[00:27:55.520] latter two um are actually you know more
+[00:27:58.399] important than ever in many ways because
+[00:28:00.559] you know you have now if if even the
+[00:28:02.880] engineer who's like authoring the PR
+[00:28:05.279] doesn't fully understand the change like
+[00:28:07.279] you know I think there's it's all the
+[00:28:08.799] more important that you have you have a
+[00:28:10.480] moment to where you know where you know
+[00:28:12.480] you walk through everything and um you
+[00:28:14.480] can clearly communicate like what is
+[00:28:16.080] changing in the codebase
+[00:28:17.760] Similarly, I think having you know
+[00:28:19.360] sharing that with others uh you know
+[00:28:21.039] teaching others like what is what is
+[00:28:22.960] good about this change and what is not
+[00:28:24.799] uh like what what learnings they want to
+[00:28:26.399] apply and um and also having a moment
+[00:28:28.799] then to like feed any any like systemic
+[00:28:31.679] things back into uh into the the
+[00:28:34.159] reviewer and give it more more rules for
+[00:28:36.960] the future of what it should or
+[00:28:38.080] shouldn't look at like that piece is is
+[00:28:39.919] really important. So I think that those
+[00:28:42.080] you certainly the validation you know
+[00:28:44.320] code the purpose of code review I think
+[00:28:45.840] will shift over of human review at least
+[00:28:47.840] like will will shift from validation you
+[00:28:50.640] know more to the the like you know
+[00:28:52.640] pedagogy and and you know knowledge
+[00:28:54.960] sharing pieces. But I I do think that
+[00:28:56.799] those you know those two are
+[00:28:58.240] fundamentally you know I think arguably
+[00:29:01.120] more important in in terms of like why
+[00:29:03.520] we do code review today than than the
+[00:29:05.520] validation pieces anyways.
+[00:29:07.200] >> Yeah. Interesting. So I guess you're
+[00:29:08.480] you're describing a a reality in which
+[00:29:10.480] maybe the um I guess the code review
+[00:29:13.360] that is fully automated. You might
+[00:29:14.880] eventually want to consume that as a
+[00:29:16.399] natural part of the of the agentic
+[00:29:18.480] development. It's a it's a it's a point
+[00:29:20.320] in time in which it is done in a
+[00:29:21.919] different system and needs to come back
+[00:29:23.200] to you. That's a that's maybe a hiccup.
+[00:29:25.279] Maybe they call into graphite through
+[00:29:26.960] that MCP not just to open the poll
+[00:29:28.480] request but to actually run the review
+[00:29:29.679] and kind of get the results. Um but but
+[00:29:32.480] then the I guess you mentioned two
+[00:29:34.240] things that are maybe long-term
+[00:29:35.679] relevant. One is the notion of a stacked
+[00:29:37.679] PR even if it is whether it is or isn't
+[00:29:40.399] reviewed incrementally just as a as a as
+[00:29:43.039] a means of demarcation of different
+[00:29:46.399] points in time. And second is uh as a
+[00:29:49.520] means of review of work that's been done
+[00:29:52.080] to be able to get guidance uh and to
+[00:29:55.200] provide guidance uh on what's there sort
+[00:29:58.080] of learn and guide uh the AI. I guess in
+[00:30:00.880] that context you probably would at some
+[00:30:02.799] point would have to veer away from
+[00:30:04.480] reviewing the code and reviewing some
+[00:30:06.399] analysis of the code, right? Because
+[00:30:09.039] it's just a it's a it's an unpleasant uh
+[00:30:11.760] uh future to imagine one in which all we
+[00:30:14.240] do is is uh is read code uh and uh and
+[00:30:18.080] review and kind of comment and nitpick
+[00:30:19.760] on it. Does that sound about right? Like
+[00:30:21.360] you're going to need some summaries or
+[00:30:23.520] sort of a uh reviews of the changes. Is
+[00:30:26.080] that is that a likely future? Yeah, I I
+[00:30:28.640] mean I think the the framework that that
+[00:30:30.000] we talk about internally here is that uh
+[00:30:32.480] I think we we see three steps in in the
+[00:30:35.440] process and like the evolution of of
+[00:30:37.200] engineering and and code review as a
+[00:30:38.880] product of that. like the first the
+[00:30:40.720] first step uh which I think we're we're
+[00:30:42.960] somewhat moving past already is is one
+[00:30:45.120] where you know the IC engineer is
+[00:30:46.880] primarily the one like writing the code
+[00:30:49.520] or generating it with tab complete um
+[00:30:52.000] and then review is is very much like a
+[00:30:54.080] process of of looking at every single
+[00:30:56.000] line of code like really carefully
+[00:30:57.520] inspecting it. I think phase the second
+[00:31:00.320] phase that we're now you know we're now
+[00:31:02.000] entering or have entered is one where
+[00:31:04.399] the job of engineering feels more like
+[00:31:06.559] you know an engineering manager where
+[00:31:08.399] you know you're you're working with and
+[00:31:10.159] orchestrating uh like a team of agents
+[00:31:12.559] that are going and building they're
+[00:31:14.320] handing you back changes you're you know
+[00:31:16.480] you're reviewing you're certainly
+[00:31:18.159] reviewing the code but a lot of it is is
+[00:31:20.320] like reviewing the you know the design
+[00:31:22.480] docs and the architecture and kind of
+[00:31:24.240] the higher level points um still being
+[00:31:26.399] able to introspect into the code But uh
+[00:31:28.720] you know but a lot of that is happening
+[00:31:30.480] of the review and like what you're
+[00:31:31.919] looking for is happening at a higher
+[00:31:33.200] level of abstraction. Uh the the details
+[00:31:35.760] there are starting to be handled more by
+[00:31:37.600] AI review in in that world. And then um
+[00:31:40.000] I'd say the third uh the third level
+[00:31:42.240] which we have not gotten to yet. Um but
+[00:31:44.480] we'll you know I think we will start to
+[00:31:46.240] see if if everything gets uh you know if
+[00:31:48.720] everything gets gets good enough is uh
+[00:31:51.360] uh one where I'd say that you it almost
+[00:31:54.320] looks more like work what working with
+[00:31:56.000] an external dev agency would be where
+[00:31:58.159] you're giving just highle specs u and
+[00:32:01.440] then you're getting back like the
+[00:32:02.880] artifact of the finished product and um
+[00:32:05.039] you're reviewing that versus you may not
+[00:32:07.360] even ever necessarily look at the the
+[00:32:09.360] underlying code or or need to understand
+[00:32:11.279] it but um you're you're primarily
+[00:32:13.120] reviewing like the whatever that
+[00:32:14.799] finished product is and I think we're
+[00:32:17.039] you know we're somewhere between like
+[00:32:18.399] phases one and two right now and then I
+[00:32:20.559] think uh in in the coming years we have
+[00:32:22.960] the opportunity to jump from two to
+[00:32:24.640] three.
+[00:32:25.519] >> Yeah. Yeah. And clearly we're sort of
+[00:32:26.880] quite aligned in terms of the sort of
+[00:32:28.240] spectriven uh uh development.
+[00:32:30.559] >> Yeah. You guys you guys think about this
+[00:32:31.840] so a lot.
+[00:32:32.640] >> Yeah. Yeah. It's about that. I guess the
+[00:32:34.720] the um uh the question here would be uh
+[00:32:38.880] uh review is an after the fact uh um
+[00:32:42.799] kind of reality right you're looking at
+[00:32:44.480] the output and you're saying well is the
+[00:32:46.320] output of uh proper and and to an extent
+[00:32:49.279] the more you've defined up front the
+[00:32:51.760] less you need to to review or at least
+[00:32:53.840] the review becomes a bit more
+[00:32:55.360] straightforward which is uh uh did you
+[00:32:58.000] did you adhere uh to uh to the to the
+[00:33:01.120] specification and and so I think that's
+[00:33:03.200] a future I agree that it's a it's a
+[00:33:04.799] journey you know and uh and at the
+[00:33:06.559] moment it's it's there and to an extent
+[00:33:08.080] my question about
+[00:33:10.240] um uh what is the source of truth is is
+[00:33:12.320] a bit about that right it is about you
+[00:33:14.159] know where where are the what's the spec
+[00:33:15.840] assisted review uh that you have there
+[00:33:18.080] to tell you what's correct you know
+[00:33:20.000] whether it's a cloud MD or a style guide
+[00:33:22.480] uh and I think it's interesting to think
+[00:33:23.840] about how that gets managed as well
+[00:33:25.279] within an organization
+[00:33:26.960] >> yeah I think that there's there's a lot
+[00:33:28.880] there in terms of of connecting back to
+[00:33:31.279] what I was saying earlier around around
+[00:33:32.880] like How do we start to show the like
+[00:33:35.360] the chat history or like the prompts,
+[00:33:37.279] the agent logs like in in the pull
+[00:33:39.679] request? How do we pull in the right the
+[00:33:42.480] right provenence and context around like
+[00:33:45.279] where was the spec like where was the
+[00:33:46.880] Figma design file? Uh what was the what
+[00:33:49.919] was like the intention of this change
+[00:33:51.600] and capturing that more completely than
+[00:33:54.000] I think just a PR description today, you
+[00:33:56.480] know, today just isn't sufficient
+[00:33:57.760] anymore. Um, if if we want agents to be
+[00:34:00.320] able to do like a really high quality
+[00:34:02.240] review, even even for humans, I think
+[00:34:04.000] that there is there is like that level
+[00:34:06.159] of of subjectivity about review today
+[00:34:09.280] that um, you know, would really benefit
+[00:34:11.440] from having, you know, having more
+[00:34:13.040] context and um, you know, I think I I'm
+[00:34:15.760] curious, you know, I'd be curious to
+[00:34:17.359] hear a little bit more about how you
+[00:34:19.119] think about it of like how do you kind
+[00:34:20.480] of more most completely capture the the
+[00:34:23.599] spec of like what was the intention of a
+[00:34:25.679] change and u, and then turn add into
+[00:34:28.480] something that that can then be, you
+[00:34:30.159] know, be digestible by by an either an a
+[00:34:32.800] reviewer or a human on the other side of
+[00:34:34.639] that.
+[00:34:35.359] >> Yeah. I mean, I think uh so, you know,
+[00:34:37.520] clearly kind of flipping roles here a
+[00:34:38.800] little bit on it, but yeah, clearly uh
+[00:34:41.119] um clearly there's an evolution there to
+[00:34:43.679] sort of think about, you know, how do
+[00:34:44.639] you create a spec, how do you read it,
+[00:34:46.159] what does a spec even contain? Um you
+[00:34:48.800] you referred now to sort of the spec of
+[00:34:50.800] a change of going from state A to state
+[00:34:52.480] B. We think a lot as well about long
+[00:34:53.919] lived specs, not just the task at hand,
+[00:34:55.679] but rather uh some document that
+[00:34:57.839] captures uh some long lived definition
+[00:35:00.240] of either what you're building or how
+[00:35:01.760] you want to build and then how do you
+[00:35:03.520] adhere to that. Uh one thing that's sort
+[00:35:05.280] of quite interesting and that was I
+[00:35:07.280] don't know if you've encountered it.
+[00:35:08.400] Well, I guess in your case, you're
+[00:35:09.440] running your own agent, so you're fine.
+[00:35:11.040] But because we connect to different
+[00:35:12.079] agents, we find that the same uh
+[00:35:13.920] guidance that you want to provide uh
+[00:35:16.240] would get very different adherence. You
+[00:35:18.000] know, you might have one
+[00:35:18.640] state-of-the-art agent, you know, take
+[00:35:20.400] some instruction and follow it 80% of
+[00:35:22.160] the time and another follow it 30% of
+[00:35:24.720] the time. And it might just be a wording
+[00:35:26.720] difference. Sonic 45 requires very
+[00:35:28.560] different prompting than four as was the
+[00:35:30.720] five and when it came out versus the
+[00:35:32.079] predecessors. Um, and so so I think the
+[00:35:34.800] notion of how do you manage this
+[00:35:36.400] knowledge uh and uh and the social truth
+[00:35:38.880] is uh is interesting and we need
+[00:35:40.320] visibility, we need observability, you
+[00:35:42.880] know, which which I guess again it comes
+[00:35:44.240] back, you know, for us I'm a bit of a
+[00:35:45.359] broken record there. we take about talk
+[00:35:47.119] about spectriven development as a new
+[00:35:48.400] development paradigm over time but the
+[00:35:50.560] transition period is an interesting one
+[00:35:52.800] uh as it's still still quite impactful
+[00:35:55.920] um and I think I think review is at a
+[00:35:57.920] clearly very important place there and
+[00:36:00.079] we need to see
+[00:36:02.079] uh what is being reviewed like there
+[00:36:03.680] would always be a need to review but
+[00:36:05.200] what is being reviewed
+[00:36:08.160] I want to uh shift to talk a little bit
+[00:36:10.400] about the the business and the kind of
+[00:36:12.240] the uh startup side maybe of uh of the
+[00:36:15.920] company want to close off on some
+[00:36:17.440] futures. Um so uh a common debate today
+[00:36:21.520] in sort of startup land on specifically
+[00:36:23.760] in developer land is just the pricing
+[00:36:25.599] model right you are yeah today uh I I
+[00:36:29.359] believe you're sort of still a sort of a
+[00:36:30.880] seatbased primarily how many developers
+[00:36:33.359] are using this which makes sense you're
+[00:36:34.800] collaborating on it uh
+[00:36:37.119] >> you're going to have a lot of AI workers
+[00:36:39.119] I don't know if they're going to
+[00:36:40.000] purchase a seat I guess how do you think
+[00:36:41.440] about what's the right long-term uh kind
+[00:36:44.480] of value attribution right or pricing
+[00:36:46.800] model uh for for products like uh like
+[00:36:49.440] yours.
+[00:36:50.640] >> Yeah, there's certainly a big shift
+[00:36:52.560] happening right now and across across
+[00:36:55.359] industries on collaborative tooling
+[00:36:57.200] where historically it made sense to
+[00:36:58.960] price per seat. I think we're we're
+[00:37:01.920] still I think that is still like what
+[00:37:03.599] largely what buyers are anchored to and
+[00:37:06.000] uh we've been we've certainly been
+[00:37:07.440] exploring like what would a usage based
+[00:37:09.280] model look like you know if we if we
+[00:37:11.359] charge by you know by PR volume or um by
+[00:37:14.800] you know PR's review yeah PR's reviewed
+[00:37:16.960] like lines of code something there
+[00:37:19.200] different like parameters we could we
+[00:37:21.920] could use there but um I I think the
+[00:37:24.640] challenge the challenge there is like
+[00:37:26.560] what is the right time to what's the
+[00:37:28.960] right time to innovate and is is pricing
+[00:37:30.960] the thing that we want to spend our our
+[00:37:32.640] innovation points on and and if so like
+[00:37:35.760] when you know do we want to lead do we
+[00:37:37.920] want to like lead the market in in doing
+[00:37:39.680] that and uh I think that the I think
+[00:37:42.800] that for now certainly you know proceed
+[00:37:45.200] is still very much the model you know
+[00:37:46.720] the the paradigm that we're operating in
+[00:37:48.880] uh I I see over the next year uh
+[00:37:51.440] especially as as teams start to you as
+[00:37:54.400] as companies start to to like you know
+[00:37:56.560] change the way that they think about
+[00:37:57.839] scaling their teams and you know maybe
+[00:37:59.839] not hire as as many engineers as they
+[00:38:01.680] scale and shift more towards towards
+[00:38:03.839] like relying on on background agents for
+[00:38:06.320] those work those workloads. U the type
+[00:38:09.200] of thing that would make us like more
+[00:38:10.400] seriously consider moving over to to
+[00:38:12.400] usage base. I I think that will be the
+[00:38:14.160] end state here. It's more a matter of
+[00:38:15.760] like when is the right time to pull that
+[00:38:17.200] lever.
+[00:38:17.760] >> Yeah, I do think that it's super
+[00:38:19.040] interesting to see how uh how things
+[00:38:20.960] play out. Um I at uh on with a sneak hat
+[00:38:24.480] on um thinking about sort of security at
+[00:38:27.119] similar we we secure the work of
+[00:38:29.839] developers and so the more developers
+[00:38:31.440] you have contributing the more uh the
+[00:38:33.520] more it makes sense to charge and when
+[00:38:35.280] you think about outcomebased pricing and
+[00:38:37.040] a lot of that sort of aspiration in this
+[00:38:39.119] world you can say well fine maybe we do
+[00:38:41.680] you know for every vulnerability fixed
+[00:38:43.760] but then you get into the conversation
+[00:38:44.960] of like what's a vulnerability and was
+[00:38:46.640] it vulnerable no what's an extreme uh so
+[00:38:49.280] it gets very hairy I think uh I I think
+[00:38:51.040] there's a world of learning there. If
+[00:38:52.320] you switch to utility based pricing and
+[00:38:54.480] you charge by scan, you are potentially
+[00:38:56.560] incentivizing the wrong behavior uh
+[00:38:58.640] because people want to scan less. Um I
+[00:39:01.280] imagine there will be there will be some
+[00:39:02.800] sort of similarity of like the number of
+[00:39:04.800] reviews is a is a tricky proposition for
+[00:39:06.960] you. Right.
+[00:39:07.680] >> Right. I think there's there kind of two
+[00:39:09.599] competing competing factors there. Like
+[00:39:11.760] on the one hand, as you say, we don't
+[00:39:13.280] want to disincentivize the thing that we
+[00:39:15.280] we believe our our users should be doing
+[00:39:17.920] more of. like we want users to create
+[00:39:20.160] more PRs. We want them to stack. Like we
+[00:39:22.400] don't want that to be, you know, we
+[00:39:24.079] don't want you to feel like, oh, you're
+[00:39:25.359] you're now paying more because you're
+[00:39:27.280] doing the thing that graphite told you
+[00:39:28.960] to do. Uh at the same time though I
+[00:39:31.520] think that there's you know it uh I mean
+[00:39:34.560] goal Roger one of our investors um and
+[00:39:36.800] and you know a great product mentor of
+[00:39:38.640] mine from the square days u he has like
+[00:39:40.800] a great blog post on this of like how
+[00:39:42.960] how Google thought about like charging
+[00:39:45.280] you know why they charge for impressions
+[00:39:47.760] and not for you know conversions or
+[00:39:50.400] clickthroughs even and that being you
+[00:39:53.119] know because the like you want to charge
+[00:39:55.680] for things that are under your control
+[00:39:57.440] as you know as the business like you
+[00:39:59.440] know, if somebody makes shitty ad copy,
+[00:40:01.359] you know, it's not on Google. It's not
+[00:40:03.040] on Google whether or not you actually
+[00:40:04.560] like click through to the you to the
+[00:40:06.320] site or not. Like Google's job is just
+[00:40:08.240] to show you is to like serve you the ad
+[00:40:10.000] in the first place. And I think about a
+[00:40:11.839] similar thing here where you know even
+[00:40:14.079] like completion it's like what what is
+[00:40:16.079] the definition of completion? Like if
+[00:40:18.160] you expose yourself to too much
+[00:40:20.160] subjectivity on on and and variability
+[00:40:22.880] on the user input side like then all of
+[00:40:25.200] a sudden your you know your pricing is
+[00:40:26.960] it just becomes like you know really
+[00:40:28.720] hard to model hard to you know hard to
+[00:40:30.880] reason about and like hard to really
+[00:40:32.240] rely on versus like keeping it as as
+[00:40:34.960] something that's like fundamentally
+[00:40:36.079] under your control. I find it a little
+[00:40:37.839] bit funny how uh so many things get
+[00:40:40.640] emphasized with AI and one of them is
+[00:40:42.480] the measure of developer productivity
+[00:40:44.320] because really what you want is you want
+[00:40:45.680] to say hey I'm going to charge by the
+[00:40:47.680] amount of productivity I've uh provided
+[00:40:49.680] to you if only if only we could measure
+[00:40:53.119] what that uh what that actually means.
+[00:40:55.040] Um so um Mel thanks for all the great
+[00:40:57.680] insights. I want to uh finish off with
+[00:40:59.440] just a bit of of futures of it. Uh so
+[00:41:02.240] for starters you you touched on this a
+[00:41:03.839] little bit but uh what is it that you
+[00:41:06.000] think is the role of uh of a developer
+[00:41:09.760] in the future? I'm talking about someone
+[00:41:11.119] who does it for a living if you think
+[00:41:12.560] that exists if you try to cast your eyes
+[00:41:15.280] far like five years or like maybe even
+[00:41:18.319] 10. What do you what do you think is uh
+[00:41:21.119] is the role of a of a developer? What
+[00:41:22.880] does it look like? It really is like
+[00:41:24.960] becomes one of defining like at a high
+[00:41:27.200] level like what you know what the the
+[00:41:29.839] experience should be you know to some
+[00:41:31.680] extent like what are you what are like
+[00:41:33.599] the technologies that should be used
+[00:41:35.359] like what are the the problems like the
+[00:41:37.359] hard problems that need to be solved and
+[00:41:39.119] then like working I think it is working
+[00:41:41.359] collaboratively with with agents to you
+[00:41:44.160] know to go ahead and find to find the
+[00:41:46.079] best solution to them to iterate on that
+[00:41:48.319] um and to you know then to like get that
+[00:41:50.480] out to to your end customers and um that
+[00:41:53.760] it looks more I think it does it does
+[00:41:56.160] look like more like review or more like
+[00:41:58.640] uh you know you're operating at a higher
+[00:42:00.079] level of abstraction than likely than
+[00:42:02.079] than code today. Uh but I still think
+[00:42:05.200] that you need to be able to you'll need
+[00:42:07.119] to be able to like dive deep into the
+[00:42:08.800] code in some cases then u know kind of
+[00:42:11.440] what approaches to use at at the right
+[00:42:13.359] time. Some of that will be like the
+[00:42:14.880] agents will be informing you of this.
+[00:42:16.319] Sometimes you'll be informing them like
+[00:42:18.000] much like a collaborative team works
+[00:42:19.920] today like you know not everyone will
+[00:42:21.839] have you not everyone on your team you
+[00:42:24.160] know knows everything or has has the
+[00:42:26.240] right answer to every problem but you
+[00:42:27.839] know together with you know with your
+[00:42:29.520] human and and agent colleagues you'll
+[00:42:32.000] figure out the the right solution. I
+[00:42:33.760] guess just to sort of poke on that a
+[00:42:35.359] little bit, the if you if you spend most
+[00:42:38.000] of your time at a higher level, like
+[00:42:40.079] would you not lose or maybe in some
+[00:42:41.760] cases never acquire the skills to be
+[00:42:44.079] able to review the code? I mean, don't
+[00:42:45.760] we need to kind of find a way to not
+[00:42:48.240] have that kind of uncanny valley, you
+[00:42:50.640] know, like it can nearly code but not
+[00:42:52.480] quite uh and solve that with other
+[00:42:54.800] tools?
+[00:42:56.160] >> I think this is this is like the great
+[00:42:57.599] debate, right? because I think you know
+[00:42:59.680] a lot of us don't really understand like
+[00:43:02.079] a lot of like don't have to understand
+[00:43:04.240] like compilers today or like you know
+[00:43:06.640] you don't you don't need to like get
+[00:43:08.079] down to you know be able to look at at
+[00:43:10.079] like machine code and and understand
+[00:43:12.960] yeah there there's like there there are
+[00:43:14.880] we have like jumped up levels of
+[00:43:16.720] abstraction before successfully
+[00:43:18.960] difference there is that those are you
+[00:43:20.720] more deterministic like far more
+[00:43:22.160] deterministic than what we're dealing
+[00:43:23.359] with now but um I do think that there is
+[00:43:25.839] you have been able to to navigate those
+[00:43:28.640] changes in the past. I I still think
+[00:43:30.560] that there is a you know there is like
+[00:43:32.720] fundamentally a reason why we learn
+[00:43:34.720] those things and even if we don't then
+[00:43:36.960] use them in you know in our day-to-day
+[00:43:39.520] as as engineers like I think that there
+[00:43:41.280] is there is value in in learning that
+[00:43:43.200] and that's you know certainly something
+[00:43:44.400] that that I I'm curious to see the the
+[00:43:46.800] result of you know every every like CS
+[00:43:49.839] graduate having access to cursor now you
+[00:43:52.319] know versus versus a few years ago like
+[00:43:54.480] I think there's a you know there's a
+[00:43:56.240] bullcase there of like it makes everyone
+[00:43:58.640] you know far more productive and able to
+[00:44:00.240] like learn faster and build things
+[00:44:01.680] faster and get more excited about about
+[00:44:04.000] the the field. Uh I also think that
+[00:44:06.640] there is a there's potentially a
+[00:44:08.240] challenge coming of like you know not of
+[00:44:10.640] like a whole a whole class of like
+[00:44:12.560] newrad engineers like not necessarily
+[00:44:14.880] having u you know having the skills uh
+[00:44:17.200] and knowledge that they need to like be
+[00:44:19.040] able to to jump down into you jump down
+[00:44:21.520] a layer of abstraction anymore.
+[00:44:23.040] >> Yeah. And that that's actually precisely
+[00:44:24.720] sort of the uh the last question I had
+[00:44:26.160] for you, which is if you had an
+[00:44:27.920] 18-year-old child uh right now and they
+[00:44:30.400] were considering whether or not to go
+[00:44:32.000] into a CS degree in university, would
+[00:44:34.240] you recommend they do or they don't?
+[00:44:36.960] >> I still think I I would I would just say
+[00:44:39.280] that there there basically two there
+[00:44:41.599] basically two angles that I'd say you
+[00:44:42.960] should go. It's either you know either
+[00:44:44.480] you go super deep on it and say you know
+[00:44:47.119] you want to become an expert in you know
+[00:44:49.440] in like a deep deep technology you know
+[00:44:52.480] something that just requires that will
+[00:44:54.640] take a long time um for for AI to and
+[00:44:57.359] require a lot of specialized knowledge
+[00:44:58.640] will take a long time for AI to to catch
+[00:45:00.480] up to uh or the other side of it is like
+[00:45:03.200] go go wide and develop you know develop
+[00:45:06.560] you know design skills develop like uh
+[00:45:09.440] then develop like business skills and
+[00:45:11.599] product and um you have have like a a
+[00:45:15.040] breadth of you know of influences and u
+[00:45:18.000] you know of of abilities there such that
+[00:45:20.079] you can better you know better inform
+[00:45:21.920] the agent of what to build and um that
+[00:45:24.319] piece I think you know we're seeing we
+[00:45:26.400] talk about like does like product and
+[00:45:28.560] design and edge kind of all all merge
+[00:45:30.480] together in in some not so distant
+[00:45:33.119] future like I think that is there is
+[00:45:34.720] some world where the the role of
+[00:45:36.319] engineers is either you know it's either
+[00:45:38.160] going to get like much broader in in
+[00:45:39.760] some cases and like much deeper in
+[00:45:41.280] others but the the in between of like
+[00:45:43.920] you know just kind of existing in the
+[00:45:45.520] the scope that that we have before I
+[00:45:48.160] think is not going to last very long.
+[00:45:50.000] >> I love the perspective like to sort of
+[00:45:51.760] pick your pick your battle but the the
+[00:45:53.520] t-shirt might a little bit tricky uh in
+[00:45:56.160] this world.
+[00:45:57.280] >> Um thanks uh thanks a lot for all the
+[00:45:59.920] great insights and good luck uh
+[00:46:01.680] reviewing uh and kind of evolving review
+[00:46:04.960] uh with graphite.
+[00:46:06.640] >> Thank you. I really enjoyed this. Thanks
+[00:46:07.920] for having me, Guy.
+[00:46:08.720] >> And thanks everybody for tuning in. And
+[00:46:10.640] I hope you join us for the next one.

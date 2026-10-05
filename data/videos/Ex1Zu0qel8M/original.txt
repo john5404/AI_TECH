@@ -1,0 +1,576 @@
+[00:00:00.120] next up we've got Matthias Lübken.
+[00:00:02.960] Oh I knew, I knew I want you told me how to pronounce it properly.
+[00:00:05.840] I wouldn't do this wrong.
+[00:00:07.080] Matthias Lübken. Matthias is an AI engineer
+[00:00:11.520] and founder who specializes in AI agents for business workflow and automation.
+[00:00:15.800] And his talk a piece of the pie embedding OpenClaw coding agent in your product.
+[00:00:21.720] Thank you.
+[00:00:22.080] Matthias.
+[00:00:28.800] Hello.
+[00:00:29.240] Hello, everyone.
+[00:00:30.760] Thanks a lot for having me
+[00:00:34.160] back in London. It's awesome.
+[00:00:35.920] Awesome to be here.
+[00:00:37.360] Yeah.
+[00:00:38.320] So I don't know how you guys have experienced this year,
+[00:00:43.440] but there was this OpenClaw thing happening in January,
+[00:00:48.800] and a friend of mine, we organized an event in Cologne
+[00:00:52.800] and a friend of mine called and says, Matthias, can you do a talk?
+[00:00:55.920] And I was like, yeah, sure.
+[00:00:57.160] But like, you know, let me, let me find something.
+[00:01:00.040] And I was digging through the code and I find this awesome
+[00:01:04.320] coding agent, which afterwards kind of like took over.
+[00:01:09.000] I feel it, at least.
+[00:01:10.560] Who heard about who heard about Pi.
+[00:01:14.320] Yeah, exactly.
+[00:01:15.000] That's what I'm talking about.
+[00:01:16.560] Two months ago, nobody would have raised her hand, including myself.
+[00:01:20.720] But now we're all here and experiencing it.
+[00:01:23.800] Yeah.
+[00:01:24.720] And I was like, digging through it.
+[00:01:26.280] And I built a prototype with it.
+[00:01:28.400] And that's what I'm going to talk with you about.
+[00:01:30.680] So basically my question is how do we design systems
+[00:01:35.160] which are able to deliver the same magic as OpenClaw as.
+[00:01:40.120] So this is me.
+[00:01:41.920] This is us, Evan and myself.
+[00:01:44.880] We're a small agency building systems.
+[00:01:48.600] We're building different tools for clients here in the UK and Germany.
+[00:01:53.640] And yeah, come to me
+[00:01:56.760] if you find the work interesting or want to chat about anything else.
+[00:02:00.320] So brief agenda.
+[00:02:02.400] First of all I'm going to talk a little bit like motivate this a little bit.
+[00:02:06.520] What what I mean by open Klaus magic.
+[00:02:09.960] Going to briefly introduce Pi and then an example.
+[00:02:15.240] Then I'm trying to you know this is an early talk.
+[00:02:18.520] So this looks very sophisticated.
+[00:02:20.680] It's not it's but it's basically trying to structure it a little bit.
+[00:02:24.160] But I have a couple of primitives I want to talk about that
+[00:02:27.320] helps us motivate this and kind of like
+[00:02:30.440] wrap our heads around it, some primitives and some patterns.
+[00:02:34.400] And I'm going to end the whole talk about malleable software.
+[00:02:38.760] But more on that later.
+[00:02:40.720] Cool. All right. So this is Peter
+[00:02:44.800] and this is OpenClaw.
+[00:02:47.000] And at some point in time he was this was in the early days.
+[00:02:52.120] It was basically had a chat interface was able to send check back and forth,
+[00:02:56.720] but more or less accidentally, he said the voice message to OpenClaw
+[00:03:02.000] and OpenClaw started thinking, right, these AI agents, they think.
+[00:03:07.720] And then it sent a text message back.
+[00:03:10.800] And I don't know how you guys feel, but when I see this,
+[00:03:14.200] there is a little bit magic into this.
+[00:03:15.880] Like, how does this work from the outside, right?
+[00:03:18.520] But as engineers, we're obviously looking behind the curtain.
+[00:03:22.400] So let's have a look.
+[00:03:23.640] So generally speaking, you know, very roughly right.
+[00:03:27.280] If you do these agents you have these general instructions.
+[00:03:30.560] And open Claw has these AGENTS.md and all this all these cool things.
+[00:03:34.560] But basically it's like okay,
+[00:03:36.120] your personal assistant, you do things and here are a bunch of a bunch of tools
+[00:03:40.200] like read right, edit file, bash commands.
+[00:03:43.720] So when it and this
+[00:03:47.120] this is is a simplification.
+[00:03:50.200] But I think you should get the get the idea.
+[00:03:52.200] So initially when it saw this this file.
+[00:03:55.920] So oh my god this is not a text file.
+[00:03:58.240] What do I do with it. Right.
+[00:04:00.360] And it used the usual Unix commands it and specter.
+[00:04:04.960] The file thought it was a wave file.
+[00:04:07.600] Then it tried to decode it
+[00:04:10.600] with a tool that it knew about whisper.
+[00:04:14.120] That didn't work.
+[00:04:15.400] And then somehow in its instructions, some words like, oh,
+[00:04:19.920] I could actually send this to OpenAI API.
+[00:04:22.680] There's actually one command missing that it actually was searching for a key
+[00:04:26.520] in order to send it. Right.
+[00:04:28.840] All of that did it in a loop again and again.
+[00:04:31.600] Again. This is oversimplification.
+[00:04:33.160] And at some point it got the goal completed.
+[00:04:37.000] And again,
+[00:04:38.080] I feel from the this is this is awesome because I understand now what happens.
+[00:04:42.600] But I want to reuse that that magic in my tools.
+[00:04:46.640] So very briefly. Right.
+[00:04:48.480] Coding agents are these agents who have these these tools that run in a loop.
+[00:04:54.160] And that's that's like the general definition
+[00:04:57.160] for an agent run having tools in a loop.
+[00:05:00.840] But coding agents additionally have bash, right?
+[00:05:04.800] So they have any kind of Linux Unix tools at their disposal and some runtime.
+[00:05:10.760] And there are all these sandboxes to run these different tools, etc..
+[00:05:15.120] But but you know, that's, that's my, my go to definition of an agent.
+[00:05:19.480] And that's my, my, my primitive that I'm using
+[00:05:23.720] for thinking about how, how I could design systems is like,
+[00:05:27.520] how would I embed these into my, my systems.
+[00:05:31.160] Okay. Very briefly about Pi
+[00:05:32.840] For those who don't know, it's built by Mario.
+[00:05:37.640] Mario Zechner out of Vienna.
+[00:05:40.000] So very, very minimal coding agent.
+[00:05:42.760] If you haven't used it please give it a try.
+[00:05:45.280] The minimalism is its feature,
+[00:05:49.000] so the way to define it, to define pi is what's not pi.
+[00:05:54.440] There is no MCP servers, there's no subbasins,
+[00:05:57.560] there's no permission pop ups, there's no plan mode.
+[00:06:00.600] There's no built into dos, there's no background bash thingy.
+[00:06:05.200] But in order to have some of these things, you can actually tell
+[00:06:09.600] Pi to create it, right.
+[00:06:11.200] So this is the I don't know. Hello world example.
+[00:06:14.000] Kind of like so you tell pipe, please create a Pi extension
+[00:06:18.880] that ask for permission when I, when I want to push the main branch to remote.
+[00:06:24.080] Right.
+[00:06:24.360] So it doesn't have permissions, it doesn't have these pop ups.
+[00:06:28.400] But I want now a pop up that gets up
+[00:06:32.520] when I'm pushing the main branch to to remote.
+[00:06:36.120] And it actually does this right.
+[00:06:38.480] So it creates these files.
+[00:06:40.600] Permission gates is called pre-push guards.
+[00:06:43.560] So it creates these typescripts and a markdown.
+[00:06:46.960] Here's the summary of what it has done.
+[00:06:50.480] And then when I push to
+[00:06:54.560] when I push a region to main push me to
+[00:06:58.320] to to a region, I actually get this pop up
+[00:07:01.400] right, I think allow this command to push to remote.
+[00:07:05.240] All this is all of a sudden now I've changed my agent to be working
+[00:07:10.520] exactly the way that I want to, and this is kind of like got me thinking
+[00:07:16.400] of how how would that change my software, my my systems.
+[00:07:21.320] And we're going to see this later.
+[00:07:24.320] So in order to motivate this a little bit
+[00:07:26.840] and make this more practical, I'm going to introduce you to an example.
+[00:07:30.480] And this is not in any type of development example.
+[00:07:34.840] This is an application that we've built as a prototype for a client.
+[00:07:39.360] And their request was that
+[00:07:42.480] there are quoting system takes way too long.
+[00:07:46.240] They get they have this after sales process
+[00:07:49.720] where they sell parts and the quote system.
+[00:07:52.720] There's an email inquiry coming in and then there's lots
+[00:07:56.000] of manual processing that we want to automate.
+[00:07:59.320] Now this is per se not
+[00:08:03.120] we don't need AI to solve this, but AI makes it much simpler.
+[00:08:06.920] And I would argue for the long run also more
+[00:08:10.520] more powerful.
+[00:08:13.520] And we can solve more use case with it.
+[00:08:17.080] But basically we have an email inbox which analyzes customer requests.
+[00:08:23.040] We check different backend systems, the CRM, etc.
+[00:08:25.920] and then creates quotes and drafts.
+[00:08:28.360] The architecture is very much.
+[00:08:33.040] Inspired by OpenClaw or we have some gateway.
+[00:08:36.120] We're routing these.
+[00:08:37.480] And then the way we've architecture this is we've basically created
+[00:08:41.520] an agent per customer where we have these different prompts.
+[00:08:46.480] Again think about Sol, MD etc.
+[00:08:48.280] but now we have it per customer and then per case.
+[00:08:52.640] We're creating a session.
+[00:08:55.080] I'm going to talk a little bit about what a session is, but think about one
+[00:08:59.040] agent per customer and then one session per case.
+[00:09:04.000] So this is a you know you know, a dashboard.
+[00:09:07.840] I'm not sure if you can read this, but we have basic, basic KPIs.
+[00:09:11.760] We have activities, we then have an email inbox.
+[00:09:17.280] And the way that we've we're doing this, we're basically replicating the inbox
+[00:09:21.720] at some point it will be based in outlook.
+[00:09:24.320] So the user doesn't even need to leave their tool.
+[00:09:27.080] But right now we're replicating the inbox.
+[00:09:29.360] And yeah, once an email comes in it looks for a case or creates a case.
+[00:09:34.320] And here you see that on top and hide side.
+[00:09:37.600] There's a case associated with it and we can open it.
+[00:09:41.600] Now the case again has KPIs and we have different.
+[00:09:46.240] We can look at the clients.
+[00:09:47.520] We have all the client information.
+[00:09:49.320] We have different steps for this case.
+[00:09:51.600] So everything is kind of like the the user understands of what's happening there.
+[00:09:56.440] And then we can look into the details.
+[00:09:58.320] And if we do this then all of a sudden
+[00:10:01.560] we kind of see a little bit of what's under the hood.
+[00:10:04.920] And again this is an early prototype.
+[00:10:07.040] So we'll see where this goes.
+[00:10:08.800] But what you can start seeing is that we now have the system prompt here.
+[00:10:12.320] Right.
+[00:10:12.600] So we're describing of what the agent is doing
+[00:10:15.600] of what this client specific context etc.
+[00:10:19.360] and then different tool definitions.
+[00:10:23.680] And speaking of tools,
+[00:10:26.120] this is usually this is more like a in-depth view.
+[00:10:30.280] So not a normal view for any type of user.
+[00:10:33.400] But here we can look into the to the
+[00:10:36.360] into the session and the different steps that went through the system.
+[00:10:39.840] And here we have different tool calls.
+[00:10:42.560] One is the tool call of understanding the actual state of the case.
+[00:10:48.200] So we have an ERP, CRM system a CRM system in this case where the state is stored.
+[00:10:53.840] And then we have ERP system where we're looking up the parts.
+[00:10:58.160] Both our external systems, both are APIs
+[00:11:01.160] and both are included as tools in this in this case.
+[00:11:05.280] And then the final result is an email draft.
+[00:11:08.840] So the way we're architecture in this is that we're not sending out
+[00:11:13.000] emails just yet.
+[00:11:14.520] We are drafting emails so the user can actually then afterwards
+[00:11:18.200] change the email, you know, to, to whatever, whatever their liking.
+[00:11:22.320] But the the argument is that you're much faster
+[00:11:26.320] and reviewing the email and then sending it.
+[00:11:29.400] Cool. So that's the application, right?
+[00:11:32.200] So again, the overall idea is coding agents are these
+[00:11:36.720] awesome new tools that we're seeing in the OpenClaw and other tools.
+[00:11:40.120] Pie is one of these agents which is an embedded and OpenClaw.
+[00:11:44.240] By the way.
+[00:11:45.000] That's not true since like two weeks.
+[00:11:47.200] So I need to change the title of my talk because they have just ripped out pie.
+[00:11:52.160] But that's yeah, the talk wouldn't be so nice, the title.
+[00:11:57.320] But anyway, so we have OpenClaw, we have pie embedded.
+[00:12:01.480] And now the question is what do we do with it.
+[00:12:03.920] And these are a couple of, of of primitives building blocks
+[00:12:08.400] right for you to reason about.
+[00:12:11.400] So you can take one of these and see of how you could work with this.
+[00:12:17.800] Okay.
+[00:12:18.120] So let's start with the agent setup.
+[00:12:19.520] The agent setup is not as simple.
+[00:12:22.800] And you know and also this is pie.
+[00:12:25.640] And you can do this with other agents.
+[00:12:27.640] So I'm not saying that it happened to be using pie.
+[00:12:30.560] But there are other SDKs you could do this with.
+[00:12:33.560] But Pi is a good good good starting ground.
+[00:12:36.320] So very simple right.
+[00:12:38.360] So you have these do you have different levels of SDKs?
+[00:12:41.280] I'm using the the coding agent SDK.
+[00:12:43.800] So the same thing that you're running on your desktop as a developer.
+[00:12:48.080] You you define the model.
+[00:12:50.800] You define the different tools and how to, to work
+[00:12:54.920] with these sessions and the different resources to load.
+[00:12:58.920] Speaking of resources, I'm not like usually if you start the coding
+[00:13:05.080] agent AGENTS.md is loaded and in this case I have a different of reusable
+[00:13:10.840] AGENTS.md that I'm storing and reusing through throughout the different agents.
+[00:13:16.120] So, you know, we have a general describing the overall business.
+[00:13:20.200] We have something a little bit of like task oriented and how to query the client
+[00:13:25.000] and more about client specific like discounts etc.
+[00:13:28.840] like context information.
+[00:13:30.640] And same goes same is true for skills, right?
+[00:13:34.280] So right now we're not using skills as much.
+[00:13:38.080] But the overall idea is the same as like we are making
+[00:13:42.280] sure that we control and how these skills are loaded into the system.
+[00:13:45.840] And that's how you put it up.
+[00:13:48.360] Very simple.
+[00:13:49.440] Not much, not that interesting,
+[00:13:52.640] but I just wanted to show you on how to how simple it is to get started.
+[00:13:56.080] So I think the first part architecturally to reason about
+[00:14:00.240] is like what tools do you provide to your agent?
+[00:14:03.320] Right.
+[00:14:03.520] Again, we have these general instructions and you can generate them.
+[00:14:06.800] And now the question is like how does this thing behave with the
+[00:14:09.880] with the rest of the system, which is tools, right.
+[00:14:13.200] So again tools you have this agent in the and and a general description.
+[00:14:18.880] And when you start the agent you have these you make these tools available.
+[00:14:23.400] And the large language model decides when to call these tools.
+[00:14:27.200] You start guiding them.
+[00:14:28.160] But at the end of the day the large language
+[00:14:29.960] model decides, okay, I'm going to call this this tool.
+[00:14:33.840] We have three tools right now K state, which is the the way of
+[00:14:41.440] talking with the CRM
+[00:14:42.480] of understanding where the overall state of these cases,
+[00:14:46.400] an ERP system where we do the lookup
+[00:14:49.520] and the email.
+[00:14:53.080] Now, the part
+[00:14:54.960] that then gets interesting when you think about how to work with
+[00:14:58.360] these tools, is where you actually start designing for the system
+[00:15:02.680] and the way that that like when, when Yvonne and myself were reasoning
+[00:15:06.080] about this a couple of weeks back, the way that we've,
+[00:15:09.160] we've phrased it is like, don't make your agent guess right.
+[00:15:13.320] Try to be precise about the tool definition.
+[00:15:16.520] Make it the intent revealing,
+[00:15:19.800] make it scope to the specific task.
+[00:15:23.240] And by the way, you can change tools on the fly, etc..
+[00:15:26.440] Right.
+[00:15:26.800] But that's where you start designing the system.
+[00:15:30.760] If you think about back and OpenClaw, what is the magic of Open
+[00:15:34.440] Claw is that it has all these different tools to it at its disposal.
+[00:15:38.840] Right file to understand the file definition,
+[00:15:41.920] whisper to translate an audio file.
+[00:15:44.960] And here's the same thing. Right?
+[00:15:46.560] You need to think about like you don't have a predefined workflow,
+[00:15:51.160] but instead you have these different tools that you call.
+[00:15:54.760] So one of the first bigger design design decisions that you do
+[00:15:58.720] is defining these tools.
+[00:16:02.120] And it's really interesting.
+[00:16:03.520] And there's lots of
+[00:16:06.080] written articles about this and you need to experiment with this.
+[00:16:09.920] But depending on the model and spending on how you do this, the self
+[00:16:14.600] revealing of how what tools are available and how to use them
+[00:16:18.920] is actually what the agent itself does.
+[00:16:21.520] You all very often see this in Pi when it actually calls the tool
+[00:16:26.400] with a dash help, for example, or inspects the error messages, etc.
+[00:16:31.680] and there's lots of things that you can start designing around it
+[00:16:35.160] to make your agent go do the right thing.
+[00:16:39.840] And obviously, well, I should tell this, but obviously
+[00:16:44.040] also don't hand out the tools the agent shouldn't use.
+[00:16:47.120] Right?
+[00:16:47.360] There's we actually have a tool called Data Box where we help users with this.
+[00:16:52.480] But this is a general pattern.
+[00:16:54.160] It's like people are saying, okay, don't don't use this tool.
+[00:16:57.440] Don't use this tool in their instructions.
+[00:16:59.280] But they hand it over anyway.
+[00:17:01.160] And then they, they, they, you know,
+[00:17:03.840] they are surprised that the agent deletes the, the database.
+[00:17:08.640] Right?
+[00:17:09.000] Don't be surprised if you give the agent a tool.
+[00:17:11.640] It's going to assume it's going to use it.
+[00:17:14.200] But there are some ways you can actually help.
+[00:17:18.200] If you are not able to define the tools or you cannot.
+[00:17:23.120] You don't know anything up front.
+[00:17:24.640] There's a couple of ways to guide the agent as well.
+[00:17:26.960] And these are extensions.
+[00:17:28.720] So there's different level of extensions.
+[00:17:31.480] I'm going to talk about the eventing
+[00:17:33.560] mechanisms in Pi where you can basically write these extensions.
+[00:17:37.440] And we've seen this in pi at with with pi the coding agent in the beginning.
+[00:17:42.160] And the example where we're listening to events, there's different types
+[00:17:45.680] of events, different agent life cycles, session life cycles
+[00:17:48.800] where we can actually basically hook in and do things.
+[00:17:52.880] The part that I'm going to talk about are the tool execution.
+[00:17:57.200] So to call two call results, this is where
+[00:18:00.800] most of the extensions that we've built play.
+[00:18:04.240] Yeah we've built.
+[00:18:06.000] So this is the example that I've showed before.
+[00:18:09.720] We have this agent with the goal.
+[00:18:12.120] And we're calling these tools.
+[00:18:13.800] And now we can ingest lifecycle hooks here.
+[00:18:17.120] So for example before before we do a tool call
+[00:18:21.080] or after we've done a tool result.
+[00:18:24.480] So the the idea here is we cannot control that the LM is calling it.
+[00:18:29.200] Right. That's the whole magic behind it.
+[00:18:31.280] But when when it's when it does we can actually ingest
+[00:18:35.480] and and filter out things or do something with the result.
+[00:18:39.600] Here's the example from from our system.
+[00:18:42.680] We have a in the draft email.
+[00:18:46.920] When it drafts an email we do another sanity check that
+[00:18:51.000] that the email is in the custom domain of the client.
+[00:18:54.000] So we're kind of validating the output
+[00:18:58.080] of of of a tool call and making sure that it does.
+[00:19:01.960] So far it always has been green.
+[00:19:03.800] But this way we are making sure. Right.
+[00:19:07.000] So we're not relying on the instructions,
+[00:19:10.040] but we can actually make sure that always the right domains.
+[00:19:14.400] And you can obviously do this with other validations,
+[00:19:16.800] all types of business logic you can put in here.
+[00:19:20.080] And that means that the flow of
+[00:19:23.680] what the agent does is us open, right.
+[00:19:26.720] But you can still make sure that certain systems, certain
+[00:19:30.840] guardrails are implemented.
+[00:19:35.120] Here are a couple of other examples for drafting emails.
+[00:19:38.600] The states.
+[00:19:39.680] So these are, you know, different types of examples in this use case.
+[00:19:43.280] And you can obviously think about your own examples.
+[00:19:46.640] Another part where we feel that these two calls are
+[00:19:50.960] helpful is actually interesting information.
+[00:19:54.880] Right.
+[00:19:55.200] So this is all about this context engineering thing
+[00:19:59.160] where you make sure that the agent
+[00:20:01.880] that the large language model gets the right amount of information and
+[00:20:05.920] maybe you don't want to or you cannot do all the information
+[00:20:10.960] upfront because maybe it's dynamic or there are other situations.
+[00:20:15.600] So here in this case we do we can embrace
+[00:20:18.720] ingest certain information that we look up as we do this.
+[00:20:23.840] Cool. So this is tools.
+[00:20:26.080] And the last primitive I want to touch on are sessions.
+[00:20:31.040] So this is a big part of of pie as well.
+[00:20:34.640] And sessions are these is these three structure
+[00:20:38.800] of an event log that Mario has created.
+[00:20:43.600] And it's actually pretty nice.
+[00:20:45.760] If you use the coding it's agent yourself.
+[00:20:48.520] And you, you wander off and you like
+[00:20:52.040] you know, took a detour of like, okay, this is going nowhere.
+[00:20:55.560] And then it's like, okay, let's get rid of all it.
+[00:20:58.200] It's really easy to go back. Right.
+[00:21:00.760] And you can do different types of, of of trees.
+[00:21:04.080] Right.
+[00:21:04.320] Go try one path and another path and you still have the whole context
+[00:21:08.360] with you and you can navigate around it very easily.
+[00:21:11.320] There's different types of, of types of information.
+[00:21:15.520] So this is a JSON L structure.
+[00:21:18.120] So you have these JSON information with messages model
+[00:21:20.840] changes different types of things.
+[00:21:22.800] And you can ingest Jones write your own custom messages which are sent to the LM
+[00:21:28.880] and those which are not sent to the level custom message in this case sorry.
+[00:21:35.520] Yeah.
+[00:21:36.240] Quick overview, but the the session.
+[00:21:39.960] So remember the way I have architected the application
+[00:21:44.760] is that we have a case, we have an agent container per customer.
+[00:21:49.760] And then we have sessions per case.
+[00:21:51.880] And now that we have these sessions right with, with this audit log
+[00:21:55.920] and with all this information, now you can we can start thinking
+[00:21:59.680] about other types of agents working on the same information.
+[00:22:04.120] We can redo certain things or change certain things because, you know,
+[00:22:08.760] someone has decided either manually or automatically
+[00:22:12.600] or doing things, or we can reuse patterns.
+[00:22:16.640] One of the things that we're exploring
+[00:22:18.880] is that we're actually
+[00:22:19.720] going through the session logs, and we're creating a skill out of this, right?
+[00:22:23.480] So we're going through the session information and creating a skill
+[00:22:27.080] afterwards, which we're going to do evals around it, etc..
+[00:22:30.920] Right.
+[00:22:31.520] But the point is the session, the session log is really, really powerful.
+[00:22:36.200] And I also think that the tree information is going to be powerful.
+[00:22:40.120] Although to be fair, we have not explored that too much.
+[00:22:44.240] All right.
+[00:22:44.840] Cool. So we have a couple of primitives.
+[00:22:46.800] I hope this gives you some ideas on how you could architecture
+[00:22:50.680] this this this application your your type of applications.
+[00:22:53.920] So let me close off with a couple of patterns or how how this
+[00:22:59.200] then builds into applications and flows.
+[00:23:03.160] So the first one is actually the workflow.
+[00:23:04.960] And this is the application that I've shown for before.
+[00:23:08.280] Right.
+[00:23:08.720] So the overall idea is we reuse we we give it a couple of problems.
+[00:23:12.960] We give it tools, we give it extensions to build these streamlined workflows.
+[00:23:17.280] And again I think this is going to be really, really powerful
+[00:23:20.320] because the agent is going to be adaptive to whatever is coming.
+[00:23:25.640] But that doesn't doesn't need to end there.
+[00:23:28.280] The other one is actually the more primitive version of this.
+[00:23:32.320] But as we have all these tools and this contact information,
+[00:23:36.280] why not give a power user a full blown chat right
+[00:23:40.280] where they can actually use the embedded coding agent in their system?
+[00:23:45.200] Right?
+[00:23:45.600] Think about Cowork in your system.
+[00:23:48.960] And now all of a sudden we are reusing
+[00:23:51.960] tools where we're using a context information.
+[00:23:55.440] Very different flows in the system.
+[00:23:58.280] Right. So again very much power user.
+[00:24:01.720] We actually don't have a user persona that is actually using this.
+[00:24:05.400] So this is a little bit formal formal thinking but we're using this.
+[00:24:09.920] The idea is that you can use this with existing sessions right.
+[00:24:12.800] So you can clear up existing or you can actually create brand new brand
+[00:24:16.760] new sessions and sessions as in cases.
+[00:24:21.080] Now if you keep thinking about this, about sessions, you can
+[00:24:25.440] and you know about the Model Context Protocol and their extension,
+[00:24:29.480] about MCP UIs and MCP apps, you can think about,
+[00:24:33.440] okay, maybe there is a something in between, right?
+[00:24:36.920] Maybe I'm not just only chatting with it.
+[00:24:39.000] Maybe I'm actually in interacting with the with a session in a different way.
+[00:24:45.040] Right.
+[00:24:45.360] So in this case here this is the parts lookup.
+[00:24:50.080] And we're not displaying the raw JSON anymore.
+[00:24:52.360] But we're we're displaying a rich interface which we can now interact with.
+[00:24:58.360] Right.
+[00:24:58.720] Change in this case change the amount of of of
+[00:25:02.520] what's requested for for any reason.
+[00:25:05.680] But it's it's like the way, the way that I'm thinking about is like
+[00:25:09.440] we have this general this, this, this more like application that we've built.
+[00:25:13.600] Then we have this chat.
+[00:25:15.680] And now in the chat we could start embedding more which UIs.
+[00:25:20.840] Right.
+[00:25:21.200] So it's cards at, it blends over over one or the other.
+[00:25:26.520] Which brings me to the final point, malleable software.
+[00:25:30.080] And this is a an article
+[00:25:33.480] by which or an essay by encode switch which I really, really like.
+[00:25:37.280] And it talks about this idea that software systems
+[00:25:41.520] should not be these predefined systems, but more of an ecosystem
+[00:25:46.320] where anyone can adapt their tools to their needs with minimal friction.
+[00:25:50.360] The example in the article in the essay is this specific,
+[00:25:55.360] these kitchen tools where you have this very sophisticated slicer.
+[00:26:00.400] I don't know if you guys still watch TV, but in Germany
+[00:26:04.360] we had this channel where you can you get these things all, all day long,
+[00:26:08.360] or you could just use a knife. Right?
+[00:26:11.960] But knives are adaptable.
+[00:26:14.600] You can do different things.
+[00:26:15.720] Yes. You might need a little bit training on it, but you can do different things.
+[00:26:19.840] And the authors of this article, they argue for software
+[00:26:25.120] that has not these predefined flows, but the rather
+[00:26:28.640] small tools that you can reuse.
+[00:26:31.720] The article is meanwhile adapted to the
+[00:26:35.000] AI flows or to this AI native world.
+[00:26:38.080] But the ideas are older.
+[00:26:39.920] But with AI, I think, and some of the patterns that I've shown,
+[00:26:44.720] I think we have a great deal of of potential ways of doing this.
+[00:26:49.280] And if you rethink about this, right, what can we
+[00:26:53.440] if we think about these software, these systems that we've built so far,
+[00:26:57.200] these building blocks that we've seen, what if what if the software
+[00:27:00.960] can change itself? Right. Similar to Pi. Right.
+[00:27:03.840] What if a user could basically just say like the extension that I've shown, right.
+[00:27:09.240] The extension is just a TypeScript. Right?
+[00:27:11.360] So why why isn't the user able to articulate that and say,
+[00:27:16.600] you know, only make sure that you don't send emails
+[00:27:20.120] which are not in the customer domain, right.
+[00:27:23.560] And maybe they can adapt it because of the power user.
+[00:27:26.520] Right? So that's that's the overall idea.
+[00:27:29.040] And yeah, I hope you got some inspiration.
+[00:27:33.680] And I'm not sure if you have any time for questions.
+[00:27:36.520] Yes we do. All right. Thank you very. Much
+[00:27:39.840] because.
+[00:27:46.000] Do we have any questions.
+[00:27:47.400] We've got one over here.
+[00:27:48.400] Can we get a mic over to this lady please.
+[00:27:56.480] Sorry, I've had to come over here because the projectors in.
+[00:27:58.480] The ice.
+[00:28:01.960] Yeah.
+[00:28:02.240] So you mentioned the idea of users being able to especially power users,
+[00:28:07.440] sort of take control and adapt the software to their needs.
+[00:28:11.120] How do you have any ideas on managing, I guess, the security implications of that.
+[00:28:16.160] So obviously, you know,
+[00:28:19.520] certain users can be trusted to interact with the LM
+[00:28:23.040] and adjust the extensions,
+[00:28:26.880] but I guess there's
+[00:28:30.120] downstream effects from that, either through
+[00:28:34.000] not understanding what they're doing or malice.
+[00:28:37.560] And yeah, that's.
+[00:28:40.320] Very, very great question.
+[00:28:41.600] No thank you.
+[00:28:42.240] So I think the way to think about
+[00:28:45.560] it is the level of freedom always needs
+[00:28:49.800] to stay within within certain boundaries.
+[00:28:54.320] So for example the you know,
+[00:28:57.400] we have these different tool calls where it's able to do different things.
+[00:29:01.560] Not sure if you realize, but the the draft, the draft email tool
+[00:29:06.520] is exactly designed as it is.
+[00:29:12.040] The system is not able to send emails.
+[00:29:14.520] It's only able to send draft emails.
+[00:29:17.040] So at the end of the day, you're in control.
+[00:29:20.000] You you are in control of what what it can do.
+[00:29:22.640] Right.
+[00:29:23.320] But but here, right. Again we're drafting emails.
+[00:29:26.200] And in this case we're saying like, you know,
+[00:29:28.560] do we want to do additional checks on that email. Right.
+[00:29:31.160] And the LM does something, but I want to do some additional checks.
+[00:29:34.560] And these are the kind of extensions that I'm thinking about, like certain
+[00:29:37.800] power users are able to like, you know, they don't care.
+[00:29:41.440] They just churn out these or like type different type of users.
+[00:29:45.760] And others are saying
+[00:29:46.960] starting to introduce certain guardrails or certain automations
+[00:29:50.000] in these type of things.
+[00:29:51.080] And that's that's both on the tool design level,
+[00:29:54.160] like you need to design the tools and then on the extensions.
+[00:29:57.920] But the point being is that that now
+[00:30:00.600] the LM can start calling these tools in any way.
+[00:30:04.440] Right now, all of a sudden it's like, okay, I'm going to draft an email
+[00:30:07.600] because there is some reason that I'm thinking about
+[00:30:10.920] which you have not previously thought about, but
+[00:30:14.600] with with these extensions, you can put another set of guardrails around it.
+[00:30:20.600] You're welcome.
+[00:30:21.360] Okay. I think we might have time for just one more.
+[00:30:23.200] So we've got one just here.
+[00:30:28.000] Matthias, I have created
+[00:30:29.160] an MCC Gmail MCP server, which does the same.
+[00:30:32.160] What's the difference between Pi and Gmail and CP server?
+[00:30:37.360] Great question.
+[00:30:38.600] First of all, great that you build your own MCP servers.
+[00:30:41.440] That's awesome.
+[00:30:43.080] No it's the the the the.
+[00:30:45.800] It's exactly that, right?
+[00:30:47.480] You have started defining the tools and now.
+[00:30:50.320] But the question is what do you do with these tools. Right.
+[00:30:52.800] So you have to find your own MCP server for Gmail that only sends you
+[00:30:57.520] that lets you create drafts on a Saturday afternoon, whatever.
+[00:31:00.680] Right.
+[00:31:01.040] You have like defined your special tool.
+[00:31:03.880] Now the question is, what do you do with it? Right.
+[00:31:06.560] I'm assuming you're doing this.
+[00:31:08.440] Where are you using it?
+[00:31:09.280] In some coding agent, in cloud code or or some other tool.
+[00:31:13.560] And this talk is, is like
+[00:31:16.560] first off, I think there's a future and software where, where we,
+[00:31:21.360] where systems are actually built around just defining these tools and guardrails.
+[00:31:25.080] And there's like these power users who keep using this.
+[00:31:28.440] Right. Coworker is one of these example.
+[00:31:30.840] But what I'm trying to motivate as you're starting as you have defined these MCP
+[00:31:35.360] tools, what if you start embedding them into a bigger software, right.
+[00:31:39.640] What if you start embedding them into a
+[00:31:43.600] an email automation tool.
+[00:31:46.520] And my I would argue, please have a look at Pi or some other coding
+[00:31:52.360] agent harness and reusing these MCP tools in order to build that software.
+[00:31:58.240] That's the core idea.
+[00:32:00.000] Okay. Well, brilliant.
+[00:32:02.480] Thank you very much, Matthias.
+[00:32:04.520] Thanks again. To the chairs.
+[00:32:07.040] So.

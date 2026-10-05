@@ -1,0 +1,741 @@
+WEBVTT
+
+1
+00:00:00.120 --> 00:00:03.160
+Back in June at AI DevCon in London, we had several talks
+
+2
+00:00:03.160 --> 00:00:06.200
+about the part that tends to get left out of the demo.
+
+3
+00:00:06.400 --> 00:00:07.480
+The bill.
+
+4
+00:00:07.480 --> 00:00:09.000
+Let's first hear from Amit
+
+5
+00:00:09.000 --> 00:00:13.400
+Kushwaha, a principal solutions architect at Nvidia, on the two things
+
+6
+00:00:13.400 --> 00:00:16.760
+that decide how much of an agent's work you actually pay for,
+
+7
+00:00:17.000 --> 00:00:19.920
+whether your context is cached, and whether the request
+
+8
+00:00:19.920 --> 00:00:22.920
+comes back to the machine holding that cash.
+
+9
+00:00:23.040 --> 00:00:24.080
+My name is Amit.
+
+10
+00:00:24.080 --> 00:00:27.080
+I'm a solutions architect at Nvidia,
+
+11
+00:00:27.080 --> 00:00:30.080
+and we live in the
+
+12
+00:00:30.200 --> 00:00:31.640
+Defense Department.
+
+13
+00:00:31.640 --> 00:00:35.000
+So looking at that workload, there are few optimizations
+
+14
+00:00:35.000 --> 00:00:39.560
+that are already kind of present in the production systems.
+
+15
+00:00:39.560 --> 00:00:42.600
+And these are very critical to make that workload work.
+
+16
+00:00:43.480 --> 00:00:46.440
+Again, going back to kind of the current
+
+17
+00:00:47.560 --> 00:00:48.080
+setup that
+
+18
+00:00:48.080 --> 00:00:52.040
+I shared in the previous slide, in the first turn,
+
+19
+00:00:52.080 --> 00:00:56.320
+this is your user input and you get an output in the second term.
+
+20
+00:00:57.360 --> 00:00:59.600
+This whole thing could be cached.
+
+21
+00:00:59.600 --> 00:01:02.040
+And this is the optimization
+
+22
+00:01:02.040 --> 00:01:04.920
+that I'm talking about for most of the agent workloads.
+
+23
+00:01:04.920 --> 00:01:09.360
+Caching becomes very, very important because what you are doing is pilot.
+
+24
+00:01:09.400 --> 00:01:12.360
+By the time you are at the 40th turn,
+
+25
+00:01:12.360 --> 00:01:17.280
+a lot of context has been created, but you don't need to do all the work.
+
+26
+00:01:17.520 --> 00:01:22.080
+If you are caching your output inputs properly, then you only need to do
+
+27
+00:01:22.120 --> 00:01:26.680
+work on the new tokens that are being generated in this whole workflow.
+
+28
+00:01:27.080 --> 00:01:31.360
+So at the end of kind of this, this fourth term, for example,
+
+29
+00:01:31.520 --> 00:01:34.800
+most of this is cached and you don't have to do any work on it.
+
+30
+00:01:35.640 --> 00:01:39.160
+The new part is only where you run your GPUs and actually to make the work,
+
+31
+00:01:40.000 --> 00:01:42.920
+if the caching was not enabled, you can imagine
+
+32
+00:01:42.920 --> 00:01:45.640
+a lot more work needs to be done, and there's consequences
+
+33
+00:01:45.640 --> 00:01:49.240
+on one performance on time to first token and different kinds of metrics.
+
+34
+00:01:49.280 --> 00:01:54.280
+So caching becomes kind of a must have in most of these agentic developments.
+
+35
+00:01:55.360 --> 00:01:57.200
+And as you see, the
+
+36
+00:01:57.200 --> 00:02:01.480
+vast majority of output input tokens by the end could be cached
+
+37
+00:02:01.520 --> 00:02:04.520
+because it's just building up on the previous display.
+
+38
+00:02:06.280 --> 00:02:09.640
+The caching itself is not the full story,
+
+39
+00:02:10.200 --> 00:02:13.960
+especially when you are serving these models on multiple replicas.
+
+40
+00:02:14.800 --> 00:02:18.960
+Your terms have to kind of get on the right replica.
+
+41
+00:02:18.960 --> 00:02:23.560
+For example, if you turn one in, the previous slide landed on replica one,
+
+42
+00:02:23.560 --> 00:02:27.560
+and this is just an example of you could have a model serving multiple times.
+
+43
+00:02:27.560 --> 00:02:29.200
+So these are three replicas
+
+44
+00:02:29.200 --> 00:02:32.200
+of the same model that you are using neural network things.
+
+45
+00:02:32.520 --> 00:02:35.520
+So turn one ended up on replica K.
+
+46
+00:02:36.200 --> 00:02:38.480
+If you do a round robin kind of a setup
+
+47
+00:02:38.480 --> 00:02:41.480
+the turn you might end up on some other replica.
+
+48
+00:02:41.600 --> 00:02:45.080
+But this replica does not have the cash that we talked about.
+
+49
+00:02:45.080 --> 00:02:48.320
+So the other thing that becomes very important in a
+
+50
+00:02:48.400 --> 00:02:52.360
+kind of setup is to make sure that your turns
+
+51
+00:02:52.400 --> 00:02:56.120
+land on the same replica where your cash is stored.
+
+52
+00:02:56.240 --> 00:02:59.920
+So this is what is kind of shown here in the cave where routing,
+
+53
+00:02:59.960 --> 00:03:03.920
+where turn one lands on replica one, we make sure that the turn
+
+54
+00:03:03.960 --> 00:03:07.680
+two also lands on replica one, so that we can leverage the cache
+
+55
+00:03:07.680 --> 00:03:10.000
+that is stored already on that side.
+
+56
+00:03:10.960 --> 00:03:13.040
+We also heard from Tammuz Dubnov
+
+57
+00:03:13.040 --> 00:03:16.440
+of Autonomy AI, with the numbers that made the room go quiet.
+
+58
+00:03:16.840 --> 00:03:19.520
+Uber increased its AI budget by six times
+
+59
+00:03:19.520 --> 00:03:22.600
+and got through the whole increase in four months.
+
+60
+00:03:22.840 --> 00:03:25.640
+And of every $100 spent on AI,
+
+61
+00:03:25.640 --> 00:03:28.760
+about 18 reaches code that actually ships.
+
+62
+00:03:28.840 --> 00:03:32.880
+Now, in the rush to AI Native, some people are doing it wrong
+
+63
+00:03:32.960 --> 00:03:34.840
+and it can be really, really expensive.
+
+64
+00:03:34.840 --> 00:03:37.840
+Everybody heard of Uber and what's going on there?
+
+65
+00:03:38.360 --> 00:03:38.800
+Okay.
+
+66
+00:03:38.800 --> 00:03:41.800
+So this came out just to I think 3 or 4 days ago.
+
+67
+00:03:42.320 --> 00:03:47.240
+Uber has increased the area spend since 2024 by six x.
+
+68
+00:03:47.560 --> 00:03:51.520
+Now that seeks X growth was completely used within four months.
+
+69
+00:03:51.560 --> 00:03:54.560
+They are out of AI budget for the rest of the year.
+
+70
+00:03:55.880 --> 00:03:59.120
+And we asked them what the impact is of training with like fully a need
+
+71
+00:03:59.120 --> 00:04:00.720
+that everybody get all the tokens you want.
+
+72
+00:04:00.720 --> 00:04:04.440
+That's like the upward CFO conversation that you guys have magically not had.
+
+73
+00:04:04.680 --> 00:04:08.200
+You will get an answer saying
+
+74
+00:04:08.240 --> 00:04:11.960
+AI costs are getting harder to justify, people are more and more tokens.
+
+75
+00:04:12.120 --> 00:04:14.320
+But me as a business leader, I'm
+
+76
+00:04:14.320 --> 00:04:18.720
+not seeing how there's a link to actually moving faster on features.
+
+77
+00:04:18.720 --> 00:04:21.720
+And that's the really, really big gap.
+
+78
+00:04:22.000 --> 00:04:25.280
+It's just throwing more LLM compute that's not fixed organization.
+
+79
+00:04:25.320 --> 00:04:28.760
+You actually want to be a native and give the people who can decide
+
+80
+00:04:28.800 --> 00:04:30.280
+the ability to execute
+
+81
+00:04:31.800 --> 00:04:33.960
+Microsoft.
+
+82
+00:04:33.960 --> 00:04:36.600
+And a similar phenomenon, they gave everybody cloud code.
+
+83
+00:04:36.600 --> 00:04:38.360
+And now they're taking it away.
+
+84
+00:04:38.360 --> 00:04:40.400
+Because just giving cloud code to more
+
+85
+00:04:40.400 --> 00:04:43.440
+and more people in an organization is a wonderful way to burn money.
+
+86
+00:04:43.440 --> 00:04:46.440
+It is not the right way to speed up the work.
+
+87
+00:04:47.440 --> 00:04:48.800
+And now if we actually want to see like
+
+88
+00:04:48.800 --> 00:04:52.720
+what is all these token budget, where is this bending going to?
+
+89
+00:04:52.800 --> 00:04:58.080
+Somebody is not a deep dive managing over 2400 companies and how they use AI.
+
+90
+00:04:58.200 --> 00:05:03.440
+And you can see from any $100 that you spend on AI, only $18
+
+91
+00:05:03.480 --> 00:05:06.960
+actually goes to meaningful code
+
+92
+00:05:07.000 --> 00:05:09.960
+that actually gets shipped to users.
+
+93
+00:05:09.960 --> 00:05:15.040
+A lot of it goes to stuff that gets reworked bugs that AI also generated,
+
+94
+00:05:15.040 --> 00:05:18.880
+and you get this wonderful loop of spending more and more money in less
+
+95
+00:05:19.120 --> 00:05:23.360
+because of the alignment and basically how the model is trained.
+
+96
+00:05:23.600 --> 00:05:26.640
+Luke Marsden, CEO of Helix ML, is running
+
+97
+00:05:26.640 --> 00:05:29.720
+a bootstrapped company, so he feels every token.
+
+98
+00:05:29.920 --> 00:05:33.400
+His finding is that open weight models on hardware you own
+
+99
+00:05:33.400 --> 00:05:36.400
+now handle about 80% of the work.
+
+100
+00:05:36.480 --> 00:05:40.720
+So take three months of token budget by the machine and keep the ability
+
+101
+00:05:40.720 --> 00:05:44.120
+to reach for a frontier model when you genuinely need it.
+
+102
+00:05:44.560 --> 00:05:48.080
+most of my day now when I'm doing technical work
+
+103
+00:05:48.080 --> 00:05:52.720
+is that I'm reviewing these specs, and I find the two lines in the spec
+
+104
+00:05:52.720 --> 00:05:56.760
+where the agent got it wrong, or is making a poor design decision, or
+
+105
+00:05:56.920 --> 00:06:01.960
+is unaware of some other area of the code, and you just comment on those two lines,
+
+106
+00:06:01.960 --> 00:06:05.240
+and then it then becomes fairly mechanical
+
+107
+00:06:05.240 --> 00:06:09.240
+for the agent to get the code change all the way through to
+
+108
+00:06:10.800 --> 00:06:13.920
+to being close to being ready to merge.
+
+109
+00:06:14.480 --> 00:06:19.000
+So and then the pull requests that come out of it are quite nice,
+
+110
+00:06:19.000 --> 00:06:22.120
+because we put quite a lot of effort into telling the agent
+
+111
+00:06:22.120 --> 00:06:25.720
+to take screenshots of changes that it's made.
+
+112
+00:06:25.720 --> 00:06:28.400
+So I quite often review pull requests
+
+113
+00:06:28.400 --> 00:06:31.040
+now by just looking at whether I like the change.
+
+114
+00:06:31.040 --> 00:06:33.320
+And that's quite powerful.
+
+115
+00:06:33.320 --> 00:06:36.960
+And you can also link, we also link automatically to the spec
+
+116
+00:06:37.000 --> 00:06:41.040
+that was used to to construct it.
+
+117
+00:06:41.320 --> 00:06:46.800
+Now I want to talk briefly about token costs, privacy and Donald Trump.
+
+118
+00:06:47.240 --> 00:06:51.120
+The total costs are exploding.
+
+119
+00:06:51.120 --> 00:06:53.880
+We spent a lot of money now on tokens,
+
+120
+00:06:53.880 --> 00:06:57.560
+which as a bootstrap startup is kind of painful.
+
+121
+00:06:57.680 --> 00:07:00.680
+But we also have one of these machines,
+
+122
+00:07:01.400 --> 00:07:06.480
+these open weights models like GLM 5.1 and so on, and can now
+
+123
+00:07:06.520 --> 00:07:11.440
+do pretty much 80% of the work that you need to do.
+
+124
+00:07:11.440 --> 00:07:12.520
+And so
+
+125
+00:07:13.680 --> 00:07:14.160
+if you
+
+126
+00:07:14.160 --> 00:07:18.360
+take as a meaningfully sized organization kind of your next three month
+
+127
+00:07:18.360 --> 00:07:22.360
+token budget and instead invest in some hardware with like eight
+
+128
+00:07:22.600 --> 00:07:26.920
+RTX six K pros in it, and then you use something
+
+129
+00:07:26.920 --> 00:07:28.280
+or you build something that allows you
+
+130
+00:07:28.280 --> 00:07:32.440
+to easily switch between different agents and different models.
+
+131
+00:07:32.440 --> 00:07:36.920
+Then you can avoid getting locked into, like the OpenAI anthropic ecosystem,
+
+132
+00:07:36.920 --> 00:07:41.160
+but you can still kind of burst out to like Claude
+
+133
+00:07:41.160 --> 00:07:45.040
+Opus 4.8 if you've got something really hard.
+
+134
+00:07:45.080 --> 00:07:48.760
+But for all of the tedious stuff, you should be using local models
+
+135
+00:07:48.760 --> 00:07:52.040
+where you just have to pay for the electricity, in my opinion.
+
+136
+00:07:52.560 --> 00:07:55.160
+to close, John Groetzinger at Cisco, on
+
+137
+00:07:55.160 --> 00:07:58.360
+spending your humans as carefully as you spend your tokens.
+
+138
+00:07:58.360 --> 00:08:00.440
+When a knowledge base article changes,
+
+139
+00:08:00.440 --> 00:08:04.240
+a model, rewrites the matching skill and runs the evaluations.
+
+140
+00:08:04.240 --> 00:08:07.360
+Small changes that pass release themselves.
+
+141
+00:08:07.440 --> 00:08:10.440
+A person only gets pulled in for the big ones.
+
+142
+00:08:11.040 --> 00:08:14.160
+So a lot of people will say wikis over docs go to die.
+
+143
+00:08:14.160 --> 00:08:16.600
+And of course, largely I do agree with that
+
+144
+00:08:16.600 --> 00:08:18.480
+because people just don't really maintain docs.
+
+145
+00:08:18.480 --> 00:08:22.360
+But when you have a strong culture like we do, our docs are not really dying
+
+146
+00:08:22.360 --> 00:08:23.840
+or actually seeing the opposite.
+
+147
+00:08:23.840 --> 00:08:26.280
+Our docs are becoming more important to ground the agents,
+
+148
+00:08:26.280 --> 00:08:30.200
+but what we're seeing is that a lot of people are building agentic systems
+
+149
+00:08:30.240 --> 00:08:34.280
+that blindly try to use any content, or they'll have agents that build
+
+150
+00:08:34.280 --> 00:08:37.520
+their own memories on supporting stuff, using that, and then the memories drift
+
+151
+00:08:37.520 --> 00:08:41.040
+from the content, and then you end up having some answer come out to a customer.
+
+152
+00:08:41.040 --> 00:08:44.720
+And that's just completely unaligned with the article that it says
+
+153
+00:08:44.720 --> 00:08:47.920
+it uses a source, and then everyone just loses faith in the entire system.
+
+154
+00:08:47.960 --> 00:08:48.160
+Right?
+
+155
+00:08:48.160 --> 00:08:49.720
+And that's the problem we've been struggling with
+
+156
+00:08:49.720 --> 00:08:50.920
+for the last couple of years.
+
+157
+00:08:50.920 --> 00:08:51.720
+So we're trying to figure out
+
+158
+00:08:51.720 --> 00:08:54.880
+how do we keep these more in sync in a way that we can actually trust it.
+
+159
+00:08:54.880 --> 00:08:56.280
+And that's what the system
+
+160
+00:08:56.280 --> 00:08:59.280
+that these engineers built is that when the article changes,
+
+161
+00:08:59.320 --> 00:09:00.520
+we kind of pipeline that, right.
+
+162
+00:09:00.520 --> 00:09:04.160
+Think of like a GitHub action triggering when we update a knowledge base article
+
+163
+00:09:04.200 --> 00:09:08.480
+that goes into a pipeline with an LLM that reviews the changes, determines
+
+164
+00:09:08.480 --> 00:09:12.240
+if it's a minor change, moderate major, and then makes the change for itself
+
+165
+00:09:12.240 --> 00:09:15.120
+to update its skill. And then it runs the evals.
+
+166
+00:09:15.120 --> 00:09:17.280
+If the evals pass, great, everything's good.
+
+167
+00:09:17.280 --> 00:09:19.800
+If it's a minor change, just changing a typo or wording
+
+168
+00:09:19.800 --> 00:09:22.880
+and the evils pass, I don't really need to have my human gate.
+
+169
+00:09:22.880 --> 00:09:25.680
+That new version, just let it automatically release.
+
+170
+00:09:25.680 --> 00:09:27.200
+But if you're doing a more complex
+
+171
+00:09:27.200 --> 00:09:30.200
+change, a major change, maybe you're introducing a new topic.
+
+172
+00:09:30.240 --> 00:09:32.640
+Maybe that's something that you need some more quality control.
+
+173
+00:09:32.640 --> 00:09:34.480
+And that's where you insert your human right.
+
+174
+00:09:34.480 --> 00:09:38.000
+Your humans either go far on the left or far on the right, but in between
+
+175
+00:09:38.160 --> 00:09:41.800
+you should not be wasting your time, should not be caring about a text diff.
+
+176
+00:09:41.840 --> 00:09:43.200
+If your engineers are reviewing
+
+177
+00:09:43.200 --> 00:09:45.800
+text diffs on a skill, you are wasting a lot of time.
+
+178
+00:09:45.800 --> 00:09:48.800
+That is just unnecessary, at least in my experience.
+
+179
+00:09:49.160 --> 00:09:51.840
+So new topic means new eval, right?
+
+180
+00:09:51.840 --> 00:09:53.440
+You need to build a new evaluation.
+
+181
+00:09:53.440 --> 00:09:56.480
+Of course you can let the LM do that, but you need to really tell it what success
+
+182
+00:09:56.480 --> 00:09:59.520
+looks like in order for it to build a good evaluation.
+
+183
+00:09:59.520 --> 00:10:00.840
+Thanks for watching.
+
+184
+00:10:00.840 --> 00:10:05.520
+Be sure to join us for the next AI DevCon this November in New York City.
+
+185
+00:10:06.040 --> 00:10:09.880
+Visit ainativedev.io to learn more and book your ticket

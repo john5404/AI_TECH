@@ -1,0 +1,689 @@
+[00:00:00.000] this is a this is a really interesting session about how you know
+[00:00:03.240] what happens at a, at a larger enterprise when, when skills really are distributed.
+[00:00:08.040] And there are many, many development teams wanting to wanting to use skills.
+[00:00:13.080] It really poses kind of different challenges at a larger organization.
+[00:00:17.280] So John, who's a principal engineer at Cisco, will be will be presenting this.
+[00:00:22.040] I actually presented
+[00:00:22.800] with John a little while earlier at Cisco Live down in Amsterdam.
+[00:00:26.640] So it gives me great pleasure to welcome John on stage.
+[00:00:28.800] So please give it up for John.
+[00:00:40.880] All right.
+[00:00:41.840] So hopefully everyone can hear me back there.
+[00:00:43.680] So again the title here is about skills and putting them everywhere and really
+[00:00:47.760] putting pipelines around that.
+[00:00:49.120] So you don't have to maintain multiple versions of context in various places.
+[00:00:52.720] Because again,
+[00:00:53.520] the end of the day, both humans and agents really need to consume this context.
+[00:00:57.160] So I'm going to kind of talk about some things
+[00:00:58.720] we've been struggling with and some patterns we've used internally at Cisco.
+[00:01:03.160] So this might be a little controversial for some people here,
+[00:01:06.120] especially maybe if you work for a frontier model and be earmuffs it
+[00:01:09.240] but you don't really need a smarter model today.
+[00:01:11.880] The models are perfectly capable of doing what you need for business value, right?
+[00:01:15.880] Not talking like PhD level intelligence and beyond, but getting business value
+[00:01:20.160] out of the models. It's already there today.
+[00:01:22.160] The problem is really that you need
+[00:01:23.560] smarter context and smarter context engineering.
+[00:01:26.600] And so for me, the last couple of years I've been jumping harness to harness.
+[00:01:31.120] I'm always chasing the latest, greatest thing, constantly breaking my workflows.
+[00:01:34.640] I'm sure other people can relate to this.
+[00:01:36.400] And always there's so many variables that anytime I switch to a lower model
+[00:01:40.440] and it breaks something, I'm immediately like, well, that's the model's fault.
+[00:01:43.360] I'm going back to opus, right?
+[00:01:44.480] Because this thing that I don't understand, it has to be the model, right?
+[00:01:47.720] But once skills came onto the scene, it kind of changed my perspective
+[00:01:50.800] perspective on things, especially recently with the new patterns
+[00:01:54.360] of a agentic fan out in the harness, right where I have my model set to opus,
+[00:01:58.360] and I ask it to do this massive prompt and it spawns 15 sub in.
+[00:02:02.640] That cost is just really increasing, and we're actually seeing that becoming
+[00:02:06.080] actually a concern where we had to start limiting model use on our large enterprise
+[00:02:10.080] because of the cost of this stuff and the fan out being a problem.
+[00:02:14.320] So I really wanted to figure out,
+[00:02:16.280] okay, why can't I just use sonnet for everything?
+[00:02:18.560] And I found out I can.
+[00:02:20.200] And today for the last couple of months, I largely used the medium tier model.
+[00:02:23.480] Doesn't really sonnet
+[00:02:24.440] GPT medium reasoning I don't really use those high end models.
+[00:02:27.600] It's very rare that I use those.
+[00:02:29.520] Maybe for some super complex planning. Lots of contexts.
+[00:02:32.240] I still use them, but I challenge my engineers to really try
+[00:02:35.240] to use that medium tier as their baseline and only jump into the greater tier
+[00:02:38.880] when they need to.
+[00:02:39.600] And the real unlock for this was skills, because all the harnesses,
+[00:02:43.840] all the models are training on skills, they're honoring skills.
+[00:02:46.600] And so if you can lean into that,
+[00:02:48.440] your context can actually transfer between the harnesses.
+[00:02:51.360] And that was great for me because I can
+[00:02:53.200] I can try Claude Code, I can jump into dev and I can jump into GitHub Copilot CLI.
+[00:02:57.320] And if my skills work in all three of them relatively, it works the same.
+[00:03:00.880] So it's great.
+[00:03:02.440] But what was what you need to understand is how do you manage your context, right?
+[00:03:06.480] How do you share it?
+[00:03:07.400] Package it once
+[00:03:08.240] and then ship it to everyone, but only have one source of management.
+[00:03:11.800] And the real unlock for that is evals.
+[00:03:14.480] Evals are extremely important, and you need to make sure
+[00:03:17.120] that you're actually spending engineering effort
+[00:03:19.280] learning how to build a valuations for your context.
+[00:03:21.600] And what you'll find is if you do that correctly, you can actually use
+[00:03:25.680] extremely low end models in your workflows become much more deterministic,
+[00:03:29.400] especially for things that are repetitive that you need to do all the time.
+[00:03:33.200] I don't think anyone in this room if I want them and I said, hey, I can
+[00:03:35.960] you can use opus and do this workflow, or you can use haiku
+[00:03:39.880] and one way faster and way cheaper, but you get the exact same result.
+[00:03:42.840] I mean, which one are you going to choose? It's a no brainer.
+[00:03:45.000] No one's going to choose
+[00:03:45.720] the more expensive, slower model just because if you actually figure out
+[00:03:49.120] how to do that optimization, you're going to go with the cheaper, faster one.
+[00:03:52.600] So the stories that I'm going to tell today
+[00:03:54.440] stem from kind of that journey of two completely different teams.
+[00:03:58.240] One is more of a traditional context already exist that humans maintain.
+[00:04:02.480] How do we convert that into something
+[00:04:04.000] agents can maintain
+[00:04:04.960] without reinventing it, or having complete drift in the two systems?
+[00:04:09.000] And then the second one is more developer centric, where everything we do
+[00:04:12.760] should be more skill based going forward and kind of being the starting point.
+[00:04:17.280] So before we go too deep in just a little background on myself,
+[00:04:20.800] My name is John Groetzinger, and I've been in Cisco
+[00:04:23.840] for about 14 years now,
+[00:04:25.320] actually came in through an acquisition of a company called Sourcefire.
+[00:04:28.760] We wrote an intrusion prevention software.
+[00:04:31.120] It's still one of the core technologies in Cisco's firewall today.
+[00:04:35.160] Right.
+[00:04:35.440] And so I spent about 12 years in the TAC, which is our technical
+[00:04:40.000] assistance center, technical support for enterprise customers.
+[00:04:43.800] I'd be dealing with very high pressure situations financial
+[00:04:46.840] institutions, banks, hospitals, critical infrastructure.
+[00:04:50.440] When that goes down,
+[00:04:51.200] I'd be the kind of person figuring out how do we get them up quickly, you know,
+[00:04:54.520] and I really want to automate that because those are very
+[00:04:56.720] annoying situations, right?
+[00:04:58.280] And so I've been a full stack developer for the last 12 to 14 years,
+[00:05:02.760] but the last 2 to 5 years, there's a lot of edge cases that you can't
+[00:05:06.600] handle an automation right? Easily anyway.
+[00:05:09.560] And AI kind of changed that a lot, right?
+[00:05:11.960] I really got excited and I was like,
+[00:05:13.360] oh man, these 50 edge cases, I don't have to hardcode.
+[00:05:16.000] If else is for I can just throw it to an agent
+[00:05:18.280] and with some context and it actually handles that quite well.
+[00:05:20.480] And then for the last year or so, I've been focused heavily on production system.
+[00:05:25.800] We just released a couple of weeks ago, GA we have a fully AI native
+[00:05:30.400] platform built from the ground up to be AI native, its customer external facing.
+[00:05:34.520] We have over 1000 users on board in just a few weeks, and it's been a that's
+[00:05:38.960] where these stories are actually coming from its shipping production agents.
+[00:05:43.440] Okay, so
+[00:05:44.120] let's take a step back and hopefully everyone knows what a skill is.
+[00:05:47.520] If not, you probably haven't been paying attention over the last couple of days.
+[00:05:50.600] And so I really hope you have.
+[00:05:52.720] But a core of it is it can be very simple or it can be very complex, which is nice.
+[00:05:57.520] It's flexible, but the bare minimum is just you have that skill
+[00:06:01.280] that just is like your starting point for your agent.
+[00:06:04.120] And so one skill, for example, that I've created for
+[00:06:07.080] our team is a repository standard.
+[00:06:08.960] Because we have tons of technical debt.
+[00:06:10.920] We have people creating new projects all the time on using models
+[00:06:14.680] that are trained on stuff that's not quite up to date, right?
+[00:06:17.040] So if I say creating a new Python project, it pumps out a requirements.txt
+[00:06:21.200] with a pip install and I go insane because I only want people using UV, right?
+[00:06:24.920] And so I put that into the skill
+[00:06:26.760] so I don't have to have my engineers worry about like setting up projects
+[00:06:30.520] the wrong way. They just install the skill and set up the project with the agent.
+[00:06:33.400] So that's just one example.
+[00:06:35.120] That's an easy win, right?
+[00:06:36.480] So you want to make your skill ship with rules,
+[00:06:39.160] which is essentially just more markdown files.
+[00:06:41.480] You can put scripts in there.
+[00:06:42.840] Any scaffolding you want can really be as good as you want,
+[00:06:46.040] but what's key is that you add a value for your skills, right?
+[00:06:49.600] Define the bare minimum that you expect this skill
+[00:06:52.360] to always help with and always do it well.
+[00:06:54.600] And so as you increase
+[00:06:56.080] or improve the skill or you add more to it,
+[00:06:58.160] you don't want that old functionality to break, right?
+[00:07:00.040] So you need to focus on what is the core stuff that should always do well.
+[00:07:03.640] It's going to handle
+[00:07:04.440] those other edge cases decently well, and you can update the evals as those
+[00:07:07.720] come out.
+[00:07:08.960] Now these are not really case studies.
+[00:07:11.240] This is not like, hey, you must go do this.
+[00:07:12.960] This is the way forward.
+[00:07:14.360] These are really just
+[00:07:15.240] some patterns we've tried because again, one team is a development shipping team.
+[00:07:19.480] We have extremely tight deadlines because our executive leadership
+[00:07:22.760] says you have AI now.
+[00:07:23.760] You can deliver way more features just as fast, right?
+[00:07:26.440] That the world we live in.
+[00:07:27.640] Not quite, but that is the expectation that we live in.
+[00:07:30.240] So we don't really have time to engineer our workflows day to day, unfortunately.
+[00:07:34.360] I wish we did.
+[00:07:35.080] And then our support teams,
+[00:07:36.480] same thing that under a lot of pressure have high severity cases coming in.
+[00:07:40.200] You know, I really have to figure out
+[00:07:42.400] how to spend their time on focusing on the customers and not really
+[00:07:45.640] optimizing their day to day.
+[00:07:46.840] So a lot of anecdotal stuff in here, but these are just some patterns
+[00:07:49.720] I wanted to share that might be useful for you guys.
+[00:07:53.360] So story number one comes from the support team.
+[00:07:56.760] Right.
+[00:07:56.960] And if you have an existing platform of content for humans,
+[00:08:00.720] how do you take that and make it usable for agents?
+[00:08:03.360] It's kind of the story.
+[00:08:05.840] So in our in Cisco TAC, we have a very strong culture
+[00:08:09.440] around our knowledge base, something we instill in our culture
+[00:08:12.240] because engineers are constantly shifting out.
+[00:08:14.680] The real value comes from that experience.
+[00:08:16.960] I help this customer with this really complicated problem.
+[00:08:19.520] There's other ones that are definitely going to have the same problem.
+[00:08:21.640] Let me write that down
+[00:08:22.520] so the next engineer doesn't have to suffer like I did,
+[00:08:25.000] and the customer doesn't have to wait as long for a solution.
+[00:08:27.320] It's just ingrained in our culture.
+[00:08:28.960] So we really wanted to lean into how do you leverage that which is highly
+[00:08:32.400] curated, high quality content, but feed it into an agent system?
+[00:08:36.200] I think some of the first things we tried were just given a tool
+[00:08:39.400] to search the pull in the docs and let the agent figure it out.
+[00:08:43.040] Didn't really work so well.
+[00:08:44.440] You know, there were wins here and there,
+[00:08:45.800] but there were a lot of hallucinations and stuff that just didn't make sense
+[00:08:48.480] because there is still stale content in our knowledge based system.
+[00:08:52.280] Right?
+[00:08:52.440] Not every article is up to date,
+[00:08:53.880] so you really need to pay attention to which ones you let the agent consume.
+[00:08:57.680] So two engineers that have been kind of
+[00:08:59.360] working on this for two years, a couple of months ago,
+[00:09:01.600] created a platform that converts our art articles
+[00:09:04.600] which are kind of handpicked, doesn't just blindly take every article
+[00:09:07.280] and shove it into this agent system, but high-quality articles
+[00:09:10.560] that people are actually actively maintaining get converted into skills.
+[00:09:14.280] And then we build evaluations for that, right?
+[00:09:16.880] So think customer opens a case.
+[00:09:19.600] They have a problem description.
+[00:09:21.680] We go through three weeks of collecting logs
+[00:09:23.480] and figuring out how to fix the problem.
+[00:09:24.840] And then finally we fix it. Right.
+[00:09:26.480] Why did it take three weeks?
+[00:09:28.000] How can we cut that time down into just going from like description
+[00:09:31.720] to solution on the first day? Right.
+[00:09:33.720] And you'll write an article to kind of help with that.
+[00:09:35.720] And then we give it to our agent so it can kind of automate that even more.
+[00:09:39.200] Now how many people here have actually written the skill?
+[00:09:42.400] Everyone. Most hands up. Okay.
+[00:09:44.400] Now how many people have written those skills?
+[00:09:46.520] How many write them by hand?
+[00:09:47.680] Do you write your skills out by hand?
+[00:09:49.640] All right, a few people stop doing that.
+[00:09:51.800] The skill is not for you. The skills for your agent.
+[00:09:54.600] So it's good to have human docs.
+[00:09:56.480] But skill is for agents, right?
+[00:09:59.120] It shouldn't.
+[00:10:00.000] You should not really care what is inside the skill, the context itself.
+[00:10:03.880] What you should care about is the outcome that comes out of
+[00:10:06.160] using the skill with the agent.
+[00:10:08.000] So where your human spends the time, that is your most precious resource
+[00:10:11.840] as your humans, validating your taste, the quality, what actually matters.
+[00:10:15.680] That's the eval.
+[00:10:16.600] And then the initial KB, the stuff in the middle.
+[00:10:19.120] Let the agent do it for you.
+[00:10:20.400] Let LLMs do it for you.
+[00:10:22.120] Even better, if you want a smaller model to do this workflow, let the small model
+[00:10:25.840] build the skill for itself.
+[00:10:27.160] Found a lot of anecdotal success in doing that.
+[00:10:29.400] We're just kind of like, hey, well, this is for you.
+[00:10:31.480] How do you want to organize this information
+[00:10:33.560] so you can be more efficient with it?
+[00:10:35.120] Just put that in a pipeline, have the output quality as an eval,
+[00:10:38.720] and you can kind of verify if it's working or not based on that.
+[00:10:42.880] So a lot of people will say wikis over docs go to die.
+[00:10:46.000] And of course, largely I do agree with that
+[00:10:48.440] because people just don't really maintain docs.
+[00:10:50.320] But when you have a strong culture like we do, our docs are not really dying
+[00:10:54.200] or actually seeing the opposite.
+[00:10:55.680] Our docs are becoming more important to ground the agents,
+[00:10:58.120] but what we're seeing is that a lot of people are building a agentic systems
+[00:11:02.080] that blindly try to use any content, or they'll have agents that build
+[00:11:06.120] their own memories on supporting stuff, using that, and then the memories drift
+[00:11:09.360] from the content, and then you end up having some answer come out to a customer.
+[00:11:12.880] And that's just completely unaligned with the article that it says
+[00:11:16.560] it uses a source, and then everyone just loses faith in the entire system.
+[00:11:19.800] Right?
+[00:11:20.000] And that's the problem we've been struggling with
+[00:11:21.560] for the last couple of years.
+[00:11:22.760] So we're trying to figure out
+[00:11:23.560] how do we keep these more in sync in a way that we can actually trust it.
+[00:11:26.720] And that's what the system
+[00:11:28.120] that these engineers built is that when the article changes,
+[00:11:31.160] we kind of pipeline that, right.
+[00:11:32.360] Think of like a GitHub action triggering when we update a knowledge base article
+[00:11:36.040] that goes into a pipeline with an LLM that reviews the changes, determines
+[00:11:40.320] if it's a minor change, moderate major, and then makes the change for itself
+[00:11:44.080] to update its skill. And then it runs the evals.
+[00:11:46.960] If the evals pass, great, everything's good.
+[00:11:49.120] If it's a minor change, just changing a typo or wording
+[00:11:51.640] and the evils pass, I don't really need to have my human gate.
+[00:11:54.720] That new version, just let it automatically release.
+[00:11:57.520] But if you're doing a more complex
+[00:11:59.040] change, a major change, maybe you're introducing a new topic.
+[00:12:02.080] Maybe that's something that you need some more quality control.
+[00:12:04.480] And that's where you insert your human right.
+[00:12:06.320] Your humans either go far on the left or far on the right, but in between
+[00:12:10.000] you should not be wasting your time, should not be caring about a text diff.
+[00:12:13.680] If your engineers are reviewing
+[00:12:15.040] text diffs on a skill, you are wasting a lot of time.
+[00:12:17.640] That is just unnecessary, at least in my experience.
+[00:12:21.000] So new topic means new eval, right?
+[00:12:23.680] You need to build a new evaluation.
+[00:12:25.280] Of course you can let the LM do that, but you need to really tell it what success
+[00:12:28.320] looks like in order for it to build a good evaluation.
+[00:12:31.400] Right?
+[00:12:33.880] Okay.
+[00:12:34.240] So that story number one, now story number two is a little bit more complex.
+[00:12:38.200] And it's more probably relatable
+[00:12:40.040] to everyone in the room because it's developer focused.
+[00:12:42.440] And so this is a concept of just how do you instill
+[00:12:46.920] that culture of skill first context engineering into your engineering teams.
+[00:12:51.360] And that was something that we kind of
+[00:12:53.360] did on our team building this new agent platform.
+[00:12:55.920] And so I'm going to kind of share that story here.
+[00:12:58.120] And so to talk a little bit about the complexity and the environment working in,
+[00:13:02.880] I want to tell you a little bit about the system we built first.
+[00:13:05.240] So the one that we released a few weeks ago that I mentioned earlier,
+[00:13:09.360] this AI native platform, it's a multi-agent orchestration system.
+[00:13:13.280] Of course, we have a central orchestrator.
+[00:13:15.160] We don't call it an orchestrator because we're Cisco.
+[00:13:17.280] It's a router. It's a semantic router, of course. Right.
+[00:13:20.040] So we have our semantic router.
+[00:13:22.080] It routes to multiple agents.
+[00:13:23.800] There are on these eight specialist agents.
+[00:13:26.360] That's just what we have today.
+[00:13:27.600] And we're already building ten more of this quarter. Right.
+[00:13:30.120] And that's constantly growing.
+[00:13:31.560] So those are owned by different development teams.
+[00:13:34.000] Some of them are owned by different organizations.
+[00:13:35.840] But all of this goes into one single platform.
+[00:13:38.360] So the customer gets one single unified interface.
+[00:13:41.200] They have different apps and different pages.
+[00:13:43.040] They can navigate in there.
+[00:13:44.400] There's whole pipelines and databases behind each of those apps,
+[00:13:47.920] and each of them comes with their own agent.
+[00:13:49.920] But we don't expose that kind of complexity to the customer.
+[00:13:53.280] That would be annoying.
+[00:13:54.200] They have one AI assistant that they can talk to everywhere.
+[00:13:57.520] We have AI buttons embedded everywhere.
+[00:13:59.280] Some are static buttons that are directly routed to an agent to help them.
+[00:14:02.600] But then we have free form chat as well.
+[00:14:04.480] So if I'm sitting on the configuration best practice app and I ask it
+[00:14:08.600] what tack cases I have open that shouldn't go to the configuration agent,
+[00:14:12.040] it should go to the cases agent and our system works well for that.
+[00:14:15.400] The only way we were able to ship that with confidence
+[00:14:17.560] is because we did heavy evaluations, and we have a strong engineering culture
+[00:14:21.360] around that now that we had to build. Right.
+[00:14:23.520] And so that was something that I was actually tasked
+[00:14:26.600] with, was figuring out how do we evaluate this stuff?
+[00:14:29.240] I got the goal of saying, hey, you're going to be the give the go or no, go on.
+[00:14:32.680] If this is actually going to be good enough to ship,
+[00:14:34.760] because I think a lot of people are stuck in the sea phase.
+[00:14:37.280] So we need to be very confident
+[00:14:38.600] that we're not going to release something that's just terrible.
+[00:14:41.080] We've seen all the disasters, people
+[00:14:43.600] having agents sell them a car for a dollar, right.
+[00:14:45.360] We don't need that bad PR we really needed to be confident about this.
+[00:14:49.240] So I kind of came up with this framework for testing, right?
+[00:14:52.880] We used a lot of lang chain and lang graph and Lang
+[00:14:55.000] Smith for observing our agents, which has a good eval culture.
+[00:14:58.440] But the typical way that you create evals and data sets today
+[00:15:02.800] isn't really aligned with what I wanted,
+[00:15:04.600] because I really wanted to be able to compare all the environments.
+[00:15:07.640] Right.
+[00:15:08.040] So when you build a agentic platform, your signals really come from your traces.
+[00:15:12.520] You should ship early, monitor it, and then adjust
+[00:15:15.200] based on what you're observing, how people interact with it.
+[00:15:17.720] Because when you have a free form chat, people can ask anything, right?
+[00:15:20.440] So you can't really predict what your people are going to.
+[00:15:22.240] The people are going to ask, kind of got to let them do it right.
+[00:15:24.880] So you're going to be constantly pulling evals from production data
+[00:15:27.880] and then figuring out, oh, that's a question they asked.
+[00:15:30.320] Did not go well, one to the wrong agent, even if it went to the right agent.
+[00:15:33.640] Maybe that gave a bad answer.
+[00:15:35.000] I want to build an evaluation for that because it's something we want to support.
+[00:15:38.560] Now, if I pull in this new eval and I run it on my local laptop
+[00:15:42.120] and I get it all working, okay, great, that likely resulted in some
+[00:15:46.360] sort of prompt change, some sort of tool update, whatever it might be.
+[00:15:50.280] What else did that break to fix this one thing?
+[00:15:52.880] That's the loop we constantly see.
+[00:15:54.480] I'm chasing this current bug.
+[00:15:55.920] I don't even know what that breaks when I change the prompt.
+[00:15:58.240] Without emails, you won't. Right?
+[00:15:59.720] And so I had to figure out, okay,
+[00:16:01.480] how do we actually do this more unit test style, right?
+[00:16:04.440] As an enterprise, if you've ever scaled up software unit
+[00:16:07.040] testing is absolutely essential.
+[00:16:08.600] Evals are the same in this world of the agentic.
+[00:16:10.920] They are the unit tests for your agents.
+[00:16:12.600] And so building this concept simple things I wanted basic data set schemas.
+[00:16:17.520] Everyone to use that same baseline schema and and storing that with a repository.
+[00:16:23.440] So the data set stored with the code.
+[00:16:26.120] Now typically a data set is in JSON format right.
+[00:16:29.080] And usually a JSON is just a single line file.
+[00:16:32.560] So when an agent reads it, if you have 1000 examples in there, it's
+[00:16:35.440] just this massive context that it explodes.
+[00:16:38.040] So immediately I said, okay, we need to switch.
+[00:16:40.280] Everyone needs to be using JSON, L instead of JSON.
+[00:16:42.800] So then each example for each eval is an individual line.
+[00:16:46.120] Your coding agent can make more precise edits on the data set.
+[00:16:49.760] Because again, we're not hand curating data sets.
+[00:16:51.720] We absolutely don't have time for that.
+[00:16:53.320] Everyone has a coding agent and it's basically updating the data set.
+[00:16:56.440] We need to make that more efficient.
+[00:16:58.040] This is something I've learned that I would instill into this skill.
+[00:17:00.680] And I'm going to talk about I wrote a script so this can work
+[00:17:04.440] basically into your local laptop dev staging the same exact
+[00:17:08.000] same exact code works in any environment because it's very simple.
+[00:17:11.600] You know, traditionally when you have a unit test, you import the function,
+[00:17:15.880] you pass in whatever input you're testing, and then you verify the output.
+[00:17:19.120] Right.
+[00:17:19.760] Agents are no different when you have this kind of black box evaluation.
+[00:17:23.600] You can do the exact same thing.
+[00:17:25.160] However, what happened in the middle you might actually care about as well.
+[00:17:28.760] Right.
+[00:17:29.080] And so you can actually observe that stuff in a platform
+[00:17:31.640] like Lang Smith or any system observability system.
+[00:17:34.640] That's what our eval code actually runs against.
+[00:17:36.800] So we don't import right.
+[00:17:38.200] Like a Python import don't work like that.
+[00:17:40.760] They get an endpoint. Right.
+[00:17:42.440] And we point our evaluation code at the endpoint to invoke the agent.
+[00:17:46.040] Answer comes back out.
+[00:17:47.200] We check the observability system.
+[00:17:49.040] Did it call the tools we expected it to call what the right parameters did it
+[00:17:52.800] spend the roughly the amount of tokens that we expected it to spend?
+[00:17:56.320] What was the latency on this base when we ran it last time? Right.
+[00:17:58.880] You got to have a baseline for all this stuff built into your evals.
+[00:18:02.000] So all of this is what I'm trying to basically teach
+[00:18:04.520] all of my globally distributed team in just basically have like a week or two
+[00:18:09.040] to basically introduce this concept to eight different teams
+[00:18:12.000] distributed around the world.
+[00:18:13.760] What options do I have?
+[00:18:15.120] Get one meeting and get everyone on it that they can just not pay attention to.
+[00:18:18.720] I mean, let's be honest, what meeting
+[00:18:21.040] is anyone going to pay attention to for an hour of me at them about testing?
+[00:18:24.760] No developer cares about this.
+[00:18:26.400] It's another complex problem.
+[00:18:28.360] Texting testing is not exciting.
+[00:18:30.080] It's not exciting work.
+[00:18:31.240] Engineers don't get excited about it, so you got to do it for them
+[00:18:34.240] as much as you can.
+[00:18:36.520] How do you plug it into CI?
+[00:18:38.000] How do you make it environment aware right.
+[00:18:40.600] How do we do the data set schema.
+[00:18:42.320] All these things we want to consistency around with?
+[00:18:44.800] Again, hundreds of engineers distributed around the world.
+[00:18:47.400] So my thought was okay meeting is not going to work.
+[00:18:49.760] We have a little bit of time, but everyone has a coding agent.
+[00:18:52.600] And these development teams, the actual developers, why don't we make a skill?
+[00:18:56.320] And then I can just have everyone install the skill
+[00:18:58.520] and the agent can build the evals for them.
+[00:19:00.360] So that was basically the theory and ended up working quite well.
+[00:19:04.000] So the plugin that I built has our basic skill.
+[00:19:06.760] MD has a bunch of examples scripts, example scripts, example evaluations.
+[00:19:12.040] Basically, I spent a lot of time doing this really well with one single agent
+[00:19:16.200] to basically figure out all these good patterns.
+[00:19:18.240] And then I had my agent to fill that down into a skill,
+[00:19:21.280] basically explaining, hey, everything that we just created here,
+[00:19:24.560] can you make a skill for yourself,
+[00:19:26.480] for other people with coding agents to be able to do the exact same thing?
+[00:19:29.960] And so that's what came out.
+[00:19:31.600] The agent kind of built the skill for me.
+[00:19:33.520] We iterated it with versions, right.
+[00:19:35.480] And I shared it slowly with one team,
+[00:19:37.320] got some feedback on day one, day two and other team day three.
+[00:19:41.000] Everybody. Right.
+[00:19:42.000] And so teams just kind of installed it.
+[00:19:44.120] They asked their coding agent,
+[00:19:45.080] hey, do this thing that I don't care about that
+[00:19:46.600] John wants me to do, and I have a job to do
+[00:19:48.800] by the end of the week for right there agent is kind of did it for them.
+[00:19:51.880] And by the end of the week, every agent team
+[00:19:54.080] kind of had a data set done the same way, similar metrics right as before this,
+[00:20:00.120] if we just told eight teams to go build evaluations for their agents,
+[00:20:03.520] I mean, what do you think would have happened?
+[00:20:04.760] Right. We would have had massive inconsistency.
+[00:20:07.280] If I want to go help some other team, I understand.
+[00:20:09.600] Oh, their metric 0 to 10 and ten means good.
+[00:20:12.320] This team did 0 to 5 and five means bad, and this team did 0 to 1.
+[00:20:16.080] Like that is just something
+[00:20:17.320] we have to speak the same language and engineered towards the same goal.
+[00:20:20.480] And a skill can really help you kind of do that.
+[00:20:22.560] So that's what I really wanted everyone to contribute to this framework
+[00:20:26.080] and we install it as a skill, we version it and everyone
+[00:20:28.880] kind of shipped it together.
+[00:20:30.720] So that was essentially the theory and what it worked.
+[00:20:33.520] There was one problem that happened is that the management
+[00:20:37.360] would then come to me, my boss or whoever, and they would say, hey,
+[00:20:40.680] what's the update on that evaluation framework?
+[00:20:43.240] So-and-so said they liked it.
+[00:20:44.200] Can you give me can you show me what you did?
+[00:20:45.920] And I was like, oh yeah, you can just ask your coding.
+[00:20:47.800] A you don't have one of those because you're a manager.
+[00:20:50.680] So that was a problem.
+[00:20:52.240] Immediately I was like, okay, there's still a gap here.
+[00:20:54.320] But I wanted a very simple solution for this because again,
+[00:20:56.840] I don't my immediate reaction or anyone's might be right.
+[00:21:00.440] Please confluence wiki, whatever.
+[00:21:02.480] I'll go put a document that explains this eval framework that I built,
+[00:21:05.480] and then I'll never update it and it'll drift right.
+[00:21:07.520] So I didn't want that.
+[00:21:08.960] So the concept is really just everything is in the repository.
+[00:21:12.800] The skill is obviously backed by gate. It's in a repo.
+[00:21:15.480] Publish it to a registry like Tessl.
+[00:21:17.040] But you're you maintain it in a git repository that's version controlled.
+[00:21:20.720] And you have a skill that empty for an agent.
+[00:21:23.000] And then you have a README.md for a human right.
+[00:21:26.280] Very simple.
+[00:21:27.120] You can use an AI coding agent to kind of update both, but you use
+[00:21:30.120] the human kind of just validating the readme and the skills for the agent.
+[00:21:33.160] And you have evals that make sure that works right.
+[00:21:34.960] But not everyone gets on git either.
+[00:21:37.760] A lot of our managers are not even in git.
+[00:21:39.360] They operate solely in like Jira and confluence.
+[00:21:42.000] So I can't explain to 100 managers go and go make an account on GitHub.
+[00:21:46.400] And now you got to put this in confluence.
+[00:21:48.920] So there's there's really cool open source tools.
+[00:21:51.240] You can build your own script to basically convert that readme
+[00:21:54.560] that's in the project directly to just ship that to confluence.
+[00:21:57.840] Right.
+[00:21:58.040] You make a doc, think hashtag one and markdown becomes H1.
+[00:22:01.520] It's a very simple, very deterministic conversion.
+[00:22:04.600] Don't have an LLM, just update confluence
+[00:22:06.400] I mean you can do that too, but it's kind of token heavy
+[00:22:08.840] just to have your agent write a deterministic script to
+[00:22:11.200] sync that markdown into a pretty HTML file that everyone in that other system uses.
+[00:22:15.360] And that was it. And that was all I did.
+[00:22:16.960] So now when someone asked me for, hey,
+[00:22:19.000] can you tell me about that agent framework or I,
+[00:22:20.960] they just ping me on WebEx and ask me, where can I get information about this?
+[00:22:24.920] I send them just a link to that confluence doc, which is a direct
+[00:22:28.720] 1 to 1 map of the me from the repo.
+[00:22:30.760] And so there's no drift.
+[00:22:31.880] So what my agents are reading, what their managers are reading
+[00:22:34.440] is all the same content and it's all maintained in one place.
+[00:22:37.120] And that was really just a very productive unlock.
+[00:22:39.920] And it worked really well.
+[00:22:41.560] And so the cultural shift that I really have to
+[00:22:44.320] instill in my team was asking first, is this a skill?
+[00:22:47.120] Right.
+[00:22:47.520] So someone asks WebEx message like, hey,
+[00:22:51.240] new engineers onboarding today, where's the DevOps information?
+[00:22:54.200] How do I get access to the Kubernetes cluster? Right.
+[00:22:56.760] It's not really that's that is sometimes the question.
+[00:22:59.000] And when I see that I say no, no, no, no, no.
+[00:23:00.680] Go ask do we have a skill that explains this
+[00:23:03.000] so I can install it in my agent that needs to become the default reaction.
+[00:23:06.400] Right. And that's a cultural shift.
+[00:23:07.680] You have to
+[00:23:08.120] actually intentionally kind of engineer and kind of distill down to your team.
+[00:23:12.680] And so that's kind of our default
+[00:23:14.040] now that we're operating at is like, hey, does anyone have a skill for this?
+[00:23:17.280] If not, we create one together and we maintain it together.
+[00:23:20.160] Again, I don't want 15 engineers creating 15 skills for the same thing,
+[00:23:24.560] especially with this world of the token budget becoming a problem.
+[00:23:27.920] That's just extremely wasteful engineering, right?
+[00:23:30.200] We should all be trying to share when we can.
+[00:23:32.360] We have coding agents.
+[00:23:33.360] There's no reason
+[00:23:33.960] that we can't really all work together and have our agents maintain it.
+[00:23:37.280] As long as we have evals that define what the behavior should be.
+[00:23:39.960] This is actually much easier than it sounds.
+[00:23:43.320] Okay,
+[00:23:43.600] so what do you do when you go back to work Monday or maybe tomorrow?
+[00:23:46.560] Whatever.
+[00:23:47.040] Least me, I'm going back Monday.
+[00:23:48.480] But you want to just start small.
+[00:23:50.880] You don't need to go build some crazy robust platform like we did
+[00:23:53.880] that that came from like two years of us beating our head off a wall, right.
+[00:23:56.520] So really wanted something more robust.
+[00:23:58.680] But you don't have to start there.
+[00:24:00.480] Start with one workflow,
+[00:24:01.600] one concept, one thing that you find yourself
+[00:24:03.800] explaining over
+[00:24:04.480] and over to different audiences and just turn that into a skill
+[00:24:07.720] or a package, whatever you want to call it.
+[00:24:09.280] But really, at the end of the day, an agent skill
+[00:24:11.320] and really just give thought to, okay, who are the audiences?
+[00:24:14.400] What platforms are they operate on?
+[00:24:16.240] Can I maintain the Readme here and sync to those registries or whatever it is?
+[00:24:20.640] That should be kind of your objective.
+[00:24:22.560] Add evaluations.
+[00:24:24.320] That is key.
+[00:24:24.880] If you don't do that, it's just going to fall apart.
+[00:24:26.960] So make sure you define the bare minimum.
+[00:24:29.080] What do I expect this skill to actually help people with?
+[00:24:31.760] And how do I actually validate that? That's it.
+[00:24:34.280] Just give a little thought to that up front.
+[00:24:35.840] It'll go a long way and you can kind of compound on that over time.
+[00:24:39.200] And then of course start sharing it.
+[00:24:41.040] But you don't want to just share, you know, with everyone right away.
+[00:24:44.680] You kind of use it yourself first.
+[00:24:46.800] This is like the 0.0.
+[00:24:48.680] x version of the context, right?
+[00:24:50.040] You really do want to kind of semantically version your skills and your context
+[00:24:53.840] to give signal to your engineers consuming it. Right?
+[00:24:56.200] Because if I go look at a skill and it's version 1.0, I expect it to do
+[00:24:59.720] exactly what it's supposed to do on the first try with almost no friction.
+[00:25:02.800] Right?
+[00:25:03.120] And if it doesn't do that, you've lost my trust, right?
+[00:25:05.840] So signify that with your versioning.
+[00:25:08.080] How mature is that actually right.
+[00:25:10.200] So start with version zero zero, share it with a few, get some feedback.
+[00:25:13.640] Iterate.
+[00:25:14.240] Once it's becoming a little more stable, maybe zero dot x, right?
+[00:25:17.600] And then finally, once you've shared it with a lot more people and it's regularly
+[00:25:21.280] like people are like, man, this is working great for me.
+[00:25:23.320] That's a good signal to move it to version one, right?
+[00:25:25.520] And then that gives everyone else a signal, hey, you can consume this.
+[00:25:28.120] Here's what the skill does.
+[00:25:29.080] I promise it'll work because it's battle tested and evaluated.
+[00:25:32.720] So takeaways here again our agent architectures they change every day.
+[00:25:37.000] You'll have a new one next week. Next month.
+[00:25:39.040] You really can't predict that.
+[00:25:40.200] But your context is your durable investment right?
+[00:25:42.720] Really spend time on how you contacts engineer and maintain things in one place,
+[00:25:47.520] but distribute that to multiple systems to keep them in sync.
+[00:25:50.560] That's really where you want to spend your time
+[00:25:52.200] and just build your pipelines today, because everything else is definitely
+[00:25:55.200] going to change on you anyway.
+[00:25:56.600] So hopefully this was useful information for everyone.
+[00:25:59.920] And thank you for listening to me yet for a while.
+[00:26:07.320] Thank you.
+[00:26:08.040] Thank you very much. We have a few minutes.
+[00:26:10.840] If anyone has any questions, shout
+[00:26:14.240] and I'll, I don't know, not throw the microphone at you.
+[00:26:17.200] Because health and safety and all that.
+[00:26:21.800] Hi. Thanks for the talk.
+[00:26:22.920] Are the skill and the MD that come out very different?
+[00:26:28.520] To be honest, there are probably like
+[00:26:29.720] 80% similar in most cases the Readme and skill looked very similar.
+[00:26:33.920] I'll usually start with the skill for the agent
+[00:26:36.040] and I'll say, can you document this and read me?
+[00:26:38.240] And if I have questions,
+[00:26:39.080] I kind of updated, but honestly they're very, very similar, which feels wasteful.
+[00:26:43.160] But again the LLMs maintaining it, so it's not really like that
+[00:26:46.240] much extra to maintain.
+[00:26:47.320] But they're very similar in my experience.
+[00:26:50.560] Hi there.
+[00:26:51.360] Nice to talk. I'm just right here.
+[00:26:54.320] So my question is around when you scale kind of like
+[00:26:58.200] having like a mutual scales I think you've been this journey
+[00:27:00.760] like starting with a few scales, but now I'm assuming that you have maybe
+[00:27:03.800] hundreds of scales.
+[00:27:05.400] How would you like like orchestrate and make sure, like the end user
+[00:27:09.480] find the right scale when it is needed, when it is distributed, as you said.
+[00:27:13.560] You're asking how to maintain like or
+[00:27:15.640] kind of prevent like skill explosion, right?
+[00:27:18.920] Is that kind of the question?
+[00:27:20.480] I don't know if I follow it.
+[00:27:22.720] So the status you already in or you would get to it, you would have mutual skills.
+[00:27:26.880] And then the end user is looking to do one task and require like 1 or 2 skills.
+[00:27:32.000] How do you orchestrate that end user to pull the right skill when it is needed?
+[00:27:36.160] Oh, right. So
+[00:27:38.400] I mean, we we
+[00:27:39.760] for our development team we're actually using Tessl, which kind of helps with that.
+[00:27:42.880] And they have kind of a server that helps you search your skills.
+[00:27:45.280] But putting figuring out how to index your skills
+[00:27:49.040] so they're searchable by an agent generally is the answer.
+[00:27:51.960] How you do that kind of depends on what what your tooling is being used.
+[00:27:55.720] But you can what we do, you can put them all in one GitHub repository,
+[00:27:59.680] and then you can have your agent have access to that,
+[00:28:01.520] and then it can just grep for the skills that it needs.
+[00:28:03.400] I mean that's a simple solution you can do today with almost no effort.
+[00:28:06.440] Right.
+[00:28:06.680] But if you need something more robust then you have to kind of look
+[00:28:09.120] to more robust systems.
+[00:28:12.080] Okay.
+[00:28:13.120] You actually just answer.
+[00:28:14.160] My first question is do you store your skills in a GitHub repo or something?
+[00:28:18.520] And rather than per project.
+[00:28:20.680] And then
+[00:28:21.360] I guess it sounds like it's a GitHub repo, like separate from the projects.
+[00:28:25.120] Correct? Yes, correct.
+[00:28:26.760] We have like each engineering team kind of has their own skills repo,
+[00:28:30.400] you know, and I'll give access to that.
+[00:28:31.400] But yes, we have one repo for like all of our team skills.
+[00:28:34.080] And so there. Sorry.
+[00:28:35.640] How do you go about evaluating like when a skill needs to get updated or something.
+[00:28:39.040] Is that is that then become a few engineers all coordinate
+[00:28:42.800] or does everyone free to like put in a pull request to update the skill?
+[00:28:45.720] Because I mean, obviously you don't want everyone's drift,
+[00:28:48.960] you know, influencing the context for all of your engineers.
+[00:28:52.640] Yeah.
+[00:28:53.000] So we evaluations are honestly the answer to that.
+[00:28:55.760] We do let anyone submit PRS to the skills.
+[00:28:57.960] We treat it just like we would a shared library. Right?
+[00:29:00.680] So if you go in with that mentality, this is a shared library.
+[00:29:03.240] You cannot break functionality for other people.
+[00:29:05.600] How do you validate that the evaluations need to cover it? Right.
+[00:29:08.440] So if there's something in the skill that you care about,
+[00:29:10.720] build an evaluation for it.
+[00:29:12.120] Every time you update the skill, make sure that evaluation passes.
+[00:29:14.840] It's not any different than a shared library with unit testing.
+[00:29:18.840] And if you think of it that way, it is. It is that simple.
+[00:29:21.400] But you have to give a little more thought
+[00:29:22.640] to how you build your evals, because it's just
+[00:29:24.400] a little more complicated with the non-deterministic nature of LLMs.
+[00:29:27.400] But conceptually it's the same. Wonderful.
+[00:29:31.000] I think there's no more questions unless there's any last minute
+[00:29:33.720] one down the front here. Thank you.
+[00:29:37.280] One minute. Go.
+[00:29:39.720] Thank you for the talk.
+[00:29:40.360] That was really good.
+[00:29:41.240] Is there any way we can go to read more into evals?
+[00:29:44.560] I presume no one is that one we can use today, or does that end up
+[00:29:48.880] just being a skill you write, for example?
+[00:29:50.880] I mean, I'm certainly happy to talk to you one on one about it.
+[00:29:53.120] I can talk about evals all day, so, you know,
+[00:29:55.120] if you want to find me afterwards.
+[00:29:56.400] I'm happy to chat about it, for sure.
+[00:29:59.120] So it's right up my alley.
+[00:30:00.360] Yeah. Yeah, sure.
+[00:30:01.280] Just come find me after the talk.
+[00:30:04.200] Sweet. Thank you very much.
+[00:30:05.520] Another round of applause for John.

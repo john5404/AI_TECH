@@ -1,0 +1,598 @@
+[00:00:01.000] Frontier models are overused, We throw all kinds of trivial problems
+[00:00:05.040] at them all the time.
+[00:00:06.240] we should not do that. It's a waste of compute.
+[00:00:08.160] It's a waste of money. It's a waste of tokens.
+[00:00:10.520] It's a waste of water.
+[00:01:09.480] Good evening.
+[00:01:10.040] So, yeah,
+[00:01:11.800] just briefly introduce myself.
+[00:01:13.520] I'm Sean Smith.
+[00:01:17.160] I work on MCP
+[00:01:19.720] agents and various open source projects and initiatives that are hugging face.
+[00:01:24.400] A couple of things I do there is I look after our MCP server,
+[00:01:28.640] make sure that that's healthy and running well.
+[00:01:31.680] I help maintain our skills projects.
+[00:01:34.560] And I also was a very,
+[00:01:38.280] very early adopter of MCP and currently in MCP maintainer and community moderator
+[00:01:44.480] I spent most of my time at the moment
+[00:01:46.640] working on transports, so if anyone wants to talk MCP transports
+[00:01:50.360] during the networking, that's an reasonable topic.
+[00:01:53.760] I'm hoping that most people here
+[00:01:55.640] are familiar with hugging face in one way or another.
+[00:01:59.280] Some few nods. Yep.
+[00:02:00.600] So we're, we've got a huge community
+[00:02:05.120] and we host models.
+[00:02:08.160] We host research papers and data sets to help people use models.
+[00:02:12.560] We also have thousands and thousands of AI applications hosted on our spaces
+[00:02:18.040] platform, so people can develop and build and train models, and then they can show
+[00:02:22.640] demos or host those things on our on our zero GPU services.
+[00:02:28.920] And it's all very, very good fun.
+[00:02:30.840] So I mentioned I was an MCP maintainer and a fairly early adopter.
+[00:02:34.760] And so for this talk, what I was going to do was sort of
+[00:02:38.360] go through some of the stuff
+[00:02:39.240] we've been doing with skills, but really kind of start off
+[00:02:43.600] with kind of thinking back to where we started with tool calling
+[00:02:47.360] and how we've ended up with skills and how we've then ended up with
+[00:02:49.720] some of these more complex evaluation pipelines and tools.
+[00:02:53.080] And so if we kind of go back to when MCP was first launched,
+[00:02:57.480] the it was all actually really, really quite straightforward.
+[00:03:01.400] If you recall, if you were playing with this stuff, then
+[00:03:04.560] you would connect an MCP server to your LM.
+[00:03:08.640] You would normally have to configure that with a JSON file,
+[00:03:11.160] and you would write a prompt and you would see the tool cool.
+[00:03:13.760] And you would kind of clap and say, well, that's you know, that's brilliant.
+[00:03:16.960] I've connected one thing to another.
+[00:03:19.120] Things that we didn't really have then were we
+[00:03:21.960] didn't really have sort of particularly good harnesses.
+[00:03:25.360] You know, we had the Claude desktop app and we had a few other kind of fairly
+[00:03:29.720] custom, custom applications that we could play with, but nothing
+[00:03:33.200] that was kind of really nice to use or easy to configure.
+[00:03:37.440] We didn't have agents ND files.
+[00:03:40.400] I mean, that feels quite straightforward, doesn't it?
+[00:03:42.080] Such a simple thing is,
+[00:03:43.040] you know, a text file which helps drive our agents behavior.
+[00:03:46.360] But we hadn't kind of agreed that that was actually a reasonable
+[00:03:49.040] and a good thing to do and share between our tools.
+[00:03:52.360] And the other thing that kind of changed was
+[00:03:56.000] we didn't have long running tool loops. So,
+[00:04:00.360] you know, it used to be the case.
+[00:04:01.960] You could kind of prompt it to change to all three tool calls together,
+[00:04:05.240] but actually these kind of loops that from a single prompt
+[00:04:10.360] will run for an hour or two hours and sort of change the 50 or 60 tool calls
+[00:04:14.840] as it goes, as it moves towards the task, just weren't really a thing.
+[00:04:19.160] Okay, so so what happened and what changed?
+[00:04:22.360] So the the kind of magic, if you like
+[00:04:25.840] is, is that labs knowing that particularly for coding tasks,
+[00:04:32.120] they could place models in environments and conduct reinforcement
+[00:04:35.600] learning on them.
+[00:04:36.280] And actually it's fairly
+[00:04:37.800] what you actually do is relatively straightforward conceptually, which is you
+[00:04:41.960] place your model in a harness in an environment,
+[00:04:44.800] and you write a reward function and you give it a task.
+[00:04:47.520] And typically the reward functions are fairly deterministic,
+[00:04:50.480] and you may be able to judge the task on a scale of sort of
+[00:04:54.200] 0 to 10 or, or whatsoever.
+[00:04:56.480] And then you generate that data and you, you then train the model
+[00:05:00.320] to kind of reward itself and, and keep driving the loop
+[00:05:04.080] without needing lots and lots of intervention and steering.
+[00:05:07.080] Something that we've kind of added on hub is a bit smaller.
+[00:05:10.960] I was going to do is zoom in for this, but something that we've also added on
+[00:05:14.120] the hub is agent Environments to actually help set up
+[00:05:17.200] these kind of training environments
+[00:05:18.760] so that you can have a go at doing your own reinforcement learning.
+[00:05:22.640] It's quite a good fun if you the sort of the typical starting point for
+[00:05:26.960] this would be if you want to train a model
+[00:05:29.000] to play a game, or if you want to train a model
+[00:05:31.040] to do a couple of other things,
+[00:05:33.240] it's fairly straightforward to write the award functions for that,
+[00:05:35.800] and then place that in an environment and train a model to do so.
+[00:05:40.200] The the other kind of,
+[00:05:43.880] kind of quite important thing that's happened here, and I
+[00:05:46.960] look at this in just a second is how,
+[00:05:51.560] how free of the harnesses models have become.
+[00:05:54.520] And what I mean by that is that harnesses
+[00:05:57.840] can now be very, very simple to get to get jobs done.
+[00:06:01.480] And the example there is many SWE agent, which is a single
+[00:06:05.360] 100 line Python function.
+[00:06:07.600] Effectively that can score 76 I think actually the latest numbers
+[00:06:11.240] are 78%, 78.6% on SWE bench.
+[00:06:14.320] So you have all of these very,
+[00:06:15.680] very complex harnesses, but actually a single 100 line program
+[00:06:19.120] can get close to the state of the art performance straight away.
+[00:06:23.320] And so this is something that we've kind of seen evolve over
+[00:06:25.880] the last over the last year is actually as our models
+[00:06:30.440] become more and more capable, inversely, our harnesses become an awful lot simpler.
+[00:06:35.280] And the kind of changes that we've seen is general purpose is
+[00:06:39.120] now were given direct shell access.
+[00:06:41.440] I've put an asterisk there
+[00:06:42.560] because actually sometimes we'll give them secure shell access
+[00:06:45.920] or through an environment like just bash or something, which is more secure.
+[00:06:49.880] But typically we give our we give our models
+[00:06:53.120] a way of kind of navigating freeform with the outside world.
+[00:06:57.520] We have much fewer hacks and tricks to keep models from doing.
+[00:07:01.560] Do we might occasionally inject something into the into the message loop,
+[00:07:04.960] but those kind of techniques are kind of a lot simpler.
+[00:07:09.800] If again,
+[00:07:10.720] if you were kind of developing LM applications about a year or so ago,
+[00:07:14.760] you would normally be looking through various libraries
+[00:07:17.280] and you'd be looking at the API surface and you'd be looking at the multiple.
+[00:07:20.480] You kind of be kind of figuring out,
+[00:07:22.240] how can I build a workflow out of these, out of these steps and considering it?
+[00:07:26.720] If you're building applications now, you do something completely different,
+[00:07:30.000] which is you.
+[00:07:30.920] You take any, any tool loop
+[00:07:32.400] that you can easily get hold of, and you can basically just start using it.
+[00:07:36.360] So it's again, a lot of this stuff, as I say,
+[00:07:40.120] these models become more and more capable of doing this stuff.
+[00:07:43.120] We have. We can have simpler and simpler harnesses.
+[00:07:45.480] Building these applications are simpler, and the kind of workflows that we may have
+[00:07:50.000] previously deterministically coded have kind of been taken over by models
+[00:07:54.200] simply being strong enough to follow instructions, or by models
+[00:07:57.920] generating their own scripts and code so that they can achieve a goal.
+[00:08:01.800] Okay. So these are these are the kind of things we see.
+[00:08:04.480] So this is also why skills are interesting.
+[00:08:07.840] Because it's quite easy to look at skills and almost dismiss them as being
+[00:08:11.680] well it's just a bunch of markdown files.
+[00:08:13.120] I mean, how simple can that be?
+[00:08:15.360] But there's something else that's actually that's actually going on here, right?
+[00:08:18.320] Which is that we talked to be self directing.
+[00:08:21.320] We give them a task.
+[00:08:22.800] We give them the capability to navigate
+[00:08:26.160] so they can look at content, and then they can ingest content.
+[00:08:29.760] And critically having ingested content they can
+[00:08:32.480] then act upon what they've just ingested. Okay.
+[00:08:35.120] So this effectively means that models can do very, very complex tasks.
+[00:08:40.280] And we can configure and set them up in very, very, very simple ways.
+[00:08:45.160] So given that just
+[00:08:47.040] this is just an example that I like,
+[00:08:50.600] one of the things that we, we like doing with our MCP server
+[00:08:55.400] and with our, with our spaces is we have, you know, as I've mentioned,
+[00:09:00.840] thousands of image generation models, OCR style models, audio generation.
+[00:09:05.920] You know, pretty much any custom models, privacy filters, most recently
+[00:09:10.960] to pretty much any custom model is available through either
+[00:09:14.160] an MCP API or a gradient API on our platform.
+[00:09:17.400] And what we've because models have just got this little bit of extra capability.
+[00:09:22.920] The way that used to work for us was that we would, in the MCP server
+[00:09:26.120] say, right, we'll use I want to use this particular model to generate an image,
+[00:09:30.160] or I want to use this particular model to conduct some OCR.
+[00:09:33.960] But what we can now do is dynamically give models access to
+[00:09:39.440] literally thousands of
+[00:09:40.520] capabilities with a 45 token tool footprint,
+[00:09:44.680] because the model can say, we can ask,
+[00:09:47.600] you know, I would like to rotate the image.
+[00:09:50.560] I would like to move between two frames.
+[00:09:54.040] I would like to generate an audio book from this web page.
+[00:09:58.360] And because the model is capable of calling a tool very simply,
+[00:10:02.920] which in this case is our Dynamic spaces tool, we then effectively have a gateway,
+[00:10:07.840] which means that we can access literally hundreds
+[00:10:10.240] and thousands of models through a very, very small token footprint.
+[00:10:13.840] Okay.
+[00:10:14.200] So it lets us mix and match and, you know, just have not just capabilities
+[00:10:19.000] to read skill files, but capabilities to actually conduct inference
+[00:10:22.840] against pretty much any model and discover those things at runtime
+[00:10:26.920] rather than having to set these things up earlier. Okay.
+[00:10:29.360] So so this is the kind of, you know, the kind of power
+[00:10:33.240] that RL and these things have opened up for us.
+[00:10:36.280] And of course, that's why this is opened up skills.
+[00:10:38.560] This is why skills are important.
+[00:10:40.000] Because the ability for the model to navigate.
+[00:10:44.640] By that I mean, you know, list files or groups and skills
+[00:10:49.760] in a very, very token dense format.
+[00:10:52.360] So it doesn't matter that we're using shell commands.
+[00:10:55.040] The point is that it's token dense.
+[00:10:56.880] You know, a single token will list some files.
+[00:10:59.400] 3 or 4 tokens will conduct a search and get the results.
+[00:11:02.480] So it's an extremely efficient way for a model
+[00:11:06.520] to to bring context into itself for further action.
+[00:11:10.720] And the other kind of the quite interesting thing here
+[00:11:14.280] is, is that we can seed models, you know, it's not just documentation,
+[00:11:19.760] but we can also provide
+[00:11:21.680] ready made or customizable scripts so that we can do some fairly big,
+[00:11:25.240] determined deterministic actions or modify those
+[00:11:28.360] actions fairly easily to,
+[00:11:32.760] to, to effectively extend,
+[00:11:35.120] massively extend the capabilities that we have.
+[00:11:39.880] So when one of the kind of things
+[00:11:44.120] that particularly interests interests us is
+[00:11:49.760] training and fine tuning
+[00:11:51.800] and deploying models, right. So,
+[00:11:55.680] so the general processes is that you have to
+[00:11:58.640] identify a data set that you want to maybe fine tune a model on.
+[00:12:01.640] So I'm hoping most people are familiar with fine tuning.
+[00:12:04.080] So the idea is that we would take an existing model.
+[00:12:07.720] We would then sort of get some data
+[00:12:11.520] which told us how we wanted the model to behave in future turns.
+[00:12:15.440] So we might, for example, a silly example would be a talk
+[00:12:18.160] like a pirate set of conversation pairs, and then we take the model,
+[00:12:22.400] and then we run the model through through a number of loops
+[00:12:27.160] where we where we say this is what we want it to look like.
+[00:12:30.280] And then ultimately a new model comes out the end.
+[00:12:33.160] You can download it and you can run it in a tool like llama
+[00:12:36.680] or LM studio or so on and so forth.
+[00:12:39.840] And this, you know, I would say up until we kind of had these skills,
+[00:12:44.360] this wasn't something that was necessarily casually accessible.
+[00:12:48.520] Okay.
+[00:12:48.840] So what the skills enabled us to do was to and again, using straightforward
+[00:12:54.720] off the shelf tools like Claude code, we can say add this skill and it will
+[00:12:58.360] then guide you through the process of constructing a data set building.
+[00:13:02.360] You know,
+[00:13:02.680] do you want to synthesize your own data or do you want to use someone else's data?
+[00:13:06.240] What hardware do you need to actually do this?
+[00:13:08.720] In fact, again, you might be surprised.
+[00:13:10.680] You know, often it's sort or $3 worth of worth of
+[00:13:15.120] compute to do some very, very basic fine tunes.
+[00:13:18.600] But it will run the training scripts, it will set up,
+[00:13:21.640] it will set up monitoring for you so you can watch the loss curves.
+[00:13:25.160] It will turn it into a goof format so that you can run it locally.
+[00:13:31.720] And so,
+[00:13:33.280] you know, skills have kind of made this a huge amount
+[00:13:36.560] more accessible for people to actually start to think, right?
+[00:13:40.320] Well, you know, even in fairly simple cases, it's become very accessible
+[00:13:44.200] to build and tune and fine tuning the local model.
+[00:13:49.200] We've then also got
+[00:13:50.680] some slightly more sophisticated, sophisticated needs.
+[00:13:55.240] So we were just talking about kernel writing.
+[00:13:59.280] I'm certainly not an expert, but for the people that are again,
+[00:14:03.600] we've got,
+[00:14:04.400] you know, a kernel library, kernels is now something that we host on the hub.
+[00:14:08.560] And the idea behind hosting kernels on the on our hugging face hub like this
+[00:14:13.200] is because there is still, as we saw from previous talk,
+[00:14:15.960] there are still optimizations that people can make
+[00:14:18.080] and have for particular hardware classes, for particular particular algorithms.
+[00:14:23.040] And so kernel building and distribution is something that we can do.
+[00:14:26.480] And also the nice thing about that is that certainly for kernels
+[00:14:31.200] we can actually have a fairly deterministic outcome as to did it work
+[00:14:34.520] and was it faster or more efficient than the previous one before.
+[00:14:38.720] So again, a quite a useful, quite a useful thing for us.
+[00:14:42.760] It was there just I've put a note
+[00:14:46.080] on the slide I did want to mention this is that
+[00:14:50.440] obviously we maintain a number of quite important libraries
+[00:14:53.760] like kernels, like transformers, like diffusers, which people use to
+[00:15:00.000] to build and testing, train and deploy their own models.
+[00:15:03.440] And so rather than what we've generally found is that we're finding it
+[00:15:08.080] more valuable for people to, for example, download kernels
+[00:15:11.480] or transformers and then add the skills through their own CLI.
+[00:15:14.720] So you can say transformers add skill to the local directory
+[00:15:18.400] rather than having some other third party installer.
+[00:15:20.480] It feels a lot more comfortable to package it to package it that way.
+[00:15:25.880] So the so when it comes to does this stuff, does this stuff actually work?
+[00:15:31.360] I'm just going to pop to a pop up and slide in a moment.
+[00:15:37.680] Was it's all that we built and we're still maintaining.
+[00:15:42.000] We like it quite a lot is a tool called upskill so that we could
+[00:15:47.480] we could do a number of
+[00:15:48.360] things actually, so we can look at existing traces
+[00:15:52.320] or existing skills and generate new skills.
+[00:15:56.640] We can evaluate whether or not the skill is actually useful,
+[00:16:00.080] or we can compare the performance
+[00:16:01.920] of one skill against another skill for a particular task.
+[00:16:05.200] Or and again, we kind of did this with the kernels.
+[00:16:09.400] We can use large models to generate instructions that we can
+[00:16:14.520] then use with smaller models so that we can get similar performance
+[00:16:17.840] from smaller models.
+[00:16:18.920] So it's almost like a very kind of crude form of distillation,
+[00:16:22.360] if you like, where we are, where we have a big model due to smaller models,
+[00:16:26.040] which may be faster, cheaper or a better fit for any number of reasons,
+[00:16:31.440] and the kind of things that we that we see that this is.
+[00:16:35.520] I didn't include this in the presentation, but,
+[00:16:37.280] you know, this is a this is a kind of example.
+[00:16:39.840] One of the things that
+[00:16:42.400] building the
+[00:16:42.840] MCP server and developing these skills is important for us
+[00:16:46.080] is making sure that what we're building is applicable and working across
+[00:16:50.480] a wide range of open weights and proprietary frontier models.
+[00:16:55.240] And sometimes we have to make trade offs where we may
+[00:16:57.960] see a drop in performance in one model, but it improves other models.
+[00:17:01.240] So it's always a slightly shifting thing.
+[00:17:03.240] But again, in this example, I think this was quite
+[00:17:06.440] a fairly outrageous one where we've got two versions of the skill
+[00:17:10.360] and it generally the improved version of the skill generally improves
+[00:17:14.080] performance quite a lot, except for grok four,
+[00:17:16.440] which for some reason goes through the floor.
+[00:17:18.600] But, you know, it's always a very, very strange model.
+[00:17:23.360] And so the other nice thing that we can do with upskill is,
+[00:17:26.400] you know, it's when when we first developed this,
+[00:17:29.160] we were doing quite a lot of local development
+[00:17:31.160] and all of the kind of tropes and memes about agents running
+[00:17:35.720] wild came true as we were developing upskill and kind of running,
+[00:17:41.200] running tasks like right
+[00:17:42.800] Cuda kernels or finish off a good pull request as models were sort of running
+[00:17:48.440] over each other and stealing each other's results and generally misbehaving.
+[00:17:53.960] But so what?
+[00:17:55.440] Skill does now.
+[00:17:56.080] In fact, I'm going to why don't I?
+[00:17:58.600] I'll be brave enough to live demo.
+[00:18:01.080] But again it's you know, a typical upskill run might be something where we
+[00:18:06.480] where we write, integrate and benchmark and optimize Cuda kernel
+[00:18:10.280] and we can see that it does improve performance.
+[00:18:15.320] So based on the automated tests it produce, it improves performance.
+[00:18:19.120] But obviously the expense of rather more tokens okay.
+[00:18:22.280] But these are the kind of
+[00:18:23.080] things that we that we like to know and we like to kind of calculate.
+[00:18:28.560] So I'm just going to I think that will run.
+[00:18:31.320] So this, this upskill, I've got a
+[00:18:35.880] I've taken our normal kernel skill.
+[00:18:38.680] It's now generating some test cases.
+[00:18:41.000] We're not going to see this to completion, but I just kind of
+[00:18:45.440] want to just kind of show how it integrated with a couple,
+[00:18:48.520] of a couple of other components.
+[00:18:52.520] But, you know, we can give it a skill file, we can tell it which models we want
+[00:18:56.320] to use for generation, for evaluation, for testing or for benchmarking.
+[00:19:00.840] And we'll see if this then
+[00:19:04.880] submits any jobs.
+[00:19:06.680] So I cancel some jobs earlier.
+[00:19:08.640] We'll let that run the other.
+[00:19:10.680] And of course the other nice thing is that we've been spending quite a lot of time
+[00:19:14.880] working to collect and make it easy to publish agent traces.
+[00:19:20.520] So the idea being that we can,
+[00:19:23.920] given given an agent run is easy for you
+[00:19:28.440] from your harness, whether you're using, in this case, fast agent.
+[00:19:32.440] In other cases, it could be Pi or Codex or Claude.
+[00:19:35.200] It makes it easy to publish and share those traces so that you can
+[00:19:38.560] then have a really good a really good look at what actually happened
+[00:19:42.240] and where the tool calls were and where there were any errors
+[00:19:45.400] and that kind of stuff.
+[00:19:46.480] So if you.
+[00:19:47.360] So after you've run upskill, I'm good.
+[00:19:50.480] I'm not going to obviously get those jobs running.
+[00:19:52.440] Oh there it goes.
+[00:19:53.960] So yeah.
+[00:19:55.440] So it's now created a sandbox for each of those particular evals.
+[00:19:59.200] They should appear with scheduling in a second.
+[00:20:01.960] I'm determined to wait for it
+[00:20:03.480] now, so I'll try and crack some jokes to keep you entertained.
+[00:20:08.360] Yeah.
+[00:20:08.600] There it goes. Look at that. Sorry.
+[00:20:11.960] Oh, yeah, that one's.
+[00:20:13.000] Well, that one's doing some analysis on pull requests for transformers,
+[00:20:16.680] so you can see they're all nicely labeled.
+[00:20:19.760] Our jobs are now all running.
+[00:20:21.240] So each has got a very isolated sandbox.
+[00:20:23.360] It's not going to mess up your own local computer.
+[00:20:25.720] And of course in cases where you have things like a kernel performance test,
+[00:20:30.360] you can actually deploy it on some sort of decent hardware.
+[00:20:33.880] This is running on CPU basic at the moment, but we could
+[00:20:36.880] we could run that on some on some fairly serious harbor if we needed.
+[00:20:41.440] So so the nice thing about skills is,
+[00:20:44.440] you know, it's, it's it kind of almost
+[00:20:47.640] when we're using it for tutoring installation, best price performance.
+[00:20:50.880] It kind of gives us something between the hassle of fine tuning something.
+[00:20:55.960] It's a lot simpler than that,
+[00:20:57.200] but also something which gives us a huge amount of extra boost
+[00:21:00.480] so that we can use better fit models for for a particular task.
+[00:21:06.960] The other kind of thing, just just an area
+[00:21:10.200] where I think we're going to start to see some real progress very soon.
+[00:21:13.320] So I'd say this is
+[00:21:15.320] some of the stuff I'm talking about is probably a slight work in progress,
+[00:21:18.400] but I think this is something which is quite important for us is
+[00:21:23.320] we we're kind of increasingly seeing that
+[00:21:28.080] the people
+[00:21:29.640] like interacting with things in a fairly natural language.
+[00:21:32.720] And we've got a fairly
+[00:21:34.360] we haven't got a huge API surface, but it's a big enough API surface
+[00:21:37.720] that it can be sort of somewhat difficult to navigate and manage otherwise.
+[00:21:42.800] And so we want to give people sort of, you know, fairly good and free
+[00:21:47.080] free access to that.
+[00:21:48.240] And of course, models are very, very good at generating codes and scripts.
+[00:21:51.480] I'm mentioning the tool builder there, which is a, which
+[00:21:55.200] is actually another skill that we have which will navigate our open
+[00:21:59.640] API spec and build shell scripts or Python scripts that you can compose together.
+[00:22:03.720] But the other thing that we we started doing is
+[00:22:10.040] some code, some code generation.
+[00:22:13.680] So we've got a general query tool.
+[00:22:16.320] And the reason I kind of bring this up
+[00:22:17.760] is because one of the important things about this query tool
+[00:22:20.920] is that it generates code, and then it doesn't post-process the result.
+[00:22:25.400] It gives you the answer straight away.
+[00:22:27.480] And we're using in this case at the moment we're using GPT 120 B,
+[00:22:32.480] which is a it's it's a reasonably model, but it's very, very fast.
+[00:22:37.520] Right.
+[00:22:37.800] So one of the things that we're keen to do is to reduce latency as much as possible
+[00:22:43.560] and to use the right model for the job, but again, you can.
+[00:22:46.800] So what proportion of training models have a number in their name?
+[00:22:49.800] Okay. That's that's a query.
+[00:22:51.520] You may not ask very often but it's not an unreasonable query.
+[00:22:54.600] And again
+[00:22:54.960] you can see how quickly that code generates and actually returns an answer.
+[00:23:00.280] Now of course, you know, we can think of
+[00:23:03.640] how many followers does the invisible organization have.
+[00:23:07.360] So again, you can kind of get this extremely snappy performance.
+[00:23:10.240] And we expose this as an CP tool.
+[00:23:12.120] At the moment there's some further tuning to do, but
+[00:23:15.680] given a kind of set of traces, given a set of inputs
+[00:23:19.320] and what we then know with good outputs, we can start to think, right?
+[00:23:23.440] Well, actually we can we can start to evaluate
+[00:23:26.600] what good looks like over a fairly large set of data.
+[00:23:30.080] And we can then start to think about having an even smaller model
+[00:23:33.720] and even faster model, and a better way of actually doing those things together.
+[00:23:39.080] And we can extend that even further because something that again,
+[00:23:43.040] we're we're starting to see,
+[00:23:44.200] I'm not not entirely sure how this is going to fully work for us yet,
+[00:23:47.880] but the idea that we can actually generate UI on the fly, right.
+[00:23:50.760] So a model which knows how to generate UX components to answer certain questions,
+[00:23:56.880] show proportions, show particular information, starts
+[00:24:00.680] to become a lot more feasible.
+[00:24:02.040] Right?
+[00:24:02.240] Because, you know, if we're able to customize and train and specialize
+[00:24:07.000] models for these particular tasks, then we're in a position where we can
+[00:24:12.720] they can be cost effective and fast enough for this to work well. So
+[00:24:19.840] again, you know, afterwards
+[00:24:20.760] are more than happy to talk about this because I've done an awful lot.
+[00:24:23.800] Some we haven't covered here is MCP tool description of valuation,
+[00:24:27.400] which I know is kind of like a big thing a few months back.
+[00:24:30.000] And certainly we've looked at and we continuing to look at how we want,
+[00:24:35.280] how we can avoid confusion in the model when it's given multiple options.
+[00:24:38.640] But ultimately, the great thing is that we're
+[00:24:43.280] now in a position where models can train other models, right?
+[00:24:46.360] Models can use other models sensibly, they can train other models sensibly.
+[00:24:49.960] We've now got self-improvement.
+[00:24:51.480] It's here if you want it.
+[00:24:53.360] Owning and usefully customizing your own models is completely accessible.
+[00:24:58.200] Try it if you haven't already tried it, give it a go.
+[00:25:02.280] You might have to.
+[00:25:03.480] You might have to copy and paste a few error messages in and have the have them
+[00:25:07.800] sort it out.
+[00:25:08.320] You may have to, but you will get it working
+[00:25:10.960] very a lot more quickly than you think.
+[00:25:13.280] You can train a model to recognize your pets a lot more quickly
+[00:25:16.080] than you think.
+[00:25:16.960] This stuff is very, very accessible.
+[00:25:21.200] Frontier models are overused, right?
+[00:25:23.920] The price performance of big models like opus
+[00:25:29.320] or GPT five five is is not as expensive.
+[00:25:32.360] We throw all kinds of trivial problems at them all the time.
+[00:25:37.760] We shouldn't we should not do that.
+[00:25:39.320] It's a waste of compute.
+[00:25:40.320] It's a waste of money. It's a waste of tokens.
+[00:25:42.680] It's a waste of water.
+[00:25:44.320] It's something that we kind of need to start getting used to
+[00:25:47.640] because we we've got techniques and very, very simple tools
+[00:25:51.520] that get us to exactly where we need to be with price performance.
+[00:25:54.680] Open weight models are yours.
+[00:25:57.400] You can adjust them, you can run them, you can.
+[00:25:59.400] You can do as you need with them.
+[00:26:00.640] You're not beholden to other people making decisions
+[00:26:03.720] arbitrarily on what is allowed on an API or anything else.
+[00:26:06.520] Right? You take ownership of this stuff.
+[00:26:09.040] And finally, inference and execution is blending,
+[00:26:11.400] as I kind of mentioned, with the harnesses,
+[00:26:13.040] you know, we've kind of seen complex harnesses start to collapse
+[00:26:16.840] towards being model enablers.
+[00:26:18.480] And as we kind of see more advanced APIs like the responses
+[00:26:22.760] API or you do more local running, actually the difference
+[00:26:26.120] between inference and execution environments is starting to blend, right?
+[00:26:29.320] They're starting to become one of the same thing.
+[00:26:31.400] So anyway, I'm around afterwards if anyone wants to talk about any of these topics.
+[00:26:35.680] I hope that was
+[00:26:38.160] useful in some way.
+[00:26:39.480] And thank you very much.
+[00:26:48.600] Thank you very much, Sean.
+[00:26:49.640] Any questions?
+[00:26:57.280] Good talk sir.
+[00:26:57.920] Thanks very much.
+[00:26:58.720] I'm curious, since you're so well plugged into this space,
+[00:27:02.920] one of the areas of self-improvement comes up a lot of times is low
+[00:27:06.360] resource programing languages, things which are less popular.
+[00:27:09.360] I'm curious if that's crossed your radar.
+[00:27:11.480] Where do you see people put this to use of an ecosystem
+[00:27:14.400] that isn't as big as Python or JavaScript, and getting good results?
+[00:27:17.920] I can't think of anything directly at the moment,
+[00:27:21.160] but I definitely agree
+[00:27:24.160] that that is is a very ripe area where, you know, we
+[00:27:27.920] I mean,
+[00:27:28.240] I know that people have certainly done quite a lot of experiments of fine
+[00:27:31.320] tuning on particular code bases, and they generally tend to find it's worth it
+[00:27:34.600] when they do it.
+[00:27:35.280] But it's a maintenance has probably not got the payback for small teams.
+[00:27:39.200] But yeah, I think it's something that
+[00:27:42.520] something that's
+[00:27:44.240] right for ripe for exploitation.
+[00:27:55.560] Great job with so much information.
+[00:27:58.120] I don't know where to start, but I think you pointed out
+[00:28:00.480] to a lot of things that show that when compared to 12 to 18 months,
+[00:28:05.520] which is one of your slides, we need to have all of these tools.
+[00:28:08.720] And now, let's say 18 months from now, if you had to give the same talk,
+[00:28:13.160] of course will be a different discussion.
+[00:28:14.840] But when you see things going like we've already progressed so much,
+[00:28:19.240] like the developer tooling space has become so powerful, where do you think?
+[00:28:23.600] And also you pointed out something else is there.
+[00:28:27.680] The harnesses and tools are getting lighter
+[00:28:29.760] and it's getting factored into the models, right?
+[00:28:32.960] Sean, sorry about this earlier.
+[00:28:35.480] So where do you see things happening?
+[00:28:38.360] Is going to be doing just pushing buttons and.
+[00:28:43.680] Maybe I think
+[00:28:45.720] this might be a slightly cynical take.
+[00:28:47.080] I think over the next 12 to 18 months, what we really need
+[00:28:50.960] to see is real usage and deployment of these models
+[00:28:55.960] to solve problems that aren't deploying and using models, right.
+[00:28:59.720] So a huge amount of the explosion of software
+[00:29:02.960] we have at the moment is all based around, you know, literally
+[00:29:06.160] what we just spoke about, which is can I do inference, can I?
+[00:29:10.040] Right at all.
+[00:29:13.040] Can I do all of these things?
+[00:29:14.520] And we kind of keep on extracting this training data
+[00:29:16.680] out of the models and then sort of going, it's fantastic.
+[00:29:18.880] We I think what we're going to, you know,
+[00:29:21.320] certainly what we should start seeing over the next 12 to 18 months
+[00:29:23.800] is more of a focus on deploying these for use cases, deploying models,
+[00:29:28.120] deploying these solutions for use cases, which are more generally useful than
+[00:29:32.880] building the tools to build the tools, if you know what I mean. Yeah.
+[00:29:35.440] So it's kind of like, you know,
+[00:29:36.320] we're we're very good at the building, the picks and shovels.
+[00:29:39.760] And it's a we need to we need to, we need to start using them.
+[00:29:44.480] And I think we've got to, we've got to a capability level
+[00:29:49.280] with current models that we there shouldn't be anything which holds us back.
+[00:29:54.840] So I think I think I would certainly hope in 12 to 18 months time we're looking at
+[00:30:00.760] clever.
+[00:30:01.520] Clever business
+[00:30:05.320] and societal application of some of these technologies.
+[00:30:09.480] I don't think we're getting the full value from.
+[00:30:11.520] I think there's a lot of potential and unrealized value
+[00:30:14.920] that I look forward to this concentrating on getting.
+[00:30:18.480] Thank you. Hi.
+[00:30:19.640] I'm there, and thank you so much for your talk.
+[00:30:22.320] So one use case
+[00:30:23.520] that I'm following right now is processing a large amount of individual.
+[00:30:27.960] And I'm using frontier models.
+[00:30:29.360] And I saw somewhere that you can use like alma for easy one.
+[00:30:33.360] Yeah. We wanted to quit operating it.
+[00:30:35.280] I was thinking about
+[00:30:36.360] like how much it will cost and how long it was going to take.
+[00:30:38.760] And basically I got the answer that you can do it for ten minutes,
+[00:30:42.440] like very small one.
+[00:30:43.840] So the two part of these questions, one is that
+[00:30:47.720] I did not go into this because I was not sure what kind of I'm going to get
+[00:30:51.640] or how am I even going to evaluate whether my results are really good.
+[00:30:54.920] So events are probably like a judge or something else would be an answer.
+[00:30:59.080] So that is what I want to know.
+[00:31:00.520] How would you compare this, these kind of results.
+[00:31:03.640] And second one is that if I have a use case like this.
+[00:31:07.360] So I always wonder that let's say a new model came up and they will have much,
+[00:31:12.320] much higher capability.
+[00:31:14.160] Yeah.
+[00:31:14.360] So if I'm only like 20,
+[00:31:15.720] my own open source model
+[00:31:17.200] and it will take some time to catch up with that,
+[00:31:19.000] and I might have to change my training of that.
+[00:31:21.320] So in case like that, how do you think about training
+[00:31:25.080] your basically
+[00:31:26.040] like fine tuning your own model versus just going with the frontier. And
+[00:31:30.600] so I mean, I would
+[00:31:33.320] probably kind of collapse the question almost into a cost benefit question.
+[00:31:36.440] Right?
+[00:31:36.680] Which is that, you know, it's
+[00:31:40.680] I think it's fairly straightforward to assert that a particular volume,
+[00:31:46.040] the cost of using a frontier model
+[00:31:48.560] is for the performance you get
+[00:31:51.520] is going to outweigh the effort and money
+[00:31:55.680] that you may need to spend to do some fine tuning.
+[00:31:59.600] How exactly you quantify that, I think, comes down to a lot of
+[00:32:02.640] whether you're doing it for personal fun, whether it's whether you've got
+[00:32:06.720] 10 million data samples, whether you've got 500 data samples.
+[00:32:09.680] So I think it's a.
+[00:32:10.880] I think there's a lot of a lot of questions
+[00:32:13.040] to answer there, because obviously the more scale you have,
+[00:32:16.480] the more that trade off window comes towards that.
+[00:32:19.960] You know, a certain level of fine tuning or self hosting or
+[00:32:23.600] doing your own evaluations makes sense.
+[00:32:26.560] What I would argue, though, is certainly the
+[00:32:29.800] where the volume sided equation is pushing
+[00:32:32.800] you towards higher volume is going to mean, you know, the more volume you do,
+[00:32:38.240] the more it's going to be worth customizing and fine tuning.
+[00:32:41.280] But that the other side of the equation is also getting closer, which is it
+[00:32:44.960] is becoming a lot simpler to do that and running evaluations and so on.
+[00:32:50.160] So it's becoming cheaper to do it.
+[00:32:51.600] So I think, you know, for to be honest, I think for a lot of cases,
+[00:32:54.960] you know, we're probably not at that crossover point.
+[00:32:57.280] I think you would probably need to sit down with a spreadsheet
+[00:33:00.280] or Claude code or something and kind of figure it out.
+[00:33:03.560] But I think again, I would I would say, if you've got something
+[00:33:07.720] that's working for your use case, I and it's an important use case for you,
+[00:33:13.760] then I certainly think
+[00:33:14.680] that open weight models that you could potentially host yourself,
+[00:33:18.760] even if you're not hosting it yourself, would be something I would want
+[00:33:21.840] to keep hold of.
+[00:33:24.160] So I think there's other risks
+[00:33:25.280] that you, that you, that you, that you mitigate
+[00:33:29.760] by taking some ownership of the infrastructure.
+[00:33:34.360] Also, we don't have any more time for questions, but please give it up first.

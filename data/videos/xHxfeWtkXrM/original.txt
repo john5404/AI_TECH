@@ -1,0 +1,542 @@
+[00:00:00.000] but really looking forward to this.
+[00:00:01.480] This this feedback loop that we really need to understand if AI
+[00:00:05.320] is is truly helping us in our production code or not.
+[00:00:09.400] So please welcome on stage Justin Cormack.
+[00:00:14.120] Cheers.
+[00:00:19.360] Nice to be here.
+[00:00:20.120] Great event.
+[00:00:21.200] Hi to everyone who's online as well.
+[00:00:23.760] I love tests and I've always liked tests.
+[00:00:26.600] So with AI, you know, I enjoyed thinking about testing a lot more.
+[00:00:33.400] I live in the East of England in the middle of nowhere.
+[00:00:36.960] This is our local infrastructure.
+[00:00:39.320] This is a Roman road.
+[00:00:40.560] This is what happens if you don't maintain your infrastructure.
+[00:00:43.160] I love infrastructure, software and it's kind of my thing.
+[00:00:47.320] And a while ago, last, like middle of last year, Mineo
+[00:00:52.400] stopped maintaining their S3-compatible object storage product
+[00:00:57.960] and lots of people complained and said, oh, we like we like this product.
+[00:01:02.320] And I'm very obsessive about object storage.
+[00:01:06.280] I gave this talk at KubeCon a few years ago.
+[00:01:08.240] It's one of the most watched talks from KubeCon about object
+[00:01:12.200] storage, and earlier this year, I was kind of looking for a
+[00:01:17.720] project to experiment with this.
+[00:01:19.360] I wanted to understand what happened if you tried to use AI to right really
+[00:01:23.240] large, complex systems because it was great
+[00:01:27.480] fun writing small tools with AI, and you could write them really fast
+[00:01:30.800] in half a day.
+[00:01:31.400] And it was exciting.
+[00:01:32.560] But like, could you really build huge things?
+[00:01:35.920] Object storage, to give you an idea.
+[00:01:39.080] Most of the implementations I've looked at take around
+[00:01:42.640] at least two years to write, some of them a decade.
+[00:01:46.880] You know, these are big projects.
+[00:01:49.720] And so I thought, well, how hard could it be?
+[00:01:53.720] I might just give this a go.
+[00:01:54.920] Maybe I can do it in a week.
+[00:01:56.800] And like, I knew this was going to be a big project.
+[00:02:01.760] I was kind of excited about building a big project.
+[00:02:04.240] At the moment, it's 350,000 lines of rust, so I was new.
+[00:02:09.720] I wasn't going to read the code. I
+[00:02:13.080] have only ever half learned rust anyway,
+[00:02:16.320] and reading the code is kind of annoying.
+[00:02:19.920] It's going to be a huge and complex, and I don't necessarily need to understand it
+[00:02:24.600] all, but I know I want high quality code, and that was my thing,
+[00:02:28.400] and I knew there was plenty of scope for things to go wrong.
+[00:02:31.560] I was building distributed systems, complex stuff, and I was going to reverse
+[00:02:36.400] engineer this entire thing by talking to S3 and seeing how it works with my AI.
+[00:02:42.000] So it was like this was going to be kind of fun.
+[00:02:45.240] I knew I wanted to broadly understand the code
+[00:02:49.160] and be in the loop always, and really understand what's going wrong.
+[00:02:53.720] I had architectural opinions about how I wanted it to work.
+[00:02:58.080] I didn't want the thing to collapse into chaos as it got larger.
+[00:03:01.880] I mean, I've talked a lot of people who said, yeah, after 100,000 lines of code,
+[00:03:05.760] the AI can't do anything anymore.
+[00:03:07.000] It's terrible.
+[00:03:07.600] Give up.
+[00:03:08.720] I've worked in security a lot and performance
+[00:03:12.800] engineering and things like that.
+[00:03:13.920] And so I've got opinions about security.
+[00:03:16.400] Good.
+[00:03:17.520] And I was trying to not automate everything up front
+[00:03:21.520] because I want to know what went wrong.
+[00:03:23.320] So doing a real human in the loop thing and and the other kind of question
+[00:03:28.720] I want to answer for myself was like, what can we achieve without coding?
+[00:03:32.720] Can we be really ambitious and build things we never would have tried to build?
+[00:03:36.600] You know?
+[00:03:37.360] I know people who build database startups, and it takes a decade and it's kind of
+[00:03:41.320] a hard slog.
+[00:03:42.120] It's like, if we can do this in less time,
+[00:03:44.680] we can build more of these interesting systems.
+[00:03:46.800] I like building and using.
+[00:03:49.040] So that was what I tried to find out. And.
+[00:03:53.360] I like this quote from Deming Deming's right about quality.
+[00:03:57.880] And in he introduced quality control to Japan
+[00:04:02.320] after the war, you know, inspection of quality.
+[00:04:07.120] I know looking at the lines of code does not actually find the bugs.
+[00:04:10.600] We know that.
+[00:04:11.760] And so you have to build quality in as you go along.
+[00:04:16.400] And one of the important things to do that with obviously is testing.
+[00:04:20.520] You know.
+[00:04:22.240] And so I was like, well, I'm going to build lots and lots of tests and
+[00:04:28.760] just using testing, I think,
+[00:04:31.000] you know, works really well on small projects.
+[00:04:35.360] When you're doing a small AI project, you can really, really test it extensively.
+[00:04:40.160] You can be
+[00:04:42.680] kind of ruthless about it, and you can be pretty happy
+[00:04:46.120] that it's actually working for you and that, you know, it's simple.
+[00:04:51.320] But once you get into these larger projects, testing gets more complicated.
+[00:04:55.720] I found, you know, especially when you get into
+[00:05:00.040] systems, you get into race conditions and you get into weird things.
+[00:05:03.320] We talk about in a minute.
+[00:05:04.960] And I keep hearing people say,
+[00:05:08.480] well, with AI, all you need is 100% statement coverage and you're done.
+[00:05:11.560] And it's like,
+[00:05:14.200] so but I did try that.
+[00:05:15.600] I started off trying to get 100% test coverage.
+[00:05:18.560] It seemed like a good idea.
+[00:05:20.880] And I also measured different measures of hundred of test coverage
+[00:05:25.480] from test coverage, from integration tests.
+[00:05:28.600] And it didn't
+[00:05:31.840] really didn't really help a lot.
+[00:05:35.720] I found they were kind of better uses of my time than trying to get 100%.
+[00:05:39.840] You know, I sat down and I asked AI agent to get 100% test coverage.
+[00:05:44.800] It kind of wrote trivial tests that were like,
+[00:05:46.600] I don't, you know, this is a stupid test.
+[00:05:48.680] I don't care about that.
+[00:05:51.920] And there's also a
+[00:05:53.600] lot of weird error cases that are really hard to cover.
+[00:05:56.920] I mean, I went through and asked the agent,
+[00:05:58.840] like, well, why haven't we got 100% coverage from this?
+[00:06:01.040] It was like,
+[00:06:01.960] we don't have a test for when the random number generator in the system fails.
+[00:06:05.640] And I was like, yeah, I don't think I want to write a test for that.
+[00:06:09.040] Like, let's just to too much error injection.
+[00:06:12.160] Like I can see that there's a, you know, it's going to it's going
+[00:06:15.320] to give an error or it's going to panic and that's the right behavior.
+[00:06:18.640] I don't need to have test coverage for that on all my test suite.
+[00:06:22.800] But I still have a lot of tests.
+[00:06:25.680] I mean, 75% of my code base tests, test
+[00:06:29.600] coverage is between 75 and 100% for each file.
+[00:06:34.360] Like, it's like you can still have a lot of tests
+[00:06:38.200] without being really obsessive, about 100% test coverage,
+[00:06:41.840] which I think is not really the right kind of aim.
+[00:06:46.200] The great thing about
+[00:06:48.480] copying an existing system like S3 is you've got this test oracle.
+[00:06:52.240] You can find out what happens when you do something.
+[00:06:54.120] You run the test, you can run it against the you can run it in my case against S3,
+[00:06:59.280] and I have 1500 tests that run against S3 and they lock down the behavior.
+[00:07:04.760] Then you tell the AI you have to do it exactly like that,
+[00:07:08.360] and it's much better at doing things when it does that,
+[00:07:11.880] you know, it basically gives it a nice baseline.
+[00:07:16.880] It's so much so that I actually think that if you're writing a complex system,
+[00:07:22.120] the one way to start is to write
+[00:07:23.920] a really, really simple version that's kind of trivial,
+[00:07:26.960] that basically has the same behavior that you can use as this test oracle, so
+[00:07:31.480] that when you're building a more complex version, you don't make it break.
+[00:07:34.840] And you can build a test suite against a simple version first.
+[00:07:42.040] It's not 100%
+[00:07:44.280] easy like you pointed at Amazon S3, for example, and you discover
+[00:07:49.680] all sorts of kind of weird things like S3.
+[00:07:54.400] Authorization is a lot of it's eventually consistent, not immediate.
+[00:07:59.640] So you have to keep working out well.
+[00:08:02.640] We need a load of retries in this test.
+[00:08:04.800] Otherwise it'll it looks like it's a the behavior
+[00:08:08.200] is different and things like that.
+[00:08:11.440] And so you have to kind of do some interpretation
+[00:08:14.680] even with a kind of exact text oracle which is kind of annoying.
+[00:08:19.000] So it's not it's not quite a specification,
+[00:08:23.000] but it kind of does keep you very, very grounded, which is really important.
+[00:08:28.560] The other thing about having a test oracle of something you're trying to copy,
+[00:08:33.640] whether it's an existing system of yours or someone else's, is that
+[00:08:37.720] the public API doesn't cover behavior
+[00:08:40.720] you can't really see that goes on in the background.
+[00:08:43.760] And so you can't tell
+[00:08:47.400] when things happen or invisible behaviors about things.
+[00:08:51.640] You have to kind of either infer them from something you can observe, or
+[00:08:57.400] you need to find some other way of testing those kind of behaviors.
+[00:09:00.760] So you can't see
+[00:09:03.800] when an item really gets deleted in S3.
+[00:09:06.920] It kind of happens at some point.
+[00:09:10.560] But you know, you there's no API that lets
+[00:09:13.600] you see behind the scenes of that.
+[00:09:16.600] The other thing,
+[00:09:19.080] like you think S3 is really nicely documented.
+[00:09:22.960] It's got all these hundreds of pages of documentation.
+[00:09:25.720] The documentation turns out to mostly be wrong.
+[00:09:28.240] And every single detail when you actually look at the details.
+[00:09:31.560] So again, having the test oracle and running
+[00:09:35.320] the test is much more important than reading the documentation.
+[00:09:40.600] If you I think the documentation, you know,
+[00:09:42.960] maybe it was true once, maybe it was, maybe it's approximately true.
+[00:09:46.760] It kind of gives you hints about things that are interesting, but
+[00:09:50.400] never trust anyone's documentation at all.
+[00:09:53.680] But again, that gives you grounded tests
+[00:09:56.640] on what real behavior is and real edge cases.
+[00:10:02.760] Edge cases are really interesting
+[00:10:06.320] because they kind of it was it was kind of a while.
+[00:10:10.880] And when I found when I was actually working on
+[00:10:15.880] improving the type system in the code, and the AI was writing
+[00:10:21.720] some test cases for this random against S3 and found a 500 error,
+[00:10:25.520] which was repeatable.
+[00:10:27.040] And that was kind of quite exciting because this was,
+[00:10:32.200] you know, this was an interesting edge case that had come up.
+[00:10:35.280] It was implementing the code, and it just thought, well,
+[00:10:39.080] I'll test this against S3 and see what happens.
+[00:10:43.160] And clearly Amazon did not have a test case for this.
+[00:10:46.720] And I did.
+[00:10:47.560] And it actually gave me confidence that I was fine as soon as I found that
+[00:10:51.480] I was like my test suites actually good now or parts of it are good now
+[00:10:56.120] because I'm finding really weird errors and really weird edge cases.
+[00:11:01.880] That means I must have kind of explored a lot of the of the universe of testing.
+[00:11:07.640] And so it's kind of because it's kind of weird when you're doing this
+[00:11:11.360] kind of complex development, because sometimes you feel everything's
+[00:11:15.600] terrible and everything is really bad, and like, this is never going to work.
+[00:11:20.680] And then other times you feel, oh, actually, yeah,
+[00:11:23.560] this is kind of working again.
+[00:11:24.960] So this was kind of
+[00:11:27.440] the kind of thing about testing that gives you this kind of confidence.
+[00:11:30.800] It found another one, another repeatable 500 error later
+[00:11:35.160] in another weird edge case.
+[00:11:36.360] And I was like, okay, how many of these there are any two so far?
+[00:11:42.880] It was.
+[00:11:44.200] So I was quite good at the edge cases,
+[00:11:48.680] particularly kind of when it's actually writing, writing code itself.
+[00:11:53.680] It was.
+[00:11:54.800] I kept finding edge cases by reading the
+[00:11:57.840] AWS documentation thinking.
+[00:12:00.880] Is that really true?
+[00:12:02.920] Have we got tests for this?
+[00:12:04.080] Asking the AI to write tests for them, and finding other weird things that were
+[00:12:09.320] approximately equal to the documentation or hints from the documentation.
+[00:12:14.360] When I pointed the AI at the docs
+[00:12:16.000] and asked it to do the same thing, it was really bad at that.
+[00:12:19.120] It seemed to not be able to look at docs and find edge cases
+[00:12:23.040] in the way that I can, so that was kind of interesting.
+[00:12:27.720] But so but sometimes if you asked it,
+[00:12:33.120] if I mean, sometimes I found edge cases through test coverage issues
+[00:12:36.360] like we haven't make sure we've got improving test coverage.
+[00:12:40.480] We'll find some edge cases.
+[00:12:42.560] Just asking you to think about the usual kind of edge cases, like zero
+[00:12:47.760] length and one length and 10,001 length and so on helped a bit.
+[00:12:53.880] But, you know, you kind of have to iterate
+[00:12:57.120] through these things and kind of think about, think, think like,
+[00:13:00.120] think like a shape and think, think like a tester yourself and
+[00:13:06.000] have some ideas about areas
+[00:13:07.680] that might have weird errors.
+[00:13:12.360] Flaky tests were really interesting.
+[00:13:14.640] I said that like AWS was AWS converges to truth over time,
+[00:13:21.080] which is really annoying and this wasted a huge amount of time.
+[00:13:26.120] I like
+[00:13:28.640] never have flaky tests with AI is my hard rule.
+[00:13:32.200] Just fix them immediately.
+[00:13:34.080] It's weird things go wrong sometimes.
+[00:13:37.880] It decides that the training data says that developers never fix flaky tests,
+[00:13:42.880] so we ignore them.
+[00:13:43.880] And I then shout at it and say no.
+[00:13:46.400] In this code base, we fix our flaky tests.
+[00:13:48.760] It says so in the agents.md file, and you're ignoring it again.
+[00:13:53.360] But somehow the training data says no one fixes flaky test,
+[00:13:57.520] which was definitely true.
+[00:13:58.880] I've worked in many places that had a lot of flaky tests.
+[00:14:02.640] Sometimes with the AWS tests, it decides
+[00:14:05.240] that I do changes their behavior every day.
+[00:14:09.440] We'll just change the code to match again because we must match AWS behavior.
+[00:14:14.720] So we and then it's like, oh no, it's changed back again.
+[00:14:17.920] Okay, well we'll change that again.
+[00:14:19.400] And it's like, no, there's something wrong with the test.
+[00:14:22.520] You've got to fix the test first.
+[00:14:25.280] So that was kind of annoying.
+[00:14:27.680] So I, I would absolutely like
+[00:14:32.280] like this is the opportunity to fix flaky tests.
+[00:14:35.400] AI is good at it
+[00:14:38.360] and it will and it will really help your tests.
+[00:14:42.840] If you just get rid of all your flaky tests and also make your test
+[00:14:47.400] as fast as possible and run them a lot, you'll then find the flakes much quicker
+[00:14:52.720] because most flakes don't happen that often.
+[00:14:56.280] I currently have 5000 tests that run in two minutes,
+[00:15:01.240] and that's kind of two minutes.
+[00:15:05.000] Is my kind of borderline acceptable.
+[00:15:07.560] I might try and speed them up again,
+[00:15:10.520] but it's like, you know, that's to me, that's okay.
+[00:15:13.920] But they have to, you know, you're running them a lot
+[00:15:17.680] and say, and you need to find the flakes.
+[00:15:21.960] And sometimes with certain kinds of change, you get a lot of flakiness.
+[00:15:26.280] And, and then I've spent like, you know, I've set off overnight
+[00:15:31.400] runs, doing repeated
+[00:15:32.560] test runs to try and find errors on multiple machines and things like that.
+[00:15:36.200] So, you know, it's it's not nice if it's slow or,
+[00:15:42.040] or the tests really are flaky for some reason.
+[00:15:46.960] AI's great at all sorts of kinds of tests.
+[00:15:50.920] I basically every now and again I would ask it things like what?
+[00:15:56.880] What kind of tests should we have had to fix those issues
+[00:16:00.320] we just had, and it would come up with new kinds of tests.
+[00:16:03.640] And many of them found issues.
+[00:16:06.640] The fuzz tests were good.
+[00:16:08.400] The property based testing found some issues, like.
+[00:16:13.960] So I think you can
+[00:16:16.440] you can do things that you might not have ever thought about before.
+[00:16:19.520] There's lots of great kinds of testing
+[00:16:23.240] that are available and you should try.
+[00:16:26.800] You should try them and see how they work and have more tests, more
+[00:16:29.960] kinds of tests as well.
+[00:16:33.320] What Jess can't find
+[00:16:37.280] is important to know and understand.
+[00:16:40.120] Sometimes they can find race conditions
+[00:16:43.840] and again, like the more tests you have and the more faster they are, the better.
+[00:16:47.640] But it's it's hard performance tests.
+[00:16:51.760] We'll talk about it again in a minute.
+[00:16:56.120] It's it's
+[00:16:57.640] hard to have good performance tests on an ongoing basis.
+[00:17:00.920] But you can do it.
+[00:17:02.760] You can't find security issues with tests.
+[00:17:05.520] You can't decide if your architecture is good with tests
+[00:17:09.640] and if you can't measure it right now, you can't really test it or, you know,
+[00:17:14.400] so there's lots of things that you have to kind of think
+[00:17:17.400] are outside your test and try and work out how to get them inside.
+[00:17:21.520] And that's, that's,
+[00:17:23.320] you know,
+[00:17:23.520] you've got to you've got to be thinking about
+[00:17:25.320] these issues that your tests are not finding.
+[00:17:27.600] And again, that's why just focusing on test coverage
+[00:17:31.040] means you're not thinking about security enough.
+[00:17:35.280] To make things more testable.
+[00:17:38.400] You know, you've got to think about things
+[00:17:41.880] that any kind of signal you can get out of the black box.
+[00:17:44.800] Basically, if there's a meow noise, then
+[00:17:47.800] it's giving you information that you need to know.
+[00:17:51.840] Increase
+[00:17:54.520] the scope of what you can test like build more testable interfaces.
+[00:17:58.760] One thing I kind of regret doing is not really building the management
+[00:18:02.640] and reporting and back end interfaces, because I could have run the tests
+[00:18:06.200] on on those to understand what's going on better.
+[00:18:09.760] I was really focusing on the public API because that's the thing I felt
+[00:18:13.560] I was trying to replicate and not the internals.
+[00:18:16.560] I have unit tests on them, but it's the API is a kind of internal
+[00:18:20.600] and unstructured, and I don't necessarily know
+[00:18:24.200] how much I trust them because I can't see them.
+[00:18:28.360] I can only see them through the testing and I can't sit there and play with them.
+[00:18:32.840] So I kind of like the more you build out, the better.
+[00:18:37.200] Tracing and
+[00:18:39.960] and classic observability pieces.
+[00:18:43.280] I discovered that like even just getting the AI to build a
+[00:18:49.040] hand-built, hand maintained tracing framework was incredibly useful.
+[00:18:53.880] You don't need to tie it into production system or something,
+[00:18:56.880] but anything that can give it traces that it can look at to debug
+[00:19:00.680] is amazingly useful.
+[00:19:02.640] It in this case it had a bunch of overheads,
+[00:19:07.920] so when I used it for performance testing it was a little bit misleading.
+[00:19:12.760] But it told it, you know, basically gave where the the big
+[00:19:16.760] the big performance gaps were.
+[00:19:20.080] And it was incredibly useful for debugging because I could give it,
+[00:19:25.400] you know, I could run the test,
+[00:19:28.280] I could have my test suites running, looking for race conditions or errors,
+[00:19:31.680] give it a trace and say this happened overnight in my overnight run.
+[00:19:37.520] We need to fix this.
+[00:19:39.040] And it would
+[00:19:40.040] it would let it actually lock down on
+[00:19:41.560] what the real problem was rather than trying to guess.
+[00:19:43.960] Because if you if you give an AI a bug
+[00:19:48.200] but you don't know how to repro it, and it's a very it's a rare condition.
+[00:19:54.520] It can waste a lot of time either.
+[00:19:56.120] I mean, it can either fail to reproduce itself or it can guess what
+[00:20:00.000] the solution might be and get it wrong or something.
+[00:20:02.200] And if you can give it a trace and some trace tooling
+[00:20:06.800] and just get it to sit there and try and reproduce it
+[00:20:10.640] and itself and see if it's the same thing, then it usually can.
+[00:20:14.920] And that works really well.
+[00:20:16.320] So you don't need to necessarily hook it up to a production environment.
+[00:20:20.320] You can really do this just by building, by getting the
+[00:20:23.760] AI to build some tracing tools for you.
+[00:20:27.040] Performance testing I found the AI is very much like human people
+[00:20:32.000] doing performance tests, performance improvements like you build something,
+[00:20:37.560] it wouldn't improve the performance or it would make it worse
+[00:20:39.840] because it would think this must be the way to fix this.
+[00:20:42.160] And it's not.
+[00:20:43.920] And that's just the way of performance engineering,
+[00:20:46.920] to be honest, and kind of lean into that.
+[00:20:50.360] Just remember, this is cheap, low cost work and you just throw it away.
+[00:20:54.480] If it doesn't work, don't do it just because it seemed a good idea and keep it.
+[00:20:58.360] It's like generally just just say no, throw that one away and try
+[00:21:03.440] something else.
+[00:21:04.480] Comparing performance against other systems was quite fun.
+[00:21:08.640] I, I did some performance testing against one of the other S3 implementations
+[00:21:15.160] and got the read performance to be the same, and that was nice.
+[00:21:18.600] And then I was like, why is our right performance really slow?
+[00:21:21.760] And it spent a bunch of time
+[00:21:23.080] thinking and said eventually it said they've got a comment in the code
+[00:21:26.400] saying we haven't done.
+[00:21:27.320] We don't f sync when we actually write.
+[00:21:29.200] And okay, well,
+[00:21:30.520] if you don't have synchrony right, then of course it's going to be faster.
+[00:21:33.720] Stop wasting my time trying to actually make performance
+[00:21:37.040] the same as something that's doing something we don't want to do. So.
+[00:21:40.400] But
+[00:21:44.280] it's a good it's good tool for that.
+[00:21:48.320] Other things I had a lot of issues early
+[00:21:52.920] on with with how permission checking worked and time of check
+[00:21:57.560] time of use testing permissions twice in different places.
+[00:22:03.000] I tried tracing these and fixing some issues, but ended up
+[00:22:08.000] just telling it to fix it in the type system instead of actually
+[00:22:11.600] trying to use tracing or anything to do this, like have an authorized request type
+[00:22:16.760] that can't be authorized, make make sure that all the things going into,
+[00:22:22.160] you know, at this gate or all authorized, all these types of functions
+[00:22:25.760] take authorized requests and then just force force everything through types.
+[00:22:30.480] And that saves a lot of effort.
+[00:22:34.520] And, you know, once you've once you've constructed it so you can't
+[00:22:38.640] you don't have to have a test for this anymore
+[00:22:40.480] because you know that the the types are enforcing it for you.
+[00:22:44.240] And I spent a lot of time like looking at the interface types
+[00:22:47.840] between modules and just seeing if they looked sane.
+[00:22:52.520] Security reviews are used.
+[00:22:54.680] I like Codex Security.
+[00:22:56.800] I found a lot of issues.
+[00:22:58.440] I what I do with them is I
+[00:23:01.560] check the findings into the repo and ask the AI to review them.
+[00:23:06.000] Three quarters of them are valid.
+[00:23:10.680] They're not necessarily 100% security findings.
+[00:23:14.640] And then I would every now and again, I'd do review sessions for like,
+[00:23:18.720] how could we have avoided these?
+[00:23:19.840] What tests should we have that would fix these?
+[00:23:22.600] I found it a really valuable because although I do a lot of AI code review
+[00:23:27.640] at the time and find a lot of issues and do a lot of review iteration,
+[00:23:32.360] it still found things that had been missed that were actually important
+[00:23:35.640] and really quite
+[00:23:37.920] kind of kind of major things.
+[00:23:40.040] So I.
+[00:23:41.880] I and so I've done
+[00:23:45.840] more kinds of AI security review as well.
+[00:23:48.880] I mean Codex security reviews, pull requests, which is fine.
+[00:23:52.880] But you also want to sit down and just review the state of the code
+[00:23:57.760] as it is as a whole and look for issues and so on.
+[00:24:03.760] I found that I found there's been very valuable,
+[00:24:06.560] as I said, human in the loop.
+[00:24:10.600] I view myself as part of the feedback loop.
+[00:24:13.640] I have opinions and I'm here to find out what's going wrong.
+[00:24:17.640] And and you know,
+[00:24:21.680] so I've been
+[00:24:23.240] not trying to automate things too much because I want to actually understand
+[00:24:26.480] what's going wrong in order that I can because I'm
+[00:24:30.520] I'm responsible for the quality, and I care about the code,
+[00:24:33.960] and I want to know it's good because that's my kind of aim with this.
+[00:24:39.680] So I kind of view myself as part of that.
+[00:24:44.640] So what did we learn?
+[00:24:47.120] So a test oracle or model is really useful.
+[00:24:49.880] And copying things
+[00:24:52.920] that exist is actually a nice activity.
+[00:24:56.320] That's long history of open source projects doing that.
+[00:25:01.440] The new project was there to replicate Unix and so on.
+[00:25:05.760] And you know, it's a great activity to do
+[00:25:10.160] and it's kind of good fun and it works quite well.
+[00:25:13.320] This is my GitHub commit graph.
+[00:25:17.960] As you can see.
+[00:25:19.520] Refactoring like you have to do a normal amount of refactoring.
+[00:25:23.720] The ridiculous week in the middle, where I was
+[00:25:27.080] 120,000 lines plus and 75,000 lines minus.
+[00:25:31.360] Part of that was that was just I basically had these refactoring weeks
+[00:25:35.600] where there's another one at the beginning and I would just refactor stuff.
+[00:25:39.240] There was one 43,000 line single file that had to be refactored
+[00:25:44.400] at that point as well, which is kind of the agents got there.
+[00:25:47.680] But like refactoring is part of the feedback loop.
+[00:25:51.360] Don't I don't don't feel you have to one shot
+[00:25:54.600] things like you're converging on a better answer
+[00:25:58.120] and you're a better program and you've got no time to do that.
+[00:26:01.920] And you need to sit there and think, well, yeah, we made some progress.
+[00:26:05.960] We got some features done.
+[00:26:08.240] But you know what could be better still?
+[00:26:11.040] And that feedback loop is, you know, it's the kind of outer harness of
+[00:26:16.640] your work. And
+[00:26:19.240] and you mustn't ignore that.
+[00:26:23.360] Tests are really discovery tools.
+[00:26:25.400] They're not like it's not that there's an answer.
+[00:26:27.760] And if you had the right of tests, it's there.
+[00:26:31.000] You kind of you need to expand the tests of your uncertain and
+[00:26:36.480] where you think where you're suspicious and you think there might be more errors.
+[00:26:40.400] Work out new things you can add tests to,
+[00:26:45.160] and just kind of it's part of your kind of quality control.
+[00:26:51.000] Thought about what's going on and like, am I, am I happy about this?
+[00:26:56.360] Do I think this code is looking good or do I am I worried?
+[00:27:01.440] And if it's worried, you probably want to add more tests and,
+[00:27:05.320] you know, kind of bear more time trying to trying to break things
+[00:27:10.080] because your role is to is to be there and break things and get them fixed.
+[00:27:15.760] I'm going to open source code in a week or so, when I've just finished
+[00:27:20.080] the distributed systems bits, again, when I'm happy with it.
+[00:27:23.480] So if you want to have a look, sign up and I'll send you a mail when it's ready.
+[00:27:29.440] And we got a couple of minutes for questions.
+[00:27:41.280] Thank you.
+[00:27:42.160] Justin, any questions in the room,
+[00:27:43.720] please put your hands up and I'll run over to you
+[00:27:46.160] with the mic or there's a gentleman there as well.
+[00:27:48.560] Any questions?
+[00:27:53.200] One in the middle of the.
+[00:27:56.560] With the tables is a little bit trickier,
+[00:28:03.360] Did you
+[00:28:03.880] did you experiment with any formal verification
+[00:28:07.920] or testing tools for the distributed system part?
+[00:28:11.720] Not yet. Because I'm quite.
+[00:28:14.000] I'm still working through it.
+[00:28:15.440] I'm I want to next I'm
+[00:28:19.480] looking at basically I mean I.
+[00:28:23.680] Yeah, I'm
+[00:28:24.320] basically to look at verification tools as soon as it's kind of fully implemented.
+[00:28:27.520] I'm like,
+[00:28:30.280] I have a sort of huge transition plan from the single host of the multi host.
+[00:28:35.120] And like all the bits of it being worked through and I'm hoping like next week
+[00:28:39.160] it'll be runnable as fully distributed and
+[00:28:42.960] and so yeah, yeah I'm
+[00:28:46.440] yeah I'm really interested in what I can do there
+[00:28:49.560] because I think there's probably going to be some bugs and I'm
+[00:28:54.280] you know, I've been I've been looking at those tools for quite a while.
+[00:28:58.200] And I'm really interested in that space
+[00:28:59.840] and what you can, what you can verify and what you can formally verify.
+[00:29:04.000] I'm formal verification is like something that I'd love to do more of.
+[00:29:08.960] And it's kind of something that
+[00:29:11.920] there's
+[00:29:12.320] mixed reports about how good AI is at it as well.
+[00:29:15.440] And I'm really fascinated in that area.
+[00:29:17.520] So yes.
+[00:29:21.000] It's one right at the back, one that.
+[00:29:25.280] Hi, thanks for that.
+[00:29:27.040] Absolutely brilliant.
+[00:29:28.360] Quite.
+[00:29:30.880] You know, it's uncanny how similar to what I'm doing.
+[00:29:35.560] And I don't know how you will, you know, just think about this question.
+[00:29:40.120] But the challenge I had and I think you are bound to have it
+[00:29:45.440] with a test Oracle is,
+[00:29:48.840] as the AI loves telling you, that.
+[00:29:51.320] Oh, that would be a tautology, because when you're building a system
+[00:29:55.480] and you have a test oracle, the test oracle has to work on
+[00:29:59.840] an entirely different way of doing the exact same thing with the system
+[00:30:03.280] you're testing, so that you're not just running the logic
+[00:30:07.600] twice, which would naturally produce the same output.
+[00:30:11.800] So the big difficulty
+[00:30:15.040] I had was implementing the system using the AI,
+[00:30:19.080] and then implementing the test oracle
+[00:30:22.560] to follow an entirely different way of achieving the same outcome,
+[00:30:27.080] so that, you know, these two keep each other in check.
+[00:30:32.600] So this may be a, you know, just maybe
+[00:30:35.320] we're doing entirely different things, but does that sound familiar?
+[00:30:38.640] Did you think or did you have to fight that?
+[00:30:44.360] Yeah.
+[00:30:44.600] I mean, I think it was slightly easier because S3 was it was so external and like
+[00:30:48.720] just there and like I had some similar issues though with,
+[00:30:55.560] with some of the model testing, it set up where it was like,
+[00:30:59.080] what am I actually testing?
+[00:31:00.520] Anything that's different from the code.
+[00:31:02.560] And I think that, yeah.
+[00:31:06.160] And I think that I said that I will build an Oracle
+[00:31:09.720] even if I was building a complex software, but I think I would probably build it
+[00:31:12.800] maybe outside the repo or something as a fixed like, very model of it.
+[00:31:18.800] That was.
+[00:31:20.920] Yeah.
+[00:31:21.760] Because I think you can end up in this situation where you turn out
+[00:31:24.640] you're not really testing anything at all.
+[00:31:26.320] That's not the same as the thing you're testing.
+[00:31:28.280] And you need to you need to have that sort of fixed
+[00:31:31.600] guarantee that it's what you want.
+[00:31:35.080] And
+[00:31:38.840] and yeah, it's definitely easier when you've got an external system
+[00:31:42.120] you're copying or something that you can really nail down that.
+[00:31:45.560] That's true.
+[00:31:49.120] Awesome.
+[00:31:49.480] That's all the time we have questions, but please give it up for Justin.

@@ -1,0 +1,184 @@
+[00:00:00.520] Back in June at AI DevCon in London, we had a whole run of talks
+[00:00:04.440] about what happens to security when the agent has the keys.
+[00:00:08.760] Prompt injection, poisoned skills, and the awkward fact that most
+[00:00:13.200] of the tools we've handed our agents come with no security controls whatsoever.
+[00:00:18.440] Let's first hear from Joseph Katsioloudes of the GitHub Security Lab,
+[00:00:23.240] who points out there's roughly one application security
+[00:00:26.560] specialist for every 100 developers and argues
+[00:00:30.360] we should stop saying shift left and start saying start left.
+[00:00:35.640] Okay. Good morning everybody.
+[00:00:37.640] Well, perfect.
+[00:00:40.240] Welcome to Code Security Reinvented.
+[00:00:42.440] Navigating the era of artificial intelligence.
+[00:00:44.680] My goal
+[00:00:45.160] today is to show you practical ways to use artificial intelligence for security
+[00:00:49.400] use cases. Whatever I show you, you can do.
+[00:00:52.160] Also, in Claude Code, Codex, not just GitHub Copilot.
+[00:00:56.200] Okay. Let's get started.
+[00:00:57.640] Yeah.
+[00:00:59.400] 180 million plus developers.
+[00:01:01.480] A platform that builds and scales secure software.
+[00:01:04.960] Specifically, my team
+[00:01:06.040] is the GitHub Security Lab, which is a team of security experts
+[00:01:09.240] with the mission to secure the open source software that we all rely on.
+[00:01:12.840] And we do this through research, education and other activities.
+[00:01:16.600] For instance, this is some research from last year about bypassing Ruby-SAML.
+[00:01:21.920] Just last week we showed how somebody
+[00:01:25.280] could exploit 7-Zip with a heap buffer overflow.
+[00:01:28.960] We have found and helped fix more than 1000 vulnerabilities,
+[00:01:32.400] 900 plus of which have been given unique security identifiers.
+[00:01:36.720] And the most important thing is that we help people fix those.
+[00:01:40.200] We don't just report them.
+[00:01:41.600] And this is important
+[00:01:42.880] because, exactly, there is a gap between security and developers.
+[00:01:47.080] If we try to quantify this gap, there is just one application
+[00:01:51.400] security specialist for every 100 software developers.
+[00:01:55.480] This gap is the opportunity that we can help minimize with AI.
+[00:02:01.200] However, if we are not equipped with the right knowledge,
+[00:02:05.080] the gap maybe is going to widen or it's not going to close
+[00:02:08.640] because we didn't maximize our potential there.
+[00:02:11.200] And that's the point of this talk.
+[00:02:12.920] I want to show you the pros and cons, the drawbacks of AI,
+[00:02:16.200] so you can make a human-in-the-loop use case of how you can use it responsibly.
+[00:02:22.360] So this is the first statement: AI can help minimize the security gap.
+[00:02:27.120] Let's see how. The first thing is writing safer code.
+[00:02:30.680] For me this is very important because all my career so far, I'm
+[00:02:34.560] hearing from senior leaders in cybersecurity about shifting left.
+[00:02:38.800] The problem when you shift left is that you keep having a gap on the left.
+[00:02:45.000] The whole point and the opportunity here is to start
+[00:02:48.440] left, and starting left means a lot of things.
+[00:02:52.160] And of course it has to touch the developers
+[00:02:56.560] how the code is being built in the first place.
+[00:02:59.760] We also heard from Liran Tal, who does AI security research at Snyk.
+[00:03:04.680] His team scanned around 4000 published skills.
+[00:03:08.600] Roughly 1 in 7 had something wrong with it.
+[00:03:11.880] Malware, suspicious downloads.
+[00:03:14.200] Credential harvesting.
+[00:03:17.400] Raise your hand
+[00:03:18.720] if you added a skill to your agent anytime in the last few months.
+[00:03:22.920] And keep it up.
+[00:03:26.240] Okay? I just see some hands now.
+[00:03:27.840] Keep it up. Keep it up.
+[00:03:29.720] I want you to keep it up.
+[00:03:31.080] Only now, if you actually review the skill
+[00:03:34.360] and read the markdown.
+[00:03:37.360] So many liars.
+[00:03:39.880] Liars, all of you.
+[00:03:41.000] I'll show you why today.
+[00:03:42.960] All right. Cool. We're good.
+[00:03:45.120] So yeah, I'm at Snyk.
+[00:03:46.240] I basically do a lot of developer advocacy, and I try to mix that up
+[00:03:50.880] with security research.
+[00:03:51.880] Over the last year or so, things like AI security research,
+[00:03:55.800] which also goes to account to things like skills and MCP security.
+[00:04:00.720] And we've done a bunch of research over the past few months,
+[00:04:04.360] which I do want to talk about today,
+[00:04:05.600] and it relates directly to skill security. So.
+[00:04:11.440] At around
+[00:04:12.160] 4000 skills on ClawHub back in about
+[00:04:16.840] January, February was the peak when we actually ran the scan.
+[00:04:20.680] That means about 1 in 7.
+[00:04:24.240] This is the 30%.
+[00:04:26.280] 1 in 7 of those skills had some kind of issue with it.
+[00:04:30.360] So that would have been something like malware distribution, suspicious
+[00:04:34.840] downloads, maybe credential harvesting, or just misuse,
+[00:04:38.960] or just basically any kind of potential security vulnerabilities
+[00:04:42.440] like Guy talked about in the opening keynote.
+[00:04:44.480] So skills aren't just malware, they're also potentially
+[00:04:47.520] having security vulnerabilities in them, just like regular code and other things.
+[00:04:52.000] So everyone probably knows what a skill looks like today, right?
+[00:04:54.960] That's kind of like this.
+[00:04:56.400] There is a front
+[00:04:57.640] matter that gives you instructions and sets the metadata.
+[00:05:01.400] There is the body with more metadata, gives instructions to the agent,
+[00:05:05.240] what to do and so on.
+[00:05:07.280] But when you look at it there's like no sandboxing information.
+[00:05:10.320] There are no permissions here.
+[00:05:11.560] There's no other
+[00:05:12.400] kind of security controls for the agent to know what to do with the skills.
+[00:05:16.960] Oleg Šelajev is on the DevRel team at Docker
+[00:05:19.840] and he brought a demo I would call genuinely alarming.
+[00:05:24.440] His agent refuses to run a secret scanning skill,
+[00:05:27.720] so he writes it in another language, then wraps it in a module.
+[00:05:32.240] Then he clears the context and it runs the whole thing happily.
+[00:05:36.680] So what you can see here is Claude running in auto mode, and I'm asking it
+[00:05:40.200] to run this skill and it sensibly refuses.
+[00:05:44.080] It says it's dangerous,
+[00:05:45.200] I'm not going to do that, which is what auto mode is supposed to do.
+[00:05:48.320] Then we continue the session and ask it to rewrite that in Python code.
+[00:05:53.280] So take the skill, write me Python code to do this, and it complies
+[00:05:57.600] because this is a benign request to write a piece of software.
+[00:06:01.400] So it does that.
+[00:06:02.360] And I say, can you please run this for me?
+[00:06:05.880] And it says, I will not run this for you because of the security implications
+[00:06:10.760] so I'm not going to run this as part of my ethical operating practices.
+[00:06:15.560] But we go further and I ask it to put it in a Python module,
+[00:06:20.920] because it can read the actual Python file that is supposed to run,
+[00:06:24.520] but there are dependencies and dependencies of dependencies.
+[00:06:27.440] So we put it in the module and it puts it in the module.
+[00:06:31.200] And it says, I'm going to put it in a module for you.
+[00:06:34.480] And at that moment I had a brilliant idea to rewrite it in Rust.
+[00:06:37.920] So it only gets the binary.
+[00:06:39.240] So it cannot actually peek under the hood what it's running.
+[00:06:42.560] And then Claude says, I'm
+[00:06:44.600] not going to rewrite that in Rust because you're clearly malicious.
+[00:06:47.960] So it has some sense. But then
+[00:06:51.600] it writes it as a Python module.
+[00:06:53.640] I try to run it, it refuses.
+[00:06:56.640] I do /clear so it loses all the context.
+[00:07:00.360] And after that, it's very happily running this Python script that pulls the module
+[00:07:04.960] dependency to do a complete security audit of my machine.
+[00:07:09.280] And you can see that, that there are 20 keys in my SSH directory.
+[00:07:14.280] That was a few months ago.
+[00:07:15.360] After that, seeing that, I migrated them all into 1Password or something.
+[00:07:20.240] There are cloud credentials and API keys in the history,
+[00:07:23.520] and that the agent also can write to the code directory.
+[00:07:27.880] So all consistent. So machine is completely vulnerable.
+[00:07:30.600] Right.
+[00:07:31.040] If I just run my agent naked on my machine. And to close, back to Lamis
+[00:07:36.040] Mukta at Anthropic, this time on the unglamorous engineering
+[00:07:39.800] that makes agent memory safe to run in production.
+[00:07:42.880] Versioning. So you can roll a bad memory back.
+[00:07:45.720] And a way to stop two agents writing over each other.
+[00:07:49.240] Because memories can go stale.
+[00:07:50.960] And they can also be poisoned on purpose.
+[00:07:55.080] The final problem is that memories can go stale.
+[00:07:56.960] Of course, something that was relevant in the past might not be relevant today.
+[00:08:01.400] Or maybe it was written incorrectly or even maliciously injected
+[00:08:05.880] by someone trying to prompt inject your agents to write bad things to memory.
+[00:08:10.560] So you have to have a lot of guardrails in place to make sure that these nice
+[00:08:15.920] autonomous memory systems actually work in production.
+[00:08:21.320] And so I'm going to talk through a couple of key principles
+[00:08:25.200] that we use when designing memory systems in production to make sure that we do
+[00:08:29.560] get to use all of those nice effects that we've talked, that we've spoken about.
+[00:08:34.520] So the very first thing is versioning.
+[00:08:37.160] So when you're designing
+[00:08:38.440] any kind of memory system, you need to be able to store versions
+[00:08:42.480] to keep track of what's going on, to allow you to roll back
+[00:08:45.760] should you need to, if a new update isn't particularly good.
+[00:08:49.360] Additionally,
+[00:08:50.880] you probably want to think about what context was this update based on.
+[00:08:54.680] So which agent session?
+[00:08:55.960] Which transcript resulted in me wanting to make this update?
+[00:09:00.920] And additionally,
+[00:09:03.200] like you might want to track like who did it, which agent, which human, etc.
+[00:09:06.280] etc.
+[00:09:07.600] So this is really important.
+[00:09:09.120] The second thing is concurrency.
+[00:09:11.440] So we've talked about okay, what happens when I deploy thousands of agents
+[00:09:14.600] all working off the same memory system.
+[00:09:17.640] And the solution that we've adopted
+[00:09:20.200] here is to have this hashing system.
+[00:09:23.240] So when an agent decides that it wants to write
+[00:09:26.560] an update to a memory, it takes a hash.
+[00:09:29.720] It then drafts its edit.
+[00:09:31.240] And then before it writes the update, it takes another hash.
+[00:09:35.680] If those two things do not match, then the agent cannot write it
+[00:09:38.920] because it means that some update was made in the meantime.
+[00:09:42.320] And in order to handle that, the agent re-reads
+[00:09:45.080] the memory, drafts its new update, and then tries to commit this again.
+[00:09:49.200] So these are the kinds of just engineering practices that allow you to scale
+[00:09:53.120] multiple agent architectures, scale memory to these kinds of architectures.
+[00:09:58.600] Thanks for watching.
+[00:10:00.040] Be sure to join us for the next AI DevCon this November in New York City.
+[00:10:04.760] Visit AI DevCon to learn more and book your ticket.

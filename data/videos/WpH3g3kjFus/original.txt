@@ -1,0 +1,1642 @@
+[00:00:00.000] The challenge with incomplete
+[00:00:02.000] requirements going into a model when
+[00:00:03.600] it's building a software system is that
+[00:00:05.480] ambiguity at a minimum becomes some sort
+[00:00:07.640] of hallucinated feature that the model
+[00:00:09.360] has made up and potentially becomes
+[00:00:11.040] masses of rework and wasted tokens and
+[00:00:13.760] ultimately real kind of code smell in
+[00:00:15.800] the repository as well. So the ultimate
+[00:00:17.640] artifacts winds up harmed as well. And
+[00:00:20.200] so I think of it as as almost like
+[00:00:22.400] context engineering on steroids for
+[00:00:24.600] software projects and making sure that
+[00:00:26.320] the model is as well as possible
+[00:00:28.760] grounded in the what that it's building.
+[00:00:31.360] Be able to give that steer not in a
+[00:00:33.120] one-shot prompt, but in some
+[00:00:34.680] documentation. That's where I see spec
+[00:00:37.480] driven and BMA being really really
+[00:00:39.200] strong. What does BMA mean to you? Build
+[00:00:41.280] more architect dream. It's this really
+[00:00:42.960] interesting open-source project. What
+[00:00:44.960] it's about is giving a model the best
+[00:00:47.280] context possible to go and autonomously
+[00:00:49.880] build software.
+[00:00:53.710] >> [music]
+[00:00:58.880] >> Before we jump into this episode, I
+[00:01:00.440] wanted to let you know that this podcast
+[00:01:02.080] is for developers building with AI at
+[00:01:04.760] the core. So whether that's exploring
+[00:01:06.880] the latest tools, the workflows, or the
+[00:01:09.520] best practices, this podcast is for you.
+[00:01:12.040] And really quick ask, 90% of people who
+[00:01:14.320] are listening to this haven't yet
+[00:01:15.720] subscribed. So if this content has
+[00:01:17.480] helped you build smarter, hit that
+[00:01:19.320] subscribe button and maybe a like. All
+[00:01:21.680] right, back to the episode.
+[00:01:23.800] Hello and welcome to another episode of
+[00:01:26.520] the AI Native Dev. My name is Simon
+[00:01:28.800] Maple and I'm your host uh for this this
+[00:01:30.720] episode and uh today we're going to have
+[00:01:32.480] a really fun chat about something called
+[00:01:34.360] BMA and the BMA method. Um so this is I
+[00:01:37.880] I believe it's called a Build More
+[00:01:39.480] Architect Dream, which is a which is a
+[00:01:41.400] fun way of of really talking about a
+[00:01:43.760] spec driven approach to to to building
+[00:01:46.640] software um where we really think about
+[00:01:48.640] specifications first and then drive the
+[00:01:51.000] code uh from there. It allows us to
+[00:01:53.280] really think about how we create uh our
+[00:01:55.720] intent versus thinking about the how too
+[00:01:58.680] early. We capture those behaviors and
+[00:02:00.600] those constraints uh very very early in
+[00:02:02.480] the process. And taking us through this
+[00:02:04.800] is uh Kean Clark uh from Nearform. And
+[00:02:08.119] Kean and I have done a a couple of
+[00:02:09.920] things including actually uh we we we we
+[00:02:12.720] shared the stage at AI Native Dev uh oh
+[00:02:15.560] sorry, AI Native Dev Con in New York in
+[00:02:18.120] May and we also uh we also did a a
+[00:02:20.080] meetup very recently as well in London.
+[00:02:22.400] Um Kean, welcome to the podcast. How are
+[00:02:24.640] you? Yeah, thanks so much for having me.
+[00:02:26.360] I'm doing well. Brilliant brilliant. And
+[00:02:28.600] so you're ahead of AI at at Nearform,
+[00:02:31.120] right? Tell us a little bit about what
+[00:02:32.160] that entails.
+[00:02:33.800] Yeah, absolutely. So it's really about
+[00:02:35.480] realizing customers' ambitions in the
+[00:02:37.640] world of AI. Uh and more recently of
+[00:02:39.480] course lots of generative AI. That's
+[00:02:41.160] been something that's been keeping us
+[00:02:42.280] pretty busy. Um and so that might look
+[00:02:44.800] like, you know, unearthing a bunch of
+[00:02:46.560] proprietary knowledge that some customer
+[00:02:48.520] might have in their product to their end
+[00:02:50.280] customers. It might be, you know,
+[00:02:52.680] building some sort of agentic system to
+[00:02:54.440] make their teams go faster.
+[00:02:56.880] Um
+[00:02:57.600] but of late we've also been thinking an
+[00:02:59.280] awful lot not just about what we build
+[00:03:01.560] in the space of AI, but also how we
+[00:03:03.200] build it. Yeah. Um and so Nearform sort
+[00:03:05.640] of came of age in the era of Node.js and
+[00:03:08.080] that's been sort of the technology we've
+[00:03:09.560] been known for. Um and actually we've
+[00:03:11.920] been thinking a lot lately about AI
+[00:03:13.760] native delivery and and delivering with
+[00:03:16.240] AI models and the enhanced capabilities
+[00:03:18.320] of coding models and spec driven.
+[00:03:20.520] And so that's really brought our paths
+[00:03:22.440] together, I suppose.
+[00:03:24.000] Um since we are very interested in all
+[00:03:26.120] of the tool sets and and ways to to to
+[00:03:28.680] build software artifacts through AI. So,
+[00:03:31.120] you know, more about the how we build as
+[00:03:33.120] well as what we build with AI. Which is
+[00:03:34.960] super interesting cuz like, you know,
+[00:03:36.120] there's a lot of obviously kind of like
+[00:03:37.800] you you know, consultancies and people
+[00:03:39.280] like that who who are really not
+[00:03:40.880] adopting AI in a very interesting way,
+[00:03:42.920] but you're really kind of like leading a
+[00:03:44.200] lot of the way with with a very you
+[00:03:46.640] know, spec oriented and and and future
+[00:03:49.440] thinking path of building with AI. So
+[00:03:52.240] we'll explore some of this
+[00:03:53.760] um
+[00:03:54.400] in just a second. Let What do we first
+[00:03:56.120] talk a little bit about about BMA? What
+[00:03:58.000] What What's What does BMA mean to you?
+[00:04:00.760] Yeah, absolutely. So to me it's sort of
+[00:04:02.440] the best approximation we have right now
+[00:04:05.680] of what a comprehensive spec driven
+[00:04:08.160] workflow looks like.
+[00:04:10.040] Um
+[00:04:10.680] and so it it's, you know, the the
+[00:04:12.840] there's a a sort of a tagline attached
+[00:04:14.440] to BMA of Build More Architect Dream,
+[00:04:16.799] but it's also sort of named by the the
+[00:04:18.400] guy who created it, Brian Madsen. So
+[00:04:20.160] BMA.
+[00:04:21.440] Um
+[00:04:22.040] and it's it's this really interesting
+[00:04:23.400] open-source project, which I think is
+[00:04:25.320] quite important to us at Nearform since
+[00:04:27.320] a lot of our pedigree comes from the
+[00:04:29.040] world of open source and and
+[00:04:30.480] contributing upstream to things like
+[00:04:32.040] Fastify and Node core.
+[00:04:34.200] Um and so yeah, the fact that this is an
+[00:04:36.480] open-source framework that is also open
+[00:04:38.960] to the selection of model vendor and
+[00:04:41.200] open to the selection of IDE tool set as
+[00:04:43.440] well is something that really really
+[00:04:45.240] appealed to us. Um and in my head
+[00:04:47.280] actually at its very core what it's
+[00:04:48.760] about is just like really intelligent
+[00:04:51.320] context engineering with a model.
+[00:04:53.840] Um and that's kind of what spec driven
+[00:04:56.200] is all about.
+[00:04:57.600] Um at least in my head, you know, giving
+[00:04:59.680] a model the best context possible to go
+[00:05:02.680] and autonomously build software. Right.
+[00:05:05.040] And it as I say, best approximation I've
+[00:05:07.320] seen to date of how to go about doing
+[00:05:09.000] that. And I didn't know that about the
+[00:05:10.480] name, the BMA. That's That's Brian
+[00:05:12.080] Madison, is it? That's it. Yeah. Mad
+[00:05:14.400] Madison Madson. I think it's Madison.
+[00:05:16.080] >> Madison, sorry. Madison. So so it so so
+[00:05:18.080] it started as a name and it was
+[00:05:19.440] searching for an acronym. That's what
+[00:05:21.200] That That really I think so. Yeah,
+[00:05:23.280] exactly. The acronym now is uh is a bit
+[00:05:25.400] of a stretch, I feel. But Now the Build
+[00:05:27.200] More Architect Dream makes a ton more
+[00:05:29.200] sense. I was looking at it and thinking,
+[00:05:30.480] "Wow, where where where did this come
+[00:05:31.760] from?" But now it all makes a lot more
+[00:05:33.080] sense. But it's it's a catchy name,
+[00:05:34.600] yeah. Um and it started with this
+[00:05:36.120] person, but you know, there's a huge
+[00:05:37.520] suite of contributors now on this this
+[00:05:39.400] tool set. And it's this really vibrant
+[00:05:41.600] open-source project that's gone through
+[00:05:43.400] a couple of different versions. Um it's
+[00:05:45.760] got a really cool the V6 version that's
+[00:05:47.440] just released has a bunch of really nice
+[00:05:49.360] developments in terms of uh being able
+[00:05:52.840] to select the like the scale of project
+[00:05:54.600] you're working on. It's got a module
+[00:05:56.200] system where you can bring your own
+[00:05:57.400] roles. So it's it's really evolved
+[00:05:59.480] massively over the last kind of couple
+[00:06:01.280] of months. Yeah, yeah. Let's Let's get
+[00:06:03.000] into that a little bit. But I guess the
+[00:06:04.760] one question that I'd love to ask cuz I
+[00:06:06.120] know Nearform, you know, do a lot of
+[00:06:07.880] work in kind of like the the discovery
+[00:06:09.840] of various, you know, a lot of the
+[00:06:10.920] research and discovery of various tools.
+[00:06:12.840] I know you're you're big fans of Keiro,
+[00:06:15.000] for example. I know we've talked in the
+[00:06:16.600] past about about using Tessell for, you
+[00:06:19.200] know, discovering context and learning
+[00:06:20.720] about, you know, how agents can be you
+[00:06:22.560] know, much better enabled. Um where did
+[00:06:25.240] you Where did you first learn about
+[00:06:26.400] Where did you How did you kind of like
+[00:06:27.600] go through the discovery period with
+[00:06:29.360] with BMA?
+[00:06:30.880] Yeah, so it sort of came out of our own
+[00:06:33.480] internal discovery process really.
+[00:06:36.080] Um and we would do very frequently in
+[00:06:37.840] consulting this kind of discovery
+[00:06:39.800] process that we call ignite, which is
+[00:06:42.160] about aligning a bunch of stakeholders
+[00:06:43.920] on what it that exactly it is that they
+[00:06:45.560] want to build.
+[00:06:46.920] Um
+[00:06:47.680] and you know, in in the world of
+[00:06:48.680] consulting we call this discovery, but
+[00:06:50.600] like it happens in every company.
+[00:06:52.000] Basically a bunch of folk getting
+[00:06:53.320] together and um talking about what the
+[00:06:55.720] requirements are for the thing they're
+[00:06:56.960] looking to build. What's really
+[00:06:58.440] important, like what levers within the
+[00:07:00.280] business is it going to impact. Um and
+[00:07:03.160] being able to document some of that
+[00:07:05.000] stuff, you know, really really well. And
+[00:07:07.160] we noticed that we could use things like
+[00:07:09.120] AI note takers within the meeting to be
+[00:07:11.480] able to capture a lot of that context
+[00:07:13.480] and then distill it down into playback
+[00:07:15.200] decks and also distill it down into
+[00:07:17.320] requirements documents.
+[00:07:19.200] Um and so it was the folk who were
+[00:07:20.840] facilitating these sessions um that
+[00:07:23.720] observed that actually you can get
+[00:07:25.160] really good requirements documentation
+[00:07:26.800] and backlogs off the back of these
+[00:07:29.440] meetings just talking about how and what
+[00:07:32.760] it is exactly that we want to build. And
+[00:07:34.680] I know the folks in AWS do this a lot
+[00:07:36.440] with their pre-read time in meetings
+[00:07:38.400] when they're doing their PRFAQ's.
+[00:07:40.600] And now they've moved to this term
+[00:07:42.000] called squad mobbing. So this is, you
+[00:07:43.640] know, really big, you know, methodology
+[00:07:45.640] in industry as well. This idea of
+[00:07:47.760] gathering requirements
+[00:07:49.600] um as a group and then using that as an
+[00:07:51.640] artifact to then later go and build.
+[00:07:54.520] And so we kind of spotted, you know, we
+[00:07:55.880] had been vibe coding prototypes that we
+[00:07:57.720] would later throw away and because
+[00:07:59.440] that's what you tend to do with an
+[00:08:00.600] artifact that's vibe coded. But actually
+[00:08:02.760] like could we ground the the the process
+[00:08:05.720] of using AI to develop with these
+[00:08:07.720] artifacts?
+[00:08:09.290] >> [snorts]
+[00:08:09.520] >> And that kind of aha moment happened
+[00:08:11.000] probably about 6 months ago and it
+[00:08:12.600] wasn't me who had it. It's It's a member
+[00:08:14.480] of my team, James, who who helped helped
+[00:08:16.640] out there and discovered this tool
+[00:08:18.520] called BMA along the way that is really
+[00:08:21.200] really good at taking some of that
+[00:08:24.080] documentation and using it to hone the
+[00:08:25.920] output of a model. Um
+[00:08:27.760] and so I discovered this spec driven
+[00:08:29.560] thing and as a pretty like skeptic, you
+[00:08:32.039] know, vibe coding skeptic, that this was
+[00:08:34.440] sort of a revelation for me because all
+[00:08:36.599] of a sudden you were actually able to
+[00:08:37.640] steer what the model did. And yeah, that
+[00:08:40.000] was that was pretty powerful, I think.
+[00:08:41.680] Yeah, and a lot of the things that
+[00:08:42.840] you're kind of like talking about here,
+[00:08:44.080] whether it's spec driven or BMA, they're
+[00:08:45.560] they're really they're really kind of
+[00:08:47.040] like smart and and I guess, you know,
+[00:08:50.520] they're solutions that are well thought
+[00:08:52.280] out. But I guess
+[00:08:53.640] when we when we go back to the root
+[00:08:55.160] problem, what what would you say is the
+[00:08:57.720] What would you say is the need for these
+[00:08:59.320] for these types of solutions?
+[00:09:01.440] Yeah, for for me it it came down to like
+[00:09:04.240] forcing the the world of vibe coding to
+[00:09:05.920] sort of grow up a little bit and have
+[00:09:07.640] some guardrails. Uh and so distilling
+[00:09:11.040] that
+[00:09:11.640] um you know, uncertainty with what the
+[00:09:13.760] where the model would would would fill
+[00:09:15.280] in the gap, instead have stakeholders
+[00:09:17.440] fill in the gap and make sure the
+[00:09:18.640] requirements were actually complete.
+[00:09:20.960] Um because the the the challenge with
+[00:09:23.240] incomplete requirements going into a
+[00:09:24.920] model when it's building a software
+[00:09:26.160] system is that ambiguity at a minimum
+[00:09:28.640] becomes some sort of, you know,
+[00:09:29.960] hallucinated feature that the model has
+[00:09:31.640] made up. Uh and potentially becomes
+[00:09:33.880] masses of rework and wasted tokens
+[00:09:37.040] and ultimately, you know, real kind of
+[00:09:38.800] code smell in the repository as well. So
+[00:09:40.960] the ultimate artifacts winds up kind of
+[00:09:43.280] harmed as well. And so I kind of think
+[00:09:45.520] of it as as, you know, almost like
+[00:09:48.040] context engineering on steroids for
+[00:09:50.480] software projects and making sure that
+[00:09:52.200] the model is as well as possible
+[00:09:54.640] grounded in the what that it's building
+[00:09:57.280] as well as the how you want it to build.
+[00:09:59.880] Being able to give that steer, not in a
+[00:10:01.760] one-shot prompt, but in some
+[00:10:03.240] documentation. That that's kind of where
+[00:10:05.240] I see spec-driven and and BEMAD being
+[00:10:08.120] really really strong. And what's really
+[00:10:10.000] interesting here is kind of like when we
+[00:10:11.360] think about what, you know, the way
+[00:10:13.087] [clears throat] BEMAD goes around trying
+[00:10:14.160] to solve this. And so and specs, you
+[00:10:15.640] know, if we if we think back well part
+[00:10:17.160] well before kind of the AI boom here,
+[00:10:20.240] you know, we were doing the we were
+[00:10:21.520] thinking about these types of these
+[00:10:23.280] types of things back in the BDD days and
+[00:10:25.520] things like that. And it's interesting
+[00:10:27.080] that when we talk about the problem now,
+[00:10:28.520] the problem is is is very, you know,
+[00:10:31.840] the problem definition is peppered with
+[00:10:33.680] AI terms. And and I think like now the
+[00:10:37.120] problem is actually far greater because
+[00:10:39.600] of those types of things. So a lot of
+[00:10:40.720] things that you say about, you know, the
+[00:10:42.000] issues around vibe coding, those types
+[00:10:43.440] of things, they magnify the problem
+[00:10:45.680] which, you know, like you say, vague
+[00:10:47.760] requirements and things like that that
+[00:10:49.400] we previously had. It's just magnified
+[00:10:51.120] so much more because of the additional
+[00:10:52.880] complexity that that that that that vibe
+[00:10:55.480] coding and these types of agents can
+[00:10:57.240] bring along as well. Yeah, like as
+[00:10:58.920] engineers, if we had a gap in
+[00:11:01.000] requirements documentation that seemed
+[00:11:02.600] really obvious that would impact users,
+[00:11:04.720] you know, we would go and ask a
+[00:11:06.280] clarifying question of a product manager
+[00:11:08.000] of somebody who's a stakeholder on the
+[00:11:09.600] project. And we'd be a little annoyed by
+[00:11:11.400] it. Like, come on, we're mid-sprint, why
+[00:11:12.800] didn't you think of this? But we'd fill
+[00:11:14.440] in that gap. The model just makes
+[00:11:16.200] up, right? That's that's not a great
+[00:11:17.480] outcome. Yeah. Yeah. Yeah. Sometimes it
+[00:11:19.600] is, but sometimes a lot of the time it
+[00:11:21.360] isn't. Yeah. Yeah. Um so so let let
+[00:11:23.960] let's go ahead and and kind of like talk
+[00:11:26.200] take us through an example kind of like
+[00:11:28.120] NearForm rollout, I guess, of a BEMAD
+[00:11:31.480] project, I guess. I guess there are
+[00:11:32.880] certain times when it's worked better
+[00:11:34.960] and certain times when maybe you've
+[00:11:36.280] actually learned actually, you know,
+[00:11:37.480] it's not quite as good here. Talk us
+[00:11:39.160] through, you know, one of the one of the
+[00:11:40.839] most solid kind of BEMAD rollouts that
+[00:11:43.040] that you guys have done.
+[00:11:44.760] Yeah, [clears throat] so it's it's sort
+[00:11:45.760] of to date become the tool of choice for
+[00:11:49.040] dev teams at NearForm who are looking to
+[00:11:50.680] progress things in an AI-native manner.
+[00:11:53.000] Probably alongside Kiro as the other
+[00:11:55.160] strong contender.
+[00:11:56.640] And all along, the observation I had had
+[00:11:58.560] was that it is not a great tool for
+[00:12:00.839] actually kind of rapid prototyping and
+[00:12:03.080] building, you know, a functional
+[00:12:05.040] prototype that you plan to throw away at
+[00:12:07.280] the end
+[00:12:08.640] because the process is quite heavy.
+[00:12:10.960] It has actually made great leaps and
+[00:12:12.400] bounds in V6's release in terms of
+[00:12:16.520] enabling you to say the sort of level of
+[00:12:18.680] project that you're looking to build.
+[00:12:19.760] And if you're looking to build a
+[00:12:20.480] prototype, it simplifies the workflow.
+[00:12:22.440] Haven't had enough hands-on time with it
+[00:12:24.200] to to form an opinion but traditionally
+[00:12:27.040] rapid prototyping still reaching for
+[00:12:28.839] bold.new or something. But where we're
+[00:12:30.760] looking to actually build some sort of
+[00:12:32.200] MVP and something that's actually
+[00:12:33.480] shippable in the greenfield, we found it
+[00:12:35.880] absolutely fantastic.
+[00:12:37.843] >> [cough]
+[00:12:38.498] [clears throat]
+[00:12:38.680] >> I think there are probably some
+[00:12:39.800] challenges to date in the brownfield,
+[00:12:41.680] although it is the best thing I've come
+[00:12:44.000] across for working in large brownfield
+[00:12:45.800] codebases. Nonetheless,
+[00:12:48.040] you know, there there are challenges
+[00:12:49.360] with that.
+[00:12:50.480] But for greenfield projects, it's been
+[00:12:52.839] fantastic.
+[00:12:54.320] And the way I kind of try to approach
+[00:12:56.080] this, so my my background is not in
+[00:12:58.040] consulting. I'm relatively new to the
+[00:12:59.640] world of consulting. I've mostly worked
+[00:13:01.640] in product companies through engineering
+[00:13:03.520] leadership roles. And I like to think
+[00:13:06.520] about, you know, rolling out these tool
+[00:13:08.000] sets to teams of developers through the
+[00:13:09.520] context of like developer empathy.
+[00:13:12.839] So we talk a lot about customer empathy
+[00:13:14.240] in the sales process, but I think
+[00:13:15.480] developer empathy is actually a very
+[00:13:17.040] important thing to recognize as an
+[00:13:19.320] engineering leader. And it's like this,
+[00:13:21.680] when you were, you know, when you were
+[00:13:23.240] hands-on keyboard walking in the shoes
+[00:13:25.200] of a developer, what stuff did you just
+[00:13:27.560] hate? Like, what drove you mad? And so
+[00:13:30.040] like, you know, writing infrastructure
+[00:13:31.839] as code stacks only to have the the
+[00:13:34.360] CloudFormation deploy roll back 15 times
+[00:13:36.720] in a row and having to go back and
+[00:13:38.000] delete stuff manually and just that that
+[00:13:39.800] drudgery I used hate. Or, you know,
+[00:13:42.920] fixing an automation test that's that's
+[00:13:45.080] blown up because a pixel moved 10 pixels
+[00:13:47.000] to the button moved 10 pixels to the
+[00:13:48.839] right in the middle of the night. Like,
+[00:13:50.160] that's really frustrating, not a good
+[00:13:52.360] use of my time.
+[00:13:54.480] Even documentation. So all of those
+[00:13:56.200] tasks, you know, how can we introduce
+[00:13:59.080] tooling into the AI development life
+[00:14:01.160] cycle AI into the development life cycle
+[00:14:04.320] to make those things
+[00:14:06.800] a lot less painful.
+[00:14:09.240] So like, what would developers really
+[00:14:11.520] gravitate towards,
+[00:14:13.640] you know, in trying to automate away
+[00:14:15.200] some of that pain? And to that end, you
+[00:14:18.280] know, something that I wonder is like,
+[00:14:20.240] do developers actually really enjoy
+[00:14:21.839] writing documentation and specs, right?
+[00:14:24.000] Cuz this whole methodology is based on
+[00:14:26.680] spending a lot of time with a markdown
+[00:14:28.160] file.
+[00:14:29.520] And I think some do, some don't.
+[00:14:32.480] But but as I think about how to roll
+[00:14:34.160] out, you know, both BEMAD and a broader
+[00:14:36.640] suite of sort of MCP-enabled tools that
+[00:14:39.280] are that are connected into an IDE, I
+[00:14:41.320] like to think about the sort of
+[00:14:42.480] developer archetypes that are going to
+[00:14:44.360] be interacting with these systems and
+[00:14:45.640] what are they actually getting from it?
+[00:14:47.360] What makes their life like that bit
+[00:14:49.320] easier? Super interesting. And and yeah,
+[00:14:52.320] it's it's interesting actually. I
+[00:14:53.160] remember giving a I think I gave the it
+[00:14:54.839] was the closing keynote at Devops UK.
+[00:14:58.160] And I gave I gave a session and and
+[00:15:00.600] about, you know, you know, what a future
+[00:15:02.200] world will look like with AI-native
+[00:15:03.839] development. And they came back they
+[00:15:05.640] came up to me at the end of the of the
+[00:15:06.920] session and they and they were like they
+[00:15:08.600] you know, they had like worry on their
+[00:15:09.800] face going, you know, you're you're
+[00:15:11.240] projecting a future here where where
+[00:15:12.839] developers just don't code. Is that is
+[00:15:14.480] that true? And I'm like, well, you know,
+[00:15:16.800] honestly, I I think you'll you'll you'll
+[00:15:19.560] be hard-pressed to find anyone who will
+[00:15:21.360] say at some, you know, code will always
+[00:15:23.240] be a thing. And I and I, you know, while
+[00:15:26.240] you'll have some skeptics that will say
+[00:15:28.200] not in my lifetime, it's it's going to
+[00:15:30.480] happen at some point. It's just a level
+[00:15:32.520] of abstraction above where we are. The
+[00:15:34.480] question is, I think, when. And and I
+[00:15:36.560] think, yeah, it depends, I guess,
+[00:15:38.560] whether a developer is so attached to
+[00:15:41.079] the coding or whether they're attached
+[00:15:43.240] to the creation like, you know, the the
+[00:15:45.000] the build, the complexity of of the
+[00:15:47.040] problem-solving and the creation. And I
+[00:15:49.440] always think people who people who care
+[00:15:51.240] about the creation, the construction
+[00:15:53.440] almost, the the how I build this thing
+[00:15:55.800] in terms of how I architect it, how I
+[00:15:57.720] think about various things fit, you
+[00:15:59.640] know, integrating and building together,
+[00:16:01.959] that's all that's going to be there.
+[00:16:04.200] And hopefully we'll
+[00:16:05.959] Yeah,
+[00:16:06.839] hopefully we'll abstract ourselves on
+[00:16:08.920] top of that pile still and we can still
+[00:16:10.760] make, you know, have input into those
+[00:16:11.959] discussions. But I think for people who
+[00:16:13.640] are like fully attached to code, that's
+[00:16:16.040] that's, in my opinion, certainly and I
+[00:16:17.720] think a lot of people's, it's it's
+[00:16:19.160] absolutely going to be reduced and and
+[00:16:21.920] someday most likely I think pushing the
+[00:16:23.480] whole, isn't it? It is. It's a very hard
+[00:16:26.000] thing.
+[00:16:26.400] >> is definitely becoming less important.
+[00:16:29.600] That doesn't mean that the quality of
+[00:16:31.560] the output of that artifact doesn't
+[00:16:33.440] matter. In fact, all of the best
+[00:16:34.800] practices that we followed all these
+[00:16:36.280] years are just as important as before.
+[00:16:38.480] And, you know, having code that is
+[00:16:39.760] linted such that you can actually read
+[00:16:41.440] it and maintain it is really important.
+[00:16:43.440] And having code that is incredibly
+[00:16:44.640] well-structured is really important.
+[00:16:47.520] And, you know, the art of selecting what
+[00:16:49.440] dependencies that you're using, you
+[00:16:51.160] know, don't definitely want to be
+[00:16:52.800] picking the latest version version of
+[00:16:54.440] Next.js as as recent events have shown
+[00:16:56.520] us. But the the the art of like actually
+[00:16:59.320] picking what modules, dependencies,
+[00:17:01.320] architecture that you're going to use
+[00:17:03.079] becomes the part of the craft that
+[00:17:04.959] becomes more important in my head. And,
+[00:17:07.240] you know, the actual line-by-line
+[00:17:09.600] writing and production of code is sort
+[00:17:11.400] of the thing that that that becomes
+[00:17:13.199] less.
+[00:17:14.520] One of the funny things about NearForm
+[00:17:16.000] is as a business we've always hired
+[00:17:17.800] senior staff. So I think the average
+[00:17:19.880] experience in the business runs about 8
+[00:17:21.439] years. But last, you know, 10, 15, 20
+[00:17:24.000] years of experience.
+[00:17:25.800] And it feels like those types of of of
+[00:17:28.960] developers are going to have a much more
+[00:17:31.160] productive time in steering some of
+[00:17:33.120] these tools, right? Like, it's it's
+[00:17:34.400] going to be interesting to see over the
+[00:17:36.240] next couple of years what that does to
+[00:17:38.320] the shape of general software
+[00:17:40.080] engineering teams.
+[00:17:42.240] One, you know, really unfortunate
+[00:17:44.080] artifact we've seen of this AI-native
+[00:17:46.240] era is probably the the the the kind of
+[00:17:48.480] reduction in hiring pipelines and also
+[00:17:51.120] what the
+[00:17:52.240] what [clears throat] the future looks
+[00:17:53.040] like for junior developers. It's it's
+[00:17:54.480] become a bit of a challenging time and,
+[00:17:56.160] you know, that that's something that
+[00:17:57.240] probably bums me out a little bit. Yeah,
+[00:17:59.080] and I guess there's a lot of kind of
+[00:18:00.040] like, I mean, the fear, uncertainty, and
+[00:18:01.760] doubt here is quite high in terms of
+[00:18:03.320] what does this mean for junior
+[00:18:04.400] developers?
+[00:18:06.400] But I guess kind of like
+[00:18:08.240] my opinion almost on this is is
+[00:18:11.480] I guess senior developers are more
+[00:18:13.080] likely to be able to naturally switch
+[00:18:16.560] over because they just have that
+[00:18:18.360] experience and they have that underlying
+[00:18:19.720] knowledge. I think the path of a junior
+[00:18:22.000] developer is just going to be different.
+[00:18:23.760] I think they're going to have to learn
+[00:18:24.800] different things. And arguably, I could
+[00:18:27.000] I could almost say, well, actually,
+[00:18:29.080] by being a junior developer, you're
+[00:18:30.440] going to be naturally more AI-native
+[00:18:32.120] because it's that's the path you learn.
+[00:18:34.400] And so we're going to have probably have
+[00:18:36.240] this this switch over where
+[00:18:38.360] the junior developers are actually going
+[00:18:39.360] to be
+[00:18:40.240] somewhat more reliant but also more more
+[00:18:43.000] happy, more more more
+[00:18:45.480] they will choose to use AI probably with
+[00:18:48.240] a lower level with a lower bar than more
+[00:18:50.400] of a senior developer. So they're
+[00:18:51.560] probably jumping into it more.
+[00:18:53.600] But that senior developer today
+[00:18:54.960] certainly does have that kind of like
+[00:18:56.280] more of that knowledge, particularly
+[00:18:57.400] around when they're writing specs, what
+[00:18:59.200] they want and why they they know why
+[00:19:00.919] they want it that way.
+[00:19:02.560] Yeah.
+[00:19:02.988] >> [snorts]
+[00:19:03.040] >> And I'm even not not as worried about
+[00:19:04.840] this notion of, you know, all of a
+[00:19:06.240] sudden teams just being seniors and the
+[00:19:08.159] pipeline of junior talent drying up. I
+[00:19:10.440] think the reality of market economics is
+[00:19:12.200] that nobody's going to let that happen.
+[00:19:13.760] And the need junior team members is
+[00:19:16.040] going to be very, you know, very quickly
+[00:19:17.800] solved by
+[00:19:19.400] you know, hiring pipelines and so on.
+[00:19:20.960] That that's going to have to be balanced
+[00:19:23.720] at some point in the future. And there
+[00:19:24.760] might be a minor reckoning, but we're
+[00:19:26.280] still going to need junior developers
+[00:19:27.520] that we grow into senior talent. Maybe
+[00:19:29.800] that more progressive mindset of
+[00:19:31.240] somebody who hasn't been doing this for
+[00:19:32.520] as long is more open to the change that
+[00:19:34.400] AI-native brings and actually it ends up
+[00:19:36.080] being an advantage. Who knows, right?
+[00:19:37.640] Yeah. No, I very much agree.
+[00:19:40.040] So so we talked a little bit about specs
+[00:19:41.320] there as well.
+[00:19:42.679] I guess when we think about from the
+[00:19:44.040] developer point of view,
+[00:19:45.880] the developers are going to be
+[00:19:46.919] potentially writing specs, maybe
+[00:19:48.280] manually, maybe through agents or or
+[00:19:50.080] LLMs.
+[00:19:52.120] The the specs ultimately will absolutely
+[00:19:54.560] be consumed by agents. Um but we're at
+[00:19:57.600] that at funny crossroad where kind of
+[00:19:59.600] like both the agent or both an LLM and
+[00:20:02.320] and an agent
+[00:20:03.640] and a human need to need to read this
+[00:20:06.720] and need to understand it and because
+[00:20:08.240] one is generating code from it, the
+[00:20:09.640] other one is trying to maintain it from
+[00:20:11.160] the point of view of
+[00:20:12.720] uh you know, making sure the features
+[00:20:13.840] are
+[00:20:14.720] are correct and well-written, etc.
+[00:20:17.040] Who's the who would you say needs to be
+[00:20:20.040] the the primary stakeholder? Who's the
+[00:20:22.480] person where this specification should
+[00:20:24.320] be written for? A person. And I guess a
+[00:20:27.360] little bit of a a little bit of a
+[00:20:29.440] a comparison here, I guess, is when we
+[00:20:32.120] write code today, we have two options.
+[00:20:34.720] We either make it, you know, the most
+[00:20:36.480] performant, most effective code
+[00:20:38.400] possible, which means we're writing for
+[00:20:39.960] a for a you know, maybe it's a JDK to or
+[00:20:42.680] you know, the machine code that is that
+[00:20:44.320] is the most performant, most effective
+[00:20:45.840] possible. That makes it far less
+[00:20:47.680] maintainable. So, we very often take you
+[00:20:50.520] know, make decisions to make something
+[00:20:52.000] more maintainable because we feel well,
+[00:20:54.240] we're the ones who are trying to
+[00:20:55.400] maintain this and read this as well.
+[00:20:57.200] Let's make it most readable for us and
+[00:20:59.640] then and let the let the compilers and
+[00:21:01.880] everything else
+[00:21:03.240] deal with a lot of the efficiencies
+[00:21:05.720] after the sake. So,
+[00:21:07.640] yeah, who is this primary artifact, the
+[00:21:09.640] spec,
+[00:21:11.120] uh written for
+[00:21:12.920] uh you know, primarily?
+[00:21:14.640] Yeah, that's an interesting question and
+[00:21:16.000] I I like the sort of code optimization
+[00:21:18.000] comparison. Um I also love that you have
+[00:21:19.960] to get the JDK and there's somewhere
+[00:21:21.360] your roots are showing through here,
+[00:21:22.600] Simon. That's great.
+[00:21:24.520] Yeah, my my JDK my JDK gray hairs, yeah.
+[00:21:27.440] Yeah, yeah. Um I think that ultimately,
+[00:21:31.400] for me at least, writing the specs for
+[00:21:33.280] human consumption is absolutely vital
+[00:21:35.720] because that review phase is quite
+[00:21:37.120] important. Um if you are writing outputs
+[00:21:39.720] purely for the consumption of a model,
+[00:21:41.760] um you're probably not really reviewing
+[00:21:43.440] what it is that's that's been generated.
+[00:21:45.160] You know, if you're generating a PRD off
+[00:21:46.720] of a transcript and just blindly
+[00:21:47.960] accepting it, in my eyes, you've
+[00:21:49.640] probably missed the purpose of spectrum
+[00:21:51.520] development in the first place. And
+[00:21:53.080] actually, the honing of that spec, you
+[00:21:55.080] know, however much some developers may
+[00:21:56.520] not enjoy, you know, crafting markdown
+[00:21:58.640] is actually the the really important
+[00:22:00.679] part of this process.
+[00:22:02.440] Um
+[00:22:03.160] in terms of like,
+[00:22:05.600] you know, the model being able to
+[00:22:06.720] interpret what's been written, I
+[00:22:08.400] actually don't [clears throat] know how
+[00:22:09.400] much of a consideration that's been in
+[00:22:11.240] my experience. Um you know, models are
+[00:22:13.760] incredibly adaptable, for sure. You
+[00:22:16.080] know, if we're putting in like, I don't
+[00:22:17.400] know, a PDF of a Gantt chart, we're
+[00:22:19.480] probably going to have a bad time.
+[00:22:20.600] That's not going to go well.
+[00:22:22.400] Um but, you know, things like Mermaid JS
+[00:22:24.880] syntax, which I've always done anyway,
+[00:22:27.679] or or even just the the subset of web
+[00:22:29.280] sequence diagram syntax, that type of
+[00:22:31.240] thing
+[00:22:32.000] in technical documentation is
+[00:22:33.240] invaluable. If you've been If you've
+[00:22:36.120] sort of come of age as a developer in
+[00:22:37.760] the world of building specifications in
+[00:22:40.880] markdown on GitHub, you're going to have
+[00:22:42.679] a great time. If you've come of age in
+[00:22:45.040] the world of oh, I don't know,
+[00:22:47.880] um you know, Microsoft Word documents
+[00:22:49.520] and diagrams scaffolded using those
+[00:22:52.080] constructs in in in in XML, which is
+[00:22:54.880] ultimately what the Word format breaks
+[00:22:56.640] down to, probably not going to have as
+[00:22:58.440] good of a time.
+[00:22:59.960] Um I've found that, you know, the kind
+[00:23:01.679] of modern way the developers architect
+[00:23:03.560] their their documentation, models are
+[00:23:06.000] just really good at reading and that's a
+[00:23:07.360] really nice coincidence. Yeah. Yeah, no,
+[00:23:10.000] absolutely. And we talked we we kind of
+[00:23:11.600] like mentioned there a little bit about
+[00:23:13.280] maintenance. I guess um
+[00:23:15.920] we're going to have the same issue with
+[00:23:17.679] specs, right? How do we make sure that
+[00:23:19.480] specifications don't become stale, that
+[00:23:22.040] developers are continually upgrading the
+[00:23:24.920] the the spec and it doesn't it doesn't,
+[00:23:26.720] you know, get out of sync. Um I guess
+[00:23:29.440] how when when we think about like BEMAD
+[00:23:32.160] specifications, the the BEMAD method,
+[00:23:34.960] how do we how do we make sure that this
+[00:23:37.240] isn't a turning into a maintenance hell
+[00:23:39.080] and that we don't get stale
+[00:23:40.160] documentation that just sits there,
+[00:23:41.720] nobody reads it, similar to a kind of
+[00:23:43.120] like what we saw the PRD become? I think
+[00:23:45.679] there's this like continuum, isn't
+[00:23:47.080] there? Um in the the world of spectrum
+[00:23:49.120] and between spec as source as the kind
+[00:23:51.960] of the first term, um you know, the
+[00:23:54.520] the spec as the the baseline artifact
+[00:23:57.600] that the code is generated off such that
+[00:23:59.480] you throw away the spec and get the
+[00:24:01.040] exact same code artifact or very similar
+[00:24:03.240] code artifact as a result when you
+[00:24:05.200] regenerate your code, versus a a more
+[00:24:07.600] kind of spec-first um driven methodology
+[00:24:10.440] where the specs are essentially, you
+[00:24:12.920] know, they last for the lifecycle of the
+[00:24:14.360] epic or the feature or the task and then
+[00:24:16.280] get thrown away. And so, you know, tied
+[00:24:19.160] back to that is this world of
+[00:24:20.560] maintaining the documentation. And I
+[00:24:22.560] feel like as the frameworks evolve, we
+[00:24:25.040] will end up more in a world of spec as
+[00:24:27.240] source where the really important
+[00:24:28.800] artifact is the spec.
+[00:24:31.480] You know, cascading all the way back to
+[00:24:32.800] the product requirements document. But
+[00:24:34.760] in the in the immediate term, we are
+[00:24:36.800] definitely seeing some degree of like
+[00:24:39.160] documentation rot and documentation
+[00:24:41.080] going out of out of state or out of out
+[00:24:43.760] of sync, [clears throat] a little bit
+[00:24:44.679] stale.
+[00:24:45.840] Um in BEMAD specifically, I've seen this
+[00:24:48.440] solved for a little bit through the
+[00:24:50.760] ability to inject into the backlog
+[00:24:54.072] >> [clears throat]
+[00:24:54.400] >> new work items that,
+[00:24:57.120] you know, might might alter the course
+[00:24:58.480] of development. And within that work log
+[00:25:01.080] item in the backlog, you will also have
+[00:25:02.920] a specific spec for the story that talks
+[00:25:05.280] a little bit about the detailed
+[00:25:06.240] implementation of that story and what we
+[00:25:07.760] expect from it. Does that cascade back
+[00:25:10.080] neatly to the PRD and architecture
+[00:25:11.679] document if if needed? Sometimes, but
+[00:25:14.040] not always. Um and that just feels like
+[00:25:16.360] a a direction of
+[00:25:20.679] type documentation will wind up also
+[00:25:23.560] being kept in sync. Um feels feels like
+[00:25:26.040] that's the way that that that the
+[00:25:27.320] tooling is headed, but we're certainly
+[00:25:28.600] not there yet. Yeah. It's interesting
+[00:25:30.520] when we talk about it cuz there's like,
+[00:25:32.800] you know, you talk about tooling there
+[00:25:33.920] and that's the way the tooling is
+[00:25:34.920] heading. And and I guess there's like
+[00:25:37.280] like any major kind of change to it to
+[00:25:40.120] our industry, there's there's there's
+[00:25:41.640] different things that need to change.
+[00:25:42.880] There's tooling, there's practices and
+[00:25:44.679] process, there's the human cultural
+[00:25:46.720] side.
+[00:25:47.840] Um And and like DevOps [clears throat]
+[00:25:49.240] is a great example of people sometimes
+[00:25:52.280] initially over over-rotating on the
+[00:25:54.080] tooling, but actually coming back to
+[00:25:55.640] realize actually, this is a this is a
+[00:25:57.280] team approach, it's cultural change that
+[00:25:59.240] we need to address first. Um I guess
+[00:26:01.679] BEMAD, let's let's ask the same question
+[00:26:03.640] of BEMAD. Is this fundamentally
+[00:26:05.880] um a technological problem or is this a
+[00:26:08.160] cultural practice that we need to
+[00:26:09.560] change?
+[00:26:10.920] I think it's a mixture of both, but it
+[00:26:12.520] sort of starts out in the world as a as
+[00:26:14.800] a a change in culture. Mhm. Um so, what
+[00:26:17.720] what it sort of does is it forces you up
+[00:26:20.160] front to expose a lot of the assumptions
+[00:26:22.160] that might exist within a software
+[00:26:23.480] project.
+[00:26:24.640] Um because, you know, as we discussed
+[00:26:26.240] earlier, if you if you're unearthing
+[00:26:27.720] these discoveries and these assumptions
+[00:26:29.920] um as development is ongoing, you know,
+[00:26:31.880] results may vary. And so, it's very
+[00:26:33.600] important to have a well-aligned
+[00:26:36.720] um piece of documentation with all of
+[00:26:39.160] the stakeholders that talks about what
+[00:26:40.679] exactly it is that you're building. And
+[00:26:42.480] to me, that's, you know, a pure cultural
+[00:26:44.280] change.
+[00:26:45.400] Um There are also kind of technical
+[00:26:47.560] practice changes coming about as a
+[00:26:49.600] result of the use of many of these STD
+[00:26:51.840] tools, BEMAD included.
+[00:26:53.840] Um
+[00:26:54.520] in particular, probably the the worst
+[00:26:56.480] culture technical change that I've seen
+[00:26:59.080] is probably the the transition from
+[00:27:01.280] teams to sort of the sole contributor.
+[00:27:03.320] And that's one of the things we are most
+[00:27:04.960] focused in trying to solve for. Um is
+[00:27:07.720] how do you scale
+[00:27:09.640] um a spec-driven framework to an entire
+[00:27:12.160] team of developers rather than a an
+[00:27:13.800] individual contributor that is taking on
+[00:27:16.040] the role of DevOps plus front-end
+[00:27:18.679] engineer plus back-end engineer plus,
+[00:27:21.560] you know, the list goes on. I think
+[00:27:23.000] that's that's almost, you know, not a
+[00:27:25.120] great way to be building within the
+[00:27:26.320] enterprise and we need to better solve
+[00:27:28.640] for that collaboration piece.
+[00:27:30.760] Um and although right now the challenges
+[00:27:32.679] are purely technical,
+[00:27:35.120] um it feels like ultimately a you know,
+[00:27:37.320] it's a cultural it impacts the culture
+[00:27:39.600] because, you know, you're expecting an
+[00:27:40.840] individual contributor to be able to
+[00:27:41.920] wear all these hats.
+[00:27:43.440] The the the limitation is purely
+[00:27:45.240] technical. It is that right now,
+[00:27:48.040] we are mixing, you know, the the work of
+[00:27:50.400] the back-end and the front-end engineer
+[00:27:51.880] in a decomposed task lists
+[00:27:54.240] um
+[00:27:55.000] uh that that that are output of of a lot
+[00:27:57.080] of these spec-driven tools, assuming
+[00:27:58.640] full-stack engineering, but in reality,
+[00:28:00.400] we could be aligning these tasks to
+[00:28:02.240] individual individual roles and have
+[00:28:03.920] people contribute. So, I'm um
+[00:28:06.480] I am optimistic of the future for the
+[00:28:08.320] sort of more collaborative culture that
+[00:28:10.240] spec-driven will will bring. Um but the
+[00:28:12.520] the tooling right now just needs to
+[00:28:13.760] catch up. Yeah. I love to I love the
+[00:28:15.880] phrase you used there as well where it's
+[00:28:17.400] it's like I think you
+[00:28:18.840] you mentioned forcing function, which I
+[00:28:20.360] think, you know, problems with a culture
+[00:28:22.640] change in terms of the way we go about
+[00:28:24.679] building software or or doing anything
+[00:28:26.800] in in the space of tech, you you often
+[00:28:29.800] have all the desire you want in trying
+[00:28:31.720] to make that change, but ultimately,
+[00:28:33.200] it's the tooling which is the forcing
+[00:28:34.760] function that encourages and ensures
+[00:28:37.600] people are actually taking those steps.
+[00:28:39.640] And I think it's the way it's the
+[00:28:40.960] tooling that helps train us to make
+[00:28:43.679] those cultural kind of steps
+[00:28:47.159] to to to ensure we actually follow that.
+[00:28:49.640] And over time, yeah, we probably do
+[00:28:52.200] we'll probably do that without even
+[00:28:53.679] thinking, but it's that transition
+[00:28:55.679] whereby the tooling can really help
+[00:28:57.200] teams
+[00:28:58.760] grow fast. And I think if we I I really
+[00:29:01.280] liked what you were talking about with
+[00:29:02.320] the collaboration and the teams. And I
+[00:29:03.640] guess I'd love to ask a couple of
+[00:29:05.159] questions. When First of all, maybe go
+[00:29:07.480] into more depth on specs and then I'd
+[00:29:09.159] I'd love to kind of like understand at
+[00:29:11.120] what point does that does that make it
+[00:29:13.320] too heavy weight? So, so why don't we
+[00:29:15.000] start with specs? Um
+[00:29:17.400] this is a cultural change to actually,
+[00:29:19.000] you know, get people to sit down and and
+[00:29:20.960] and and write those specifications and
+[00:29:23.040] think out what they need to put into
+[00:29:24.720] those specifications. I guess at what at
+[00:29:27.240] what depth do we need um detail about
+[00:29:30.480] every aspect of a project uh whereby
+[00:29:33.600] that's going to maybe we overthink
+[00:29:35.000] things or it actually starts slowing us
+[00:29:37.400] down versus versus helping us. Where's
+[00:29:39.880] the where's the right level for for
+[00:29:41.880] detail, I guess, in those
+[00:29:42.880] specifications?
+[00:29:44.360] Yeah, it's it's interesting because I
+[00:29:45.800] think in the world of startups, you
+[00:29:47.600] know, the the idea of overly verbosely
+[00:29:50.360] specifying what it is that you want to
+[00:29:51.880] build is, you know, almost sort of a bad
+[00:29:55.360] word, right? The super detailed spec can
+[00:29:58.040] can slow teams down. Um
+[00:30:00.880] I feel like the right size
+[00:30:03.480] spec problem is something that is
+[00:30:06.000] another challenge with the tooling right
+[00:30:07.560] now. We talked earlier a little bit
+[00:30:09.520] about rapid prototyping not being a
+[00:30:12.000] great fit for vibe coding
+[00:30:14.160] bug fixing not being a great fit for a
+[00:30:16.200] vibe coding.
+[00:30:17.880] Um
+[00:30:18.960] And right now it feels like the
+[00:30:21.480] the sort of the scale of the specs that
+[00:30:23.280] frameworks like BMAT produce can be
+[00:30:25.120] quite excessively verbose and heavy.
+[00:30:26.920] That's one of the things that we're
+[00:30:27.840] looking to try and trim.
+[00:30:30.400] Because not only we're looking to
+[00:30:31.880] right-size the specs for human context,
+[00:30:33.840] right? But we're also limited in how
+[00:30:35.280] much the model can can comprehend. And
+[00:30:37.960] the quality of outputs will go down the
+[00:30:40.040] more and more the context window we take
+[00:30:41.640] off with with with just specs, right? Um
+[00:30:45.800] so that right-size question is probably
+[00:30:47.280] one of the most important things for
+[00:30:48.680] these frameworks to get right. Um it
+[00:30:51.320] feels to me like BMAT is the closest
+[00:30:53.080] approximation of that I've seen to date.
+[00:30:55.520] But it's not perfect. It does some
+[00:30:57.040] really clever things around very lengthy
+[00:31:00.080] documents like PRDs and architecture
+[00:31:02.400] documents called sharding.
+[00:31:04.920] Which is super clever. So what it will
+[00:31:06.400] do is split up a requirements document
+[00:31:08.360] such that the functional requirements
+[00:31:09.840] per epic are split.
+[00:31:11.800] And then a architecture document such
+[00:31:13.960] that components are split such as front
+[00:31:15.640] end and back end.
+[00:31:17.080] And only subsets of those shared
+[00:31:19.400] documents are included in the context
+[00:31:21.560] window when interacting with the model.
+[00:31:23.760] And it's some of the cleverness like
+[00:31:25.200] that that makes me think this is like
+[00:31:26.840] the best approximation right now of what
+[00:31:29.080] spec driven looks like in providing the
+[00:31:31.200] best possible honed context to a model.
+[00:31:34.600] Yeah.
+[00:31:35.720] In theory every line of spec helps the
+[00:31:37.640] model and it's really just about
+[00:31:38.880] optimizing for context window. But in
+[00:31:40.640] reality that can become excessive. So
+[00:31:42.960] like it's one of the most important
+[00:31:44.200] things I think to optimize for that
+[00:31:45.800] length of a spec and you know, how big
+[00:31:48.520] can it be before it starts hurting
+[00:31:50.160] rather than being helpful.
+[00:31:52.400] That's where these frameworks I think
+[00:31:53.720] are going to longer term help us. Yeah.
+[00:31:56.040] And gosh, this resonates so so much. I'm
+[00:31:58.320] literally doing something right now with
+[00:32:00.440] a whole bunch of a whole bunch of kind
+[00:32:03.400] of like spec style documentation
+[00:32:07.880] markdown files
+[00:32:09.560] that are kind of like sharing core
+[00:32:11.480] security practices and I was practices
+[00:32:13.320] and we're talking like 80 different
+[00:32:14.720] files of of
+[00:32:17.280] best practices and policies of how to
+[00:32:19.600] write secure software. Now if we was to
+[00:32:21.920] throw all of that directly at a
+[00:32:25.200] an LLM and say right do a code review
+[00:32:26.880] here,
+[00:32:28.000] there's just too much context for it to
+[00:32:29.720] kind of like hold in and
+[00:32:31.440] say yeah, I'm going to
+[00:32:33.480] I'm going to do all of this and I'll do
+[00:32:34.760] I'll do it very very carefully. But the
+[00:32:36.560] more I'm thinking about it and and the
+[00:32:38.360] way I'm trying to the way I'm
+[00:32:39.640] approaching this maybe even as a code
+[00:32:41.040] review is to perhaps say well, let's
+[00:32:42.480] actually let's actually try and target
+[00:32:45.560] you know, various flows whereby I'm
+[00:32:48.920] sharding is a great way of saying
+[00:32:50.200] actually. I'm looking at very specific
+[00:32:52.120] areas. Maybe start off with
+[00:32:53.560] authentication. Let's let's see let's do
+[00:32:55.440] a code review for authentication across
+[00:32:56.920] this across this massive app. Because
+[00:32:58.640] otherwise you've got so much context and
+[00:33:00.800] you've got so much code that you're
+[00:33:02.120] trying to look at. It's just it's not
+[00:33:04.000] going to go do a good job I don't think.
+[00:33:06.640] Really interesting to see is like how
+[00:33:08.440] much So right now a lot of the logic for
+[00:33:10.520] how this is sharded is said sat in a
+[00:33:12.760] framework called BMAT. But if you go up
+[00:33:14.600] the chain, right? So like if you look at
+[00:33:16.040] the IDE and how it selects the most
+[00:33:18.160] relevant piece of context to send to the
+[00:33:19.679] foundation model, then you go up the
+[00:33:21.280] chain again and you look at the
+[00:33:22.200] foundation model as it reasons while
+[00:33:24.080] completing a coding task and decides
+[00:33:26.200] which bits of context to pull. How much
+[00:33:28.280] we can align on, you know, standardized
+[00:33:31.040] specs that we're using to to develop.
+[00:33:33.520] You know, we have some constructs now
+[00:33:35.280] like agents.md.
+[00:33:37.520] Um but then we get into, you know, do we
+[00:33:39.080] use dot cursor rules or a project
+[00:33:40.600] constitution or a
+[00:33:42.920] cloud.md. Um
+[00:33:44.628] >> [clears throat]
+[00:33:44.880] >> Right now it's a little bit of the wild
+[00:33:46.120] west. You know, it was nice to see the
+[00:33:47.520] MCP get get standard get released into a
+[00:33:50.400] an open source foundation. But there's a
+[00:33:51.840] lot more to be done on standardizing on
+[00:33:54.280] this sort of base building blocks of
+[00:33:57.640] specs across model vendors and across
+[00:33:59.600] IDEs.
+[00:34:01.400] And it's it's sort of exciting to me to
+[00:34:03.000] see how much of the sort of techniques
+[00:34:05.480] and terminology that we use in the
+[00:34:06.720] framework land right now all the way up
+[00:34:08.560] here is going to eventually cascade down
+[00:34:11.000] into foundation model vendors and also
+[00:34:13.359] IDE tool vendors. Um so yeah, you know,
+[00:34:16.520] shout out to the the the the vendors of
+[00:34:18.520] tools here like let's let's get a bit of
+[00:34:20.120] standardization going. The more the
+[00:34:21.640] better, right? Absolutely. And I think
+[00:34:22.919] that's the key as well because you'll
+[00:34:24.159] get you'll get people like using whether
+[00:34:26.280] it's IDEs or agents across a company
+[00:34:29.120] even wanting the same the same style.
+[00:34:31.640] And that agent like the agent agnostic
+[00:34:33.760] approach is going to be is going to be
+[00:34:35.280] so so important
+[00:34:36.960] for for for for this.
+[00:34:38.320] So so so you mentioned about
+[00:34:40.560] startups. I guess the startup culture of
+[00:34:42.760] of really valuing speed and delivery and
+[00:34:45.560] experimentation as well.
+[00:34:48.359] Is this the wrong approach then for for
+[00:34:50.600] a startup or do you feel like there's a
+[00:34:52.240] there's a path for where BMAT can be
+[00:34:54.480] used there as well? That's a great
+[00:34:55.600] question. And like where on the spectrum
+[00:34:57.880] does this belong within a startup as
+[00:34:59.440] well? Yeah. Um I think the sort of you
+[00:35:02.720] know, the world of the the vibe coder is
+[00:35:04.840] going to find this very frustrating,
+[00:35:06.200] right? Because it's going to slow them
+[00:35:07.480] down. And the idea of having gone from
+[00:35:09.840] seeing outputs in 20 minutes to an hour
+[00:35:12.680] to seeing outputs at the end of a
+[00:35:15.019] >> [clears throat]
+[00:35:15.600] >> five six hour documentation session will
+[00:35:17.560] be inherently frustrating to somebody
+[00:35:19.880] who's used to in a in a really low
+[00:35:22.920] diligence way just prompting their way
+[00:35:25.440] to a really cool application.
+[00:35:27.680] Um but for me at least the penny drop
+[00:35:29.880] moment was when the quality reflected
+[00:35:32.520] the fact that you know, that slight
+[00:35:34.440] increase in effort was was put in. And
+[00:35:36.840] so you know, when I was able to build
+[00:35:38.359] something in let's say you know, two
+[00:35:39.880] days of of spec authoring and iterating
+[00:35:42.880] through a backlog
+[00:35:44.680] that I felt like I understood
+[00:35:47.000] as a
+[00:35:47.920] and and it felt like an artifact that
+[00:35:49.359] would have taken me a month to produce
+[00:35:50.840] otherwise
+[00:35:52.880] and was probably better code than I
+[00:35:54.720] would have written, you know, it's
+[00:35:56.400] that's when the the penny really dropped
+[00:35:58.080] for me. And a repository with linted
+[00:36:00.800] code that had you know, two three 400
+[00:36:02.920] unit tests, automation tests,
+[00:36:05.440] you know, an architecturally separate
+[00:36:06.560] front end and back end, infrastructure
+[00:36:07.840] as code like just real wow factor. And I
+[00:36:10.840] think that any startup that isn't
+[00:36:13.720] leveraging this build methodology
+[00:36:16.589] >> [snorts]
+[00:36:17.200] >> is going to find it very hard to compete
+[00:36:21.359] in a world where you know, the vast
+[00:36:24.640] majority of for example Y Combinator
+[00:36:26.320] startups are using AI tooling to
+[00:36:29.040] a statistic I don't want to misquote but
+[00:36:30.640] some you know, incredibly high
+[00:36:32.200] percentage of
+[00:36:36.160] of startups in Y Combinator are using
+[00:36:37.760] tools like this.
+[00:36:40.000] It just gives that sort of competitive
+[00:36:41.600] edge and the world of building products
+[00:36:44.720] just looks so different now because
+[00:36:47.560] anybody can show up with a vibe coder
+[00:36:49.080] prototype and and show something shiny
+[00:36:51.240] to investors. But actually transitioning
+[00:36:53.040] it into something that would scale to
+[00:36:54.400] the first even 500 or 1,000 users is a
+[00:36:57.280] very different question. Um and I I feel
+[00:37:00.880] like spec driven is like the the
+[00:37:02.560] methodology for doing this. Yeah. And I
+[00:37:05.000] think it's it's it's interesting I see
+[00:37:07.000] when I see spec driven approaches and I
+[00:37:09.280] see kind of more prompt driven
+[00:37:10.920] approaches. You almost like start
+[00:37:12.760] looking at a prompt driven approach
+[00:37:14.120] being a very proto type style where
+[00:37:16.200] doing things. I've even known someone to
+[00:37:18.000] start with a prompt driven approach and
+[00:37:20.640] they send their kind of like code logs
+[00:37:22.240] or whatever it is over and say look,
+[00:37:24.040] build me a a spec based on these
+[00:37:26.320] prompts. You know from my prompts where
+[00:37:28.760] my intents are. You can see from the
+[00:37:30.560] code that's been generated what has been
+[00:37:32.000] built, what I'm happy with. Build a spec
+[00:37:34.280] that represents this. And I I guess kind
+[00:37:36.359] of like do you feel like that if you
+[00:37:38.520] were to like go fully vibe in like
+[00:37:41.280] prompts without without building a spec.
+[00:37:44.440] Do you feel like that would be a like a
+[00:37:46.040] strong limiter for people who actually
+[00:37:48.640] wants to go much further, much closer to
+[00:37:51.000] production, those who want to scale AI
+[00:37:52.880] within their organizations? As you've
+[00:37:55.160] probably gathered like that's kind of
+[00:37:56.440] the framework of how I think of things
+[00:37:58.640] that have purely been prompted. Like
+[00:38:00.600] that's not to say that you couldn't
+[00:38:02.160] construct a perfect prompt that actually
+[00:38:04.320] encapsulates all of the context from
+[00:38:06.120] your specs. And just perfectly
+[00:38:08.200] right-sizes your context window such
+[00:38:10.240] that it's built, you know, task by task
+[00:38:13.720] a bunch of different
+[00:38:16.120] a
+[00:38:16.800] a bunch of different smaller stories in
+[00:38:18.920] just you know, very well crafted
+[00:38:20.200] prompts. That's definitely possible. But
+[00:38:22.200] the methodology of spec driven with the
+[00:38:24.320] combination of a framework makes you
+[00:38:26.800] more likely to be successful. Yeah.
+[00:38:29.920] What's also interesting is like you
+[00:38:31.520] know, is spec driven what the future of
+[00:38:33.440] AI native engineering looks like? Like
+[00:38:35.440] I'm not actually that dogged on the fact
+[00:38:37.560] that it is. I'm not completely
+[00:38:38.960] convinced. Um it feels as though Cursor
+[00:38:42.280] in particular has been slow to adopt a
+[00:38:44.160] lot of the primitives and have stayed
+[00:38:45.600] gone through the
+[00:38:47.241] >> [clears throat]
+[00:38:47.280] >> the the recent release with plan mode
+[00:38:49.400] feels like a a spec similar to spec
+[00:38:52.280] driven or spec driven compatible way of
+[00:38:54.480] operation. But it's not exactly that. Um
+[00:38:57.560] so like you know, it feels like the best
+[00:38:59.400] approximation right now how to work with
+[00:39:00.960] these models this this this spec driven
+[00:39:03.400] methodology and also the BMAT framework
+[00:39:05.440] itself. But that's not to say that you
+[00:39:07.640] know, next year that's that's what
+[00:39:09.720] things are going to look like. My
+[00:39:11.440] if I've learned one thing in the world
+[00:39:13.440] of the in the kind of world wind that's
+[00:39:15.600] been the last nine months,
+[00:39:17.359] it is that my crystal ball is inherently
+[00:39:19.240] faulty and I will make terrible
+[00:39:20.647] >> [laughter]
+[00:39:22.120] >> Who knows? Yeah.
+[00:39:23.960] The crystal ball will be I I I saw an
+[00:39:26.400] eight ball the other day where it's an
+[00:39:28.080] LLM it is an LLM implemented eight ball
+[00:39:30.800] which is like oh yeah, everything's
+[00:39:33.040] everything's going in the future. So the
+[00:39:34.600] crystal ball will be
+[00:39:35.800] repeatedly say You're absolutely right.
+[00:39:38.987] >> [laughter]
+[00:39:40.120] >> So so when we when we think about how
+[00:39:42.440] LLMs, you know, typically are are kind
+[00:39:45.200] of like better with the the more
+[00:39:46.720] structured specs, with with kind of like
+[00:39:49.760] clear requirements. When we think about
+[00:39:52.120] those specifications or those systems
+[00:39:54.040] that are poorly specified, what do they
+[00:39:56.160] become? Do they become something which
+[00:39:58.240] just, you know, holds technical debt? Or
+[00:40:00.960] are they now a liability because because
+[00:40:03.600] of the way an LLM is going to is is
+[00:40:05.240] essentially going to implement that and
+[00:40:06.720] and and make assumptions?
+[00:40:08.680] Yeah, it's a an interesting kind of
+[00:40:11.200] question, isn't it? Like what becomes of
+[00:40:13.160] technical debt? Does, you know, do we
+[00:40:15.240] have this new thing that is spec debt or
+[00:40:17.280] requirements debt or, you know,
+[00:40:18.560] inadequate requirements? Because when
+[00:40:20.240] you think about a tech debt, surely
+[00:40:22.600] should
+[00:40:23.920] at least fade into the background um
+[00:40:26.280] because it's now easier to tackle
+[00:40:29.120] backlogs of tech debt through agentic
+[00:40:32.200] coding, right? You know, the the sort of
+[00:40:33.840] drudgery of Well, actually, it doesn't
+[00:40:35.920] feel like drudgery sometimes. It's
+[00:40:37.000] really rewarding. But but the the art of
+[00:40:39.320] like eliminating tech debt is now much
+[00:40:41.720] easier to to go after with an agentic
+[00:40:44.720] coding system typically. So, you know,
+[00:40:46.640] does that become really important um
+[00:40:49.120] when you can solve for tech debt much
+[00:40:50.520] easier? And in fact, it's actually
+[00:40:52.240] something that's not really aligned to
+[00:40:54.160] what you wanted to build that becomes a,
+[00:40:56.280] you know, the problem. So, like poorly
+[00:40:58.800] defined requirements, um does it become
+[00:41:01.480] harder after going through, you know,
+[00:41:03.760] three, four days worth of of spec-driven
+[00:41:05.960] development where you suddenly have this
+[00:41:07.800] 20, 30,000 line repository? Is it
+[00:41:10.080] actually harder to recover from the fact
+[00:41:11.760] that you missed some requirements along
+[00:41:13.160] the way? And is there flexibility
+[00:41:15.280] sufficient in the workflow to be able to
+[00:41:16.920] make up for that? Um certainly some of
+[00:41:19.640] the techniques I've tried have been
+[00:41:21.360] things like injecting new backlog items
+[00:41:23.880] to the end of a a backlog to try and
+[00:41:25.840] recover and still following the
+[00:41:27.640] spec-driven methodology rather than sort
+[00:41:29.600] of bailing to vibe coding, which is
+[00:41:31.760] definitely a temptation, but following
+[00:41:33.840] the the methodology to sort of steer
+[00:41:36.040] towards the the desired output. Um but
+[00:41:39.560] yeah, it's it's definitely tricky.
+[00:41:42.080] Um
+[00:41:42.800] the the sort of robustness as well in
+[00:41:44.360] that kind of requirements documentation
+[00:41:46.680] artifact. Like I know the the Kiro team
+[00:41:48.680] are doing loads of really interesting
+[00:41:50.400] research at the moment on what makes a
+[00:41:53.960] like really good, well-defined,
+[00:41:56.480] structured requirements document through
+[00:41:58.720] I think the use of like formal methods
+[00:42:01.160] um
+[00:42:01.720] to to ensure that that that that the
+[00:42:03.560] requirements are are um
+[00:42:06.240] well-formed and that they complete and
+[00:42:08.680] that the gaps are actually identifiable
+[00:42:10.200] by the the model as well. Yeah. Yeah.
+[00:42:13.280] And and I guess, you know, the goal the
+[00:42:15.440] goal here um of of B mad when we think
+[00:42:18.560] about agents as they are today,
+[00:42:20.960] um
+[00:42:21.880] agents are becoming more and more
+[00:42:23.000] autonomous.
+[00:42:24.360] Uh
+[00:42:24.920] are we trying to make them more
+[00:42:26.960] autonomous through things like
+[00:42:28.800] specifications and through
+[00:42:31.560] uh B mad methods because that allows us
+[00:42:34.440] to create a a more detailed brain dump
+[00:42:38.360] of what we're thinking? Or is it
+[00:42:40.600] actually are we still aiming for that
+[00:42:43.360] very assisted back-and-forth chat style
+[00:42:46.000] flow
+[00:42:47.440] uh whereby it just makes it safer
+[00:42:49.680] because we're giving it the guardrails
+[00:42:51.160] it needs? Is there a Is there a kind of
+[00:42:53.000] like a north star that we're we're
+[00:42:54.400] trying to get to or both very
+[00:42:56.360] applicable?
+[00:42:57.760] Yeah, I think it's a bit of both. I need
+[00:42:59.840] to get off my fence, don't I?
+[00:43:01.384] >> [laughter]
+[00:43:02.120] >> If you had to choose one though, Kieran.
+[00:43:05.240] I refuse.
+[00:43:06.624] >> [laughter]
+[00:43:07.200] >> But backlog decomposition for me feels
+[00:43:09.560] like the place where there's a little
+[00:43:11.200] bit of room now to speed up with the
+[00:43:13.000] sort of
+[00:43:14.040] um
+[00:43:14.800] kind of safety we've injected and
+[00:43:16.160] guardrails we've injected into some of
+[00:43:17.480] these frameworks. So, like the iteration
+[00:43:19.760] of an architecture document and a
+[00:43:21.920] requirements document, that feels like a
+[00:43:23.920] pretty important stage to still have a
+[00:43:25.520] human in the loop. But when you've
+[00:43:27.160] decomposed a backlog and reordered it to
+[00:43:29.080] your heart's content and you feel like
+[00:43:30.480] the the stories that a an agent is going
+[00:43:32.560] to go after one by one with a new
+[00:43:34.120] context window for each one is in good
+[00:43:36.520] shape, I'm not sure that me sitting
+[00:43:39.040] there and trusting every single command
+[00:43:41.160] that the model suggests I run is
+[00:43:43.080] necessarily a great use of my time when
+[00:43:45.640] I can, you know, run the agent in a
+[00:43:47.120] sandbox and force it between each story
+[00:43:49.600] to get commit, get push. And if it
+[00:43:51.560] decides to rm -rf / star, that's okay by
+[00:43:54.040] me cuz I have everything in Git and it's
+[00:43:55.520] in a container and who cares, right? Um
+[00:43:57.880] you know, you see all the memes of of
+[00:43:59.760] folk vibe coding and seeing it rm -rf
+[00:44:02.000] their their entire directory or rm -rf.
+[00:44:04.680] Um yeah, the
+[00:44:06.240] that becomes less of a problem when
+[00:44:07.600] you've got sufficient guardrails and
+[00:44:08.880] you're operating in a nice sandbox VM
+[00:44:10.800] and so on.
+[00:44:12.000] Um
+[00:44:12.560] and so it just feels like sat there
+[00:44:14.280] iterating through every single story
+[00:44:16.280] maybe less useful. I'd love to be able
+[00:44:18.280] to accelerate through a bunch of stories
+[00:44:19.960] and just review the output of epics
+[00:44:21.440] maybe. And so you get towards more of
+[00:44:23.840] that autonomy
+[00:44:25.400] um when it comes to, you know, as I said
+[00:44:28.320] that that earlier phase of actually
+[00:44:30.000] writing the specs, authoring the specs,
+[00:44:31.720] aligning on the specs, I feel [gasps]
+[00:44:33.960] like there's less room for autonomy
+[00:44:35.400] right now. Um but but if if we were able
+[00:44:38.680] to also make that highly autonomous,
+[00:44:40.920] like where do we end up? Are we actually
+[00:44:42.280] back to vibe coding somehow? I don't
+[00:44:44.400] know.
+[00:44:44.840] >> It kind of like relies a lot on trust,
+[00:44:46.400] right? Cuz like the if we don't have
+[00:44:48.040] trust, we just plain don't have autonomy
+[00:44:49.680] because the the the the trust is that
+[00:44:51.520] piece in the culture that allows us to
+[00:44:53.640] allow the AI agents to to to to stretch
+[00:44:56.680] those legs and you know, run run as fast
+[00:44:59.000] as Yeah, again, right? It's like having
+[00:45:00.080] the
+[00:45:00.880] agent enabling you to go after CI/CD and
+[00:45:03.040] and then, yeah. Yeah, yeah. So, so So,
+[00:45:05.720] does B mad I guess B mad changes that
+[00:45:07.480] model then when we think about trust in
+[00:45:09.560] terms of it, you know, does it provide
+[00:45:10.720] us with more trust and maybe we kind of
+[00:45:12.000] like lean a little bit more into
+[00:45:14.400] um
+[00:45:15.080] I guess quality, the quality of of of AI
+[00:45:17.880] output and and how specifications can
+[00:45:21.280] you know, can [clears throat] provide
+[00:45:22.160] that greater quality because it's
+[00:45:24.520] providing those guardrails and as a
+[00:45:25.960] result, knowing if those guardrails can
+[00:45:28.480] be whether there's automation in the
+[00:45:29.960] validation and things like that so that,
+[00:45:32.000] you know, things can be raised to us to
+[00:45:33.800] say, "No, this is actually
+[00:45:35.880] going against the things that we've said
+[00:45:37.400] in the spec." We can not just recognize
+[00:45:40.560] we know there's high quality here, but
+[00:45:42.480] we then have greater trust. Is that Is
+[00:45:44.640] that Is that a path where we can, you
+[00:45:46.920] know, raise the autonomy bar? Yeah, I
+[00:45:48.800] think that that is exactly the lever
+[00:45:50.520] that we need to be able to make the
+[00:45:52.200] transition in autonomy is you know,
+[00:45:54.320] being able to trust the outputs of the
+[00:45:55.800] agent. And so, like if in the short term
+[00:45:58.400] it looks like, you know, on a per
+[00:46:00.400] context window, per story basis we're
+[00:46:02.320] reviewing outputs, so be it. But the
+[00:46:04.800] more that the sort of quality metric is
+[00:46:06.880] pushed further to the right,
+[00:46:09.200] um the more that we can afford that
+[00:46:10.920] autonomy and the more that we can afford
+[00:46:13.160] to accelerate. And so, I think what will
+[00:46:15.640] get very interesting is
+[00:46:18.600] as we transition um as models are
+[00:46:21.560] writing more and more tests to cover
+[00:46:23.280] what it is they've done. It's funny, you
+[00:46:25.040] know, that the same tricks ring true
+[00:46:27.160] like TDD and so on. The the more that
+[00:46:29.760] models are able to actually test their
+[00:46:31.400] outputs
+[00:46:32.680] um and prove that what they claim is
+[00:46:34.600] working is is in fact truth um through a
+[00:46:37.200] completely separate artifact to it just
+[00:46:38.920] interpreting the code, um the more that
+[00:46:41.280] we can trust that autonomy. Um and it's
+[00:46:43.520] like it's the traditional software
+[00:46:45.040] engineering techniques that we've always
+[00:46:46.840] used to build trust in a in an artifact
+[00:46:49.359] and build trust in the deployment of an
+[00:46:50.800] artifact just being used by by agents.
+[00:46:53.920] Like I do sometimes wonder is there a a
+[00:46:56.480] world where there's some new construct
+[00:46:59.800] that that models use to test the
+[00:47:01.760] validity of code that we don't
+[00:47:03.480] traditionally do in a in a software
+[00:47:04.800] development life cycle that can be, you
+[00:47:06.640] know, that can be used here. Maybe
+[00:47:08.920] that's where the research goes, I don't
+[00:47:10.440] know.
+[00:47:11.359] Um the the the Kiro folks again,
+[00:47:13.280] shout-out to to them have probably done
+[00:47:15.359] the most in this space with their
+[00:47:17.640] Oh, what do they call them? Checks, I
+[00:47:19.800] think. Um but they have a new, you know,
+[00:47:21.960] testing methodology that checks for
+[00:47:23.760] completeness in a in a way that's not
+[00:47:26.040] TDD and is not BDD, but is something
+[00:47:28.280] different.
+[00:47:29.640] Yeah. And it's funny when we talk about
+[00:47:31.040] TDD and like when we think about specs
+[00:47:32.880] and I remember in the early days of
+[00:47:34.040] Tessel when we were when we were looking
+[00:47:35.560] at what goes into a spec and and how
+[00:47:37.200] should it be how should it be phrased?
+[00:47:39.600] What I what I found like immediately
+[00:47:42.280] very interesting was how, well, if you
+[00:47:44.720] were to write down a capability in a
+[00:47:46.400] specification, you know, you can think
+[00:47:48.080] about that in two ways. You can think
+[00:47:49.480] about that as this is something I want
+[00:47:51.760] the application to do, but also just
+[00:47:54.240] slightly written differently, it's it
+[00:47:56.520] can be written as a test. You can say
+[00:47:58.440] when when this happens, I want you to
+[00:48:01.120] provide this back. And that, you know,
+[00:48:02.920] it actually turns it into just a slight
+[00:48:04.680] rephrasing turns it into actually a
+[00:48:06.680] test-driven test-driven development
+[00:48:08.960] style approach where actually your
+[00:48:10.840] specification is is a list of is a list
+[00:48:13.359] of things that you want to be true,
+[00:48:16.320] um essentially test cases. So, I guess,
+[00:48:19.280] you know, what came first, the chicken
+[00:48:20.920] or the egg? What what should come first
+[00:48:22.560] in the spec, the the code or rather the
+[00:48:25.040] capability or the test?
+[00:48:27.520] That requirements writing style, uh
+[00:48:30.520] EARS, is that what it's called? EARS
+[00:48:32.080] requirements? Um it is setting you up
+[00:48:34.480] quite nicely for
+[00:48:36.960] a specification of what a test to
+[00:48:38.880] subsequently validate that requirement
+[00:48:41.000] could be. And so it feels like that is
+[00:48:43.000] vastly more important than I don't know,
+[00:48:46.520] you know, your your dump from your
+[00:48:47.680] brainstorming session earlier on. So,
+[00:48:50.200] actually getting a succinct statement of
+[00:48:52.520] what that requirement is and being able
+[00:48:54.280] to use it as a testable artifact, highly
+[00:48:56.560] valuable. Yeah. Um you know, maybe maybe
+[00:48:59.560] we'll we'll be in a world where a
+[00:49:01.000] Playwright automation test is written to
+[00:49:02.840] validate a piece of functionality purely
+[00:49:04.680] off of observation of the produced
+[00:49:06.680] interface plus that statement with no
+[00:49:08.600] insight into the code. The code is a
+[00:49:09.960] black box. And the methodology is,
+[00:49:12.600] here's the interface, here's the
+[00:49:13.960] requirement, prove that this actually
+[00:49:15.320] works. Model, off you go. Yeah. And it's
+[00:49:17.720] just a LLM as a judge LLM as a judge
+[00:49:20.040] style just trying to look at what's been
+[00:49:21.640] created.
+[00:49:22.920] Yeah, absolutely. And I think actually
+[00:49:24.520] there's been there are several papers
+[00:49:25.960] that actually show that is a valid that
+[00:49:27.520] is a very valid way of of, you know,
+[00:49:30.240] running evals and and actually very,
+[00:49:32.200] very accurate as well.
+[00:49:34.160] Um yeah, cool. I guess what do we wrap
+[00:49:36.280] up with kind of like a little bit more
+[00:49:37.720] on some of the some of the things that
+[00:49:39.040] Nearform have done. Um
+[00:49:41.320] I guess you know,
+[00:49:42.800] you've run a number of experiments
+[00:49:44.960] certainly around Be Mad and SDD and I
+[00:49:47.240] think you're from talking with a you
+[00:49:49.520] know, a large number of people. I think
+[00:49:50.800] you're probably from from a consultancy
+[00:49:52.840] point of view definitely the the the the
+[00:49:54.840] group that have you know, jumped in
+[00:49:58.080] most with this kind of thing. So I'd
+[00:49:59.480] love to kind of hear what are what are
+[00:50:01.200] some of the most interesting experiments
+[00:50:02.800] I guess that that that you have that
+[00:50:04.520] you've played around in New Zealand.
+[00:50:06.920] Yeah, we've definitely gone hell for
+[00:50:08.240] leather.
+[00:50:09.600] And so I suppose some of the kind of
+[00:50:11.640] challenges that we found in rolling out
+[00:50:14.120] a framework like Be Mad to a team of
+[00:50:16.720] people since that's how we tend to
+[00:50:17.960] operate have forced us to sort of
+[00:50:19.960] experiment a little bit with you know,
+[00:50:21.720] how we overcome that.
+[00:50:23.720] And so I've done a little bit of spiking
+[00:50:25.800] on how to codify some of the rules of
+[00:50:27.840] our team within Be Mad.
+[00:50:30.120] A colleague of mine Luca, shout out to
+[00:50:31.880] Luca is doing incredible things at the
+[00:50:33.320] moment in forcing the backlog generator
+[00:50:36.040] from Be Mad to be able to sync with a an
+[00:50:38.680] issue management system like GitHub
+[00:50:40.240] issues.
+[00:50:41.600] And also being able to orchestrate these
+[00:50:43.200] workflows not just locally on a
+[00:50:45.280] developer's machine but through
+[00:50:46.560] something like a GitHub actions
+[00:50:47.920] workflow.
+[00:50:49.520] So a super cool way of running
+[00:50:52.680] spec-driven development tasks through a
+[00:50:55.280] more shared interface where the sort of
+[00:50:57.560] work log is visible by all members of
+[00:50:59.600] the team through a web browser rather
+[00:51:01.400] than an IDE.
+[00:51:03.160] Helps with that kind of going parallel
+[00:51:04.760] as well. And that's been most of our
+[00:51:07.560] experimentation throughout the kind of
+[00:51:09.360] latter half of 2025.
+[00:51:11.880] And so what we're now toying with as a
+[00:51:13.800] business is do we
+[00:51:16.040] just you know, embrace chaos and let you
+[00:51:18.240] know, a bunch of really clever people
+[00:51:20.280] drive their own experiments which yes,
+[00:51:22.400] absolutely.
+[00:51:23.120] >> [laughter]
+[00:51:24.040] >> The open source way. And then 2026 you
+[00:51:26.560] know, the hope is that we'll be able to
+[00:51:28.920] harvest from a bunch of these really
+[00:51:30.360] clever ideas a more kind of unified
+[00:51:33.680] Nearform way of delivering at scale
+[00:51:36.800] overcoming some of the challenges that
+[00:51:38.480] we have with the core framework.
+[00:51:40.680] You know, does that one up a module
+[00:51:42.120] within Be Mad? Do we roll our own
+[00:51:43.760] framework? Do we contribute back to Be
+[00:51:45.400] Mad? You know, that very much remains up
+[00:51:47.320] for grabs. But it feels like an area
+[00:51:49.840] where we're going to need to contribute
+[00:51:51.640] something.
+[00:51:52.960] Um you know, the hope would be something
+[00:51:54.840] in the open source domain
+[00:51:57.280] to to try and solve in particular if
+[00:51:58.800] we're going parallel across multiple
+[00:52:00.400] teams.
+[00:52:02.080] That that's been the big area focus.
+[00:52:04.560] Yeah. Super interesting. And and to be
+[00:52:06.320] honest, I love I love working with you
+[00:52:08.400] guys and I I can't say enough nice
+[00:52:10.000] things about about you and the team. For
+[00:52:12.400] for folks who want to learn more about
+[00:52:14.920] or first of all, keep up to date with
+[00:52:17.120] you know, some of the great things that
+[00:52:18.520] Nearform are doing or you know, reach
+[00:52:20.480] out to work with you. What what's the
+[00:52:21.880] best ways of of getting in contact and
+[00:52:24.480] learning more about Nearform?
+[00:52:26.400] Yeah, absolutely. I mean great place to
+[00:52:27.840] start nearform.com. The jobs board is up
+[00:52:29.800] there. In terms of what we've been
+[00:52:31.560] experimenting with spec-driven, I'm the
+[00:52:33.680] worst on our blog.
+[00:52:36.320] Nothing. I think I've written more on
+[00:52:37.760] your blog than I have on my own at the
+[00:52:39.040] moment. [laughter]
+[00:52:40.800] But
+[00:52:42.040] you know, shameless plug come follow me
+[00:52:43.560] on LinkedIn. I tend to you know, talk
+[00:52:46.120] post fairly techy stuff on the world of
+[00:52:48.400] spec-driven development pretty
+[00:52:49.960] sporadically.
+[00:52:52.760] Our own Nearform insights account on on
+[00:52:56.800] LinkedIn also post a bunch of great
+[00:52:58.280] content. A couple of my colleagues post
+[00:53:00.160] a lot retweeted by the main account in
+[00:53:02.400] the world of spec-driven.
+[00:53:04.480] And so we're pretty active bunch on
+[00:53:05.920] LinkedIn and that tends to be where we
+[00:53:08.600] you know, where we talk the most about
+[00:53:10.000] our experiments in spec-driven and
+[00:53:11.480] what's working and also what's not
+[00:53:12.680] working. You know, we're pretty we're
+[00:53:14.000] pretty open book when things don't go
+[00:53:15.520] well as well. Yeah, yeah. Sounds
+[00:53:17.240] amazing. Well, Kieran I think we've got
+[00:53:18.760] about two to three hours of content in
+[00:53:21.120] somehow around 50 just over 50 minutes.
+[00:53:23.360] So we we did well. We did well.
+[00:53:26.080] Kieran I think you so much for having me
+[00:53:27.360] Simon. Oh, it's been an absolute
+[00:53:28.600] pleasure Kieran. I really enjoyed the
+[00:53:29.760] conversation and thank you thank you
+[00:53:31.280] very much for bringing you know, all of
+[00:53:32.760] your and and and Nearform's expertise
+[00:53:35.320] and experience to to share with our
+[00:53:37.400] listeners. So I appreciate it. Thank you
+[00:53:38.680] very much. Absolutely. I'm sure we'll
+[00:53:40.320] chat again next time I'm over in London
+[00:53:42.040] which I've no doubt will be sometime in
+[00:53:43.360] January. Oh, wonderful. We'll see you
+[00:53:45.080] there.
+[00:53:46.360] Yeah, I hope everyone enjoyed that
+[00:53:47.880] episode.
+[00:53:49.120] Tell us what you thought and speak to
+[00:53:51.280] you soon and see you in the next tune
+[00:53:53.520] into the next episode rather. Thank you
+[00:53:54.920] very much. Bye for now.

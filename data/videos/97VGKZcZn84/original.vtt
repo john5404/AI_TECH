@@ -1,0 +1,5289 @@
+WEBVTT
+
+1
+00:00:04.584 --> 00:00:06.604
+[music]
+
+2
+00:00:09.920 --> 00:00:15.040
+Hi. Uh, I'm Bill Maxwell. As Patrick
+
+3
+00:00:12.960 --> 00:00:18.800
+said, I will be going over how to build
+
+4
+00:00:15.040 --> 00:00:21.119
+NextG agents uh with MCP.
+
+5
+00:00:18.800 --> 00:00:24.560
+And so we'll just kind of set some
+
+6
+00:00:21.119 --> 00:00:27.680
+context with what MCP is, how to use it,
+
+7
+00:00:24.560 --> 00:00:30.640
+what are and how it kind of works. And
+
+8
+00:00:27.680 --> 00:00:32.960
+then we will get into building our own
+
+9
+00:00:30.640 --> 00:00:35.840
+agent that will end up playing chess
+
+10
+00:00:32.960 --> 00:00:38.879
+with us. Um, and we'll be starting with
+
+11
+00:00:35.840 --> 00:00:41.040
+a textbased game and moving our way to a
+
+12
+00:00:38.879 --> 00:00:45.920
+graphical one where you can interact
+
+13
+00:00:41.040 --> 00:00:48.559
+with um the agent through uh a graphical
+
+14
+00:00:45.920 --> 00:00:51.520
+chessboard.
+
+15
+00:00:48.559 --> 00:00:53.920
+So I'm not going to go super in depth on
+
+16
+00:00:51.520 --> 00:00:57.280
+what MCP is. Tomorrow I'm giving another
+
+17
+00:00:53.920 --> 00:01:00.719
+talk on the guts of MCP. But for the
+
+18
+00:00:57.280 --> 00:01:03.359
+purpose of this uh workshop, we're going
+
+19
+00:01:00.719 --> 00:01:06.000
+to go with uh MCP servers are
+
+20
+00:01:03.359 --> 00:01:08.240
+essentially like USBC ports for
+
+21
+00:01:06.000 --> 00:01:11.920
+application AI applications. So being
+
+22
+00:01:08.240 --> 00:01:15.760
+able to plug in systems into models and
+
+23
+00:01:11.920 --> 00:01:18.240
+making that easy to uh consume. They're
+
+24
+00:01:15.760 --> 00:01:21.280
+portable between models and systems. So
+
+25
+00:01:18.240 --> 00:01:23.920
+any of your clients that support MCP um
+
+26
+00:01:21.280 --> 00:01:26.799
+will be able to use those tools and have
+
+27
+00:01:23.920 --> 00:01:30.080
+those capabilities.
+
+28
+00:01:26.799 --> 00:01:33.040
+Um, they connect in two primary methods.
+
+29
+00:01:30.080 --> 00:01:35.759
+You've probably seen uh JSON snippets
+
+30
+00:01:33.040 --> 00:01:37.840
+that have either like a npx or uvx when
+
+31
+00:01:35.759 --> 00:01:39.920
+running your MCP server. That's
+
+32
+00:01:37.840 --> 00:01:42.560
+typically running at local and it'll be
+
+33
+00:01:39.920 --> 00:01:44.159
+communicating over standard IO. And in
+
+34
+00:01:42.560 --> 00:01:46.560
+that case, you know, it's just basically
+
+35
+00:01:44.159 --> 00:01:51.119
+a local process and your client is
+
+36
+00:01:46.560 --> 00:01:54.079
+passing messages directly to um uh the
+
+37
+00:01:51.119 --> 00:01:56.640
+MCP server. And that was sort of the way
+
+38
+00:01:54.079 --> 00:02:00.240
+it started out uh and where it
+
+39
+00:01:56.640 --> 00:02:03.200
+originated from. And it's evolved uh to
+
+40
+00:02:00.240 --> 00:02:06.079
+streamable HTTP. So now you can have uh
+
+41
+00:02:03.200 --> 00:02:10.319
+centralized hosted MCP servers that your
+
+42
+00:02:06.079 --> 00:02:13.760
+clients can connect to um uh remotely
+
+43
+00:02:10.319 --> 00:02:15.920
+and they you know or also as a third
+
+44
+00:02:13.760 --> 00:02:19.360
+party if you want to provide an MCP
+
+45
+00:02:15.920 --> 00:02:21.599
+server to your customers and users um
+
+46
+00:02:19.360 --> 00:02:24.640
+your systems uh you can also build and
+
+47
+00:02:21.599 --> 00:02:27.840
+host and platform or manage it that way.
+
+48
+00:02:24.640 --> 00:02:31.599
+Uh, previously they attempted to do the
+
+49
+00:02:27.840 --> 00:02:33.440
+remote bits over uh, SSE. Um, you'll
+
+50
+00:02:31.599 --> 00:02:35.519
+still possibly see a few of those around
+
+51
+00:02:33.440 --> 00:02:37.200
+just because all of the indexes get
+
+52
+00:02:35.519 --> 00:02:40.560
+scraped and they're [snorts] really not
+
+53
+00:02:37.200 --> 00:02:42.480
+going for quality just yet. Um, so you
+
+54
+00:02:40.560 --> 00:02:46.239
+might run across a few of the older uh,
+
+55
+00:02:42.480 --> 00:02:49.840
+SSE based servers.
+
+56
+00:02:46.239 --> 00:02:51.440
+On a server side, uh an MCP server, the
+
+57
+00:02:49.840 --> 00:02:54.239
+core thing I think everyone thinks of
+
+58
+00:02:51.440 --> 00:02:56.640
+when they think of MCP servers is tools.
+
+59
+00:02:54.239 --> 00:02:59.360
+And basically that is the actions that
+
+60
+00:02:56.640 --> 00:03:02.239
+uh the agent and the client are going to
+
+61
+00:02:59.360 --> 00:03:05.680
+be able to take and interact with those
+
+62
+00:03:02.239 --> 00:03:09.200
+systems. And so basically with these uh
+
+63
+00:03:05.680 --> 00:03:10.879
+you know you can get records, get um you
+
+64
+00:03:09.200 --> 00:03:14.159
+know change a database, query a
+
+65
+00:03:10.879 --> 00:03:17.440
+database, uh call an API, any of those
+
+66
+00:03:14.159 --> 00:03:19.920
+um are pretty common pieces. The other
+
+67
+00:03:17.440 --> 00:03:21.840
+bits are more around some of the UX and
+
+68
+00:03:19.920 --> 00:03:25.040
+the data that might be interacted with.
+
+69
+00:03:21.840 --> 00:03:27.760
+So prompts guide the user uh and how to
+
+70
+00:03:25.040 --> 00:03:31.280
+interact with that server. uh resources
+
+71
+00:03:27.760 --> 00:03:34.159
+are files or URLs to data or records in
+
+72
+00:03:31.280 --> 00:03:36.720
+a database uh that need to be referenced
+
+73
+00:03:34.159 --> 00:03:40.280
+um and so the server can present those
+
+74
+00:03:36.720 --> 00:03:40.280
+uh to the client.
+
+75
+00:03:41.920 --> 00:03:45.440
+Uh the reason I bring some of these up
+
+76
+00:03:43.680 --> 00:03:47.760
+is tools and resources are going to be
+
+77
+00:03:45.440 --> 00:03:49.920
+pretty core to uh what we end up
+
+78
+00:03:47.760 --> 00:03:52.159
+building today. Um so those are some
+
+79
+00:03:49.920 --> 00:03:54.640
+important concepts.
+
+80
+00:03:52.159 --> 00:03:56.879
+The others that are on the client side
+
+81
+00:03:54.640 --> 00:03:59.120
+uh are sampling, which is a weird name
+
+82
+00:03:56.879 --> 00:04:01.200
+and they'll admit it. Uh but basically
+
+83
+00:03:59.120 --> 00:04:04.560
+it is the server requesting the client
+
+84
+00:04:01.200 --> 00:04:06.799
+to make an LLM call. So if you've pulled
+
+85
+00:04:04.560 --> 00:04:08.879
+some text, you can ask the LLM the
+
+86
+00:04:06.799 --> 00:04:10.560
+client to summarize those that text for
+
+87
+00:04:08.879 --> 00:04:13.519
+you, have it go back to the tool, get
+
+88
+00:04:10.560 --> 00:04:15.920
+processed and sent back. Elicitations
+
+89
+00:04:13.519 --> 00:04:18.479
+are a pretty vital part. Uh those come
+
+90
+00:04:15.920 --> 00:04:20.959
+back and confirm actions from the user.
+
+91
+00:04:18.479 --> 00:04:23.520
+So the user can either, you know,
+
+92
+00:04:20.959 --> 00:04:25.680
+confirm or deny an action or did you
+
+93
+00:04:23.520 --> 00:04:27.520
+really mean to deposit a million
+
+94
+00:04:25.680 --> 00:04:30.240
+dollars, you know, like confirm that the
+
+95
+00:04:27.520 --> 00:04:33.120
+data and the information is correct? And
+
+96
+00:04:30.240 --> 00:04:35.680
+then roots, um, I don't really think
+
+97
+00:04:33.120 --> 00:04:37.919
+anyone uses those, but basically they
+
+98
+00:04:35.680 --> 00:04:39.600
+just tell you where in the file system,
+
+99
+00:04:37.919 --> 00:04:43.800
+uh, tells the server where in the file
+
+100
+00:04:39.600 --> 00:04:43.800
+system they can interact with things.
+
+101
+00:04:44.000 --> 00:04:50.960
+So let's get to the fun part uh where we
+
+102
+00:04:46.960 --> 00:04:53.600
+actually build and uh do the code. Um
+
+103
+00:04:50.960 --> 00:04:55.680
+you will need an open AI key. Uh if you
+
+104
+00:04:53.600 --> 00:04:58.000
+go to this URL, you will go to a word
+
+105
+00:04:55.680 --> 00:05:00.479
+doc or a Google doc that will have an
+
+106
+00:04:58.000 --> 00:05:03.440
+API key that you can use for this if you
+
+107
+00:05:00.479 --> 00:05:06.720
+don't want to use your own. Um
+
+108
+00:05:03.440 --> 00:05:09.919
+so yep if you visit this it will take
+
+109
+00:05:06.720 --> 00:05:13.600
+you to
+
+110
+00:05:09.919 --> 00:05:15.520
+this document where you can get the key.
+
+111
+00:05:13.600 --> 00:05:16.960
+I previously tried this with a QR code
+
+112
+00:05:15.520 --> 00:05:19.280
+and then it ended up on everyone's
+
+113
+00:05:16.960 --> 00:05:22.280
+phone. So I'm hoping just the URL this
+
+114
+00:05:19.280 --> 00:05:22.280
+time.
+
+115
+00:05:27.199 --> 00:05:32.560
+So I put this on the next slide. Um, for
+
+116
+00:05:30.000 --> 00:05:34.960
+those of you who have the key, the next
+
+117
+00:05:32.560 --> 00:05:36.960
+bit is to install Nanobot. So, we're
+
+118
+00:05:34.960 --> 00:05:40.560
+going to be using Nanobot for this. It
+
+119
+00:05:36.960 --> 00:05:43.120
+is an open source project by Obot. It is
+
+120
+00:05:40.560 --> 00:05:46.720
+uh like a lightweight agent framework um
+
+121
+00:05:43.120 --> 00:05:48.560
+that uh basically is a full MCP client
+
+122
+00:05:46.720 --> 00:05:50.800
+implements all of the the bits. It
+
+123
+00:05:48.560 --> 00:05:53.520
+allows you to define an agent which
+
+124
+00:05:50.800 --> 00:05:55.520
+we'll go with as a model, instructions,
+
+125
+00:05:53.520 --> 00:05:58.240
+and tools. The tools will be provided by
+
+126
+00:05:55.520 --> 00:05:59.919
+the MCP server. Um and we'll be using
+
+127
+00:05:58.240 --> 00:06:01.759
+nanobots. So we'll go into a little bit
+
+128
+00:05:59.919 --> 00:06:07.319
+more on that. So if you're going to
+
+129
+00:06:01.759 --> 00:06:07.319
+build you will need uh nanobot.
+
+130
+00:06:15.759 --> 00:06:18.759
+Okay.
+
+131
+00:06:19.919 --> 00:06:24.479
+And then last you will want to clone
+
+132
+00:06:22.560 --> 00:06:28.080
+this repository.
+
+133
+00:06:24.479 --> 00:06:30.720
+Um, and this will have everything we
+
+134
+00:06:28.080 --> 00:06:36.120
+need to set up the
+
+135
+00:06:30.720 --> 00:06:36.120
+uh uh agent today.
+
+136
+00:06:44.794 --> 00:06:46.814
+[snorts]
+
+137
+00:06:58.720 --> 00:07:05.000
+while we wait for everyone. Yep.
+
+138
+00:07:02.000 --> 00:07:05.000
+&gt;&gt; Yep.
+
+139
+00:07:06.800 --> 00:07:12.160
+Do you need this one or the pre? Okay.
+
+140
+00:07:10.400 --> 00:07:14.319
+&gt;&gt; Sorry. Yeah. Please stop me if I'm going
+
+141
+00:07:12.160 --> 00:07:16.639
+too fast or
+
+142
+00:07:14.319 --> 00:07:20.039
+you have questions, please ask. Uh,
+
+143
+00:07:16.639 --> 00:07:20.039
+happy to
+
+144
+00:08:06.319 --> 00:08:10.800
+Okay. Is everyone been able to install
+
+145
+00:08:08.720 --> 00:08:14.000
+Nanobot
+
+146
+00:08:10.800 --> 00:08:17.280
+and clone the repo.
+
+147
+00:08:14.000 --> 00:08:20.280
+Then we need help.
+
+148
+00:08:17.280 --> 00:08:20.280
+Okay.
+
+149
+00:08:24.479 --> 00:08:31.680
+Okay. So, I'm going to work out of this
+
+150
+00:08:28.639 --> 00:08:36.479
+uh here for the most part going through
+
+151
+00:08:31.680 --> 00:08:40.159
+the uh the repository. If you go into
+
+152
+00:08:36.479 --> 00:08:44.399
+your the chess MCP directory, you'll see
+
+153
+00:08:40.159 --> 00:08:46.560
+there is a workshop and a workshop live
+
+154
+00:08:44.399 --> 00:08:49.920
+folder. You'll want to go into that
+
+155
+00:08:46.560 --> 00:08:52.480
+folder um as we work through this.
+
+156
+00:08:49.920 --> 00:08:54.640
+And um
+
+157
+00:08:52.480 --> 00:08:57.440
+that'll be the primary. If you get lost
+
+158
+00:08:54.640 --> 00:09:00.880
+or get stuck, the solutions are in the
+
+159
+00:08:57.440 --> 00:09:03.519
+solutions folder and the readme and
+
+160
+00:09:00.880 --> 00:09:07.279
+these slides that I'll be working off of
+
+161
+00:09:03.519 --> 00:09:09.440
+uh exist in both the
+
+162
+00:09:07.279 --> 00:09:12.320
+I am going to cheat a little bit and
+
+163
+00:09:09.440 --> 00:09:15.920
+just give you I am going to have the
+
+164
+00:09:12.320 --> 00:09:19.680
+readme open in another folder um because
+
+165
+00:09:15.920 --> 00:09:23.680
+I don't want to type everything.
+
+166
+00:09:19.680 --> 00:09:26.560
+Okay, so we are going to build a fully
+
+167
+00:09:23.680 --> 00:09:28.080
+functioning uh chess MCP server. Uh it
+
+168
+00:09:26.560 --> 00:09:30.320
+will have a backend. You'll be able
+
+169
+00:09:28.080 --> 00:09:33.920
+it'll have some tools uh to be able to
+
+170
+00:09:30.320 --> 00:09:36.240
+make a move. It will uh be able to, you
+
+171
+00:09:33.920 --> 00:09:39.600
+know, have the rules enforced. Um and
+
+172
+00:09:36.240 --> 00:09:41.200
+you'll be able to actually play chess.
+
+173
+00:09:39.600 --> 00:09:44.560
+Um
+
+174
+00:09:41.200 --> 00:09:48.160
+so it accepts the algebraic notation
+
+175
+00:09:44.560 --> 00:09:50.480
+which is you knight to E4 and that type
+
+176
+00:09:48.160 --> 00:09:52.640
+of thing. I personally am not super
+
+177
+00:09:50.480 --> 00:09:56.080
+wellversed in it and have to often ask
+
+178
+00:09:52.640 --> 00:09:59.120
+uh what I mean when I from the model and
+
+179
+00:09:56.080 --> 00:10:01.680
+have it tell me. Um but then this will
+
+180
+00:09:59.120 --> 00:10:03.200
+have state. It will have a way to
+
+181
+00:10:01.680 --> 00:10:06.640
+display the board and then we're going
+
+182
+00:10:03.200 --> 00:10:09.519
+to take a moment and go over like uh MCP
+
+183
+00:10:06.640 --> 00:10:12.399
+UI and then we will implement the UI
+
+184
+00:10:09.519 --> 00:10:15.279
+elements for this agent and then you can
+
+185
+00:10:12.399 --> 00:10:17.360
+drag and drop and play chess.
+
+186
+00:10:15.279 --> 00:10:20.800
+Um
+
+187
+00:10:17.360 --> 00:10:24.880
+yeah. So you will need NodeJS. Uh you'll
+
+188
+00:10:20.800 --> 00:10:26.640
+need some basic uh TypeScript. Um your
+
+189
+00:10:24.880 --> 00:10:29.519
+editor of choice. I'm going to use VS
+
+190
+00:10:26.640 --> 00:10:34.160
+Code. Uh command line. You'll need two.
+
+191
+00:10:29.519 --> 00:10:38.600
+One to run the uh server and one to run
+
+192
+00:10:34.160 --> 00:10:38.600
+uh the nanobot instance.
+
+193
+00:10:39.440 --> 00:10:47.120
+And we've already cloned.
+
+194
+00:10:43.279 --> 00:10:49.839
+And now, so in the workshop live folder,
+
+195
+00:10:47.120 --> 00:10:51.680
+you're going to want to install our npm
+
+196
+00:10:49.839 --> 00:10:55.200
+dependencies.
+
+197
+00:10:51.680 --> 00:10:57.120
+Um, what we're going to be installing is
+
+198
+00:10:55.200 --> 00:10:58.640
+we're going to be using MCPUI server.
+
+199
+00:10:57.120 --> 00:11:01.360
+We're just going to install that now.
+
+200
+00:10:58.640 --> 00:11:04.320
+We're going to use the official SDK from
+
+201
+00:11:01.360 --> 00:11:06.640
+the model context protocol. Uh, we're
+
+202
+00:11:04.320 --> 00:11:09.279
+going to use chest.js, JS which is the
+
+203
+00:11:06.640 --> 00:11:14.079
+backend for the chess engine and then
+
+204
+00:11:09.279 --> 00:11:16.079
+express and zod for um
+
+205
+00:11:14.079 --> 00:11:19.079
+uh
+
+206
+00:11:16.079 --> 00:11:19.079
+types.
+
+207
+00:11:24.640 --> 00:11:27.640
+Okay.
+
+208
+00:11:31.920 --> 00:11:36.560
+Got held them myself.
+
+209
+00:11:34.800 --> 00:11:39.040
+All right.
+
+210
+00:11:36.560 --> 00:11:42.800
+So now we're going to create our minimal
+
+211
+00:11:39.040 --> 00:11:44.800
+uh MCP server. Um we're going to be
+
+212
+00:11:42.800 --> 00:11:46.079
+adding we're going to look at the basic
+
+213
+00:11:44.800 --> 00:11:48.240
+structure of the server. We're going to
+
+214
+00:11:46.079 --> 00:11:51.519
+register our first tool. Uh we're going
+
+215
+00:11:48.240 --> 00:11:53.839
+to fire up um we're going to set up the
+
+216
+00:11:51.519 --> 00:11:57.519
+transport layer. And then we are going
+
+217
+00:11:53.839 --> 00:12:00.640
+to um yeah have our first tool and test
+
+218
+00:11:57.519 --> 00:12:05.279
+that out with Nanobot. And so our first
+
+219
+00:12:00.640 --> 00:12:08.320
+goal is to uh create the serverts file.
+
+220
+00:12:05.279 --> 00:12:11.600
+And you will find that in source lib
+
+221
+00:12:08.320 --> 00:12:14.160
+serverts. You should see it empty uh
+
+222
+00:12:11.600 --> 00:12:17.160
+with that. And like I said, I'm going to
+
+223
+00:12:14.160 --> 00:12:17.160
+cheat
+
+224
+00:12:17.360 --> 00:12:24.519
+and copy this
+
+225
+00:12:20.480 --> 00:12:24.519
+and I will walk through it.
+
+226
+00:12:30.320 --> 00:12:33.920
+Y zoom in a little bit
+
+227
+00:12:33.440 --> 00:12:37.160
+just
+
+228
+00:12:33.920 --> 00:12:37.160
+&gt;&gt; Oh yeah.
+
+229
+00:12:44.393 --> 00:12:46.413
+[clears throat]
+
+230
+00:12:53.440 --> 00:12:58.480
+Okay.
+
+231
+00:12:55.120 --> 00:13:01.519
+So, in this file, we're going to add our
+
+232
+00:12:58.480 --> 00:13:02.800
+imports. Uh, we're going to do add
+
+233
+00:13:01.519 --> 00:13:05.519
+express. We're going to add our
+
+234
+00:13:02.800 --> 00:13:08.720
+middleware. Um, we're going to pull in
+
+235
+00:13:05.519 --> 00:13:12.360
+the MCP server from the SDK. And then
+
+236
+00:13:08.720 --> 00:13:12.360
+we're going to use ZOD.
+
+237
+00:13:12.480 --> 00:13:18.720
+So, here, can everyone see this? Is this
+
+238
+00:13:14.959 --> 00:13:22.480
+a good size? Good. Thank you. Um, we're
+
+239
+00:13:18.720 --> 00:13:24.959
+going to create our new server. Um, in
+
+240
+00:13:22.480 --> 00:13:26.959
+this function here,
+
+241
+00:13:24.959 --> 00:13:28.560
+um,
+
+242
+00:13:26.959 --> 00:13:32.360
+we're basically just giving it a sample
+
+243
+00:13:28.560 --> 00:13:32.360
+name and a version.
+
+244
+00:13:48.800 --> 00:13:56.000
+So then once we've created our server,
+
+245
+00:13:52.399 --> 00:13:58.079
+we're going to register our tool.
+
+246
+00:13:56.000 --> 00:13:59.360
+This one is going to just add numbers.
+
+247
+00:13:58.079 --> 00:14:01.680
+So for this one, we're just going to
+
+248
+00:13:59.360 --> 00:14:04.160
+keep it nice and simple. Um, we're going
+
+249
+00:14:01.680 --> 00:14:07.920
+to define our tool and give it a a
+
+250
+00:14:04.160 --> 00:14:10.160
+description and its input schema. This
+
+251
+00:14:07.920 --> 00:14:13.920
+is going to take the left and right
+
+252
+00:14:10.160 --> 00:14:16.000
+operand of an add function. Um,
+
+253
+00:14:13.920 --> 00:14:18.639
+and so here you can see we're using ZOD
+
+254
+00:14:16.000 --> 00:14:22.560
+to describe that it's numbers and then
+
+255
+00:14:18.639 --> 00:14:24.720
+give it these uh descriptions so that
+
+256
+00:14:22.560 --> 00:14:27.120
+the model can view these things. Your
+
+257
+00:14:24.720 --> 00:14:29.360
+tool names and your descriptions, your
+
+258
+00:14:27.120 --> 00:14:31.360
+tool name probably is most important
+
+259
+00:14:29.360 --> 00:14:33.120
+followed by the description of each of
+
+260
+00:14:31.360 --> 00:14:35.519
+these when building your MCP servers if
+
+261
+00:14:33.120 --> 00:14:37.680
+you want to have success. um you'll want
+
+262
+00:14:35.519 --> 00:14:40.079
+to make sure that those are very
+
+263
+00:14:37.680 --> 00:14:43.760
+descriptive and accurate so that the
+
+264
+00:14:40.079 --> 00:14:44.880
+model doesn't really guess.
+
+265
+00:14:43.760 --> 00:14:47.760
+Then [sighs]
+
+266
+00:14:44.880 --> 00:14:50.560
+we're going to create the actual body of
+
+267
+00:14:47.760 --> 00:14:55.160
+the tool. And so here
+
+268
+00:14:50.560 --> 00:14:55.160
+we are going to return content
+
+269
+00:14:55.360 --> 00:15:00.240
+of type text
+
+270
+00:14:58.000 --> 00:15:05.560
+and basically just say the sum of the
+
+271
+00:15:00.240 --> 00:15:05.560
+left and right is the left and right.
+
+272
+00:15:06.240 --> 00:15:11.959
+And we'll close that out and then return
+
+273
+00:15:08.720 --> 00:15:11.959
+the server.
+
+274
+00:15:19.279 --> 00:15:23.639
+Just make sure you can see the whole
+
+275
+00:15:20.639 --> 00:15:23.639
+function.
+
+276
+00:15:31.279 --> 00:15:37.360
+And then we will wire up Express. And so
+
+277
+00:15:34.880 --> 00:15:39.920
+we'll mount it to SLMCP which is the
+
+278
+00:15:37.360 --> 00:15:42.240
+convention of
+
+279
+00:15:39.920 --> 00:15:45.360
+U MCP servers that are over streamable
+
+280
+00:15:42.240 --> 00:15:48.680
+HTTP. We'll log and we will listen on
+
+281
+00:15:45.360 --> 00:15:48.680
+port 3000.
+
+282
+00:16:05.839 --> 00:16:08.839
+Sorry.
+
+283
+00:16:18.160 --> 00:16:24.720
+Okay,
+
+284
+00:16:20.959 --> 00:16:28.320
+sorry. Was everyone able to get this? If
+
+285
+00:16:24.720 --> 00:16:30.160
+you fall behind the again the solutions,
+
+286
+00:16:28.320 --> 00:16:33.040
+if you want to look at the files, they
+
+287
+00:16:30.160 --> 00:16:35.360
+are in the steps. So, we're on step one.
+
+288
+00:16:33.040 --> 00:16:38.480
+You can also see it in here. I'm going
+
+289
+00:16:35.360 --> 00:16:41.040
+to actually copy out the nanobot yaml
+
+290
+00:16:38.480 --> 00:16:44.360
+because it's currently in the form for a
+
+291
+00:16:41.040 --> 00:16:44.360
+later version.
+
+292
+00:16:50.240 --> 00:16:56.240
+So you want to edit your nanobot yaml to
+
+293
+00:16:52.959 --> 00:16:59.440
+look more like this for this particular
+
+294
+00:16:56.240 --> 00:17:04.480
+part. And so just kind of breaking down
+
+295
+00:16:59.440 --> 00:17:06.480
+our nanoboty file. Uh this is basically
+
+296
+00:17:04.480 --> 00:17:09.600
+as we were saying earlier this is our
+
+297
+00:17:06.480 --> 00:17:12.959
+agent. It's really quite simple. Um it
+
+298
+00:17:09.600 --> 00:17:15.439
+is just a model, some instructions and
+
+299
+00:17:12.959 --> 00:17:17.760
+some tools. And those tools
+
+300
+00:17:15.439 --> 00:17:20.319
+um are basically just provided by the
+
+301
+00:17:17.760 --> 00:17:22.799
+MCP server that we've just built. Um,
+
+302
+00:17:20.319 --> 00:17:24.319
+we're going to use GPT41
+
+303
+00:17:22.799 --> 00:17:27.600
+and we're just going to give it some
+
+304
+00:17:24.319 --> 00:17:29.760
+simple um
+
+305
+00:17:27.600 --> 00:17:33.720
+simple instructions to basically use the
+
+306
+00:17:29.760 --> 00:17:33.720
+tool that it has access to.
+
+307
+00:18:27.360 --> 00:18:33.440
+All right.
+
+308
+00:18:29.760 --> 00:18:38.080
+So, if everyone's okay, anyone need more
+
+309
+00:18:33.440 --> 00:18:43.280
+time? I'm going to start the MCP server.
+
+310
+00:18:38.080 --> 00:18:45.520
+I'm going to just do npm rundev.
+
+311
+00:18:43.280 --> 00:18:47.919
+So, now we've started the MCP server. We
+
+312
+00:18:45.520 --> 00:18:51.840
+basic because when we set up our express
+
+313
+00:18:47.919 --> 00:18:56.720
+app we're listening on port 3000MCP
+
+314
+00:18:51.840 --> 00:18:59.280
+and so now we are up and running and now
+
+315
+00:18:56.720 --> 00:19:02.799
+uh
+
+316
+00:18:59.280 --> 00:19:05.120
+we have our nanobotl file. So I'm also
+
+317
+00:19:02.799 --> 00:19:09.679
+in this live folder and I'm going to do
+
+318
+00:19:05.120 --> 00:19:13.200
+npm or sorry nanobot.
+
+319
+00:19:09.679 --> 00:19:16.000
+Oh, sorry. I'm skipping a step here.
+
+320
+00:19:13.200 --> 00:19:19.200
+Before you run nanobot in your terminal,
+
+321
+00:19:16.000 --> 00:19:21.679
+uh export that open AI uh yeah, open AI
+
+322
+00:19:19.200 --> 00:19:23.679
+key um through this environment
+
+323
+00:19:21.679 --> 00:19:26.960
+variable.
+
+324
+00:19:23.679 --> 00:19:34.520
+So, if you copy what I put in the um
+
+325
+00:19:26.960 --> 00:19:34.520
+document, that uh should just work.
+
+326
+00:19:35.738 --> 00:19:37.758
+[clears throat]
+
+327
+00:19:37.840 --> 00:19:41.039
+So,
+
+328
+00:19:39.600 --> 00:19:42.640
+So basically what's going to happen is
+
+329
+00:19:41.039 --> 00:19:44.320
+when nanobot starts it looks for that
+
+330
+00:19:42.640 --> 00:19:48.080
+environment variable then it has an API
+
+331
+00:19:44.320 --> 00:19:53.039
+key to talk to uh openai.
+
+332
+00:19:48.080 --> 00:19:57.280
+So then we will run nanobot
+
+333
+00:19:53.039 --> 00:20:01.039
+run nanobot yaml file and you'll see
+
+334
+00:19:57.280 --> 00:20:03.280
+that you should see that it starts up
+
+335
+00:20:01.039 --> 00:20:07.559
+and that it comes and starts listening
+
+336
+00:20:03.280 --> 00:20:07.559
+on port 8080.
+
+337
+00:20:11.919 --> 00:20:17.200
+So then if you go to your browser, you
+
+338
+00:20:14.640 --> 00:20:20.200
+should see a nanobot
+
+339
+00:20:17.200 --> 00:20:20.200
+UI.
+
+340
+00:20:22.240 --> 00:20:27.280
+Does everyone Is this working? Not
+
+341
+00:20:24.799 --> 00:20:28.799
+working? Anyone need help?
+
+342
+00:20:27.280 --> 00:20:30.480
+All right. Now you should be able to
+
+343
+00:20:28.799 --> 00:20:36.400
+just chat with it. So now I should be
+
+344
+00:20:30.480 --> 00:20:38.640
+able to say uh add, you know, 9 + 8. And
+
+345
+00:20:36.400 --> 00:20:41.600
+you should see that it'll run and it
+
+346
+00:20:38.640 --> 00:20:46.480
+knows to use its uh tool. So it's
+
+347
+00:20:41.600 --> 00:20:49.360
+calling our MCP server and it is adding
+
+348
+00:20:46.480 --> 00:20:51.360
+uh basically it gets the output in the
+
+349
+00:20:49.360 --> 00:20:52.880
+format that we said it should and
+
+350
+00:20:51.360 --> 00:20:56.520
+returns
+
+351
+00:20:52.880 --> 00:20:56.520
+the correct answer.
+
+352
+00:20:57.200 --> 00:21:01.919
+Anyone not seeing this or hitting some
+
+353
+00:20:59.039 --> 00:21:05.559
+errors? Need any
+
+354
+00:21:01.919 --> 00:21:05.559
+any help? Yep.
+
+355
+00:21:10.720 --> 00:21:15.559
+the export and then just getting
+
+356
+00:21:16.000 --> 00:21:19.679
+&gt;&gt; Is that in the same
+
+357
+00:21:18.480 --> 00:21:21.120
+Is it in the same folder?
+
+358
+00:21:19.679 --> 00:21:24.080
+&gt;&gt; Yeah.
+
+359
+00:21:21.120 --> 00:21:25.760
+&gt;&gt; Yeah.
+
+360
+00:21:24.080 --> 00:21:26.320
+&gt;&gt; Oh, that one. Are you in the live
+
+361
+00:21:25.760 --> 00:21:27.120
+folder?
+
+362
+00:21:26.320 --> 00:21:29.919
+&gt;&gt; Yeah. Yeah. Live.
+
+363
+00:21:27.120 --> 00:21:32.919
+&gt;&gt; Yeah. So, it needs to should run that
+
+364
+00:21:29.919 --> 00:21:32.919
+one.
+
+365
+00:21:37.760 --> 00:21:39.360
+&gt;&gt; It cheats.
+
+366
+00:21:38.480 --> 00:21:40.720
+&gt;&gt; It does.
+
+367
+00:21:39.360 --> 00:21:42.159
+&gt;&gt; Yeah.
+
+368
+00:21:40.720 --> 00:21:43.039
+Look, look, look here. Wait, let me show
+
+369
+00:21:42.159 --> 00:21:45.600
+you.
+
+370
+00:21:43.039 --> 00:21:46.960
+&gt;&gt; I was I put my queen here and then he
+
+371
+00:21:45.600 --> 00:21:48.720
+said he captured with this pawn. I'm
+
+372
+00:21:46.960 --> 00:21:50.320
+like, that's an illegal move down.
+
+373
+00:21:48.720 --> 00:21:51.919
+&gt;&gt; So, he did an illegal move and then cuz
+
+374
+00:21:50.320 --> 00:21:53.280
+I made him think the board and then I
+
+375
+00:21:51.919 --> 00:21:55.679
+came back here and I'm like, that's not
+
+376
+00:21:53.280 --> 00:21:57.840
+a valid move, you cheater. [laughter]
+
+377
+00:21:55.679 --> 00:21:59.360
+&gt;&gt; And then and then he wrote back like,
+
+378
+00:21:57.840 --> 00:21:59.600
+oh, right. He put the piece back.
+
+379
+00:21:59.360 --> 00:22:00.080
+&gt;&gt; Huh?
+
+380
+00:21:59.600 --> 00:22:01.280
+&gt;&gt; You should say,
+
+381
+00:22:00.080 --> 00:22:04.480
+&gt;&gt; well, you tried to cheat.
+
+382
+00:22:01.280 --> 00:22:04.480
+&gt;&gt; You should say. [laughter]
+
+383
+00:22:05.120 --> 00:22:10.760
+&gt;&gt; All right. So, if you run it with slash,
+
+384
+00:22:07.280 --> 00:22:10.760
+what does it do?
+
+385
+00:22:10.960 --> 00:22:15.400
+Yeah, try that. There you go.
+
+386
+00:22:17.280 --> 00:22:21.360
+&gt;&gt; What directory do we refer to inside the
+
+387
+00:22:19.200 --> 00:22:23.520
+nanobot runtime? Because it says that
+
+388
+00:22:21.360 --> 00:22:25.120
+the file is not found, but it is
+
+389
+00:22:23.520 --> 00:22:28.679
+&gt;&gt; kind of cool.
+
+390
+00:22:25.120 --> 00:22:28.679
+&gt;&gt; Yeah. Um,
+
+391
+00:22:29.679 --> 00:22:33.320
+&gt;&gt; sorry. I'll be right back.
+
+392
+00:22:37.039 --> 00:22:41.919
+So you should be in the working
+
+393
+00:22:39.200 --> 00:22:42.480
+directory. So you're in working
+
+394
+00:22:41.919 --> 00:22:43.360
+directory.
+
+395
+00:22:42.480 --> 00:22:48.039
+&gt;&gt; Y
+
+396
+00:22:43.360 --> 00:22:48.039
+&gt;&gt; and uh let me just run this.
+
+397
+00:22:48.480 --> 00:22:51.760
+&gt;&gt; Delete that.
+
+398
+00:22:50.080 --> 00:22:53.039
+&gt;&gt; Dude space dot
+
+399
+00:22:51.760 --> 00:22:55.520
+&gt;&gt; queen to
+
+400
+00:22:53.039 --> 00:22:58.840
+&gt;&gt; Yep. Try that.
+
+401
+00:22:55.520 --> 00:22:58.840
+It's not available.
+
+402
+00:23:03.840 --> 00:23:08.159
+&gt;&gt; See how you installed that? How you
+
+403
+00:23:06.640 --> 00:23:10.799
+install nanomot?
+
+404
+00:23:08.159 --> 00:23:13.039
+&gt;&gt; Uh, I used group.
+
+405
+00:23:10.799 --> 00:23:13.520
+&gt;&gt; Did you use the full rule cask?
+
+406
+00:23:13.039 --> 00:23:15.360
+&gt;&gt; Right.
+
+407
+00:23:13.520 --> 00:23:16.240
+&gt;&gt; Okay.
+
+408
+00:23:15.360 --> 00:23:20.039
+&gt;&gt; That's amazing.
+
+409
+00:23:16.240 --> 00:23:20.039
+&gt;&gt; Should I install it again?
+
+410
+00:23:20.240 --> 00:23:26.799
+&gt;&gt; Just take over. Just take over the
+
+411
+00:23:23.919 --> 00:23:26.799
+&gt;&gt; That's amazing.
+
+412
+00:23:29.200 --> 00:23:33.720
+Let me go check one thing real quick.
+
+413
+00:23:52.400 --> 00:23:55.400
+So
+
+414
+00:24:04.946 --> 00:24:06.966
+&gt;&gt; [laughter]
+
+415
+00:24:09.919 --> 00:24:13.240
+&gt;&gt; kind of
+
+416
+00:24:21.600 --> 00:24:27.480
+Was it moving my Look, I'm moving my P.
+
+417
+00:24:47.440 --> 00:24:52.120
+You should do one more
+
+418
+00:25:04.400 --> 00:25:10.159
+&gt;&gt; possibly, but it looks like it's got
+
+419
+00:25:06.240 --> 00:25:10.159
+some sort of validation error.
+
+420
+00:25:10.240 --> 00:25:16.279
+E5 to E7.
+
+421
+00:25:13.279 --> 00:25:16.279
+&gt;&gt; Demo.
+
+422
+00:25:23.360 --> 00:25:26.679
+&gt;&gt; Oh, sorry.
+
+423
+00:25:32.559 --> 00:25:36.360
+&gt;&gt; Do you have
+
+424
+00:25:40.577 --> 00:25:44.760
+&gt;&gt; [clears throat]
+
+425
+00:25:41.200 --> 00:25:44.760
+&gt;&gt; Okay, that's up.
+
+426
+00:25:46.080 --> 00:25:50.080
+&gt;&gt; Oh, he put his knight there.
+
+427
+00:25:48.640 --> 00:25:51.039
+&gt;&gt; The dev servers do not restart
+
+428
+00:25:50.080 --> 00:25:51.919
+automatically, do they?
+
+429
+00:25:51.039 --> 00:25:53.440
+&gt;&gt; They do not. No.
+
+430
+00:25:51.919 --> 00:25:55.039
+&gt;&gt; Okay, maybe I'll just try restarting
+
+431
+00:25:53.440 --> 00:25:57.120
+because I just changed the name of the
+
+432
+00:25:55.039 --> 00:26:00.000
+server. It was a mismatch. So,
+
+433
+00:25:57.120 --> 00:26:01.520
+&gt;&gt; yeah. So these two have to match and
+
+434
+00:26:00.000 --> 00:26:02.720
+then
+
+435
+00:26:01.520 --> 00:26:05.360
+&gt;&gt; it's not just
+
+436
+00:26:02.720 --> 00:26:07.200
+&gt;&gt; like it is silly but it's example how
+
+437
+00:26:05.360 --> 00:26:08.742
+gaming might look in the future
+
+438
+00:26:07.200 --> 00:26:09.360
+&gt;&gt; like a kid will just be like
+
+439
+00:26:08.742 --> 00:26:10.559
+[clears throat]
+
+440
+00:26:09.360 --> 00:26:11.840
+&gt;&gt; this is how the game's going to work
+
+441
+00:26:10.559 --> 00:26:14.159
+today
+
+442
+00:26:11.840 --> 00:26:15.760
+&gt;&gt; and it's just like
+
+443
+00:26:14.159 --> 00:26:16.720
+&gt;&gt; on the fly they'll be able to play games
+
+444
+00:26:15.760 --> 00:26:18.799
+the way they want to
+
+445
+00:26:16.720 --> 00:26:21.200
+&gt;&gt; that's okay
+
+446
+00:26:18.799 --> 00:26:22.799
+&gt;&gt; can you copy the nanobot yl out of step
+
+447
+00:26:21.200 --> 00:26:24.559
+one and just copy the file directly
+
+448
+00:26:22.799 --> 00:26:26.720
+there and try that
+
+449
+00:26:24.559 --> 00:26:28.799
+&gt;&gt; you can cheat really
+
+450
+00:26:26.720 --> 00:26:34.000
+&gt;&gt; I That's how you started nanobot.
+
+451
+00:26:28.799 --> 00:26:35.760
+&gt;&gt; Oh, it is uh you export the openi a kpi
+
+452
+00:26:34.000 --> 00:26:40.039
+key and in the same terminal it is
+
+453
+00:26:35.760 --> 00:26:40.039
+nanobot run
+
+454
+00:26:40.080 --> 00:26:44.679
+&gt;&gt; space
+
+455
+00:26:41.679 --> 00:26:44.679
+nanobot.yamlot.
+
+456
+00:26:47.679 --> 00:26:52.039
+&gt;&gt; Cool.
+
+457
+00:26:48.799 --> 00:26:52.039
+&gt;&gt; You are
+
+458
+00:26:54.000 --> 00:26:57.200
+&gt;&gt; Did that help?
+
+459
+00:26:55.200 --> 00:26:59.679
+&gt;&gt; No. No.
+
+460
+00:26:57.200 --> 00:27:03.200
+&gt;&gt; What do we expect in schema?
+
+461
+00:26:59.679 --> 00:27:05.520
+&gt;&gt; Uh I don't it's I'm guessing it's like a
+
+462
+00:27:03.200 --> 00:27:08.400
+validation thing. It doesn't seem to
+
+463
+00:27:05.520 --> 00:27:10.720
+like
+
+464
+00:27:08.400 --> 00:27:12.960
+&gt;&gt; which nanobayl file is this?
+
+465
+00:27:10.720 --> 00:27:13.600
+&gt;&gt; Uh it's this one. I just copy the
+
+466
+00:27:12.960 --> 00:27:15.279
+content from
+
+467
+00:27:13.600 --> 00:27:17.440
+&gt;&gt; you think it's
+
+468
+00:27:15.279 --> 00:27:21.520
+&gt;&gt; okay.
+
+469
+00:27:17.440 --> 00:27:24.400
+&gt;&gt; Yeah. And that should be
+
+470
+00:27:21.520 --> 00:27:28.120
+&gt;&gt; main test. Okay.
+
+471
+00:27:24.400 --> 00:27:28.120
+&gt;&gt; Yeah. This really shouldn't.
+
+472
+00:27:28.880 --> 00:27:32.799
+&gt;&gt; Can you brew uninstall it?
+
+473
+00:27:30.880 --> 00:27:35.760
+&gt;&gt; Oh, uninstall.
+
+474
+00:27:32.799 --> 00:27:38.080
+&gt;&gt; Yeah. And then
+
+475
+00:27:35.760 --> 00:27:40.960
+&gt;&gt; because there's a a version there's a
+
+476
+00:27:38.080 --> 00:27:42.080
+brew install nanobot and then that one
+
+477
+00:27:40.960 --> 00:27:42.880
+is broken.
+
+478
+00:27:42.080 --> 00:27:44.960
+&gt;&gt; Oh,
+
+479
+00:27:42.880 --> 00:27:49.000
+&gt;&gt; so there's one with the Yeah, let me put
+
+480
+00:27:44.960 --> 00:27:49.000
+it back up on the screen for you.
+
+481
+00:27:55.509 --> 00:27:59.440
+&gt;&gt; [sighs]
+
+482
+00:27:56.399 --> 00:28:02.159
+&gt;&gt; So, if you're seeing an error when you
+
+483
+00:27:59.440 --> 00:28:05.120
+install Nanobot, if you did brew install
+
+484
+00:28:02.159 --> 00:28:08.559
+Nanobot without putting the Nanobot AI
+
+485
+00:28:05.120 --> 00:28:10.240
+tap, uh, that version is broken. We're
+
+486
+00:28:08.559 --> 00:28:12.960
+still working with Upstream to actually
+
+487
+00:28:10.240 --> 00:28:15.760
+get that fixed. So, if you could brew
+
+488
+00:28:12.960 --> 00:28:18.640
+uninstall the nanobot that way and brew
+
+489
+00:28:15.760 --> 00:28:22.159
+install this nanobot, hopefully that
+
+490
+00:28:18.640 --> 00:28:22.159
+fixes the issue.
+
+491
+00:28:26.799 --> 00:28:29.200
+Okay.
+
+492
+00:28:28.080 --> 00:28:30.080
+&gt;&gt; You're supposed to install the tap,
+
+493
+00:28:29.200 --> 00:28:31.039
+right? Tap.
+
+494
+00:28:30.080 --> 00:28:31.440
+&gt;&gt; Yeah, you're supposed to install the
+
+495
+00:28:31.039 --> 00:28:32.480
+tab.
+
+496
+00:28:31.440 --> 00:28:34.159
+&gt;&gt; I was supposed to install the tap.
+
+497
+00:28:32.480 --> 00:28:35.039
+&gt;&gt; Yeah. Oh, okay. That's what happened.
+
+498
+00:28:34.159 --> 00:28:38.039
+Never mind.
+
+499
+00:28:35.039 --> 00:28:38.039
+&gt;&gt; Okay.
+
+500
+00:28:39.039 --> 00:28:43.039
+&gt;&gt; This is what we get
+
+501
+00:28:41.279 --> 00:28:43.919
+request.
+
+502
+00:28:43.039 --> 00:28:46.880
+&gt;&gt; Did you
+
+503
+00:28:43.919 --> 00:28:47.360
+&gt;&gt; I ran the server here. Did npmi?
+
+504
+00:28:46.880 --> 00:28:49.919
+&gt;&gt; Yep.
+
+505
+00:28:47.360 --> 00:28:51.360
+&gt;&gt; Uh server ts files. We looked at the
+
+506
+00:28:49.919 --> 00:28:53.840
+solutions for step one looks the same.
+
+507
+00:28:51.360 --> 00:28:54.159
+The file identifies look the same.
+
+508
+00:28:53.840 --> 00:28:55.279
+&gt;&gt; Sure.
+
+509
+00:28:54.159 --> 00:28:57.600
+&gt;&gt; And then is there anything else we're
+
+510
+00:28:55.279 --> 00:28:59.440
+supposed to do?
+
+511
+00:28:57.600 --> 00:29:01.440
+&gt;&gt; API.
+
+512
+00:28:59.440 --> 00:29:04.320
+&gt;&gt; Yep. That should be good. And then here
+
+513
+00:29:01.440 --> 00:29:06.240
+you're getting
+
+514
+00:29:04.320 --> 00:29:08.215
+&gt;&gt; Oh, you want to start the nanobot server
+
+515
+00:29:06.240 --> 00:29:09.760
+and hit it on 8080. You're
+
+516
+00:29:08.215 --> 00:29:12.559
+[clears throat] not speaking MCP when
+
+517
+00:29:09.760 --> 00:29:14.159
+you go to it in the URL in the browser.
+
+518
+00:29:12.559 --> 00:29:14.399
+&gt;&gt; Okay.
+
+519
+00:29:14.159 --> 00:29:15.279
+Uh
+
+520
+00:29:14.399 --> 00:29:20.039
+&gt;&gt; what do I need to do?
+
+521
+00:29:15.279 --> 00:29:20.039
+&gt;&gt; Go to 80 uh port 8080, not 3000.
+
+522
+00:29:21.279 --> 00:29:24.720
+Uh, did you start the nanobot process?
+
+523
+00:29:23.279 --> 00:29:25.279
+&gt;&gt; I don't think so. I think that's the
+
+524
+00:29:24.720 --> 00:29:26.799
+missing part.
+
+525
+00:29:25.279 --> 00:29:28.159
+&gt;&gt; Yep. You need to start nanobot and then
+
+526
+00:29:26.799 --> 00:29:31.200
+that will listen on that.
+
+527
+00:29:28.159 --> 00:29:33.440
+&gt;&gt; And really quickly, I've got the the yo
+
+528
+00:29:31.200 --> 00:29:35.120
+here and I try to start nanobot in live.
+
+529
+00:29:33.440 --> 00:29:38.399
+Is that the right folder to start it in?
+
+530
+00:29:35.120 --> 00:29:40.399
+&gt;&gt; Yes, it's in live. Oh, the nanobot yl
+
+531
+00:29:38.399 --> 00:29:42.000
+should be out here.
+
+532
+00:29:40.399 --> 00:29:43.679
+&gt;&gt; So, this one is already there, right?
+
+533
+00:29:42.000 --> 00:29:46.559
+&gt;&gt; Yeah. Overwrite that one.
+
+534
+00:29:43.679 --> 00:29:48.000
+&gt;&gt; Overwrite that one with this one. Okay.
+
+535
+00:29:46.559 --> 00:29:49.360
+And how do you start?
+
+536
+00:29:48.000 --> 00:29:51.279
+&gt;&gt; And then nanobot.
+
+537
+00:29:49.360 --> 00:29:53.039
+&gt;&gt; No nanobots in live.
+
+538
+00:29:51.279 --> 00:29:55.600
+&gt;&gt; Yeah, it should be the live folder. So
+
+539
+00:29:53.039 --> 00:29:58.720
+then do nanobot
+
+540
+00:29:55.600 --> 00:30:00.799
+&gt;&gt; uh space run
+
+541
+00:29:58.720 --> 00:30:01.600
+dot slash dot forward slash
+
+542
+00:30:00.799 --> 00:30:03.679
+&gt;&gt; forward this one.
+
+543
+00:30:01.600 --> 00:30:05.840
+&gt;&gt; Uh dot forward slash
+
+544
+00:30:03.679 --> 00:30:06.720
+&gt;&gt; uh nanoboty.
+
+545
+00:30:05.840 --> 00:30:09.039
+There you go.
+
+546
+00:30:06.720 --> 00:30:09.360
+&gt;&gt; Spaced. Cool.
+
+547
+00:30:09.039 --> 00:30:10.799
+&gt;&gt; Awesome.
+
+548
+00:30:09.360 --> 00:30:12.720
+&gt;&gt; Now you should be on 8080
+
+549
+00:30:10.799 --> 00:30:14.080
+&gt;&gt; brother.
+
+550
+00:30:12.720 --> 00:30:15.200
+&gt;&gt; Hey, don't worry. It's like trying to
+
+551
+00:30:14.080 --> 00:30:18.399
+find the Docker file.
+
+552
+00:30:15.200 --> 00:30:18.720
+&gt;&gt; Oh, did you export your Open AI key in
+
+553
+00:30:18.399 --> 00:30:19.760
+that?
+
+554
+00:30:18.720 --> 00:30:21.039
+&gt;&gt; Oh, not in this one.
+
+555
+00:30:19.760 --> 00:30:22.399
+&gt;&gt; Yeah, you're gonna need that.
+
+556
+00:30:21.039 --> 00:30:24.799
+&gt;&gt; Oh, I didn't do that either.
+
+557
+00:30:22.399 --> 00:30:27.760
+&gt;&gt; Okay, you're gonna need that.
+
+558
+00:30:24.799 --> 00:30:28.960
+&gt;&gt; Okay, but I can do that without that.
+
+559
+00:30:27.760 --> 00:30:32.960
+&gt;&gt; There we go.
+
+560
+00:30:28.960 --> 00:30:34.559
+&gt;&gt; Cool. Now, you should be able to ask it.
+
+561
+00:30:32.960 --> 00:30:36.880
+&gt;&gt; Huh?
+
+562
+00:30:34.559 --> 00:30:38.320
+You're running it in a folder above the
+
+563
+00:30:36.880 --> 00:30:38.799
+live workshop live.
+
+564
+00:30:38.320 --> 00:30:41.840
+&gt;&gt; Okay.
+
+565
+00:30:38.799 --> 00:30:46.080
+&gt;&gt; You're running
+
+566
+00:30:41.840 --> 00:30:50.279
+one down here. Okay, doors. Thanks.
+
+567
+00:30:46.080 --> 00:30:50.279
+&gt;&gt; Okay, so you guys are good.
+
+568
+00:30:51.919 --> 00:30:57.279
+&gt;&gt; Oops. Sorry.
+
+569
+00:30:54.080 --> 00:30:59.279
+&gt;&gt; Yeah, I will not do that twice.
+
+570
+00:30:57.279 --> 00:31:03.200
+All right.
+
+571
+00:30:59.279 --> 00:31:05.600
+Were you able to Nope.
+
+572
+00:31:03.200 --> 00:31:06.480
+Okay. I'm sorry. I will look at this
+
+573
+00:31:05.600 --> 00:31:07.200
+with you.
+
+574
+00:31:06.480 --> 00:31:10.159
+&gt;&gt; Not a problem.
+
+575
+00:31:07.200 --> 00:31:11.679
+&gt;&gt; Okay. Thanks.
+
+576
+00:31:10.159 --> 00:31:14.480
+All right.
+
+577
+00:31:11.679 --> 00:31:17.279
+So, I know a few of you have this up and
+
+578
+00:31:14.480 --> 00:31:18.799
+running. Um,
+
+579
+00:31:17.279 --> 00:31:21.279
+so hopefully you've had fun adding
+
+580
+00:31:18.799 --> 00:31:23.679
+numbers.
+
+581
+00:31:21.279 --> 00:31:26.679
+Let's make it do more interesting
+
+582
+00:31:23.679 --> 00:31:26.679
+things.
+
+583
+00:31:28.559 --> 00:31:33.440
+So, just to recap though, what we've
+
+584
+00:31:30.799 --> 00:31:37.679
+done though is we have created the MCP
+
+585
+00:31:33.440 --> 00:31:39.919
+server. We added the tool for adding and
+
+586
+00:31:37.679 --> 00:31:41.279
+basically the middleware layer. Um the
+
+587
+00:31:39.919 --> 00:31:45.679
+reason we're using the middleware layer
+
+588
+00:31:41.279 --> 00:31:47.840
+helps us run both MCP and standard HTTP
+
+589
+00:31:45.679 --> 00:31:51.760
+over the thing uh the same proto same
+
+590
+00:31:47.840 --> 00:31:53.519
+port and we are getting our responses
+
+591
+00:31:51.760 --> 00:31:56.320
+back.
+
+592
+00:31:53.519 --> 00:31:58.559
+So now let's get into the chess side of
+
+593
+00:31:56.320 --> 00:32:01.200
+things which is the more fun and
+
+594
+00:31:58.559 --> 00:32:04.000
+interesting bits.
+
+595
+00:32:01.200 --> 00:32:08.000
+And so here what we'll do is we'll use
+
+596
+00:32:04.000 --> 00:32:10.799
+the chessjs library. Um we'll implement
+
+597
+00:32:08.000 --> 00:32:14.399
+uh uh the chess tools that we'll need
+
+598
+00:32:10.799 --> 00:32:17.600
+for this and then it handles the
+
+599
+00:32:14.399 --> 00:32:19.679
+validation and then we will add uh game
+
+600
+00:32:17.600 --> 00:32:21.679
+state. It will return the formatted game
+
+601
+00:32:19.679 --> 00:32:25.200
+state.
+
+602
+00:32:21.679 --> 00:32:27.360
+So chessjs is an open uh is a library
+
+603
+00:32:25.200 --> 00:32:30.399
+that's out there. Uh we've already
+
+604
+00:32:27.360 --> 00:32:32.799
+installed it. Um it has the complete
+
+605
+00:32:30.399 --> 00:32:35.519
+rules. It's a pretty cool backend. Um so
+
+606
+00:32:32.799 --> 00:32:37.440
+we'll get asy board rendering. Um, it
+
+607
+00:32:35.519 --> 00:32:42.159
+helps validate the moves apparently not
+
+608
+00:32:37.440 --> 00:32:45.600
+very well. Um, and then it manages the
+
+609
+00:32:42.159 --> 00:32:49.600
+uh game state for us.
+
+610
+00:32:45.600 --> 00:32:52.720
+So now let's edit our
+
+611
+00:32:49.600 --> 00:32:56.120
+uh server. We're going to delete the
+
+612
+00:32:52.720 --> 00:32:56.120
+tool here.
+
+613
+00:33:12.240 --> 00:33:16.679
+and we will add the new tool.
+
+614
+00:33:19.679 --> 00:33:27.000
+So you know first we will
+
+615
+00:33:23.440 --> 00:33:27.000
+add our import
+
+616
+00:33:27.279 --> 00:33:33.360
+for chest.js JS.
+
+617
+00:33:30.640 --> 00:33:35.919
+Uh, we'll have the new chess.
+
+618
+00:33:33.360 --> 00:33:38.640
+We are going to We still have our same
+
+619
+00:33:35.919 --> 00:33:42.559
+server. That part's still good. Uh,
+
+620
+00:33:38.640 --> 00:33:45.279
+we're going to register our new uh tool
+
+621
+00:33:42.559 --> 00:33:48.080
+called the
+
+622
+00:33:45.279 --> 00:33:51.399
+um
+
+623
+00:33:48.080 --> 00:33:51.399
+chess move.
+
+624
+00:33:54.320 --> 00:34:01.799
+it'll take the move um as a parameter.
+
+625
+00:34:04.278 --> 00:34:06.640
+[clears throat]
+
+626
+00:34:05.120 --> 00:34:10.240
+And then when we actually go to do the
+
+627
+00:34:06.640 --> 00:34:13.679
+move, we'll create a a new chess object.
+
+628
+00:34:10.240 --> 00:34:17.800
+We will do the move and then we will
+
+629
+00:34:13.679 --> 00:34:17.800
+return the state.
+
+630
+00:35:02.960 --> 00:35:05.960
+Okay.
+
+631
+00:35:14.160 --> 00:35:18.359
+So, I'm going to save that.
+
+632
+00:35:21.359 --> 00:35:29.960
+I'm going to kill my MCP server. I kill
+
+633
+00:35:25.359 --> 00:35:29.960
+Nanobot and bring them back up.
+
+634
+00:35:30.400 --> 00:35:35.359
+So, here's my new
+
+635
+00:35:32.960 --> 00:35:38.079
+uh MCP server. It's started back up. And
+
+636
+00:35:35.359 --> 00:35:41.440
+then I will run Nanobot. I'll use the
+
+637
+00:35:38.079 --> 00:35:44.440
+same uh Nanobot file that we had from
+
+638
+00:35:41.440 --> 00:35:44.440
+before.
+
+639
+00:35:46.720 --> 00:35:51.720
+And
+
+640
+00:35:48.320 --> 00:35:51.720
+When I reload,
+
+641
+00:35:51.839 --> 00:35:57.400
+start a new chat. I'm just going to say
+
+642
+00:35:54.400 --> 00:35:57.400
+E4.
+
+643
+00:35:57.680 --> 00:36:01.480
+So, it now knows
+
+644
+00:36:01.760 --> 00:36:10.079
+to call the chess move.
+
+645
+00:36:05.839 --> 00:36:12.800
+And you can see that it is now um
+
+646
+00:36:10.079 --> 00:36:16.240
+returning the response as we told it to
+
+647
+00:36:12.800 --> 00:36:18.480
+in our file. So here we're still telling
+
+648
+00:36:16.240 --> 00:36:20.720
+it that our response is going to be a
+
+649
+00:36:18.480 --> 00:36:24.240
+text. It's going to have the current
+
+650
+00:36:20.720 --> 00:36:27.119
+board state. Um this just dumps it in
+
+651
+00:36:24.240 --> 00:36:30.160
+that notation. Um it gives a list of
+
+652
+00:36:27.119 --> 00:36:32.560
+valid moves and then it gives the ASKI
+
+653
+00:36:30.160 --> 00:36:36.200
+format of the
+
+654
+00:36:32.560 --> 00:36:36.200
+uh game state.
+
+655
+00:36:36.240 --> 00:36:40.359
+And you'll note if you do
+
+656
+00:36:40.560 --> 00:36:44.720
+so if you say E5, it'll make the chess
+
+657
+00:36:43.040 --> 00:36:46.960
+move again.
+
+658
+00:36:44.720 --> 00:36:50.000
+But
+
+659
+00:36:46.960 --> 00:36:52.880
+um yeah, you'll notice that it's
+
+660
+00:36:50.000 --> 00:36:55.280
+actually not keeping state and you get a
+
+661
+00:36:52.880 --> 00:36:58.280
+new board every time in this particular
+
+662
+00:36:55.280 --> 00:36:58.280
+step.
+
+663
+00:36:58.960 --> 00:37:04.000
+Has everyone had a chance to get it to
+
+664
+00:37:01.280 --> 00:37:07.119
+the point where it's now running this
+
+665
+00:37:04.000 --> 00:37:10.800
+first step? Uh
+
+666
+00:37:07.119 --> 00:37:13.040
+&gt;&gt; I was uh I didn't get the ask to show up
+
+667
+00:37:10.800 --> 00:37:16.800
+&gt;&gt; in the
+
+668
+00:37:13.040 --> 00:37:18.640
+showing type show.
+
+669
+00:37:16.800 --> 00:37:21.040
+&gt;&gt; You're running the complete final
+
+670
+00:37:18.640 --> 00:37:25.079
+solution. This version will only have
+
+671
+00:37:21.040 --> 00:37:25.079
+the move tool.
+
+672
+00:37:26.240 --> 00:37:30.599
+&gt;&gt; Oh,
+
+673
+00:37:27.599 --> 00:37:30.599
+&gt;&gt; yeah.
+
+674
+00:37:35.440 --> 00:37:40.920
+&gt;&gt; Are you running? Where are you running
+
+675
+00:37:36.960 --> 00:37:40.920
+your nanobot file from?
+
+676
+00:37:42.960 --> 00:37:45.760
+I was running it from
+
+677
+00:37:44.400 --> 00:37:48.760
+&gt;&gt; I took the one that was there and
+
+678
+00:37:45.760 --> 00:37:48.760
+uncommented.
+
+679
+00:37:49.200 --> 00:37:52.960
+&gt;&gt; Are you in is your terminal in the live
+
+680
+00:37:51.599 --> 00:37:55.960
+folder?
+
+681
+00:37:52.960 --> 00:37:55.960
+&gt;&gt; Yes.
+
+682
+00:37:56.000 --> 00:37:58.240
+&gt;&gt; No,
+
+683
+00:37:57.839 --> 00:37:59.680
+server.
+
+684
+00:37:58.240 --> 00:38:01.920
+&gt;&gt; Yeah, it's in the workshop live.
+
+685
+00:37:59.680 --> 00:38:05.520
+&gt;&gt; Okay. And then is your MCP server
+
+686
+00:38:01.920 --> 00:38:06.480
+running out of
+
+687
+00:38:05.520 --> 00:38:10.560
+&gt;&gt; which will
+
+688
+00:38:06.480 --> 00:38:12.320
+&gt;&gt; Yeah, I took the I took the
+
+689
+00:38:10.560 --> 00:38:12.640
+server code from the reunion.
+
+690
+00:38:12.320 --> 00:38:14.000
+&gt;&gt; Yeah.
+
+691
+00:38:12.640 --> 00:38:16.640
+&gt;&gt; For step two.
+
+692
+00:38:14.000 --> 00:38:18.880
+&gt;&gt; Okay.
+
+693
+00:38:16.640 --> 00:38:21.880
+&gt;&gt; And it's it seemed to be persistent
+
+694
+00:38:18.880 --> 00:38:21.880
+state
+
+695
+00:38:29.520 --> 00:38:33.839
+&gt;&gt; and that was after you made your first
+
+696
+00:38:31.440 --> 00:38:35.520
+chess move. It's
+
+697
+00:38:33.839 --> 00:38:39.400
+&gt;&gt; it's probably the model remembering
+
+698
+00:38:35.520 --> 00:38:39.400
+where which state
+
+699
+00:38:41.346 --> 00:38:43.366
+&gt;&gt; [clears throat]
+
+700
+00:38:49.280 --> 00:38:52.680
+&gt;&gt; That can't be
+
+701
+00:39:19.040 --> 00:39:25.280
+I tried to do um installing but then
+
+702
+00:39:22.800 --> 00:39:28.320
+somehow this is impossible. Xcode is
+
+703
+00:39:25.280 --> 00:39:30.480
+fine. I can open it.
+
+704
+00:39:28.320 --> 00:39:32.160
+&gt;&gt; Do you have the
+
+705
+00:39:30.480 --> 00:39:33.839
+&gt;&gt; I mean it's up and running. It's right
+
+706
+00:39:32.160 --> 00:39:35.359
+here. I'm downloading simulators, but
+
+707
+00:39:33.839 --> 00:39:37.839
+it's the latest version.
+
+708
+00:39:35.359 --> 00:39:41.079
+&gt;&gt; Do you have the Xcode and CLI tools?
+
+709
+00:39:37.839 --> 00:39:41.079
+&gt;&gt; Oh, yeah.
+
+710
+00:39:41.440 --> 00:39:47.200
+Build
+
+711
+00:39:44.240 --> 00:39:50.440
+I did hyphen version and it's the latest
+
+712
+00:39:47.200 --> 00:39:50.440
+app store.
+
+713
+00:39:52.079 --> 00:39:55.680
+&gt;&gt; It's either outdated or was modified.
+
+714
+00:39:53.920 --> 00:39:58.320
+Please update your Xcode or delete it if
+
+715
+00:39:55.680 --> 00:39:59.520
+there are no updates available.
+
+716
+00:39:58.320 --> 00:39:59.920
+&gt;&gt; Are you on 15?
+
+717
+00:39:59.520 --> 00:40:00.640
+&gt;&gt; Yeah.
+
+718
+00:39:59.920 --> 00:40:02.079
+&gt;&gt; Seems weird.
+
+719
+00:40:00.640 --> 00:40:05.400
+&gt;&gt; I know, right? Everything's like pretty
+
+720
+00:40:02.079 --> 00:40:05.400
+much the latest
+
+721
+00:40:05.839 --> 00:40:09.440
+&gt;&gt; Sequoia 156.
+
+722
+00:40:07.599 --> 00:40:11.920
+&gt;&gt; Yeah,
+
+723
+00:40:09.440 --> 00:40:12.960
+&gt;&gt; but your Xcode is the 261.
+
+724
+00:40:11.920 --> 00:40:14.560
+&gt;&gt; Yeah, that's that's the latest in the
+
+725
+00:40:12.960 --> 00:40:16.240
+app store. I already double check. It's
+
+726
+00:40:14.560 --> 00:40:17.040
+not like a like a you know developer
+
+727
+00:40:16.240 --> 00:40:19.520
+version or anything.
+
+728
+00:40:17.040 --> 00:40:20.480
+&gt;&gt; No, no,
+
+729
+00:40:19.520 --> 00:40:22.160
+just [clears throat] kind of like
+
+730
+00:40:20.480 --> 00:40:23.680
+stalled.
+
+731
+00:40:22.160 --> 00:40:26.000
+I'll just have to pile on later.
+
+732
+00:40:23.680 --> 00:40:27.680
+&gt;&gt; I'm sorry.
+
+733
+00:40:26.000 --> 00:40:29.520
+&gt;&gt; That's weird. I
+
+734
+00:40:27.680 --> 00:40:31.359
+&gt;&gt; never seen that before. I try restarting
+
+735
+00:40:29.520 --> 00:40:34.560
+the terminal too. The session is gonna
+
+736
+00:40:31.359 --> 00:40:38.160
+be a good reboot.
+
+737
+00:40:34.560 --> 00:40:42.400
+&gt;&gt; Maybe um we'll let you do like a brew
+
+738
+00:40:38.160 --> 00:40:45.280
+update and brew upgrade brew.
+
+739
+00:40:42.400 --> 00:40:46.880
+&gt;&gt; Uh not for Xcode, but maybe it's brew
+
+740
+00:40:45.280 --> 00:40:48.079
+trying to use something in its area. I
+
+741
+00:40:46.880 --> 00:40:48.480
+don't know what's actually throwing the
+
+742
+00:40:48.079 --> 00:40:52.119
+error.
+
+743
+00:40:48.480 --> 00:40:52.119
+&gt;&gt; Oh, yeah.
+
+744
+00:40:53.680 --> 00:40:58.000
+&gt;&gt; Okay.
+
+745
+00:40:55.760 --> 00:41:00.000
+I'm pretty sure that basically the board
+
+746
+00:40:58.000 --> 00:41:03.359
+and what the model think are existing
+
+747
+00:41:00.000 --> 00:41:05.200
+are not coinciding. So when it shows the
+
+748
+00:41:03.359 --> 00:41:07.119
+board, it shows the white move, but
+
+749
+00:41:05.200 --> 00:41:10.880
+black can't move because it goes to
+
+750
+00:41:07.119 --> 00:41:12.079
+move, but white needs to go first.
+
+751
+00:41:10.880 --> 00:41:15.079
+At least that's what's happening on
+
+752
+00:41:12.079 --> 00:41:15.079
+mine.
+
+753
+00:41:15.680 --> 00:41:20.480
+Okay. So [sighs]
+
+754
+00:41:17.599 --> 00:41:22.240
+now let's add state um so that we can
+
+755
+00:41:20.480 --> 00:41:26.160
+actually
+
+756
+00:41:22.240 --> 00:41:29.960
+get kind of going back and forth.
+
+757
+00:41:26.160 --> 00:41:29.960
+So I'm going to kill those.
+
+758
+00:41:40.000 --> 00:41:46.640
+So we're going to we did that played a
+
+759
+00:41:44.240 --> 00:41:48.960
+little chess. So each request generates
+
+760
+00:41:46.640 --> 00:41:51.680
+a new game. So basically there is no
+
+761
+00:41:48.960 --> 00:41:53.839
+state persisted although the model is
+
+762
+00:41:51.680 --> 00:41:55.440
+smart enough to remember that it got a
+
+763
+00:41:53.839 --> 00:41:57.280
+tool call response and the state of the
+
+764
+00:41:55.440 --> 00:42:01.200
+board. So it's just kind of holding on
+
+765
+00:41:57.280 --> 00:42:03.200
+to that and it won't let it go.
+
+766
+00:42:01.200 --> 00:42:04.720
+So [sighs] again we can now see the
+
+767
+00:42:03.200 --> 00:42:06.240
+board. We're actually able to make the
+
+768
+00:42:04.720 --> 00:42:08.640
+moves. We're calling our tool. The
+
+769
+00:42:06.240 --> 00:42:10.720
+backend is kicking in.
+
+770
+00:42:08.640 --> 00:42:12.560
+And so now what we're going to want to
+
+771
+00:42:10.720 --> 00:42:16.560
+do is actually have state management so
+
+772
+00:42:12.560 --> 00:42:18.480
+we can survive multiple turns.
+
+773
+00:42:16.560 --> 00:42:21.760
+And so here we're just going to use a
+
+774
+00:42:18.480 --> 00:42:23.599
+simple uh session state based on the
+
+775
+00:42:21.760 --> 00:42:26.400
+session ID. So every time you connect to
+
+776
+00:42:23.599 --> 00:42:30.079
+the MCP server, you are generating a
+
+777
+00:42:26.400 --> 00:42:33.520
+session ID. um we're going to store that
+
+778
+00:42:30.079 --> 00:42:36.319
+use that to store um on the file system
+
+779
+00:42:33.520 --> 00:42:38.480
+the state of the game and then we will
+
+780
+00:42:36.319 --> 00:42:41.599
+load that before every move for that
+
+781
+00:42:38.480 --> 00:42:44.920
+session and then we will be able to play
+
+782
+00:42:41.599 --> 00:42:44.920
+and continue.
+
+783
+00:42:45.359 --> 00:42:52.720
+So now we're going to create a new file
+
+784
+00:42:47.839 --> 00:42:56.920
+in our lib directory
+
+785
+00:42:52.720 --> 00:42:56.920
+uh store.ts TS.
+
+786
+00:43:15.920 --> 00:43:22.480
+And so here we're just bringing in write
+
+787
+00:43:18.079 --> 00:43:26.720
+file, read file, and make dur um
+
+788
+00:43:22.480 --> 00:43:27.920
+see if it exists. and the chess game.
+
+789
+00:43:26.720 --> 00:43:31.040
+So, we're going to bring in the backend
+
+790
+00:43:27.920 --> 00:43:32.800
+from chess
+
+791
+00:43:31.040 --> 00:43:35.040
+and we're going to create a save game
+
+792
+00:43:32.800 --> 00:43:38.000
+function. We're going to take the
+
+793
+00:43:35.040 --> 00:43:40.319
+session ID from the MCP server. Um,
+
+794
+00:43:38.000 --> 00:43:43.280
+we're going to take the game from chess
+
+795
+00:43:40.319 --> 00:43:46.240
+and the chess back end. We're going to
+
+796
+00:43:43.280 --> 00:43:49.359
+check if it uh exists. If it doesn't,
+
+797
+00:43:46.240 --> 00:43:52.079
+we're going to make a games uh directory
+
+798
+00:43:49.359 --> 00:43:56.079
+with there. And then we're going to
+
+799
+00:43:52.079 --> 00:44:00.400
+write the JSON file um with our session
+
+800
+00:43:56.079 --> 00:44:02.560
+ID and stringify the uh the game. So
+
+801
+00:44:00.400 --> 00:44:05.560
+then it's just going to dump it uh to
+
+802
+00:44:02.560 --> 00:44:05.560
+file.
+
+803
+00:44:07.920 --> 00:44:12.960
+Then we're going to write the flip side
+
+804
+00:44:10.960 --> 00:44:16.480
+and we're going to do the load game. And
+
+805
+00:44:12.960 --> 00:44:19.359
+so it will also take the session ID. Um
+
+806
+00:44:16.480 --> 00:44:22.480
+it will then read the games folder for
+
+807
+00:44:19.359 --> 00:44:25.920
+that JSON file. And if it exists, it
+
+808
+00:44:22.480 --> 00:44:30.000
+will return that data
+
+809
+00:44:25.920 --> 00:44:34.119
+as a JSON or as a chess object with the
+
+810
+00:44:30.000 --> 00:44:34.119
+um with that data.
+
+811
+00:44:37.359 --> 00:44:42.359
+So now we'll update our server.
+
+812
+00:44:52.560 --> 00:44:57.440
+And so here,
+
+813
+00:44:54.960 --> 00:44:59.119
+instead of creating a new game every
+
+814
+00:44:57.440 --> 00:45:02.400
+time,
+
+815
+00:44:59.119 --> 00:45:05.400
+we'll let game equal await
+
+816
+00:45:02.400 --> 00:45:05.400
+load.
+
+817
+00:45:09.119 --> 00:45:17.319
+So we'll bring in our load game and
+
+818
+00:45:14.000 --> 00:45:17.319
+save game.
+
+819
+00:45:21.680 --> 00:45:28.839
+And then we'll say
+
+820
+00:45:24.720 --> 00:45:28.839
+if move
+
+821
+00:45:54.480 --> 00:45:59.440
+So here we're checking to see if it's a
+
+822
+00:45:56.880 --> 00:46:02.240
+new move or
+
+823
+00:45:59.440 --> 00:46:05.680
+if there's no game coming back from the
+
+824
+00:46:02.240 --> 00:46:07.760
+uh from our load game state. And then we
+
+825
+00:46:05.680 --> 00:46:10.160
+are going to make the move and
+
+826
+00:46:07.760 --> 00:46:12.646
+immediately after we are going to save
+
+827
+00:46:10.160 --> 00:46:14.666
+our game. after we make that move
+
+828
+00:46:12.646 --> 00:46:14.666
+[snorts]
+
+829
+00:46:17.200 --> 00:46:21.599
+and we are going to continue returning
+
+830
+00:46:20.000 --> 00:46:24.599
+the same content that we've returned
+
+831
+00:46:21.599 --> 00:46:24.599
+before
+
+832
+00:46:25.839 --> 00:46:30.000
+and now we should see it persist state
+
+833
+00:46:28.240 --> 00:46:32.800
+and we should be able to make multiple
+
+834
+00:46:30.000 --> 00:46:36.640
+moves.
+
+835
+00:46:32.800 --> 00:46:38.847
+So we will fire up the MCP server and
+
+836
+00:46:36.640 --> 00:46:40.867
+then we will fire up Nanobot,
+
+837
+00:46:38.847 --> 00:46:40.867
+[clears throat]
+
+838
+00:46:41.760 --> 00:46:45.400
+start a new chat.
+
+839
+00:46:51.920 --> 00:47:00.520
+Okay, so here now in theory I should be
+
+840
+00:46:55.680 --> 00:47:00.520
+able to say E5.
+
+841
+00:47:02.160 --> 00:47:09.640
+Cool. And so now if you look at our ASI
+
+842
+00:47:05.440 --> 00:47:09.640
+or I can say showboard,
+
+843
+00:47:09.760 --> 00:47:14.400
+you can see both pieces have moved and
+
+844
+00:47:12.480 --> 00:47:16.000
+black was actually able to go because it
+
+845
+00:47:14.400 --> 00:47:17.760
+was Black's term according to the back
+
+846
+00:47:16.000 --> 00:47:19.680
+end. The nice thing about when you're
+
+847
+00:47:17.760 --> 00:47:22.720
+building these MCP servers is all your
+
+848
+00:47:19.680 --> 00:47:24.480
+business logic can go into the MCP
+
+849
+00:47:22.720 --> 00:47:28.480
+server and that way you're not really
+
+850
+00:47:24.480 --> 00:47:32.319
+relying on the model and its guard rails
+
+851
+00:47:28.480 --> 00:47:34.079
+to uh um make the right choices or
+
+852
+00:47:32.319 --> 00:47:35.680
+decisions. So here you get a bit more
+
+853
+00:47:34.079 --> 00:47:37.760
+security by embedding your business
+
+854
+00:47:35.680 --> 00:47:40.480
+logic into the tools into the backend
+
+855
+00:47:37.760 --> 00:47:42.160
+MCP server. Um and then you're able to
+
+856
+00:47:40.480 --> 00:47:46.800
+actually,
+
+857
+00:47:42.160 --> 00:47:50.960
+you know, build reliable uh systems.
+
+858
+00:47:46.800 --> 00:47:54.160
+Cool. Was everyone able to get their MCP
+
+859
+00:47:50.960 --> 00:47:57.680
+server to save this state? And if we go
+
+860
+00:47:54.160 --> 00:48:01.760
+back and look, we should see that our
+
+861
+00:47:57.680 --> 00:48:07.160
+games are now being stored in our um by
+
+862
+00:48:01.760 --> 00:48:07.160
+session in our folder here.
+
+863
+00:48:18.240 --> 00:48:26.000
+And here why don't we also enhance our
+
+864
+00:48:22.000 --> 00:48:29.680
+uh nano nanobot eml file. We'll go back
+
+865
+00:48:26.000 --> 00:48:34.319
+to the fancy one.
+
+866
+00:48:29.680 --> 00:48:37.319
+So that will improve this gives you some
+
+867
+00:48:34.319 --> 00:48:37.319
+um
+
+868
+00:48:37.680 --> 00:48:42.240
+some nice things here. So I'll go over
+
+869
+00:48:39.440 --> 00:48:43.920
+that.
+
+870
+00:48:42.240 --> 00:48:46.160
+So, we can say, "Let's play a game of
+
+871
+00:48:43.920 --> 00:48:49.160
+chess. I'll go first. Whoever goes first
+
+872
+00:48:46.160 --> 00:48:49.160
+is
+
+873
+00:48:51.760 --> 00:48:56.160
+uh
+
+874
+00:48:53.920 --> 00:48:58.160
+is typically the the white color pieces
+
+875
+00:48:56.160 --> 00:49:00.559
+and
+
+876
+00:48:58.160 --> 00:49:03.440
+um it'll be able to actually execute and
+
+877
+00:49:00.559 --> 00:49:08.760
+get going." Oh, no. This one's too
+
+878
+00:49:03.440 --> 00:49:08.760
+fancy. We're going to use step threes.
+
+879
+00:49:10.640 --> 00:49:13.520
+Sorry about that.
+
+880
+00:49:26.880 --> 00:49:32.319
+So here what we're doing is just adding
+
+881
+00:49:28.720 --> 00:49:34.559
+a little bit of niceness. Um so we're
+
+882
+00:49:32.319 --> 00:49:37.280
+adding some starter messages. So when
+
+883
+00:49:34.559 --> 00:49:39.119
+you load your agent typically in a chat
+
+884
+00:49:37.280 --> 00:49:42.559
+window you're just presented with a
+
+885
+00:49:39.119 --> 00:49:44.319
+chat. And so that's what you type. Uh so
+
+886
+00:49:42.559 --> 00:49:46.800
+with starter messages, we're able to
+
+887
+00:49:44.319 --> 00:49:49.200
+give it um
+
+888
+00:49:46.800 --> 00:49:51.520
+basically a nice UI button that lets you
+
+889
+00:49:49.200 --> 00:49:55.839
+click and kick off the conversation and
+
+890
+00:49:51.520 --> 00:50:00.359
+then you'll be able to um enhance the UX
+
+891
+00:49:55.839 --> 00:50:00.359
+a bit. So here
+
+892
+00:50:00.960 --> 00:50:08.240
+when I create a new one. So here now
+
+893
+00:50:03.680 --> 00:50:09.760
+it's got the uh chest piece logo. And
+
+894
+00:50:08.240 --> 00:50:12.480
+now you've got some starter buttons. So
+
+895
+00:50:09.760 --> 00:50:15.920
+you can say let's play. I'll go first.
+
+896
+00:50:12.480 --> 00:50:19.040
+And so then I can say I'm going to be
+
+897
+00:50:15.920 --> 00:50:21.359
+move to E4.
+
+898
+00:50:19.040 --> 00:50:23.599
+And now it automatically knew and picked
+
+899
+00:50:21.359 --> 00:50:25.280
+up and started playing. And so the game,
+
+900
+00:50:23.599 --> 00:50:27.359
+the agent is now actually starting to
+
+901
+00:50:25.280 --> 00:50:30.160
+play back and forth with you. And so if
+
+902
+00:50:27.359 --> 00:50:32.559
+you know chess notation, uh you can keep
+
+903
+00:50:30.160 --> 00:50:34.720
+playing. I know E4 moves it. And then I
+
+904
+00:50:32.559 --> 00:50:38.359
+I think I've memorized now that knight
+
+905
+00:50:34.720 --> 00:50:38.359
+can move to
+
+906
+00:50:38.400 --> 00:50:46.000
+knight to E F3.
+
+907
+00:50:43.040 --> 00:50:49.720
+So that will move.
+
+908
+00:50:46.000 --> 00:50:49.720
+If I look at the board.
+
+909
+00:50:55.040 --> 00:50:59.280
+So here now we're looking at this and
+
+910
+00:50:57.200 --> 00:51:01.599
+you have a way to actually play chess
+
+911
+00:50:59.280 --> 00:51:04.000
+with an agent and go back and forth. The
+
+912
+00:51:01.599 --> 00:51:06.079
+downside to this at the moment is we're
+
+913
+00:51:04.000 --> 00:51:09.200
+chatting and we have to do everything in
+
+914
+00:51:06.079 --> 00:51:10.800
+text and in this case text is not great,
+
+915
+00:51:09.200 --> 00:51:13.200
+right? Like you have to kind of know
+
+916
+00:51:10.800 --> 00:51:14.640
+this notation. I mean, I guess if you
+
+917
+00:51:13.200 --> 00:51:17.680
+already knew it, it wouldn't be so bad,
+
+918
+00:51:14.640 --> 00:51:20.240
+but it's not visual. It's not really
+
+919
+00:51:17.680 --> 00:51:24.400
+easy way to think through it. It's not
+
+920
+00:51:20.240 --> 00:51:26.559
+super like it's just bad UX.
+
+921
+00:51:24.400 --> 00:51:30.359
+And I think you know where chat sort of
+
+922
+00:51:26.559 --> 00:51:30.359
+falls down a little bit.
+
+923
+00:51:31.839 --> 00:51:34.839
+So,
+
+924
+00:51:35.359 --> 00:51:40.119
+let's bring up MCP UI.
+
+925
+00:51:40.400 --> 00:51:50.559
+So, MTP UI, this is what's going to this
+
+926
+00:51:44.559 --> 00:51:54.240
+helps us um we'll be using this to add
+
+927
+00:51:50.559 --> 00:51:56.960
+interactive UI elements to the chess
+
+928
+00:51:54.240 --> 00:51:58.720
+game. And so, this will allow us to
+
+929
+00:51:56.960 --> 00:52:03.559
+basically ultimately have a drag and
+
+930
+00:51:58.720 --> 00:52:03.559
+drop way to interact with it. So,
+
+931
+00:52:03.599 --> 00:52:09.040
+real quick, um, not real quick, but so
+
+932
+00:52:06.559 --> 00:52:10.800
+MCPUI is a project by a team out of
+
+933
+00:52:09.040 --> 00:52:12.960
+Shopify. Um, I don't know if you're
+
+934
+00:52:10.800 --> 00:52:16.160
+aware of this, but every Shopify account
+
+935
+00:52:12.960 --> 00:52:17.760
+has its orfront has its own MCP server.
+
+936
+00:52:16.160 --> 00:52:19.920
+And one of the things they wanted to be
+
+937
+00:52:17.760 --> 00:52:22.559
+able to do was be able to, you know,
+
+938
+00:52:19.920 --> 00:52:24.079
+still have that interactive chat
+
+939
+00:52:22.559 --> 00:52:26.960
+experience while still being able to
+
+940
+00:52:24.079 --> 00:52:29.760
+shop. So if you go to the with a client
+
+941
+00:52:26.960 --> 00:52:32.640
+that supports MCP UI, if you go to the
+
+942
+00:52:29.760 --> 00:52:34.319
+Shopify MCP stores like All Birds or
+
+943
+00:52:32.640 --> 00:52:36.160
+something like that, you can actually
+
+944
+00:52:34.319 --> 00:52:38.640
+get like and say you're shopping for
+
+945
+00:52:36.160 --> 00:52:40.480
+shoes, it will, you know, pull up a
+
+946
+00:52:38.640 --> 00:52:42.480
+catalog of shoes. It'll let you click
+
+947
+00:52:40.480 --> 00:52:44.720
+through the carousels. It gives you a
+
+948
+00:52:42.480 --> 00:52:46.640
+way to completely interact with and
+
+949
+00:52:44.720 --> 00:52:48.240
+still kind of have that visual
+
+950
+00:52:46.640 --> 00:52:50.640
+experience that you kind of want when
+
+951
+00:52:48.240 --> 00:52:52.559
+you're buying something like shoes or
+
+952
+00:52:50.640 --> 00:52:53.920
+clothing or any number of things. You
+
+953
+00:52:52.559 --> 00:52:57.520
+kind of want to see it, right? And so
+
+954
+00:52:53.920 --> 00:53:00.640
+that's one of the nice things um
+
+955
+00:52:57.520 --> 00:53:05.200
+about uh
+
+956
+00:53:00.640 --> 00:53:06.640
+yeah having a UI um and so
+
+957
+00:53:05.200 --> 00:53:08.480
+yeah they they wanted to be able to do
+
+958
+00:53:06.640 --> 00:53:09.760
+that and so from that you can also add
+
+959
+00:53:08.480 --> 00:53:11.280
+things to cart and then you have to go
+
+960
+00:53:09.760 --> 00:53:13.520
+and actually complete the cart
+
+961
+00:53:11.280 --> 00:53:15.200
+experience out there but what is nice
+
+962
+00:53:13.520 --> 00:53:16.960
+about sort of the chat pieces or what
+
+963
+00:53:15.200 --> 00:53:18.400
+it's bringing is you can say I'm
+
+964
+00:53:16.960 --> 00:53:20.079
+shopping for shoes and you don't have to
+
+965
+00:53:18.400 --> 00:53:21.680
+worry about the navigation of going to a
+
+966
+00:53:20.079 --> 00:53:24.319
+website entering into a search bar
+
+967
+00:53:21.680 --> 00:53:26.400
+clicking on you know men's shoes, then
+
+968
+00:53:24.319 --> 00:53:28.720
+sneakers, then all these things, right?
+
+969
+00:53:26.400 --> 00:53:30.240
+If you think about half the things that
+
+970
+00:53:28.720 --> 00:53:33.040
+you're doing on a website when you're
+
+971
+00:53:30.240 --> 00:53:34.640
+building it or looking at it, um you're
+
+972
+00:53:33.040 --> 00:53:36.319
+basically thinking through the
+
+973
+00:53:34.640 --> 00:53:37.520
+navigation and how do I find something,
+
+974
+00:53:36.319 --> 00:53:39.359
+right? Like that's where you spend most
+
+975
+00:53:37.520 --> 00:53:42.079
+of your time. How do I get my users from
+
+976
+00:53:39.359 --> 00:53:46.240
+A to B? Chat is really nice because it
+
+977
+00:53:42.079 --> 00:53:49.839
+cuts out a lot of that and what it um
+
+978
+00:53:46.240 --> 00:53:54.319
+what you need to do there. And so the
+
+979
+00:53:49.839 --> 00:53:56.720
+MCP UI guys, they actually uh saw MCP,
+
+980
+00:53:54.319 --> 00:53:58.079
+they really like the protocol and they
+
+981
+00:53:56.720 --> 00:54:00.880
+figured out how to build on top of it
+
+982
+00:53:58.079 --> 00:54:03.920
+and extend um which makes it nice as a
+
+983
+00:54:00.880 --> 00:54:06.000
+protocol. So what they've done is
+
+984
+00:54:03.920 --> 00:54:09.040
+uh figured out a way to build rich
+
+985
+00:54:06.000 --> 00:54:11.520
+interactive UI experiences on top of uh
+
+986
+00:54:09.040 --> 00:54:13.839
+MCP.
+
+987
+00:54:11.520 --> 00:54:17.119
+And so by doing it this way, they've
+
+988
+00:54:13.839 --> 00:54:19.839
+standardized uh the way of like the
+
+989
+00:54:17.119 --> 00:54:22.480
+client server side things uh as far as
+
+990
+00:54:19.839 --> 00:54:24.160
+like SDKs and being able to define
+
+991
+00:54:22.480 --> 00:54:27.440
+specific interfaces and how you can
+
+992
+00:54:24.160 --> 00:54:28.800
+communicate back and forth. Um they've
+
+993
+00:54:27.440 --> 00:54:31.599
+done it in a secure way. So when you
+
+994
+00:54:28.800 --> 00:54:33.680
+render it on the client side, it is
+
+995
+00:54:31.599 --> 00:54:37.200
+sandboxed in an iframe and so you're
+
+996
+00:54:33.680 --> 00:54:38.640
+able to, you know, trust the code to
+
+997
+00:54:37.200 --> 00:54:41.839
+some degree there that's running in
+
+998
+00:54:38.640 --> 00:54:44.800
+there. Um, it's interactive, so you can
+
+999
+00:54:41.839 --> 00:54:46.640
+click within the UI or you can chat and
+
+1000
+00:54:44.800 --> 00:54:48.240
+have it do things in the UI as well. So,
+
+1001
+00:54:46.640 --> 00:54:52.640
+it can go both ways, which is pretty
+
+1002
+00:54:48.240 --> 00:54:56.640
+cool. Um, it's uh flexible in that it
+
+1003
+00:54:52.640 --> 00:54:58.720
+can embed or have raw content and then
+
+1004
+00:54:56.640 --> 00:55:00.559
+it's, you know, they're just extending
+
+1005
+00:54:58.720 --> 00:55:02.400
+and so they're doing it in a way that
+
+1006
+00:55:00.559 --> 00:55:06.960
+doesn't back anyone or paint anyone in
+
+1007
+00:55:02.400 --> 00:55:09.680
+any corners. Um, I believe
+
+1008
+00:55:06.960 --> 00:55:12.640
+uh the OpenAI
+
+1009
+00:55:09.680 --> 00:55:14.079
+uh apps SDK, I think that's the new one
+
+1010
+00:55:12.640 --> 00:55:16.240
+they released, is actually a smaller
+
+1011
+00:55:14.079 --> 00:55:21.200
+subset of some of the capabilities that
+
+1012
+00:55:16.240 --> 00:55:24.818
+you can do with um MCP UI.
+
+1013
+00:55:21.200 --> 00:55:27.119
+And so on the server side,
+
+1014
+00:55:24.818 --> 00:55:29.040
+[clears throat] excuse me, um you're
+
+1015
+00:55:27.119 --> 00:55:32.800
+basically in your MCP server, you're
+
+1016
+00:55:29.040 --> 00:55:34.880
+rendering UI resources. um these write
+
+1017
+00:55:32.800 --> 00:55:37.119
+on top of just regular MCP type
+
+1018
+00:55:34.880 --> 00:55:40.720
+resources. Um and then they're also
+
+1019
+00:55:37.119 --> 00:55:43.200
+making use of the spec where a tool call
+
+1020
+00:55:40.720 --> 00:55:44.720
+can return an embedded resource. And so
+
+1021
+00:55:43.200 --> 00:55:48.640
+as part of its response and you can
+
+1022
+00:55:44.720 --> 00:55:50.480
+actually return both the text and um
+
+1023
+00:55:48.640 --> 00:55:52.960
+these embedded resources and it's up to
+
+1024
+00:55:50.480 --> 00:55:54.960
+the client to figure out what to do. And
+
+1025
+00:55:52.960 --> 00:55:57.520
+so it actually gives you a way to
+
+1026
+00:55:54.960 --> 00:55:59.839
+degrade gracefully. So if you send both
+
+1027
+00:55:57.520 --> 00:56:02.319
+and your client doesn't actually support
+
+1028
+00:55:59.839 --> 00:56:04.480
+MCP UI or the extensions, then it can
+
+1029
+00:56:02.319 --> 00:56:07.760
+just render the text and it never knows
+
+1030
+00:56:04.480 --> 00:56:10.240
+anything about the UI bits. Um or it can
+
+1031
+00:56:07.760 --> 00:56:14.079
+prefer the UI or it can do some
+
+1032
+00:56:10.240 --> 00:56:16.799
+combination of both. Um so they've come
+
+1033
+00:56:14.079 --> 00:56:20.079
+up with the URI schema. Uh they're
+
+1034
+00:56:16.799 --> 00:56:21.440
+picking the UI uh and then giving it a
+
+1035
+00:56:20.079 --> 00:56:24.920
+component name and then some sort of
+
+1036
+00:56:21.440 --> 00:56:24.920
+instance ID.
+
+1037
+00:56:25.680 --> 00:56:31.440
+on the client side. Um there's another
+
+1038
+00:56:28.160 --> 00:56:34.640
+SDK to pick up. It will render those UI
+
+1039
+00:56:31.440 --> 00:56:38.400
+resources looking at the uh URI schema
+
+1040
+00:56:34.640 --> 00:56:42.559
+and validating that. Um and then to
+
+1041
+00:56:38.400 --> 00:56:45.280
+communicate between the um iframe and
+
+1042
+00:56:42.559 --> 00:56:48.400
+the application uh there's a it's just
+
+1043
+00:56:45.280 --> 00:56:51.359
+making use of the post message API uh
+
+1044
+00:56:48.400 --> 00:56:54.640
+the standard one. And so you're able to
+
+1045
+00:56:51.359 --> 00:56:58.079
+out of the box they've got some actions
+
+1046
+00:56:54.640 --> 00:57:00.720
+that are predefined. Uh so the intent is
+
+1047
+00:56:58.079 --> 00:57:05.359
+you know the user wants to do this or
+
+1048
+00:57:00.720 --> 00:57:08.480
+add this to uh cart. Um it can notify it
+
+1049
+00:57:05.359 --> 00:57:11.040
+can uh just submit a prompt on behalf of
+
+1050
+00:57:08.480 --> 00:57:15.839
+the user. Um it can make a direct tool
+
+1051
+00:57:11.040 --> 00:57:19.920
+call. um and then supporting uh links
+
+1052
+00:57:15.839 --> 00:57:22.720
+out of the uh iframe into the system.
+
+1053
+00:57:19.920 --> 00:57:24.720
+So they've done a pretty good job with
+
+1054
+00:57:22.720 --> 00:57:27.520
+this and so we'll see this in action,
+
+1055
+00:57:24.720 --> 00:57:30.640
+but I wanted to give everyone a quick
+
+1056
+00:57:27.520 --> 00:57:34.799
+overview of kind of the components that
+
+1057
+00:57:30.640 --> 00:57:38.200
+excuse me uh that we'll be leveraging.
+
+1058
+00:57:34.799 --> 00:57:38.200
+Any questions?
+
+1059
+00:57:39.440 --> 00:57:42.440
+Cool.
+
+1060
+00:57:52.640 --> 00:57:58.880
+So here we will start with um adding
+
+1061
+00:57:56.240 --> 00:58:04.640
+basic UI elements to this. We're going
+
+1062
+00:57:58.880 --> 00:58:07.520
+to just return uh simple HTML raw. Um
+
+1063
+00:58:04.640 --> 00:58:09.280
+we'll do just the the basics of what we
+
+1064
+00:58:07.520 --> 00:58:11.920
+would want to see. The our first pass
+
+1065
+00:58:09.280 --> 00:58:13.599
+will just be sort of the HTML element.
+
+1066
+00:58:11.920 --> 00:58:18.400
+Uh we're not going to do the interactive
+
+1067
+00:58:13.599 --> 00:58:21.520
+just yet. We'll add that next. Um
+
+1068
+00:58:18.400 --> 00:58:25.359
+so here we're going to add our UI
+
+1069
+00:58:21.520 --> 00:58:28.359
+resource after importing the
+
+1070
+00:58:25.359 --> 00:58:28.359
+um
+
+1071
+00:58:33.359 --> 00:58:37.720
+bring in the MCP UI bits.
+
+1072
+00:58:53.599 --> 00:58:57.200
+So really here the piece that we're
+
+1073
+00:58:55.440 --> 00:58:59.520
+going to be changing is our return. So
+
+1074
+00:58:57.200 --> 00:59:01.520
+we're going to instead of just returning
+
+1075
+00:58:59.520 --> 00:59:04.000
+the
+
+1076
+00:59:01.520 --> 00:59:09.040
+uh text piece of it, we are also going
+
+1077
+00:59:04.000 --> 00:59:10.720
+to return the UI element.
+
+1078
+00:59:09.040 --> 00:59:13.720
+So here we're going to create a UI
+
+1079
+00:59:10.720 --> 00:59:13.720
+resource.
+
+1080
+00:59:41.760 --> 00:59:45.319
+Get text type
+
+1081
+00:59:54.799 --> 01:00:00.920
+and
+
+1082
+00:59:57.119 --> 01:00:00.920
+our content. And
+
+1083
+01:00:05.920 --> 01:00:09.160
+stop it.
+
+1084
+01:00:12.720 --> 01:00:19.119
+Our content is going to be type
+
+1085
+01:00:16.000 --> 01:00:24.280
+raw HTML
+
+1086
+01:00:19.119 --> 01:00:24.280
+and the HTML is going to be
+
+1087
+01:00:52.400 --> 01:00:59.240
+I'm just going to dump the ASKI into a
+
+1088
+01:00:54.319 --> 01:00:59.240
+pre-formatted HTML text block
+
+1089
+01:01:02.160 --> 01:01:05.160
+and
+
+1090
+01:01:10.240 --> 01:01:14.359
+Then we're going to do UI metadata
+
+1091
+01:01:17.119 --> 01:01:23.960
+and we're going to say that we want to
+
+1092
+01:01:19.599 --> 01:01:23.960
+prefer an I frame size.
+
+1093
+01:01:49.040 --> 01:01:53.280
+So yeah, here we're creating our
+
+1094
+01:01:51.200 --> 01:01:55.359
+resource. We've added the new type.
+
+1095
+01:01:53.280 --> 01:01:58.319
+We're going to give it the URI that it
+
+1096
+01:01:55.359 --> 01:02:00.400
+is a board. Um, we're going to encode it
+
+1097
+01:01:58.319 --> 01:02:02.880
+in text. We're just going to dump the
+
+1098
+01:02:00.400 --> 01:02:05.760
+ASKI straight out to a pre-formatted
+
+1099
+01:02:02.880 --> 01:02:07.680
+block. And then here in this UI
+
+1100
+01:02:05.760 --> 01:02:10.640
+metadata,
+
+1101
+01:02:07.680 --> 01:02:12.079
+we're telling the client library that's
+
+1102
+01:02:10.640 --> 01:02:14.480
+going to render this that we would
+
+1103
+01:02:12.079 --> 01:02:17.480
+prefer the iframe to be 700 by 700
+
+1104
+01:02:14.480 --> 01:02:17.480
+pixels.
+
+1105
+01:02:26.480 --> 01:02:33.480
+So, we'll fire that back up.
+
+1106
+01:02:29.040 --> 01:02:33.480
+fire back up our Nanobot server,
+
+1107
+01:02:34.000 --> 01:02:37.880
+start a new thread,
+
+1108
+01:02:39.040 --> 01:02:45.280
+and now move E4.
+
+1109
+01:02:42.079 --> 01:02:47.280
+So now it'll actually render this
+
+1110
+01:02:45.280 --> 01:02:50.880
+pre-formatted ASKI board game every
+
+1111
+01:02:47.280 --> 01:02:54.520
+time. And so
+
+1112
+01:02:50.880 --> 01:02:54.520
+here if we inspect
+
+1113
+01:02:56.160 --> 01:03:01.119
+you'll see that we're in the pre-tags
+
+1114
+01:02:58.079 --> 01:03:04.319
+and that the client has done the iframe
+
+1115
+01:03:01.119 --> 01:03:06.160
+for us and so
+
+1116
+01:03:04.319 --> 01:03:08.720
+it is drawing and rendering this for us
+
+1117
+01:03:06.160 --> 01:03:10.559
+and the client is picking this. Not
+
+1118
+01:03:08.720 --> 01:03:13.520
+every client supports these UI
+
+1119
+01:03:10.559 --> 01:03:18.440
+extensions. Um, but the ones that do,
+
+1120
+01:03:13.520 --> 01:03:18.440
+uh, you can take advantage of this.
+
+1121
+01:03:18.559 --> 01:03:25.440
+Was everyone able to
+
+1122
+01:03:22.079 --> 01:03:28.440
+get the pre-formatted HTML?
+
+1123
+01:03:25.440 --> 01:03:28.440
+Cool.
+
+1124
+01:03:33.200 --> 01:03:39.119
+So again, the key thing here is that we
+
+1125
+01:03:36.480 --> 01:03:41.440
+are returning both types. the text and
+
+1126
+01:03:39.119 --> 01:03:45.520
+the UI element. And so it's up to the
+
+1127
+01:03:41.440 --> 01:03:47.680
+client to decide what to display. Um,
+
+1128
+01:03:45.520 --> 01:03:49.599
+and it still gives us portability. Our
+
+1129
+01:03:47.680 --> 01:03:51.599
+MCP server would still work with a
+
+1130
+01:03:49.599 --> 01:03:53.200
+client that does not support the UI bits
+
+1131
+01:03:51.599 --> 01:03:56.599
+because it would just degrade and use
+
+1132
+01:03:53.200 --> 01:03:56.599
+the text bits.
+
+1133
+01:03:57.280 --> 01:04:02.720
+But now we can move on to the fun side
+
+1134
+01:04:00.240 --> 01:04:06.160
+with the chessboard and actually be able
+
+1135
+01:04:02.720 --> 01:04:09.119
+to drag and drop the chest pieces
+
+1136
+01:04:06.160 --> 01:04:12.000
+and build that. So here we're going to
+
+1137
+01:04:09.119 --> 01:04:14.880
+pull in uh a library that gives you a
+
+1138
+01:04:12.000 --> 01:04:19.440
+graphical chessboard and we will then be
+
+1139
+01:04:14.880 --> 01:04:22.799
+able to move the pieces around um and
+
+1140
+01:04:19.440 --> 01:04:24.319
+then be able to Yeah. And we're going to
+
+1141
+01:04:22.799 --> 01:04:27.319
+be using chessboard.js for this
+
+1142
+01:04:24.319 --> 01:04:27.319
+visualization.
+
+1143
+01:04:28.559 --> 01:04:34.400
+So we will now create a new function in
+
+1144
+01:04:31.680 --> 01:04:37.400
+our MCP server.
+
+1145
+01:04:34.400 --> 01:04:37.400
+So
+
+1146
+01:04:37.680 --> 01:04:44.160
+this will uh get the game UI. So I'll
+
+1147
+01:04:41.200 --> 01:04:47.160
+going to copy it because it's a bit
+
+1148
+01:04:44.160 --> 01:04:47.160
+lengthy.
+
+1149
+01:04:58.880 --> 01:05:04.079
+But I will walk through it. So here what
+
+1150
+01:05:02.559 --> 01:05:06.000
+we're doing [sighs] is again we're
+
+1151
+01:05:04.079 --> 01:05:08.559
+create we created a function that'll
+
+1152
+01:05:06.000 --> 01:05:11.119
+generate the uh create UI resource bit
+
+1153
+01:05:08.559 --> 01:05:13.440
+for us. And so here we're doing another
+
+1154
+01:05:11.119 --> 01:05:17.520
+preferred we're setting our metadata.
+
+1155
+01:05:13.440 --> 01:05:18.720
+We're giving it a a UI element. Um and
+
+1156
+01:05:17.520 --> 01:05:21.520
+this time we're going to go with a 500
+
+1157
+01:05:18.720 --> 01:05:25.200
+by 500. We are encoding it as text and
+
+1158
+01:05:21.520 --> 01:05:27.280
+we're sticking with the raw HTML. Um, if
+
+1159
+01:05:25.200 --> 01:05:28.960
+you wanted to get more fancy, you could
+
+1160
+01:05:27.280 --> 01:05:31.039
+put a templating system in your MCP
+
+1161
+01:05:28.960 --> 01:05:34.880
+server, read render templates, and put
+
+1162
+01:05:31.039 --> 01:05:37.680
+that back out um as raw text or as raw
+
+1163
+01:05:34.880 --> 01:05:39.839
+HTML if you want. Um, so you get the
+
+1164
+01:05:37.680 --> 01:05:43.359
+ability to build really complex
+
+1165
+01:05:39.839 --> 01:05:44.960
+applications with MCP servers.
+
+1166
+01:05:43.359 --> 01:05:47.119
+And so here we're bringing in some
+
+1167
+01:05:44.960 --> 01:05:49.599
+stylesheets that basically just kind of
+
+1168
+01:05:47.119 --> 01:05:52.160
+make it pretty. Um, we have the
+
+1169
+01:05:49.599 --> 01:05:54.160
+chessboard and we're calling the piece
+
+1170
+01:05:52.160 --> 01:05:57.920
+themes and just rendering this board
+
+1171
+01:05:54.160 --> 01:05:59.520
+element and then putting it into the the
+
+1172
+01:05:57.920 --> 01:06:05.240
+body.
+
+1173
+01:05:59.520 --> 01:06:05.240
+So now we'll update our return
+
+1174
+01:06:06.160 --> 01:06:11.880
+content bit. So instead of returning it
+
+1175
+01:06:08.480 --> 01:06:11.880
+all here,
+
+1176
+01:06:19.839 --> 01:06:23.160
+we will
+
+1177
+01:06:24.960 --> 01:06:29.039
+just return we'll call the method and
+
+1178
+01:06:27.119 --> 01:06:30.240
+return that element as well. So we're
+
+1179
+01:06:29.039 --> 01:06:32.640
+still doing the same thing we were
+
+1180
+01:06:30.240 --> 01:06:36.000
+previously which is that we are
+
+1181
+01:06:32.640 --> 01:06:39.000
+returning the text and a graphical
+
+1182
+01:06:36.000 --> 01:06:39.000
+element.
+
+1183
+01:06:39.839 --> 01:06:47.599
+And so now we reload our MCP server
+
+1184
+01:06:45.200 --> 01:06:51.079
+and we
+
+1185
+01:06:47.599 --> 01:06:51.079
+fire up Nanobot.
+
+1186
+01:06:59.839 --> 01:07:03.240
+I say E4.
+
+1187
+01:07:03.280 --> 01:07:11.760
+I now get an actual chessboard. And now
+
+1188
+01:07:07.359 --> 01:07:15.960
+this is much much better because now let
+
+1189
+01:07:11.760 --> 01:07:15.960
+me tell it to go ahead and move.
+
+1190
+01:07:23.200 --> 01:07:28.880
+That's less fun.
+
+1191
+01:07:26.079 --> 01:07:33.599
+So here you're able to make these moves
+
+1192
+01:07:28.880 --> 01:07:34.960
+and then I can say you go back and forth
+
+1193
+01:07:33.599 --> 01:07:36.720
+and you're able to start interacting
+
+1194
+01:07:34.960 --> 01:07:40.720
+with and now you're actually playing
+
+1195
+01:07:36.720 --> 01:07:43.599
+chess with the model.
+
+1196
+01:07:40.720 --> 01:07:45.359
+Oops.
+
+1197
+01:07:43.599 --> 01:07:48.720
+It's not very good with error correction
+
+1198
+01:07:45.359 --> 01:07:52.319
+but or if you make an error to fix it.
+
+1199
+01:07:48.720 --> 01:07:54.240
+But here the key thing is is now this is
+
+1200
+01:07:52.319 --> 01:07:56.480
+a much better way more fun way to
+
+1201
+01:07:54.240 --> 01:08:00.160
+interact and play chess with your agents
+
+1202
+01:07:56.480 --> 01:08:01.760
+um than it is to type the notation each
+
+1203
+01:08:00.160 --> 01:08:05.720
+time.
+
+1204
+01:08:01.760 --> 01:08:05.720
+And so if you want to see
+
+1205
+01:08:08.000 --> 01:08:11.440
+was everyone able to see their
+
+1206
+01:08:09.520 --> 01:08:13.039
+chessboard?
+
+1207
+01:08:11.440 --> 01:08:16.159
+Cool.
+
+1208
+01:08:13.039 --> 01:08:17.759
+So [clears throat]
+
+1209
+01:08:16.159 --> 01:08:20.880
+yeah.
+
+1210
+01:08:17.759 --> 01:08:22.799
+So we're still calling the tool active
+
+1211
+01:08:20.880 --> 01:08:26.080
+tool hand the chest move tool that we
+
+1212
+01:08:22.799 --> 01:08:30.000
+built earlier. Um the UI is making use
+
+1213
+01:08:26.080 --> 01:08:32.640
+of the um the handler which handles the
+
+1214
+01:08:30.000 --> 01:08:35.279
+drag and drop messages which then posts
+
+1215
+01:08:32.640 --> 01:08:36.719
+the message back to the nanomot window
+
+1216
+01:08:35.279 --> 01:08:40.239
+letting it know that it should invoke
+
+1217
+01:08:36.719 --> 01:08:44.319
+the chess move tool. Um, and then the UI
+
+1218
+01:08:40.239 --> 01:08:46.719
+updates the the board.
+
+1219
+01:08:44.319 --> 01:08:49.679
+And so
+
+1220
+01:08:46.719 --> 01:08:52.960
+now you basically have a fully
+
+1221
+01:08:49.679 --> 01:08:56.480
+functioning way to play chess. Um, if
+
+1222
+01:08:52.960 --> 01:08:58.640
+you wanted to enhance this, you can add
+
+1223
+01:08:56.480 --> 01:09:02.000
+additional tools which would get valid
+
+1224
+01:08:58.640 --> 01:09:04.560
+moves or undo a move, which would be
+
+1225
+01:09:02.000 --> 01:09:07.679
+nice to have. Um, get the history of the
+
+1226
+01:09:04.560 --> 01:09:10.319
+game, uh, analyze its positions.
+
+1227
+01:09:07.679 --> 01:09:12.239
+mentioned we're roughly an hour in. So
+
+1228
+01:09:10.319 --> 01:09:14.400
+maybe if you do like five minutes of
+
+1229
+01:09:12.239 --> 01:09:15.040
+questions then you continue break a
+
+1230
+01:09:14.400 --> 01:09:15.359
+little bit.
+
+1231
+01:09:15.040 --> 01:09:16.080
+&gt;&gt; Okay.
+
+1232
+01:09:15.359 --> 01:09:16.719
+&gt;&gt; Would that work?
+
+1233
+01:09:16.080 --> 01:09:17.359
+&gt;&gt; I mean yeah
+
+1234
+01:09:16.719 --> 01:09:19.920
+&gt;&gt; whenever
+
+1235
+01:09:17.359 --> 01:09:21.679
+&gt;&gt; I mean we're Yeah, we're pretty actually
+
+1236
+01:09:19.920 --> 01:09:22.960
+we're further ahead than I thought we
+
+1237
+01:09:21.679 --> 01:09:25.960
+would be with the last one.
+
+1238
+01:09:22.960 --> 01:09:25.960
+&gt;&gt; Yeah.
+
+1239
+01:09:26.159 --> 01:09:32.279
+Um yeah, but any questions? Um
+
+1240
+01:09:32.799 --> 01:09:38.759
+about what we've been doing or what we
+
+1241
+01:09:35.359 --> 01:09:38.759
+can use here.
+
+1242
+01:09:40.000 --> 01:09:44.239
+We used basically a file-based storage.
+
+1243
+01:09:42.080 --> 01:09:46.640
+You could enhance this. You could use a
+
+1244
+01:09:44.239 --> 01:09:48.480
+database and actually store this. Um,
+
+1245
+01:09:46.640 --> 01:09:50.319
+you know, you could add O to it and then
+
+1246
+01:09:48.480 --> 01:09:53.359
+actually host this and then have a way
+
+1247
+01:09:50.319 --> 01:09:55.120
+to actually play uh chess against, you
+
+1248
+01:09:53.359 --> 01:09:56.880
+know, agents and have people connect to
+
+1249
+01:09:55.120 --> 01:09:59.840
+it.
+
+1250
+01:09:56.880 --> 01:10:02.719
+Um, you can have better UI elements. So
+
+1251
+01:09:59.840 --> 01:10:06.960
+you could show all the pieces that were
+
+1252
+01:10:02.719 --> 01:10:11.199
+uh taken off the board or um
+
+1253
+01:10:06.960 --> 01:10:13.360
+you know anything that wasn't um yep
+
+1254
+01:10:11.199 --> 01:10:16.719
+basically any potential next moves you
+
+1255
+01:10:13.360 --> 01:10:21.239
+can just continue to enhance um
+
+1256
+01:10:16.719 --> 01:10:21.239
+and uh show different things.
+
+1257
+01:10:23.679 --> 01:10:30.480
+So yeah, um if you'd like the
+
+1258
+01:10:28.239 --> 01:10:33.440
+root of this outside of the workshop
+
+1259
+01:10:30.480 --> 01:10:36.159
+directory is the complete
+
+1260
+01:10:33.440 --> 01:10:39.159
+implementation. You can see that that
+
+1261
+01:10:36.159 --> 01:10:39.159
+one
+
+1262
+01:10:41.280 --> 01:10:46.600
+has everything implemented and is pretty
+
+1263
+01:10:43.600 --> 01:10:46.600
+cool.
+
+1264
+01:10:54.320 --> 01:10:58.040
+So we can run nanobot.
+
+1265
+01:11:07.199 --> 01:11:11.280
+So here now let's play a game of chess.
+
+1266
+01:11:09.440 --> 01:11:13.280
+And now it has all of the tools. So this
+
+1267
+01:11:11.280 --> 01:11:15.600
+is a bit more fullfeatured than what you
+
+1268
+01:11:13.280 --> 01:11:18.320
+would expect. So here, if I move the
+
+1269
+01:11:15.600 --> 01:11:20.320
+pieces, the agent knows to automatically
+
+1270
+01:11:18.320 --> 01:11:22.480
+move again. The board updates and
+
+1271
+01:11:20.320 --> 01:11:25.040
+refreshes. You know, here we can see
+
+1272
+01:11:22.480 --> 01:11:26.960
+that as you're moving, it's going back
+
+1273
+01:11:25.040 --> 01:11:30.960
+and forth and able to play. I've yet to
+
+1274
+01:11:26.960 --> 01:11:37.000
+actually beat GBT41. Um, but hopefully
+
+1275
+01:11:30.960 --> 01:11:37.000
+someone can. Uh, I guess it cheats, but
+
+1276
+01:11:37.199 --> 01:11:40.199
+yeah.
+
+1277
+01:11:43.040 --> 01:11:48.880
+So, we actually went by pretty quick.
+
+1278
+01:11:45.440 --> 01:11:50.719
+Um, I'm going to be here, um, yeah, for
+
+1279
+01:11:48.880 --> 01:11:52.960
+the rest of this time. And I'm happy to
+
+1280
+01:11:50.719 --> 01:11:56.320
+help anyone or troubleshoot any issues.
+
+1281
+01:11:52.960 --> 01:11:58.800
+I know we ran into a few. Um,
+
+1282
+01:11:56.320 --> 01:12:01.280
+I did want to say if you would, thank
+
+1283
+01:11:58.800 --> 01:12:03.760
+you for staying. And if you would like
+
+1284
+01:12:01.280 --> 01:12:07.040
+to have a chance at winning a $100 Visa
+
+1285
+01:12:03.760 --> 01:12:09.040
+gift card, um, please feel free to
+
+1286
+01:12:07.040 --> 01:12:13.440
+enter. Uh, you can come by our booth
+
+1287
+01:12:09.040 --> 01:12:16.960
+tomorrow. um to claim the prize. And we
+
+1288
+01:12:13.440 --> 01:12:19.679
+will also be raffling off a Nintendo
+
+1289
+01:12:16.960 --> 01:12:22.960
+Switch 2 uh which you can enter at the
+
+1290
+01:12:19.679 --> 01:12:25.040
+table tomorrow. Um but yes, if you do
+
+1291
+01:12:22.960 --> 01:12:27.360
+have any questions or if there's
+
+1292
+01:12:25.040 --> 01:12:29.520
+anything I can help with uh trying to
+
+1293
+01:12:27.360 --> 01:12:31.840
+get through I know there were a few
+
+1294
+01:12:29.520 --> 01:12:34.080
+issues, but happy to walk through those
+
+1295
+01:12:31.840 --> 01:12:36.080
+with you.
+
+1296
+01:12:34.080 --> 01:12:39.040
+&gt;&gt; Thank you, Bill. Thanks for uh you know
+
+1297
+01:12:36.080 --> 01:12:41.360
+spreading your wisdom on MCP amps pui or
+
+1298
+01:12:39.040 --> 01:12:43.760
+bot like so many stuff for people to try
+
+1299
+01:12:41.360 --> 01:12:46.560
+and play with. So I hope you enjoy
+
+1300
+01:12:43.760 --> 01:12:48.719
+enjoyed the session like you said he'll
+
+1301
+01:12:46.560 --> 01:12:52.000
+talk more tomorrow and at the booth uh
+
+1302
+01:12:48.719 --> 01:12:54.880
+you can find them. Um do give speakers
+
+1303
+01:12:52.000 --> 01:12:57.360
+feedback right this is important for us
+
+1304
+01:12:54.880 --> 01:12:59.440
+and the speakers as uh we know whether
+
+1305
+01:12:57.360 --> 01:13:01.120
+you liked it or not and what they can
+
+1306
+01:12:59.440 --> 01:13:02.000
+improve. It's always hard to get
+
+1307
+01:13:01.120 --> 01:13:02.480
+feedback right Bill?
+
+1308
+01:13:02.000 --> 01:13:03.840
+&gt;&gt; It is.
+
+1309
+01:13:02.480 --> 01:13:07.360
+&gt;&gt; Yeah. [laughter]
+
+1310
+01:13:03.840 --> 01:13:09.040
+So, uh, and I think you're off now for,
+
+1311
+01:13:07.360 --> 01:13:10.880
+you know, a break a little bit faster
+
+1312
+01:13:09.040 --> 01:13:13.360
+than expected. Uh, so you can get
+
+1313
+01:13:10.880 --> 01:13:17.280
+probably some food or wander around, uh,
+
+1314
+01:13:13.360 --> 01:13:19.360
+the campus. Um, and yeah, I think that's
+
+1315
+01:13:17.280 --> 01:13:21.679
+it from me. So, don't forget the survey
+
+1316
+01:13:19.360 --> 01:13:23.760
+and we're going to start again for the
+
+1317
+01:13:21.679 --> 01:13:25.040
+last workshop. Uh, I hope you enjoyed it
+
+1318
+01:13:23.760 --> 01:13:25.600
+as much as this one. Thank you very
+
+1319
+01:13:25.040 --> 01:13:27.545
+much, Bill.
+
+1320
+01:13:25.600 --> 01:13:29.565
+&gt;&gt; Thank you, Andrew.
+
+1321
+01:13:27.545 --> 01:13:29.565
+[applause]
+
+1322
+01:13:30.165 --> 01:13:32.185
+&gt;&gt; [music]

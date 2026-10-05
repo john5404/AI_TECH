@@ -1,0 +1,2469 @@
+WEBVTT
+
+1
+00:00:01.160 --> 00:00:03.720
+So imagine you are a software engineer and,
+
+2
+00:00:03.720 --> 00:00:08.160
+you are maintaining a code base, and you developed a new context.
+
+3
+00:00:08.160 --> 00:00:10.200
+I don't know, a Claude Code skill, for example.
+
+4
+00:00:10.200 --> 00:00:11.760
+How do you know if it's effective?
+
+5
+00:00:11.760 --> 00:00:14.760
+How do you test it?
+
+6
+00:00:23.240 --> 00:00:23.840
+So, yeah, I'm.
+
+7
+00:00:23.840 --> 00:00:26.240
+I, research engineer at Tessl.
+
+8
+00:00:26.240 --> 00:00:29.520
+And I'm building, evaluation platform for agents.
+
+9
+00:00:30.080 --> 00:00:33.160
+What it means is, basically, we want to allow to
+
+10
+00:00:33.320 --> 00:00:37.080
+evaluate the performance of any agents, of any model
+
+11
+00:00:37.080 --> 00:00:41.520
+in different code bases, in any code base, basically with any context,
+
+12
+00:00:41.520 --> 00:00:45.160
+make it an appropriate, proprietary code base or open source code base,
+
+13
+00:00:45.360 --> 00:00:49.600
+making it evolves, available for anyone so that you can build, benchmarks.
+
+14
+00:00:49.880 --> 00:00:51.720
+And my talk will be about
+
+15
+00:00:51.720 --> 00:00:55.560
+the main concepts, like the main building blocks of such platform,
+
+16
+00:00:55.560 --> 00:00:59.200
+in case you want to develop something like this yourself.
+
+17
+00:00:59.400 --> 00:01:01.960
+Or reuse some of those blocks.
+
+18
+00:01:01.960 --> 00:01:04.200
+And why, why it's art.
+
+19
+00:01:04.200 --> 00:01:05.680
+And what are the main challenges?
+
+20
+00:01:05.680 --> 00:01:11.040
+And so on specifically, we'll cover like in three things.
+
+21
+00:01:11.360 --> 00:01:13.040
+First of all, why vaults matter today?
+
+22
+00:01:13.040 --> 00:01:14.360
+Because it's a very hot topic.
+
+23
+00:01:14.360 --> 00:01:15.840
+Every Frontier Labs talk is,
+
+24
+00:01:15.840 --> 00:01:19.760
+evolves second again, like, what are the core concepts?
+
+25
+00:01:19.760 --> 00:01:21.320
+What are the main building blocks?
+
+26
+00:01:21.320 --> 00:01:25.680
+And third, how we approach these tasks now, because you're such a platform
+
+27
+00:01:25.920 --> 00:01:29.760
+and how can you use it, and integrate in your code base if you're interested.
+
+28
+00:01:30.480 --> 00:01:30.840
+Cool.
+
+29
+00:01:30.840 --> 00:01:35.240
+But before we dive into specifics, I want to make sure that we are all
+
+30
+00:01:35.280 --> 00:01:39.760
+team page, and we all understand what does it mean to evaluate an agent.
+
+31
+00:01:39.760 --> 00:01:41.720
+So I want to have a quick please,
+
+32
+00:01:41.720 --> 00:01:45.080
+please raise your hand if you know or think you know.
+
+33
+00:01:45.080 --> 00:01:47.800
+What does it mean to evaluate an agent?
+
+34
+00:01:49.440 --> 00:01:49.960
+Okay.
+
+35
+00:01:49.960 --> 00:01:51.000
+Opinions split.
+
+36
+00:01:51.000 --> 00:01:52.840
+Most people decided not to raise a hand.
+
+37
+00:01:52.840 --> 00:01:55.840
+That means that my next slide will be super useful, because it's,
+
+38
+00:01:55.840 --> 00:02:00.120
+actually a definition more formally, evaluation or evaluated,
+
+39
+00:02:00.760 --> 00:02:04.920
+means that it's a test for your agent system.
+
+40
+00:02:05.360 --> 00:02:08.360
+A test means input a task like a prompt.
+
+41
+00:02:08.480 --> 00:02:12.360
+A genetic system, in our case, will be always the agent, like cloud code
+
+42
+00:02:12.360 --> 00:02:17.200
+or codex or whatever, which takes this prompt at task runs.
+
+43
+00:02:17.200 --> 00:02:18.600
+It generates a solution.
+
+44
+00:02:18.600 --> 00:02:21.560
+It might be a file, it might be a full application.
+
+45
+00:02:21.560 --> 00:02:24.160
+But then on top of it, there is a grading logic,
+
+46
+00:02:24.160 --> 00:02:28.440
+like verification or test unit tests or rubrics
+
+47
+00:02:28.440 --> 00:02:32.000
+or alabamas a judge which decides whether it's a good solution or not.
+
+48
+00:02:32.200 --> 00:02:37.320
+So you get a signal whether your, input was successfully processed
+
+49
+00:02:37.320 --> 00:02:39.560
+and you get a meaningful result or something.
+
+50
+00:02:39.560 --> 00:02:41.280
+You know, it doesn't matter.
+
+51
+00:02:41.280 --> 00:02:45.440
+Well, it's important to, to know
+
+52
+00:02:45.440 --> 00:02:49.680
+that evals is the core concept of machine learning applications in general.
+
+53
+00:02:50.040 --> 00:02:52.880
+But no one cares about this before there off the LM,
+
+54
+00:02:52.880 --> 00:02:56.720
+it was only in the research, environment on the care.
+
+55
+00:02:56.920 --> 00:03:00.600
+Only the people who, who worked on papers,
+
+56
+00:03:00.600 --> 00:03:05.800
+but now immediately like Frontier Labs markets, they are new models
+
+57
+00:03:05.800 --> 00:03:09.760
+based on the results of the evolves, it becomes a hot topic.
+
+58
+00:03:09.760 --> 00:03:12.760
+And every, every time we see something is released,
+
+59
+00:03:12.880 --> 00:03:16.840
+big labs main the the benchmarks and evaluations.
+
+60
+00:03:17.440 --> 00:03:22.560
+And I'm talking right like recent GPT 5.4 when they released the new model,
+
+61
+00:03:22.720 --> 00:03:26.960
+the first thing which was on their main page was comparison of the new model
+
+62
+00:03:26.960 --> 00:03:28.320
+with the previous one
+
+63
+00:03:28.320 --> 00:03:32.640
+against some of the benchmarks where they said, hey, we improve the capabilities.
+
+64
+00:03:34.080 --> 00:03:35.160
+Again, I'm not drawing.
+
+65
+00:03:35.160 --> 00:03:36.160
+So that's 4.6.
+
+66
+00:03:36.160 --> 00:03:39.080
+When it was dropped, they launched like 20.
+
+67
+00:03:39.080 --> 00:03:44.840
+That's just like, a quick preview of benchmarks showing our new model
+
+68
+00:03:44.880 --> 00:03:49.280
+is better than our previous generations, but it's also better than other, vendors.
+
+69
+00:03:49.640 --> 00:03:53.400
+And we've done in previous talk like mentioned that, Google recently
+
+70
+00:03:53.400 --> 00:03:56.600
+dropped, Android benchmark to specifically assess the capabilities
+
+71
+00:03:56.600 --> 00:04:01.600
+of how agents perform in their, in, in the Android applications.
+
+72
+00:04:02.280 --> 00:04:06.600
+So evaluations are driving opinions about how good are the models,
+
+73
+00:04:06.600 --> 00:04:07.840
+how capable they are.
+
+74
+00:04:07.840 --> 00:04:12.640
+And sometimes, define whether the people will use the model or not.
+
+75
+00:04:12.920 --> 00:04:15.920
+But that's a different story.
+
+76
+00:04:15.960 --> 00:04:18.920
+But the next thing, the next important thing is that.
+
+77
+00:04:18.920 --> 00:04:19.680
+Okay.
+
+78
+00:04:19.680 --> 00:04:23.000
+Big labs marketing or,
+
+79
+00:04:23.400 --> 00:04:27.960
+you know, promote their models through for these, benchmarks.
+
+80
+00:04:28.200 --> 00:04:31.880
+But like, for me, as a consumer of the model, does it
+
+81
+00:04:31.880 --> 00:04:34.200
+matter like, does it matter to have a customer?
+
+82
+00:04:34.200 --> 00:04:37.560
+Well, if I ask you, like, imagine
+
+83
+00:04:37.560 --> 00:04:40.560
+you had a benchmark specifically for your code base.
+
+84
+00:04:40.960 --> 00:04:42.120
+Does it resonate with you?
+
+85
+00:04:42.120 --> 00:04:45.120
+Do does it like, feel like it's something which you would value?
+
+86
+00:04:45.480 --> 00:04:47.080
+And it's not that time for another quiz.
+
+87
+00:04:47.080 --> 00:04:49.800
+Like to raise a hand if you think so. Yes or no?
+
+88
+00:04:49.800 --> 00:04:51.000
+Please respond.
+
+89
+00:04:52.800 --> 00:04:53.040
+Okay.
+
+90
+00:04:53.040 --> 00:04:57.160
+Actually, most of the people are convinced that it's true, but I have another slide
+
+91
+00:04:57.160 --> 00:05:01.160
+to convince even further, depending on what role, you have
+
+92
+00:05:01.160 --> 00:05:05.000
+in your team, their reason for why you've matter for you
+
+93
+00:05:05.000 --> 00:05:06.440
+in your day to day might be different.
+
+94
+00:05:06.440 --> 00:05:09.600
+So imagine you are a software engineer and,
+
+95
+00:05:09.600 --> 00:05:14.280
+you are maintaining a code base, and you developed a a new context.
+
+96
+00:05:14.280 --> 00:05:16.320
+I don't know, a Claude Code skill, for example.
+
+97
+00:05:16.320 --> 00:05:17.880
+How do you know if it's effective?
+
+98
+00:05:17.880 --> 00:05:19.320
+How do you test it? Right.
+
+99
+00:05:19.320 --> 00:05:23.760
+So the reason, the only way to do it reliably, without wipes, is
+
+100
+00:05:23.760 --> 00:05:28.680
+to actually have some reproducible events, like let's go into the next level.
+
+101
+00:05:28.680 --> 00:05:31.200
+If you're a VP of engineering and you're caring
+
+102
+00:05:31.200 --> 00:05:33.840
+not about one code base, but about your whole organization,
+
+103
+00:05:33.840 --> 00:05:36.800
+you want to understand where the agents are failing, right?
+
+104
+00:05:36.800 --> 00:05:39.920
+To understand like what are the main bottlenecks
+
+105
+00:05:39.920 --> 00:05:43.120
+and, what are the main like problems with agents?
+
+106
+00:05:43.120 --> 00:05:45.840
+So you're caring about the whole aggregation.
+
+107
+00:05:45.840 --> 00:05:48.880
+And the only way to know how to do this is you know, get evals.
+
+108
+00:05:49.520 --> 00:05:50.280
+even further.
+
+109
+00:05:50.280 --> 00:05:53.280
+For example, a new Chinese lab,
+
+110
+00:05:53.520 --> 00:05:57.440
+dropped a super capable open source model, and it's cheaper.
+
+111
+00:05:57.440 --> 00:06:00.120
+It's faster because it's open source. And you're making the decision.
+
+112
+00:06:00.120 --> 00:06:05.520
+Do you want to swap, your expensive vendor model, with this or not?
+
+113
+00:06:06.120 --> 00:06:10.000
+To answer this question, the only way to do it is like, do some reliable tests.
+
+114
+00:06:10.480 --> 00:06:11.040
+Okay?
+
+115
+00:06:11.040 --> 00:06:15.440
+Assuming I convince you that you've never, we will continue
+
+116
+00:06:15.440 --> 00:06:16.840
+with these further.
+
+117
+00:06:16.840 --> 00:06:20.200
+In the in the talk, the next piece of the talk will be about.
+
+118
+00:06:20.200 --> 00:06:24.680
+Okay, what are the main building blocks, how to build such evaluation platform.
+
+119
+00:06:25.160 --> 00:06:29.040
+And the very first building block of it is,
+
+120
+00:06:29.040 --> 00:06:32.720
+to decide which, school of thought do you accept?
+
+121
+00:06:33.040 --> 00:06:35.920
+Are you on the going
+
+122
+00:06:35.920 --> 00:06:39.000
+with the VIP's group who are like, every time new model
+
+123
+00:06:39.000 --> 00:06:42.440
+is released, every time someone writes something and right, it decides to.
+
+124
+00:06:42.480 --> 00:06:47.000
+Okay, I will jump to a new solution or you're already into a systematic,
+
+125
+00:06:47.240 --> 00:06:50.560
+you know, evaluations and studies and monitoring.
+
+126
+00:06:50.560 --> 00:06:52.440
+So you're ready to invest into,
+
+127
+00:06:53.520 --> 00:06:54.960
+into,
+
+128
+00:06:54.960 --> 00:06:57.960
+analyzing how the models perform over the time.
+
+129
+00:06:58.280 --> 00:07:01.520
+So it's a fundamental question, because if you're in the first team,
+
+130
+00:07:01.520 --> 00:07:02.320
+then probably it's
+
+131
+00:07:02.320 --> 00:07:06.560
+okay for short term solutions when you're just like in the developer.
+
+132
+00:07:06.720 --> 00:07:10.680
+But when you're talking about the organizations and, long term investment
+
+133
+00:07:10.880 --> 00:07:15.560
+into the agents, it's hard to, to drive your decisions based on on the vibes.
+
+134
+00:07:15.960 --> 00:07:18.360
+Anyway, people are doing this.
+
+135
+00:07:18.360 --> 00:07:22.960
+The second thing is to understand the purpose of your eval.
+
+136
+00:07:23.080 --> 00:07:27.720
+You've also unique because they try to assess specific aspects and you as the
+
+137
+00:07:28.440 --> 00:07:31.920
+the person who wants to create such evaluation suite needs to understand
+
+138
+00:07:31.920 --> 00:07:33.400
+what what will be your goal.
+
+139
+00:07:33.400 --> 00:07:35.920
+Again, it depends on what's your target.
+
+140
+00:07:35.920 --> 00:07:40.040
+But, I have like a couple of potential goals depending again on the role.
+
+141
+00:07:40.120 --> 00:07:44.560
+If you're like, then probably you're interested in the degree of automation
+
+142
+00:07:44.560 --> 00:07:47.760
+and complexity of the features which your agent can do.
+
+143
+00:07:48.120 --> 00:07:51.080
+And that's why you develop lots of context like skills.
+
+144
+00:07:51.080 --> 00:07:54.240
+And you want to measure, how good they are.
+
+145
+00:07:54.480 --> 00:07:59.080
+And, the only input data you need for this is to create this skill
+
+146
+00:07:59.480 --> 00:08:03.960
+and then have some greenfield environment where you can run your agent,
+
+147
+00:08:04.320 --> 00:08:06.960
+with access to the skill to solve the problem.
+
+148
+00:08:06.960 --> 00:08:10.520
+If you're like, want to have a general understanding
+
+149
+00:08:10.520 --> 00:08:14.280
+of how agent performs in the code base, then probably you want to use the
+
+150
+00:08:14.280 --> 00:08:18.240
+historical commit data to derive the tasks and see the performance.
+
+151
+00:08:18.760 --> 00:08:22.120
+By replaying the historical commits, it will give you a high level overview
+
+152
+00:08:22.200 --> 00:08:26.040
+of how complex features in your code base are, or if you want to.
+
+153
+00:08:26.040 --> 00:08:32.960
+Again, like monitor the org level, interactions of engineers with agents,
+
+154
+00:08:32.960 --> 00:08:35.960
+probably you can use the logs and derive the actual
+
+155
+00:08:36.000 --> 00:08:39.960
+edge cases from the human logs, of how people are interacting.
+
+156
+00:08:40.200 --> 00:08:41.960
+So now you define.
+
+157
+00:08:41.960 --> 00:08:44.960
+So the next thing is to actually build the civil,
+
+158
+00:08:45.000 --> 00:08:48.640
+and building the wall means that you need to have some structure,
+
+159
+00:08:48.640 --> 00:08:53.920
+some unified format, of your tasks, and how to run them.
+
+160
+00:08:54.320 --> 00:08:57.400
+The format of the task usually will include at least three things.
+
+161
+00:08:57.560 --> 00:09:00.960
+One is the, the prompt itself, like what you need to build
+
+162
+00:09:01.200 --> 00:09:02.880
+the second some Dockerfile environment
+
+163
+00:09:02.880 --> 00:09:05.160
+where you define some installed dependencies.
+
+164
+00:09:05.160 --> 00:09:08.920
+And what is available for the agent in the beginning.
+
+165
+00:09:09.200 --> 00:09:14.040
+And then tests like how to test it, and then you need to wrap it
+
+166
+00:09:14.040 --> 00:09:17.200
+up to, to be able to run it in a reproducible way.
+
+167
+00:09:17.440 --> 00:09:21.360
+The Docker containers are usually, the easiest way to do it,
+
+168
+00:09:21.720 --> 00:09:23.440
+but they're optional.
+
+169
+00:09:23.440 --> 00:09:23.760
+Cool.
+
+170
+00:09:23.760 --> 00:09:27.120
+So now you have, goal of the, the benchmark.
+
+171
+00:09:27.120 --> 00:09:31.520
+Now you have like task, and now you can run the agent against this task.
+
+172
+00:09:31.680 --> 00:09:35.440
+The core, the key part is to understand how to judge the solutions
+
+173
+00:09:35.680 --> 00:09:38.160
+and the truth is there is no one single answer.
+
+174
+00:09:38.160 --> 00:09:42.240
+Instead, there are a couple of options, depending on your like capacity
+
+175
+00:09:42.240 --> 00:09:45.760
+and the size of your evaluation, you can go with one of three routes.
+
+176
+00:09:45.760 --> 00:09:48.480
+Usually, one is having a verifiable graders
+
+177
+00:09:48.480 --> 00:09:51.840
+where you just have unit tests which measure deterministically
+
+178
+00:09:51.840 --> 00:09:54.840
+whether agent does the work you want to do,
+
+179
+00:09:55.120 --> 00:09:59.600
+or not through unit tests, through some, you know, like, running
+
+180
+00:09:59.880 --> 00:10:03.080
+after the execution, something deterministic to verify.
+
+181
+00:10:03.080 --> 00:10:05.760
+It's fast, cheap, reproducible.
+
+182
+00:10:05.760 --> 00:10:08.160
+But it's hard to design because it will require you
+
+183
+00:10:08.160 --> 00:10:12.240
+to manually review a lot of edge cases, and it's hard to scale.
+
+184
+00:10:12.720 --> 00:10:15.360
+The opposite of this would be to replace
+
+185
+00:10:15.360 --> 00:10:19.680
+the unit test with other agents or with other models.
+
+186
+00:10:19.680 --> 00:10:24.600
+So where another reviewer agent will look at your task and try to,
+
+187
+00:10:24.760 --> 00:10:29.080
+derive whether it's a good solution or not, it's super scalable, right?
+
+188
+00:10:29.080 --> 00:10:32.080
+Because you can like run thousands of agents in parallel,
+
+189
+00:10:32.240 --> 00:10:34.240
+and do like lots of other lemmas or judges,
+
+190
+00:10:34.240 --> 00:10:37.400
+but it of course expensive and it's not non-deterministic.
+
+191
+00:10:37.840 --> 00:10:40.400
+And another problem, it's like you need calibration.
+
+192
+00:10:40.400 --> 00:10:44.080
+You need to give a lot of, a lot of context,
+
+193
+00:10:44.080 --> 00:10:47.080
+a lot of, understanding how to judge the solution.
+
+194
+00:10:47.160 --> 00:10:50.160
+Otherwise it will just, you know, randomly output.
+
+195
+00:10:50.160 --> 00:10:51.600
+This is good. This is bad.
+
+196
+00:10:51.600 --> 00:10:53.560
+And the third approach will be a human graders,
+
+197
+00:10:53.560 --> 00:10:56.640
+which is infeasible at all for large scales.
+
+198
+00:10:56.640 --> 00:11:00.640
+But it's, I think, super important in the, in the early stages where in the you're
+
+199
+00:11:00.640 --> 00:11:03.000
+just prototyping curve, I'll just understand
+
+200
+00:11:03.000 --> 00:11:06.760
+just to see that your evaluation will do what you want in general
+
+201
+00:11:06.760 --> 00:11:08.800
+and you're like moving in the right direction.
+
+202
+00:11:08.800 --> 00:11:12.120
+So for you to eyeball at what happens
+
+203
+00:11:12.360 --> 00:11:16.600
+and encode your preferences, is, is super essential.
+
+204
+00:11:16.800 --> 00:11:19.880
+Once you're happy with this, the next step
+
+205
+00:11:19.920 --> 00:11:23.680
+is to balance between, verifiable graders and model graders.
+
+206
+00:11:24.960 --> 00:11:25.360
+Cool.
+
+207
+00:11:25.360 --> 00:11:29.400
+Now, you can, have you have to ask you have agent to run the task.
+
+208
+00:11:29.400 --> 00:11:33.680
+You have agent to, or whatever to, to solve, and judge.
+
+209
+00:11:34.320 --> 00:11:37.240
+The next thing is to actually build trust in your course.
+
+210
+00:11:37.240 --> 00:11:40.640
+And here I have a very interesting anecdotal example.
+
+211
+00:11:41.320 --> 00:11:44.480
+So it's, running of the terminal bench across
+
+212
+00:11:44.480 --> 00:11:46.320
+different agents and different models.
+
+213
+00:11:46.320 --> 00:11:50.040
+And you see at the bottom, the worst performing mini
+
+214
+00:11:50.160 --> 00:11:55.640
+suite agent, it's at 200 lines, agent, which only has access to read, files,
+
+215
+00:11:56.080 --> 00:12:01.360
+and write files with Sinatra 4.5, and it has 42.5 percentage.
+
+216
+00:12:01.360 --> 00:12:02.440
+Score.
+
+217
+00:12:02.440 --> 00:12:05.320
+But look at the error bars how big they are.
+
+218
+00:12:05.320 --> 00:12:11.400
+In the most optimistic case, this tiny agent will perform around 50%,
+
+219
+00:12:11.520 --> 00:12:14.520
+meaning it will match the Codex CLI performance.
+
+220
+00:12:14.920 --> 00:12:15.560
+Right?
+
+221
+00:12:15.560 --> 00:12:19.800
+Just because the error bars are so huge, you can't make conclusions.
+
+222
+00:12:19.800 --> 00:12:23.760
+That means suite agent is worse than a close based solution.
+
+223
+00:12:24.120 --> 00:12:29.040
+So, trusting your scores, make sure that you're not over optimize into the noise
+
+224
+00:12:29.280 --> 00:12:34.760
+and that, you you can trust what you see from the metrics call
+
+225
+00:12:34.800 --> 00:12:38.880
+and just wrap, all components in one feature.
+
+226
+00:12:39.040 --> 00:12:42.680
+You have Agent Harness, which in this case your cloud code codex
+
+227
+00:12:42.680 --> 00:12:45.800
+or whatever you have model which you select based on the provider.
+
+228
+00:12:46.200 --> 00:12:48.960
+You have a collection of those tasks
+
+229
+00:12:48.960 --> 00:12:51.960
+again, like tasks are prompt, instructions and so on.
+
+230
+00:12:52.040 --> 00:12:54.040
+You run those tasks, they generate the solutions,
+
+231
+00:12:54.040 --> 00:12:57.240
+you grade them, they generate scores, and you aggregate them somehow.
+
+232
+00:12:57.360 --> 00:13:00.240
+And, derive, you know, a feedback based on this.
+
+233
+00:13:01.320 --> 00:13:02.040
+There are many more
+
+234
+00:13:02.040 --> 00:13:05.760
+things which we don't cover, just because we don't have time for this.
+
+235
+00:13:06.000 --> 00:13:09.360
+But again, in practice, there are a lot of, things
+
+236
+00:13:09.360 --> 00:13:13.840
+which you need to care about, like, updating the evaluation benchmark.
+
+237
+00:13:13.840 --> 00:13:14.040
+Right?
+
+238
+00:13:14.040 --> 00:13:16.320
+Because your code base evolves,
+
+239
+00:13:16.320 --> 00:13:18.800
+that means that your benchmark should evolve as well.
+
+240
+00:13:18.800 --> 00:13:20.560
+You need to care about how to run it at scale.
+
+241
+00:13:20.560 --> 00:13:21.800
+You you have 100 tasks.
+
+242
+00:13:21.800 --> 00:13:23.800
+It's infeasible to run it on your laptop.
+
+243
+00:13:23.800 --> 00:13:26.640
+It will just die. And. Yeah, like what?
+
+244
+00:13:26.640 --> 00:13:29.920
+If you want to support more agent and models, and so on, like,
+
+245
+00:13:29.920 --> 00:13:33.720
+how to how to handle this all, it's it's it's a hard
+
+246
+00:13:33.720 --> 00:13:37.160
+things, but, we don't cover it here.
+
+247
+00:13:37.880 --> 00:13:41.400
+And my opinion slash observation is that it's
+
+248
+00:13:41.400 --> 00:13:44.640
+actually it feels complicated to build, such platform on your own.
+
+249
+00:13:44.720 --> 00:13:48.400
+And I don't imagine that, like, I can't imagine that any company
+
+250
+00:13:48.400 --> 00:13:52.920
+will decide to build their own, but at the same time,
+
+251
+00:13:53.600 --> 00:13:58.560
+there are lots of pain points that can be clustered and addressed in reusable way.
+
+252
+00:13:58.760 --> 00:14:02.880
+And what we hear from our customers that they are pain points are
+
+253
+00:14:03.080 --> 00:14:06.400
+usually, clustering can mean in two main cases.
+
+254
+00:14:06.800 --> 00:14:09.480
+And that's why we built we recently dropped
+
+255
+00:14:09.480 --> 00:14:12.720
+two evaluation approaches, which I will talk in the next slide.
+
+256
+00:14:13.200 --> 00:14:16.200
+So the first one is task rivals.
+
+257
+00:14:16.320 --> 00:14:18.880
+Basically it's
+
+258
+00:14:18.880 --> 00:14:22.200
+a perfect choice for you if you have standalone context
+
+259
+00:14:22.400 --> 00:14:26.760
+like for example a cloud code skill or API documentation for a framework.
+
+260
+00:14:27.120 --> 00:14:30.080
+And you want to understand how agent works with this.
+
+261
+00:14:30.080 --> 00:14:33.080
+So tasks about tasks evals are perfect for this
+
+262
+00:14:33.240 --> 00:14:36.120
+because they're just like standalone things.
+
+263
+00:14:36.120 --> 00:14:36.880
+How it works.
+
+264
+00:14:36.880 --> 00:14:40.040
+We take your context, we try to analyze it with our,
+
+265
+00:14:40.040 --> 00:14:44.000
+engine and derive a realistic, realistic scenarios of how this,
+
+266
+00:14:44.440 --> 00:14:47.440
+context will be used in the real set up.
+
+267
+00:14:47.880 --> 00:14:50.880
+Those scenarios are like just basically tasks.
+
+268
+00:14:51.680 --> 00:14:54.160
+And then we run those tasks in two scenarios.
+
+269
+00:14:54.160 --> 00:14:58.440
+One vanilla agent where agent doesn't have access to this context,
+
+270
+00:14:58.440 --> 00:15:02.560
+which you created, and another set up where agent has access to this context.
+
+271
+00:15:02.760 --> 00:15:05.760
+And then we compare this course and see
+
+272
+00:15:05.920 --> 00:15:09.680
+whether there is an uplift or or instead,
+
+273
+00:15:09.720 --> 00:15:13.200
+like the scores downgraded or where there is no uplift at all.
+
+274
+00:15:13.560 --> 00:15:17.080
+If there is an uplift, then of course it means that your context brings
+
+275
+00:15:17.080 --> 00:15:21.320
+something valuable and agent doesn't know how to do the task without your context.
+
+276
+00:15:21.720 --> 00:15:24.520
+But if the scores are actually degrading, then probably there is
+
+277
+00:15:24.520 --> 00:15:27.880
+something controversial and also important for you to look into.
+
+278
+00:15:28.480 --> 00:15:31.680
+I will show,
+
+279
+00:15:31.680 --> 00:15:35.240
+the specific, realization of how it looks.
+
+280
+00:15:35.640 --> 00:15:36.000
+Okay.
+
+281
+00:15:36.000 --> 00:15:37.680
+I can't do it. I will do it
+
+282
+00:15:37.680 --> 00:15:41.040
+after after the presentation, because, I mean, the presenter mode.
+
+283
+00:15:41.520 --> 00:15:44.760
+Yeah. Okay, let's go
+
+284
+00:15:46.080 --> 00:15:48.160
+to the next slide.
+
+285
+00:15:48.160 --> 00:15:51.160
+Can I?
+
+286
+00:15:51.360 --> 00:15:51.840
+Okay.
+
+287
+00:15:51.840 --> 00:15:54.000
+The next slide is project evals.
+
+288
+00:15:54.000 --> 00:15:59.240
+So, these this type of evals, is best suitable for you
+
+289
+00:15:59.240 --> 00:16:03.960
+if you are working with existing codebase and you're shipping the features
+
+290
+00:16:03.960 --> 00:16:07.560
+inside this code base, for example, your maintainer of the hugging face,
+
+291
+00:16:07.560 --> 00:16:09.880
+and you want to implement something inside it.
+
+292
+00:16:09.880 --> 00:16:12.160
+And you just want to understand in general how
+
+293
+00:16:12.160 --> 00:16:15.640
+agent performs on the tasks specific to this repo.
+
+294
+00:16:16.320 --> 00:16:17.440
+How would you do this?
+
+295
+00:16:17.440 --> 00:16:20.320
+Well, project evals is one way to do.
+
+296
+00:16:20.320 --> 00:16:25.240
+To do so, we analyze the history of the commits, on this, in this repo,
+
+297
+00:16:25.320 --> 00:16:28.440
+we try to derive those commits which are relevant to your goal.
+
+298
+00:16:28.800 --> 00:16:32.760
+For example, you're curious about the performance of some specific aspects.
+
+299
+00:16:33.480 --> 00:16:36.480
+Depending on your setup, you can provide additional context.
+
+300
+00:16:36.800 --> 00:16:41.040
+And then we also evaluate with context and without basically replaying
+
+301
+00:16:41.040 --> 00:16:45.280
+those historical commits and seeing what's the performance in general of the agent.
+
+302
+00:16:45.360 --> 00:16:49.960
+Is it bad then it means like agent on its own probably won't be able to,
+
+303
+00:16:50.200 --> 00:16:55.440
+solve the problem as it was done by a real, real maintainer.
+
+304
+00:16:55.800 --> 00:16:58.800
+If the score is a high, that means like the degree
+
+305
+00:16:58.800 --> 00:17:01.800
+of automation of your, agent is probably good.
+
+306
+00:17:02.480 --> 00:17:05.480
+So this is a second type of eval.
+
+307
+00:17:05.480 --> 00:17:09.760
+And, yeah, basically that was the last big thing, which I wanted to say.
+
+308
+00:17:10.080 --> 00:17:15.440
+We are, jumping into the conclusions, today we covered three main things.
+
+309
+00:17:15.600 --> 00:17:19.480
+One, the first one is like, why evolves method to date just beyond the,
+
+310
+00:17:19.800 --> 00:17:22.440
+beyond the Frontier Labs, but for you as well,
+
+311
+00:17:22.440 --> 00:17:25.440
+because they give you clear guidance how to improve
+
+312
+00:17:25.440 --> 00:17:28.840
+autonomy, decrease of your agents in your code base even further.
+
+313
+00:17:29.280 --> 00:17:32.120
+Second is like in case you want to build it from scratch,
+
+314
+00:17:32.120 --> 00:17:35.120
+what are the main blocks, what to think about?
+
+315
+00:17:35.600 --> 00:17:39.040
+And third, like how we do it in case you don't want to do it
+
+316
+00:17:39.040 --> 00:17:42.240
+from scratch, here is like a one click production solution
+
+317
+00:17:42.440 --> 00:17:46.040
+which is ready for you, which we are building a DSL.
+
+318
+00:17:47.160 --> 00:17:47.640
+Yeah.
+
+319
+00:17:47.640 --> 00:17:48.560
+Thank you very much.
+
+320
+00:17:48.560 --> 00:17:49.440
+Let's stay in touch.
+
+321
+00:17:49.440 --> 00:17:51.840
+Here is, core code for LinkedIn.
+
+322
+00:17:51.840 --> 00:17:52.880
+Let's connect.
+
+323
+00:17:52.880 --> 00:17:56.720
+And yeah, another before we wrap up,
+
+324
+00:17:56.920 --> 00:17:59.760
+we're hiring your code for the open positions and.
+
+325
+00:17:59.760 --> 00:18:03.240
+Yeah, also a QR code for the AI native conference, in case you're interested.
+
+326
+00:18:03.720 --> 00:18:05.240
+Cool. That's it for me.
+
+327
+00:18:05.240 --> 00:18:06.120
+Thank you very much.
+
+328
+00:18:06.120 --> 00:18:07.400
+Ready to answer any questions?
+
+329
+00:18:07.400 --> 00:18:10.400
+Thanks.
+
+330
+00:18:12.440 --> 00:18:14.040
+I just go back to.
+
+331
+00:18:14.040 --> 00:18:14.800
+Building skills.
+
+332
+00:18:14.800 --> 00:18:17.720
+Now I tasks and functions as well.
+
+333
+00:18:17.720 --> 00:18:19.760
+Yeah. Cool.
+
+334
+00:18:19.760 --> 00:18:22.840
+Just before we have questions like can I actually quickly, quickly
+
+335
+00:18:22.840 --> 00:18:24.840
+demo what I wanted to demo.
+
+336
+00:18:24.840 --> 00:18:26.560
+Because I have the link. Okay.
+
+337
+00:18:26.560 --> 00:18:30.360
+So the last thing which we dropped was the one of the last thing
+
+338
+00:18:30.360 --> 00:18:32.160
+which we dropped was this task labels.
+
+339
+00:18:32.160 --> 00:18:35.280
+So basically what it means you can upload your content,
+
+340
+00:18:35.440 --> 00:18:38.520
+your skill, and we will generate those synthetic cases.
+
+341
+00:18:38.720 --> 00:18:42.120
+Here the example was from 11 lab skill.
+
+342
+00:18:42.120 --> 00:18:45.360
+They have a skill for working with the API for text to speech.
+
+343
+00:18:45.640 --> 00:18:50.040
+And we doing some like overall review and the quality of the skill.
+
+344
+00:18:50.160 --> 00:18:54.040
+How impactful the the skill comparing to have no skills are.
+
+345
+00:18:54.040 --> 00:18:59.000
+Also see that we have landed the security checks but specifically about the evals.
+
+346
+00:18:59.240 --> 00:19:04.080
+Here you can see those synthetic cases and the performance of the agent
+
+347
+00:19:04.400 --> 00:19:10.120
+in each scenario with and without having access to, to the context.
+
+348
+00:19:10.320 --> 00:19:14.240
+So depending on the complexity and uniqueness of your,
+
+349
+00:19:14.480 --> 00:19:18.160
+we see like here, for example, without context, agent wasn't able
+
+350
+00:19:18.360 --> 00:19:21.480
+to do anything reasonable at all, depending on the uniqueness
+
+351
+00:19:21.480 --> 00:19:24.480
+and the complexity of your specific context.
+
+352
+00:19:24.640 --> 00:19:28.520
+The value of it will be even more because agent doesn't know about this.
+
+353
+00:19:28.840 --> 00:19:33.360
+But you want to have some, you know, some confirmation that that actually helps.
+
+354
+00:19:33.800 --> 00:19:36.000
+So, yeah, that's what I wanted to showcase.
+
+355
+00:19:36.000 --> 00:19:37.360
+Now I'm ready to answer questions.
+
+356
+00:19:37.360 --> 00:19:40.360
+Thank you for thinking that all of the,
+
+357
+00:19:40.920 --> 00:19:43.800
+Eagles, all the rubrics and everything are all in there as well.
+
+358
+00:19:43.800 --> 00:19:46.840
+So it's not just you know, zeros and hundreds.
+
+359
+00:19:46.840 --> 00:19:48.720
+The all the text that describes.
+
+360
+00:19:48.720 --> 00:19:50.640
+Yeah I see that there as well.
+
+361
+00:19:50.640 --> 00:19:54.440
+I think you score on the right hand side as a tree view with the Eagles.
+
+362
+00:19:55.000 --> 00:19:57.840
+I thank my yeah. Cook.
+
+363
+00:19:57.840 --> 00:19:58.560
+Yeah. You can read.
+
+364
+00:20:01.200 --> 00:20:02.400
+Thank you.
+
+365
+00:20:02.400 --> 00:20:07.120
+When you see a, model grade, is it important
+
+366
+00:20:07.120 --> 00:20:11.560
+to use a different model from the one that, originally generated the page?
+
+367
+00:20:11.840 --> 00:20:12.200
+Yeah.
+
+368
+00:20:12.200 --> 00:20:15.120
+So it's a very good question because there are lots of biases.
+
+369
+00:20:15.120 --> 00:20:15.440
+Right?
+
+370
+00:20:15.440 --> 00:20:18.840
+So if you're doing them where there's a judge like,
+
+371
+00:20:19.240 --> 00:20:23.520
+with a model which solves the problem and then the, the same model grades it
+
+372
+00:20:23.760 --> 00:20:27.400
+like different agent, but, same model by nature.
+
+373
+00:20:27.400 --> 00:20:28.640
+There will be biases.
+
+374
+00:20:28.640 --> 00:20:31.840
+The, the, the different ways how to handle it.
+
+375
+00:20:32.240 --> 00:20:33.920
+What we saw that
+
+376
+00:20:33.920 --> 00:20:37.480
+anthropic models are less biased, less biased comparing to others.
+
+377
+00:20:37.680 --> 00:20:43.880
+So it's more of a concern to, to other models beyond the anthropic one.
+
+378
+00:20:44.120 --> 00:20:47.920
+But basically you can shuffle, you can try to again, like
+
+379
+00:20:48.040 --> 00:20:52.360
+take the frontier model of one provider and generate the specific aspects
+
+380
+00:20:52.600 --> 00:20:55.600
+with this model, to, to make it unbiased.
+
+381
+00:20:56.040 --> 00:20:58.800
+So yeah, like there are no silver bullet for this.
+
+382
+00:20:58.800 --> 00:21:00.240
+You always have trade offs.
+
+383
+00:21:00.240 --> 00:21:02.680
+But yeah, that's a risks.
+
+384
+00:21:02.680 --> 00:21:05.920
+That's why you ideally want to combine two both signals.
+
+385
+00:21:06.080 --> 00:21:08.280
+One is the signal from the verifiable,
+
+386
+00:21:09.440 --> 00:21:12.480
+I don't like running unit tests and running some deterministic checks
+
+387
+00:21:12.680 --> 00:21:16.160
+and also like alarms a judge, because alarms, a judge will usually
+
+388
+00:21:16.480 --> 00:21:19.280
+give you more nuanced insights.
+
+389
+00:21:19.280 --> 00:21:22.680
+And if you can provide additional feedback
+
+390
+00:21:22.880 --> 00:21:26.920
+into the LMS, a judge, the verifiable feedback.
+
+391
+00:21:27.120 --> 00:21:27.480
+Right.
+
+392
+00:21:27.480 --> 00:21:29.560
+So like results of how the tests were running,
+
+393
+00:21:29.560 --> 00:21:33.120
+then you are reducing this bias as well because it will pay attention to them.
+
+394
+00:21:33.600 --> 00:21:37.560
+To, to to the results of running the tests rather than making
+
+395
+00:21:37.560 --> 00:21:38.680
+its own decisions.
+
+396
+00:21:38.680 --> 00:21:42.280
+So like lots of ways how to deal with this bias.
+
+397
+00:21:42.680 --> 00:21:44.520
+Thank you. Cool.
+
+398
+00:21:44.520 --> 00:21:46.440
+And I think, thank you.
+
+399
+00:21:46.440 --> 00:21:50.000
+Question, evolves on our grade, but they're just giving you
+
+400
+00:21:50.000 --> 00:21:53.160
+a snapshot of what is currently happening.
+
+401
+00:21:53.920 --> 00:21:57.360
+So my question is, have you played with any optimizer
+
+402
+00:21:57.360 --> 00:22:00.920
+like G and or anything like that?
+
+403
+00:22:00.920 --> 00:22:04.240
+I know that it's more, let's say, focus on text.
+
+404
+00:22:05.760 --> 00:22:06.240
+Something.
+
+405
+00:22:06.240 --> 00:22:09.000
+But yeah. So
+
+406
+00:22:09.000 --> 00:22:09.960
+yeah. Absolutely.
+
+407
+00:22:09.960 --> 00:22:10.680
+Like even
+
+408
+00:22:10.680 --> 00:22:14.720
+just like capturing what you have in your code base at the current, shape.
+
+409
+00:22:14.760 --> 00:22:17.840
+That's why one of the big problems with evolve and challenges
+
+410
+00:22:17.840 --> 00:22:21.000
+is to build, a pipeline where you can evolve in time.
+
+411
+00:22:21.000 --> 00:22:24.560
+So your, your evolves, evolve with your code base,
+
+412
+00:22:25.200 --> 00:22:27.880
+but also like you need to have this optimized mechanism
+
+413
+00:22:27.880 --> 00:22:31.320
+ideally, blocked into your pipeline as well.
+
+414
+00:22:31.320 --> 00:22:36.480
+So we are testing like or for not only the evolution but also like optimized loop.
+
+415
+00:22:36.520 --> 00:22:39.760
+So based on the feedback from you also generate some recommendations.
+
+416
+00:22:40.080 --> 00:22:41.440
+But what can you do.
+
+417
+00:22:41.440 --> 00:22:45.720
+How can you improve your context, to reduce the errors.
+
+418
+00:22:46.040 --> 00:22:49.400
+So the short answer is like, yeah, we're playing with our own optimizers.
+
+419
+00:22:49.400 --> 00:22:51.560
+We didn't use like external solutions,
+
+420
+00:22:51.560 --> 00:22:55.360
+because we're developing like our for, for loop ourselves.
+
+421
+00:22:59.160 --> 00:22:59.680
+Sorry.
+
+422
+00:22:59.680 --> 00:23:00.920
+Yeah.
+
+423
+00:23:00.920 --> 00:23:02.800
+Thank you. Thank you very much. Rex.
+
+424
+00:23:02.800 --> 00:23:05.960
+I just wanted to, quickly ask,
+
+425
+00:23:06.400 --> 00:23:09.640
+you see, all these evolves, but I think what you have was basically,
+
+426
+00:23:10.080 --> 00:23:14.160
+the this spinning combination of getting the skill to got the code base.
+
+427
+00:23:14.960 --> 00:23:17.760
+Using, as you mentioned, like using like block entities.
+
+428
+00:23:17.760 --> 00:23:21.160
+If you containerize these engines, are you using something like the Claude's
+
+429
+00:23:21.520 --> 00:23:24.960
+agents SDK under the hood to like, this all together in the training
+
+430
+00:23:25.200 --> 00:23:29.720
+calling cloud code by the client pop up telling it to to go do something.
+
+431
+00:23:29.880 --> 00:23:30.240
+Yeah.
+
+432
+00:23:30.240 --> 00:23:35.040
+So basically, we're, we're using agents in autonomous mode, right?
+
+433
+00:23:35.040 --> 00:23:39.800
+So they are, we're spinning them up in the isolated environment
+
+434
+00:23:39.800 --> 00:23:40.920
+where everything's prepared.
+
+435
+00:23:40.920 --> 00:23:43.920
+It's like, not risky to if if they crash something.
+
+436
+00:23:44.160 --> 00:23:47.760
+And we're like, we're mixing basically like,
+
+437
+00:23:47.760 --> 00:23:50.760
+they're like different agents pre-installed with those different modes
+
+438
+00:23:50.800 --> 00:23:55.800
+and depending on them, a specific aspect we are like can use the SDK.
+
+439
+00:23:56.880 --> 00:23:58.400
+For example, when we want to
+
+440
+00:23:58.400 --> 00:24:02.640
+track the activation rates, we actually want to stop early.
+
+441
+00:24:02.920 --> 00:24:07.640
+If we realized that the agent decided not to pick up a skill and we can
+
+442
+00:24:07.880 --> 00:24:10.720
+we can derive this information from the SDK because SDK,
+
+443
+00:24:10.720 --> 00:24:13.280
+you know, you can you can control everything.
+
+444
+00:24:13.280 --> 00:24:17.520
+What happens and terminate the process if you realize that the agent doesn't,
+
+445
+00:24:17.920 --> 00:24:19.080
+pick up the skill.
+
+446
+00:24:19.080 --> 00:24:22.080
+So, yeah, we are like, combining, all the things.
+
+447
+00:24:24.680 --> 00:24:26.000
+It's just going to ask,
+
+448
+00:24:26.000 --> 00:24:28.720
+with, like, model gradients,
+
+449
+00:24:28.720 --> 00:24:33.360
+when you run a lot of model based emails, it feels like it gets pretty expensive.
+
+450
+00:24:33.600 --> 00:24:34.640
+Exactly.
+
+451
+00:24:34.640 --> 00:24:39.000
+I want to know if you have any, like, treats for the same thing or cost I guess.
+
+452
+00:24:40.240 --> 00:24:43.040
+Yeah. So,
+
+453
+00:24:43.040 --> 00:24:45.800
+during the
+
+454
+00:24:45.800 --> 00:24:49.720
+like prototyping phase when we're like prototyping
+
+455
+00:24:49.720 --> 00:24:54.400
+how we would look like we're not caring about cost reductions at all.
+
+456
+00:24:54.520 --> 00:24:57.440
+We want to do as many experiments as we can,
+
+457
+00:24:57.440 --> 00:25:01.480
+with additional agent reviewers on top of the evals
+
+458
+00:25:01.720 --> 00:25:06.120
+to distill those, you know, runs into some meaningful, bar plot.
+
+459
+00:25:06.640 --> 00:25:10.200
+So during R&amp;D phase, we don't care during the,
+
+460
+00:25:10.800 --> 00:25:14.760
+that, like, when we ship it to the customer, we have cash.
+
+461
+00:25:15.080 --> 00:25:19.480
+Basically, we don't run out if something if the code base didn't change.
+
+462
+00:25:19.720 --> 00:25:19.960
+Right.
+
+463
+00:25:19.960 --> 00:25:24.840
+So you only rerun scenarios which are probably affected by the code,
+
+464
+00:25:24.960 --> 00:25:28.320
+by the changes in the code base or like the feature commit or whatever.
+
+465
+00:25:28.840 --> 00:25:31.560
+So, yeah, like, mainly we try to avoid
+
+466
+00:25:31.560 --> 00:25:34.920
+regenerating what doesn't change, what doesn't happen.
+
+467
+00:25:34.920 --> 00:25:41.160
+You know, like what doesn't touch the previously, in the integrated context.
+
+468
+00:25:41.600 --> 00:25:43.200
+But yeah, it's very expensive.
+
+469
+00:25:43.200 --> 00:25:44.760
+That's that's totally true.
+
+470
+00:25:44.760 --> 00:25:48.000
+That's why it's so, compelling
+
+471
+00:25:48.000 --> 00:25:51.880
+to switch to open source model, rather than pay vendors.
+
+472
+00:25:51.880 --> 00:25:52.760
+So, yeah.
+
+473
+00:25:54.000 --> 00:25:55.080
+Cool.
+
+474
+00:25:55.080 --> 00:25:57.400
+I have a question about translating science agents.
+
+475
+00:25:57.400 --> 00:26:00.400
+So the very open ended agents that can solve,
+
+476
+00:26:00.480 --> 00:26:02.720
+you know, problems we don't know the solution for,
+
+477
+00:26:02.720 --> 00:26:06.360
+so I have, you know, multiple agents,
+
+478
+00:26:06.360 --> 00:26:09.840
+and I want to compare them only at solving this science problem.
+
+479
+00:26:09.840 --> 00:26:12.840
+So it's an open ended one that I don't really have a verifiable.
+
+480
+00:26:12.960 --> 00:26:13.960
+Yeah.
+
+481
+00:26:13.960 --> 00:26:17.200
+So I need to use it as a judge of problems that.
+
+482
+00:26:17.840 --> 00:26:21.120
+Yeah, it's clear to use because I don't know the answer myself.
+
+483
+00:26:21.600 --> 00:26:23.280
+Exactly.
+
+484
+00:26:23.280 --> 00:26:26.280
+I get trajectories from two agents of many
+
+485
+00:26:27.200 --> 00:26:28.320
+thousands of tokens.
+
+486
+00:26:28.320 --> 00:26:30.680
+Yeah, I, I don't even know what you know.
+
+487
+00:26:30.680 --> 00:26:33.520
+How would you go about like, what criteria exactly?
+
+488
+00:26:33.520 --> 00:26:36.800
+It's an amazing question I don't have like, well, I swear to you,
+
+489
+00:26:37.040 --> 00:26:40.040
+because, like, if we don't know, like, what's the actual
+
+490
+00:26:40.040 --> 00:26:44.880
+what should be the ideal response, then I think there is a combination of us
+
+491
+00:26:44.880 --> 00:26:46.080
+looking into the problem
+
+492
+00:26:46.080 --> 00:26:49.320
+and like trying to analyze the, I don't know, like the formula which
+
+493
+00:26:49.320 --> 00:26:52.440
+the science agent figured out and trying to, see
+
+494
+00:26:52.440 --> 00:26:56.440
+if it resonates with our feelings and how it should, how it should work,
+
+495
+00:26:56.640 --> 00:27:00.880
+or like, spinning in parallel, like lots of additional agent reviewers,
+
+496
+00:27:01.000 --> 00:27:04.880
+which we biased towards some, some preference, which we have, like,
+
+497
+00:27:04.880 --> 00:27:07.800
+because we ideally want observe some pattern.
+
+498
+00:27:07.800 --> 00:27:08.280
+Right.
+
+499
+00:27:08.280 --> 00:27:13.800
+And probably, we prompt the new reviewer agents with this specific goal.
+
+500
+00:27:13.960 --> 00:27:18.440
+It will be able to handle this, or at least, reduce this search space
+
+501
+00:27:18.440 --> 00:27:22.680
+for us, as a humans, in terms of, like what to validate,
+
+502
+00:27:23.000 --> 00:27:26.320
+that's one piece of, how to respond to this.
+
+503
+00:27:26.320 --> 00:27:31.320
+The second, part of the response would be probably there is still a way
+
+504
+00:27:31.320 --> 00:27:35.160
+to introduce, checkpoints or milestones into the trajectories.
+
+505
+00:27:35.160 --> 00:27:39.040
+So you, can validate that the least agent
+
+506
+00:27:39.040 --> 00:27:42.320
+did something which you expected it for me to do, like some,
+
+507
+00:27:43.000 --> 00:27:46.960
+I don't know, so that the solution didn't diverge completely.
+
+508
+00:27:46.960 --> 00:27:47.200
+Right.
+
+509
+00:27:47.200 --> 00:27:50.920
+So it's not nonsense, but it's something which follows your intuition.
+
+510
+00:27:50.920 --> 00:27:55.440
+And you can like you can you can encode those preferences for sure.
+
+511
+00:27:55.680 --> 00:27:58.600
+Not completely, but at least like, again, reduce
+
+512
+00:27:58.600 --> 00:28:01.600
+the search space, and filter out very bad solutions.
+
+513
+00:28:02.120 --> 00:28:02.480
+Yeah.
+
+514
+00:28:02.480 --> 00:28:06.280
+That's, my, my only like, if I were to do something like this, I
+
+515
+00:28:06.280 --> 00:28:07.040
+would do it this way.
+
+516
+00:28:09.120 --> 00:28:09.440
+Cool.
+
+517
+00:28:09.440 --> 00:28:12.440
+And then is,
+
+518
+00:28:13.240 --> 00:28:16.320
+I was interested in, stories and, because,
+
+519
+00:28:18.000 --> 00:28:20.560
+it's important
+
+520
+00:28:20.560 --> 00:28:23.560
+for what is going on now in the program.
+
+521
+00:28:25.320 --> 00:28:26.960
+Yeah.
+
+522
+00:28:26.960 --> 00:28:31.680
+What do you explain the sums or maybe proportion?
+
+523
+00:28:32.440 --> 00:28:36.600
+Between, expenses, tokens and expenses, conference,
+
+524
+00:28:37.640 --> 00:28:39.080
+expenses on what?
+
+525
+00:28:39.080 --> 00:28:40.440
+Expenses?
+
+526
+00:28:40.440 --> 00:28:43.440
+Expenses on tokens and expenses on federal.
+
+527
+00:28:43.560 --> 00:28:45.520
+Okay.
+
+528
+00:28:45.520 --> 00:28:47.280
+Yeah,
+
+529
+00:28:47.280 --> 00:28:50.280
+yeah.
+
+530
+00:28:53.400 --> 00:28:55.560
+And, yeah.
+
+531
+00:28:55.560 --> 00:28:58.280
+So what are the what's the proportion of.
+
+532
+00:28:58.280 --> 00:29:03.040
+It's like one one, 210 or maybe 121.
+
+533
+00:29:03.720 --> 00:29:04.960
+What is going on.
+
+534
+00:29:04.960 --> 00:29:07.960
+I think it's worth you.
+
+535
+00:29:09.080 --> 00:29:09.960
+Yeah.
+
+536
+00:29:09.960 --> 00:29:14.080
+I think like economics is for, for us it's, it's a big journey to understand
+
+537
+00:29:14.080 --> 00:29:18.080
+what's the, how the economics how to make the economics work.
+
+538
+00:29:18.480 --> 00:29:24.800
+One way to think about this is that, like every evaluation
+
+539
+00:29:24.800 --> 00:29:28.440
+will be unique depending on what benchmark you have, like what
+
+540
+00:29:28.440 --> 00:29:31.840
+code base you have and what complexity of the task you're dealing with.
+
+541
+00:29:32.080 --> 00:29:34.760
+For example, if you're working with UI applications,
+
+542
+00:29:34.760 --> 00:29:37.920
+then testing UI applications is actually more expensive
+
+543
+00:29:38.160 --> 00:29:43.200
+because agent would spend a lot of effort to spin up the application, then
+
+544
+00:29:43.400 --> 00:29:46.680
+introduce some visual vision model to, you know, review that,
+
+545
+00:29:46.920 --> 00:29:48.400
+it does something meaningful.
+
+546
+00:29:48.400 --> 00:29:52.560
+So it will be more expensive if it's like simple, like algorithmic challenges, then
+
+547
+00:29:52.560 --> 00:29:56.760
+probably they will be off on a different, you know, like scale, of course.
+
+548
+00:29:57.480 --> 00:30:00.000
+But so far, my experience was that,
+
+549
+00:30:00.000 --> 00:30:04.000
+like, on average, the task will be roughly beyond 2
+
+550
+00:30:04.000 --> 00:30:08.520
+or $3 per task, for, for an agent to, to run and solve it.
+
+551
+00:30:08.520 --> 00:30:11.400
+And beyond $1 to grade the solution.
+
+552
+00:30:11.400 --> 00:30:15.240
+So based on this, you can probably and these are the numbers with frontier
+
+553
+00:30:15.240 --> 00:30:16.120
+models.
+
+554
+00:30:16.120 --> 00:30:19.880
+Based on this, probably can calculate how much it will cost you to run it
+
+555
+00:30:19.920 --> 00:30:22.880
+1000 times, 21 days a month,
+
+556
+00:30:24.040 --> 00:30:25.000
+in case you were
+
+557
+00:30:25.000 --> 00:30:28.200
+to do something new every, every, every day.
+
+558
+00:30:29.680 --> 00:30:31.560
+But yeah, like, that's that's so far
+
+559
+00:30:31.560 --> 00:30:34.560
+my my answer.
+
+560
+00:30:34.600 --> 00:30:37.600
+Is it's more like
+
+561
+00:30:38.680 --> 00:30:41.600
+5050 all tokens
+
+562
+00:30:41.600 --> 00:30:44.600
+takes more than a barrel.
+
+563
+00:30:44.640 --> 00:30:47.040
+So. So,
+
+564
+00:30:47.040 --> 00:30:49.200
+I think it's a, I
+
+565
+00:30:49.200 --> 00:30:52.200
+think I was, yeah,
+
+566
+00:30:53.280 --> 00:30:55.800
+I, yeah, I understand the question.
+
+567
+00:30:55.800 --> 00:30:58.320
+I think it's a number. I don't think it's something.
+
+568
+00:30:58.320 --> 00:30:59.880
+Yeah, yeah.
+
+569
+00:30:59.880 --> 00:31:00.280
+Cool.
+
+570
+00:31:00.280 --> 00:31:03.360
+Any more questions for us from the public?
+
+571
+00:31:13.200 --> 00:31:14.040
+I don't stop to
+
+572
+00:31:14.040 --> 00:31:17.040
+to do the, He hasn't done anything interesting.
+
+573
+00:31:17.280 --> 00:31:18.640
+So, you know, we.
+
+574
+00:31:18.640 --> 00:31:22.120
+Why he takes questions, and it's,
+
+575
+00:31:22.120 --> 00:31:25.320
+it also fits into the SDLC.
+
+576
+00:31:25.680 --> 00:31:28.160
+So I think that would be good to see.
+
+577
+00:31:28.160 --> 00:31:32.440
+So to do you think it's a if I asked him too much in my code base,
+
+578
+00:31:32.760 --> 00:31:35.440
+with on my team is that
+
+579
+00:31:35.440 --> 00:31:38.880
+that is the same thing like where I, I like to to push engineers
+
+580
+00:31:38.880 --> 00:31:42.720
+to, to understand some coverage, from, according to your providers.
+
+581
+00:31:42.720 --> 00:31:45.480
+Like, how was I talking, in an engineering chain?
+
+582
+00:31:46.640 --> 00:31:46.920
+So the
+
+583
+00:31:46.920 --> 00:31:50.480
+question is like, how would you combine,
+
+584
+00:31:50.680 --> 00:31:56.640
+like engineers with, engineers with results of agents work
+
+585
+00:31:56.760 --> 00:31:59.760
+or maybe I.
+
+586
+00:32:03.360 --> 00:32:04.080
+Yeah.
+
+587
+00:32:04.080 --> 00:32:08.160
+So basically, what I heard recently from one of our design partners
+
+588
+00:32:08.160 --> 00:32:11.360
+that they integrated the evolution in the CI CD pipeline.
+
+589
+00:32:11.360 --> 00:32:16.840
+So whenever they ship some skill, they automatically trigger
+
+590
+00:32:16.840 --> 00:32:20.760
+our eval to just validate the, the skill, bring something.
+
+591
+00:32:21.160 --> 00:32:21.480
+Right.
+
+592
+00:32:21.480 --> 00:32:27.000
+So like a, like a task eval for example, doesn't obviously, degrade
+
+593
+00:32:27.360 --> 00:32:30.360
+and they don't observe like obvious like failures.
+
+594
+00:32:31.240 --> 00:32:34.160
+That's one story, one anecdote I heard.
+
+595
+00:32:34.160 --> 00:32:37.160
+Another would be
+
+596
+00:32:37.160 --> 00:32:41.040
+which this the set up which we currently, prototyping
+
+597
+00:32:41.040 --> 00:32:45.600
+is collaborative, development where engineer is still in the loop
+
+598
+00:32:45.800 --> 00:32:51.240
+and an engineer is guiding what the task will be and reviewing,
+
+599
+00:32:51.360 --> 00:32:55.520
+what the agent decided to implement and verifies
+
+600
+00:32:55.560 --> 00:33:00.080
+whether they like, you know, the outcome of intermediate steps.
+
+601
+00:33:00.240 --> 00:33:03.240
+And basically engineers are,
+
+602
+00:33:03.840 --> 00:33:07.160
+like in the, in the chat mode decided,
+
+603
+00:33:07.480 --> 00:33:11.480
+discussing with them, and with an agent who works on task.
+
+604
+00:33:11.520 --> 00:33:16.800
+Well, some aspects like, do I like it, does it capture enough information?
+
+605
+00:33:16.960 --> 00:33:18.200
+Do I like the unit tests?
+
+606
+00:33:18.200 --> 00:33:21.720
+So it's basically becomes a combination where you, as the engineer
+
+607
+00:33:21.720 --> 00:33:24.720
+don't write anymore, but you just validate that it doesn't
+
+608
+00:33:25.320 --> 00:33:27.840
+that, it doesn't, you know, like, diverge,
+
+609
+00:33:27.840 --> 00:33:31.600
+the agent doesn't diverge and doesn't come up with a sophisticated,
+
+610
+00:33:32.120 --> 00:33:34.960
+contrived task, but rather something really sticks.
+
+611
+00:33:34.960 --> 00:33:40.080
+So you are in the loop to help to create a real scenario without writing any code.
+
+612
+00:33:40.080 --> 00:33:41.600
+You just monitor that?
+
+613
+00:33:41.600 --> 00:33:44.680
+It does something reasonable, because sometimes just a couple of
+
+614
+00:33:44.880 --> 00:33:49.200
+corrections is enough to help it to go from the dead loop, basically.
+
+615
+00:33:50.160 --> 00:33:51.000
+Wonderful.
+
+616
+00:33:51.000 --> 00:33:53.520
+Thank you very much for your questions. And thanks, Max.
+
+617
+00:33:53.520 --> 00:33:55.520
+Fantastic talk at number 15.

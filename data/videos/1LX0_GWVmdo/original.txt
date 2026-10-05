@@ -1,0 +1,1038 @@
+[00:00:01.800] you're listening to the AI native Dev
+[00:00:03.800] brought to you by
+[00:00:05.690] [Applause]
+[00:00:07.310] [Music]
+[00:00:17.510] [Applause]
+[00:00:18.530] [Music]
+[00:00:21.960] Tesla hello everyone and welcome back to
+[00:00:25.240] the AI native Dev and hot and heels of
+[00:00:27.720] our last episode we're back chat with
+[00:00:30.400] bala knous welcome Bala thank you s this
+[00:00:33.480] is a followup on the previous chat that
+[00:00:34.920] we had and we're actually going to go
+[00:00:36.040] handson we're going to screen share and
+[00:00:37.680] we're going to show how code can be
+[00:00:40.520] generated from basically some tdd style
+[00:00:43.680] tests whereby we're writing tests in
+[00:00:45.680] advance generating code from those tests
+[00:00:48.039] and then validating that the code is
+[00:00:50.559] doing what we expect effectively the
+[00:00:52.840] tests are forming somewhat of a
+[00:00:54.719] specification for our component or our
+[00:00:56.920] application we're going to start fairly
+[00:00:59.039] simple and then jump into more of a real
+[00:01:01.120] world application but Bala tell us a
+[00:01:04.199] little bit more about the style the way
+[00:01:06.880] of working in which your your process is
+[00:01:10.360] going to take here yes I will currently
+[00:01:13.560] on the screen a little flow diagram and
+[00:01:16.920] on the left we have the tests those are
+[00:01:18.560] the things we WR as humans provide those
+[00:01:21.159] tests to gen we give them to gen we ask
+[00:01:24.079] them to come up with an implementation
+[00:01:26.479] that will pass this test then we move to
+[00:01:30.000] the middle box which implementation so
+[00:01:32.159] the Gen gave us an implementation then
+[00:01:34.280] we run the test against it
+[00:01:35.759] implementation if all tests pass we have
+[00:01:38.799] production already code as you can see
+[00:01:41.680] in the schema there are two Loops let's
+[00:01:43.759] start with a small Loop and the Gen we
+[00:01:45.880] ask J to come up with an implementation
+[00:01:47.799] but sometimes it doesn't really listen
+[00:01:49.280] and it comes up with an explanation and
+[00:01:51.560] we cannot run tests against an
+[00:01:53.600] explanation and sometimes J comes up
+[00:01:55.840] with non-c compiling code that's also a
+[00:01:57.759] problem so we ask it again and until we
+[00:02:00.280] get a proper implementation that comp
+[00:02:02.159] pass then sometimes not all tests pass
+[00:02:06.360] then we follow the no Arrow from test
+[00:02:08.360] pass we extract the errors from the test
+[00:02:10.920] that do not pass and we feed them back
+[00:02:12.400] to J and we ask gen to come up with a
+[00:02:15.319] better implementation in which all test
+[00:02:17.680] will pass both Loops get five iterations
+[00:02:21.000] and normally that's more than enough but
+[00:02:23.319] sometimes it's not enough and then it
+[00:02:24.560] says I cannot find an implementation for
+[00:02:26.480] this test okay cool in terms of to be
+[00:02:30.319] showing this working from a fairly
+[00:02:31.840] simple OD even test going up more
+[00:02:34.319] complex for this tell us a little bit
+[00:02:35.920] about some of the technologies that
+[00:02:37.000] we're using are you using a local model
+[00:02:38.720] today or are you going to be in the
+[00:02:40.120] cloud yeah very good question I always
+[00:02:42.560] start off with a local model so I'm
+[00:02:44.000] using a tool called AMA ol Lama is like
+[00:02:46.400] the docker for large language models
+[00:02:48.360] local large language models and it works
+[00:02:50.080] pretty fine we're going to use llama 3.1
+[00:02:53.360] that's the one model I'm using recently
+[00:02:56.000] and that's the one model that works best
+[00:02:58.400] for this use case if the local llama 3.1
+[00:03:02.840] model isn't capable of solving the
+[00:03:04.360] problem we will move to a cloud llm
+[00:03:08.000] because the cloud lims are yeah just
+[00:03:11.360] better yeah okay cool I I guess there's
+[00:03:13.840] a third flow here if we are you know
+[00:03:16.319] following of a true tdd model we write
+[00:03:19.280] certain tests let it generate and then
+[00:03:21.519] iterate on that ourselves we might write
+[00:03:23.440] another test and another test um is is
+[00:03:26.319] that the way you envisage this to to
+[00:03:29.040] work and once you hit done you go back
+[00:03:31.519] and then there's another iteration on
+[00:03:33.400] this to say actually now let's add that
+[00:03:35.159] next bit of functionality and get some
+[00:03:36.680] failing tests that we try and get pass
+[00:03:38.159] in with the new
+[00:03:39.159] implementation yeah that's how it works
+[00:03:40.879] so in the old days when we didn't do
+[00:03:42.560] this when you would like to add
+[00:03:43.799] functionality you would just add more
+[00:03:45.640] code and then preferably add first test
+[00:03:48.680] and add more code but now in this idea
+[00:03:50.560] you're not allowed to touch the
+[00:03:51.799] implementation anymore so if you want to
+[00:03:53.439] add your feature you add more tests
+[00:03:55.879] rerun the tool until we get to the done
+[00:03:58.439] stage so we have work impation that will
+[00:04:00.680] also pass the new test yeah okay cool
+[00:04:04.040] and I guess when there's a test failing
+[00:04:06.280] we as developers want to have a look at
+[00:04:08.120] the test and go straight to the code and
+[00:04:09.439] take a look at that ourselves do you
+[00:04:11.079] still fall into that tra or do you just
+[00:04:12.680] say oh go on do it a few more times and
+[00:04:14.959] then let's see if you can do it yeah so
+[00:04:16.959] in the beginning I did also because I
+[00:04:19.239] wasn't sure if the tool I'm going to
+[00:04:20.680] show up worked properly right and
+[00:04:22.759] nowadays I'll just leave it to the AI
+[00:04:24.520] there still there will be every time
+[00:04:26.080] when I run the tool there will be file
+[00:04:28.360] called generator. log and you can can
+[00:04:29.800] see all the steps that the tool take you
+[00:04:31.080] can also see which test failed you can
+[00:04:33.600] see what the new prompt is for the Gen
+[00:04:36.320] you can I use it as dbook tool if
+[00:04:39.000] something goes wrong with the tool I can
+[00:04:40.120] see what happened why didn't it work as
+[00:04:41.919] extended but for people just starting
+[00:04:43.759] this tool it's really interesting to see
+[00:04:46.039] what was happening what was going wrong
+[00:04:47.680] because that still happens so yeah it
+[00:04:50.039] becomes less and less once you get used
+[00:04:51.560] to this way of working yeah gotcha okay
+[00:04:54.479] let's jump in What don't we start with
+[00:04:55.759] the uneven test and I think you going be
+[00:04:57.520] using chat GPT for this generate the
+[00:05:00.199] code right yeah correct so I would like
+[00:05:02.280] to start really simple I would like to
+[00:05:04.160] start with an OD even test this is Java
+[00:05:06.479] I use Java because that's the language
+[00:05:08.000] I'm most familiar with but for people
+[00:05:10.280] who do not know NAA no problem if you
+[00:05:11.800] know any other programming language out
+[00:05:13.720] there you should be capable of following
+[00:05:15.880] along so we have a test and what we're
+[00:05:18.880] going to test is OD even so we expect an
+[00:05:21.600] object to be called OD even and we
+[00:05:24.120] expected to have a method called is even
+[00:05:26.639] now we all know if you provide
+[00:05:29.759] even numbers to an is even method it
+[00:05:32.160] should return true if we provide uneven
+[00:05:35.639] numbers it should provide false so this
+[00:05:38.880] is the test case to we going to give to
+[00:05:40.960] the AI for now we're going to do
+[00:05:42.800] everything manually I'm going to copy
+[00:05:44.360] this going to go to Jet GPT I'm going to
+[00:05:47.440] ask it please
+[00:05:50.440] provide an
+[00:05:52.600] implementation that passes this test and
+[00:05:56.680] I'm going to paste the code over here
+[00:05:58.800] and press enter
+[00:06:00.560] the idea is that jet GPT comes up with
+[00:06:02.479] an implementation now first you get some
+[00:06:04.479] interesting text and then we can just
+[00:06:06.199] copy the code pretty difficult to copy
+[00:06:07.880] If It Moves so it's copied oh it's in
+[00:06:09.840] Dutch now it doesn't matter we go over
+[00:06:11.520] here we go to the file that should be
+[00:06:14.240] tested so the test subject notice that I
+[00:06:16.560] have a dummy implementation which always
+[00:06:18.319] returns false this is incorrect I'm
+[00:06:19.919] going to copy uh select everything paste
+[00:06:22.479] the code from jgpt here I go back to the
+[00:06:24.960] test I run the test and I hope
+[00:06:28.360] everything becomes green as you can see
+[00:06:30.280] over here we have a green test jet GPT
+[00:06:33.080] was capable of brighten and
+[00:06:35.080] implementation that passes this test I
+[00:06:37.639] wonder if we was to change the ad evens
+[00:06:42.720] and the is even to be something that
+[00:06:46.520] doesn't refer to the word even and same
+[00:06:49.120] with the odd even test sorry odd even
+[00:06:52.360] and is even do you feel like it would
+[00:06:54.240] have done the mod uh too or do you feel
+[00:06:56.879] like it would have hardcoded those those
+[00:06:58.639] responses so effectively said if it's
+[00:07:00.879] zero do this if it's two do this yeah
+[00:07:03.240] very good question actually I tried that
+[00:07:05.080] I did the same test and I removed all
+[00:07:07.240] recognizable words I I so this would
+[00:07:09.520] become an a test this would become B
+[00:07:11.919] this would become C so there were no
+[00:07:14.080] human readable words bit logic in there
+[00:07:16.240] the meaning in there it still is capable
+[00:07:17.960] of coming up with a solution yeah but
+[00:07:20.560] I'm pretty sure it helps yeah the right
+[00:07:23.160] words gives more input for the AI to
+[00:07:25.879] come up with the right implementation
+[00:07:27.879] yeah yeah we can do we can go script and
+[00:07:30.000] do a little test right now I don't know
+[00:07:31.680] how much time you want to yeah let's do
+[00:07:33.080] let's go script let's yeah let's go of
+[00:07:35.319] script let's see what happens nothing
+[00:07:37.039] bad happens when you go script
+[00:07:39.840] right so we're going to change this into
+[00:07:42.479] a test and we're going to change this in
+[00:07:47.000] B test going to change this
+[00:07:51.120] into
+[00:07:53.120] C we going to yeah let's do
+[00:07:56.360] everything so now it's C and we're going
+[00:07:58.919] to change this
+[00:08:01.960] in a method so there's oh and maybe we
+[00:08:07.720] should change the package as well let's
+[00:08:09.639] do that as well shif
+[00:08:12.000] six what does it ask yeah let's do
+[00:08:15.159] everything and then I say
+[00:08:19.199] package okay I don't think there is any
+[00:08:24.680] recognizable what happens if we do this
+[00:08:27.159] so I'm GNA copy this go to Jet GPT let's
+[00:08:31.440] do a clean context yeah I was ask the
+[00:08:33.680] other one right so that's this one
+[00:08:37.680] please provide an
+[00:08:41.039] implementation that
+[00:08:45.160] FES and I'm going to paste anonymized
+[00:08:48.240] code no more references to other even
+[00:08:51.959] exactly the same and look at that it
+[00:08:54.320] already sees yep odd numbers yeah so so
+[00:08:56.399] it notice and it comes up with a proper
+[00:08:57.959] solution as well yeah yeah so yeah I can
+[00:09:00.680] run it but this will work and of course
+[00:09:02.399] and and of course not that it
+[00:09:03.680] understands this code or understands
+[00:09:05.120] what you're trying to do but there are
+[00:09:06.560] patterns of tests and implementations
+[00:09:09.279] that testing for 2 468 and
+[00:09:12.000] 1357 and that's how it's that's how it's
+[00:09:14.120] matching that pattern but it's
+[00:09:15.959] absolutely if if you was to add odd and
+[00:09:18.040] even in the test as well it will infer
+[00:09:20.279] that's what you're trying to do and and
+[00:09:21.800] make it easier to to pattern match but
+[00:09:23.519] that's nice test we should we go back to
+[00:09:26.200] that script yeah let's go back to the
+[00:09:28.519] script first I'll show a really simple
+[00:09:30.600] OD even test then we showed you it
+[00:09:32.600] doesn't need a worse OD even it can
+[00:09:34.839] still generate but let's take something
+[00:09:36.720] more complex and do exactly the same and
+[00:09:38.959] the thing that I prepared is prime
+[00:09:40.279] number generation so we have a test over
+[00:09:42.920] here and it's pretty simple so again a
+[00:09:45.800] test called under 50 we expect there to
+[00:09:48.200] be an object called prime number
+[00:09:49.720] generator or a class I should say it has
+[00:09:52.760] one method called generate you provided
+[00:09:54.880] a number which is the upper bound of the
+[00:09:56.720] prime numbers to generate and if you
+[00:09:58.360] provided 50 we expect those prime
+[00:10:01.200] numbers to be generated right so we copy
+[00:10:04.680] this again we go to jgpt new
+[00:10:08.720] context please provide an
+[00:10:13.079] implementation that passes this test
+[00:10:17.640] again I'm going to paste it and we're
+[00:10:19.880] going to wait for the answer um the
+[00:10:21.680] answer will be more complex this time so
+[00:10:23.360] we're not going to spend too much time
+[00:10:24.920] on it we're just going to copy it once
+[00:10:26.399] we can so let's see when it's finished
+[00:10:29.760] it's a bit slow this morning there it is
+[00:10:32.640] so now I can copy the code go back to my
+[00:10:36.040] IDE let's go to the test subject this Dy
+[00:10:38.800] implementation returns null which is
+[00:10:40.519] incorrect going to select everything I'm
+[00:10:42.720] going to paste the code back to my test
+[00:10:45.839] select everything and let's run it to
+[00:10:47.600] see what
+[00:10:48.440] happens and as you can see we have a
+[00:10:50.480] green check mark So jet GPT was capable
+[00:10:52.720] of coming up with a prime number
+[00:10:54.079] generator by just providing this test
+[00:10:58.000] let's take a look at the code though
+[00:10:59.880] yeah we can that's totally fine but yeah
+[00:11:02.120] we can really deep dive in this but I'm
+[00:11:04.839] not really good at I don't know how it
+[00:11:06.560] actually I don't know there are all kind
+[00:11:08.360] of algorithms to do this and I probably
+[00:11:10.600] this is not the best one I don't even
+[00:11:12.680] really understand it do you how is your
+[00:11:14.519] math gosh yeah yeah so but that's why we
+[00:11:17.560] have test for and this is also the idea
+[00:11:18.959] behind this way of working you don't
+[00:11:20.560] need to know how it's implemented if you
+[00:11:23.440] test you trust your implementation so
+[00:11:25.600] yeah yeah that looks right actually so
+[00:11:27.560] it's checking it's essentially checking
+[00:11:29.839] if if everything less than if every
+[00:11:32.160] number less than that number when modded
+[00:11:34.880] equals zero so if there's no remainder
+[00:11:37.160] yeah do you ask me do you go back to the
+[00:11:38.760] implementation no I don't yeah I want I
+[00:11:41.120] was curious I was
+[00:11:42.880] curious but at a given moment it's okay
+[00:11:45.639] cool I'm really happy with this we now I
+[00:11:47.920] I have proven that the concept works
+[00:11:49.440] right so we can write Tes self we can
+[00:11:51.639] give it to an AI Andi will come up with
+[00:11:54.200] an implementation so this works so I'm
+[00:11:55.560] pretty happy but there are two big
+[00:11:56.920] issues with this approach and the first
+[00:11:58.720] one is the fact that there are too many
+[00:12:00.839] manual steps I had to copy code from my
+[00:12:03.560] IDE to my browser wait till it generated
+[00:12:07.040] copy it from the browser back to my IDE
+[00:12:09.519] Cod to the test subject paste it back to
+[00:12:12.160] the test run it so far too many manual
+[00:12:15.240] steps so I decided to automate this
+[00:12:18.560] because that's what we do as developers
+[00:12:19.880] right if we have to do too many manual
+[00:12:21.480] things we become unhappy and we going to
+[00:12:23.440] automate things so I created a tool that
+[00:12:26.800] does this for you so let's do exactly
+[00:12:28.800] the same but now with a tool and the
+[00:12:31.440] tool is just a simple jarf fall it's
+[00:12:33.440] over here it's in a different directory
+[00:12:34.800] but you can just call it and what we
+[00:12:36.560] have to provide it we have to provide
+[00:12:38.000] the tool with a path to a test F let's
+[00:12:40.800] take the prime number thingy so this
+[00:12:43.079] test I'm going to copy the PA and I'm
+[00:12:46.519] going to paste it over here and I'm
+[00:12:48.399] going to press enter so the tool starts
+[00:12:51.320] up I told you we have two Loops we have
+[00:12:53.680] a test Loop to see if all test BS and we
+[00:12:55.880] have a code loop to ask the AI to come
+[00:12:57.639] up for
+[00:12:59.399] code and currently it's talking to a
+[00:13:02.120] local llm running on my machine llama
+[00:13:05.399] 3.1 as you can see there is an
+[00:13:08.000] implementation there is a test and all
+[00:13:10.240] test pass now let's see what it came up
+[00:13:13.120] with so so the code loot there is really
+[00:13:15.800] just trying to loop around until it has
+[00:13:19.160] something which is test worthy which is
+[00:13:21.000] B which is essentially can it compile so
+[00:13:24.240] this is the code loop and this is the
+[00:13:26.800] test yeah and then the test Loop is
+[00:13:28.560] really
+[00:13:29.639] will the tests pass now it's compiled
+[00:13:31.839] running yep as you can see this's a
+[00:13:33.880] different
+[00:13:34.680] diation um no square root there is some
+[00:13:38.760] multiplication in there but this you so
+[00:13:41.000] I did exactly the same but now I just I
+[00:13:43.600] run a tool I grab a cup of coffee I come
+[00:13:45.600] back and I have a working
+[00:13:47.120] implementation this is so much more nice
+[00:13:49.199] you don't have to do all the manual
+[00:13:50.360] steps anymore while having this now we
+[00:13:53.320] have a tool so now we can easily provide
+[00:13:55.920] test and wait for the AI to come up with
+[00:13:58.199] Solutions all the demos I give up till
+[00:14:00.360] now I tried to create something new but
+[00:14:03.240] developers all have written hundreds or
+[00:14:05.959] maybe a thousand tests in their life you
+[00:14:08.440] can also use this tool on existing tests
+[00:14:12.480] and that's what I did actually I used
+[00:14:14.360] the tool to improve the tool let me show
+[00:14:16.440] you a little bit so in the tool is
+[00:14:18.480] something called a code container and
+[00:14:19.800] the code container has multiple features
+[00:14:21.920] first of all it holds the code that is
+[00:14:24.320] provided by the large language model
+[00:14:26.519] secondly this is we do all this in Java
+[00:14:28.560] and if you know a little bit about Java
+[00:14:30.279] in Java the name of a file should be
+[00:14:33.040] equal to the name of the class this is a
+[00:14:35.399] class so this file this class called
+[00:14:38.959] prime number generator should be in a
+[00:14:41.279] file called prime number generator those
+[00:14:44.000] should be the same so one of the
+[00:14:45.639] features of the code container is to
+[00:14:47.240] extract the file name from the code
+[00:14:50.240] another feature that uh the code
+[00:14:52.240] container has it should be capable of
+[00:14:53.680] extracting the package because in Java
+[00:14:55.959] if you use a package the F the folder
+[00:14:59.040] structure on your file system should be
+[00:15:00.519] equal to this package structure so this
+[00:15:02.600] file should be in orc example prime
+[00:15:04.839] number and look at that orc example
+[00:15:07.759] prime number so this code container has
+[00:15:10.720] those features I created of course test
+[00:15:12.839] for that so let's start with the first
+[00:15:15.040] test the first one we'll try to extract
+[00:15:17.959] the file name from code so we have a
+[00:15:19.360] little bit of code over here now this is
+[00:15:21.279] pretty simple the file name that I
+[00:15:23.720] expect is Happy flow. Java right now I
+[00:15:27.040] have all kinds of tests here I put the
+[00:15:28.560] random spes and spots we have classes we
+[00:15:31.079] have public classes and you see all the
+[00:15:34.079] answers and also notice that I added
+[00:15:36.279] messages we talked about does the AI uh
+[00:15:40.680] take cues from the wording that you use
+[00:15:43.600] I use those messages specifically to
+[00:15:45.800] instruct the AI because if a test fails
+[00:15:48.399] I feedback this message and ask for a
+[00:15:51.120] new implementation so even without AIS I
+[00:15:53.600] think it's a good practice to add
+[00:15:54.759] messages but this also really helps the
+[00:15:57.040] AI to come up with a better solution so
+[00:15:59.480] understands better what goes wrong yeah
+[00:16:01.319] and and this helps otherwise otherwise
+[00:16:02.759] there's going to be more human
+[00:16:03.720] interaction on this right because as
+[00:16:05.120] soon as something fails you need to then
+[00:16:06.759] instruct why it's failed but if you're
+[00:16:08.319] doing this in a more automated way it's
+[00:16:10.959] it's a nice Loop that doesn't need a
+[00:16:12.560] human interaction yeah now we do
+[00:16:15.560] something similar for package name
+[00:16:16.880] extraction so you see packages over here
+[00:16:19.680] little classes so this one should return
+[00:16:22.639] happy flow again we have spaces in uh
+[00:16:25.720] different spots and notice that I have
+[00:16:27.800] multi-level packages over here and
+[00:16:29.639] notice that I have no package over here
+[00:16:31.399] because package is optional and then
+[00:16:33.440] again the messages so those are this is
+[00:16:36.120] the test that I Ed to test my
+[00:16:37.800] implementation and now I have a
+[00:16:39.360] confession to make I made a really
+[00:16:41.360] crappy implementation if you know a
+[00:16:44.079] little bit about programming you know
+[00:16:45.759] you can easily solve this with regular
+[00:16:48.480] Expressions but yeah I'm pretty bad at
+[00:16:51.079] those so I started out with a really
+[00:16:54.519] crappy string manipulation solution and
+[00:16:56.720] I hoped when feeding this to the tool it
+[00:16:58.920] would come up with a better
+[00:16:59.839] implementation that I could then use in
+[00:17:02.399] the tool so let's see what happens I
+[00:17:05.000] need this puff I go over here I remove
+[00:17:08.640] the last parameter and I paste the path
+[00:17:12.679] see that it ends with code container
+[00:17:14.520] test and now I'm asking the local model
+[00:17:18.760] to come up with an implementation that
+[00:17:20.319] passes the test that you see on top and
+[00:17:23.079] this is already a much more complicated
+[00:17:25.959] problem than the problems we talked
+[00:17:27.439] about before let's see what if it can do
+[00:17:30.160] it in one shot also while we're waiting
+[00:17:32.679] let's introduce the generator. log this
+[00:17:35.000] is what I use for debugging you can see
+[00:17:36.720] I'm using 3.1 something happened so
+[00:17:40.280] there was an implementation it found two
+[00:17:42.720] test it ran the test against the
+[00:17:44.880] implementation but zero of the tests
+[00:17:48.120] succeeded so now we feed back to the AI
+[00:17:51.440] those two tests failed please come up
+[00:17:53.240] with a better implementation and it's
+[00:17:55.600] retry now if you look over here you see
+[00:17:58.120] the prompt is pretty elaborate your
+[00:17:59.880] professional Java developer give me a
+[00:18:01.520] single file complete Java implementation
+[00:18:03.520] that will pass this test do not respond
+[00:18:05.799] with the test sometimes that happens
+[00:18:07.960] give me only complete code no Snippets
+[00:18:10.760] include Imports and use the right
+[00:18:12.679] package and as you can see we get a time
+[00:18:16.000] out I use a time out of 30 seconds and
+[00:18:19.200] the local model wasn't didn't seem to be
+[00:18:21.960] able to solve it now the first thing
+[00:18:23.360] that you do like every developer you
+[00:18:25.919] retry right y course something we
+[00:18:29.320] already did but especially with large
+[00:18:31.240] language models they always come up with
+[00:18:32.799] something different there's like a
+[00:18:33.960] fussiness in there you retry yeah if in
+[00:18:37.159] the second attempt the local model
+[00:18:39.280] cannot handle it notice that we already
+[00:18:41.440] have something better once passes yeah
+[00:18:44.159] and when I practice with this I also use
+[00:18:46.640] those test those demos for presentations
+[00:18:49.039] at conferences normally the local model
+[00:18:51.400] is capable of solving this but if it
+[00:18:54.159] isn't capable of solving it we will
+[00:18:55.840] switch to a cloud model yeah
+[00:18:59.520] but hey look at that hey go it improved
+[00:19:02.720] first we had one success again one
+[00:19:04.799] success but now we have two successes so
+[00:19:06.880] let's see what it came up with so here's
+[00:19:08.640] the test let's go back to the test
+[00:19:10.400] subject and as you can see for the
+[00:19:12.280] people who know yaa regex regular
+[00:19:14.760] expressions and it came up with two
+[00:19:17.159] regular Expressions that can extract the
+[00:19:19.559] file name and extract the package name
+[00:19:22.080] so you can use this tool to improve your
+[00:19:24.320] existing code if you already have tests
+[00:19:26.280] lying
+[00:19:27.240] around any question about that Simon I I
+[00:19:30.520] I find this really interesting because
+[00:19:31.799] when you think about that first test we
+[00:19:33.400] did the simpler test there are going to
+[00:19:35.120] be there there are going to be examples
+[00:19:37.240] of an odd even or even a prime number
+[00:19:39.640] all over the place right because it's
+[00:19:40.880] like one of those things that people try
+[00:19:42.200] just to just to start encoding so you'd
+[00:19:44.120] think it would be easier for for AI to
+[00:19:46.039] be able to find an example of that with
+[00:19:48.159] this though it's slightly different
+[00:19:49.200] because this isn't something that you
+[00:19:50.600] would expect to find everywhere this is
+[00:19:53.039] much more specific to what we're trying
+[00:19:54.799] which I guess is why it took in this
+[00:19:56.720] case three attempts but it's still very
+[00:19:58.880] impressive that it looked at its Rex and
+[00:20:00.760] trying was trying to I'm talking about
+[00:20:02.840] it like it's actually doing this
+[00:20:04.400] understand what was going wrong and how
+[00:20:06.080] it could actually change it and it's all
+[00:20:07.679] again it's all correlation and pattern
+[00:20:09.080] matching but and token matching but but
+[00:20:11.559] it's mind-blowing that it can do this in
+[00:20:13.000] just a few attempts and and one of the
+[00:20:15.440] reasons why it's so useful is I think as
+[00:20:17.400] a developer you solve different problems
+[00:20:19.679] every day but yeah probably 99% of
+[00:20:22.039] problems that you have solved are
+[00:20:23.200] already solved many times by other
+[00:20:24.880] developers yeah or similar
+[00:20:27.640] enough different the variable names are
+[00:20:29.720] different but yeah in and if you boil it
+[00:20:32.440] down probably somebody else has already
+[00:20:34.280] solved it so most problems should be
+[00:20:36.120] solvable this way now one other question
+[00:20:38.880] actually in terms of when you go through
+[00:20:40.400] the iterations and you have the number
+[00:20:41.960] of different attempts obviously we can
+[00:20:43.919] alter temperature of of various models
+[00:20:46.559] to increase the chances of a
+[00:20:48.600] hallucination which may actually make it
+[00:20:50.320] more creative and identify more
+[00:20:52.520] interesting Solutions and actually on
+[00:20:53.799] the podcast previously there's trainer
+[00:20:55.799] was talking about how if you increase
+[00:20:58.080] the temperature of their of their chat
+[00:21:00.120] bot Finn if you increase the temperature
+[00:21:02.280] you're more likely to be successful with
+[00:21:04.919] a greater number of requests however
+[00:21:07.600] there is a greater chance of it
+[00:21:09.480] effectively just talking and
+[00:21:11.360] creating things that are just not true
+[00:21:13.840] and the question was how comfortable are
+[00:21:15.840] you with that balance now I feel like
+[00:21:18.320] sometimes if it is continually failing
+[00:21:20.640] here increase in temperature is not
+[00:21:21.960] going to be too big a deal because you
+[00:21:23.400] still have tests which is validating
+[00:21:25.520] that and it's much harder to validate
+[00:21:27.760] some written text and it is something
+[00:21:30.360] which needs to be syntactically true or
+[00:21:33.279] false do you play with the temperature
+[00:21:35.120] at all in your models or is that
+[00:21:36.400] something that makes a difference I get
+[00:21:38.600] this question a lot actually I don't
+[00:21:39.919] play with it I find that the one they
+[00:21:41.760] use by default works pretty well but I
+[00:21:44.600] would like to add something you just
+[00:21:45.840] said there's a factor we didn't talk
+[00:21:47.159] about yet and that's costs yeah cly I'm
+[00:21:49.919] running this against my local llm so the
+[00:21:53.080] costs are pretty minimalistic of course
+[00:21:55.039] my laptop will the the battery will die
+[00:21:57.240] sooner so my electric bill will be a
+[00:21:59.200] little bit higher at the end of the
+[00:22:00.240] month but probably will not notice it
+[00:22:02.320] once you start using Cloud large
+[00:22:04.000] language models that's a different story
+[00:22:06.360] so let me give you a little bit of
+[00:22:08.200] example I created this tool which
+[00:22:10.240] involved calling those Cloud ones pretty
+[00:22:13.600] much I practice I give it at conferences
+[00:22:16.440] and meetups so I've been using this for
+[00:22:18.600] let's say eight months and I spent about
+[00:22:22.279] 10 at jgpt MH so playing around with it
+[00:22:26.279] is not that expensive yeah but if you
+[00:22:28.520] you're going to use this for every test
+[00:22:30.080] case that you have I think it will
+[00:22:31.840] become pretty pricey pretty soon but on
+[00:22:34.279] the other hand the models are getting
+[00:22:35.840] better they get faster and they getting
+[00:22:37.720] cheaper so we are in a time I I see a
+[00:22:41.559] future in which this is
+[00:22:43.480] feasible picture this you write your
+[00:22:45.760] test you run the tool you get your
+[00:22:47.919] coffee you come back if the tool worked
+[00:22:50.720] you save probably hours yeah and for the
+[00:22:53.400] cost of a cup of coffee yeah so yeah why
+[00:22:56.679] not try it I get I get a coffee yeah
+[00:23:00.080] yeah and even better if it failed the
+[00:23:01.880] tool it cost you a little bit of money
+[00:23:03.240] but you still have to test then you do
+[00:23:04.840] the old fashioned way you still write
+[00:23:06.120] the implementation yourself right yeah
+[00:23:08.840] you don't lose a lot or you look at
+[00:23:10.520] where's going wrong that makes you think
+[00:23:12.240] about the implementation I'm pretty sure
+[00:23:13.760] afterwards you will write a better
+[00:23:15.200] implementation about the
+[00:23:17.279] implementation actually there are no
+[00:23:18.960] Downs out except for the little money
+[00:23:20.960] part yeah yeah okay so let's jump
+[00:23:24.200] forward yeah so you asked me how do you
+[00:23:26.360] add features let's do a little bit
+[00:23:28.120] little about we have the prime number
+[00:23:30.000] generator test and what I'm going to do
+[00:23:32.440] I'm going to add a test that what I want
+[00:23:35.240] is when you provide a negative number
+[00:23:38.039] over here it should throw an exception
+[00:23:39.679] because we don't know negative prime
+[00:23:41.080] numbers so let's do that so what I'm
+[00:23:43.440] going to do I'm just going to add a test
+[00:23:45.440] over here and I'm going to say
+[00:23:50.559] public V
+[00:23:52.760] negative
+[00:23:54.520] input and then we need to now we need
+[00:23:58.039] now let let me first do something else
+[00:23:59.679] we're going to use something from junit
+[00:24:01.200] is called assert throws it asserts if
+[00:24:03.440] something is thrown so like this the
+[00:24:05.279] first thing that you have to provide is
+[00:24:07.159] what kind of exception do you want
+[00:24:08.320] runtime exception sounds fine to me and
+[00:24:10.919] then you provide a Lambda think like
+[00:24:13.240] this and then you
+[00:24:15.320] say huh I'm missing something that me I
+[00:24:18.400] need this so thank you did you see what
+[00:24:20.640] happened there was the on line code
+[00:24:21.919] completion from intell which is pretty
+[00:24:23.799] pretty fantastic is that using the
+[00:24:25.240] intellig assistant or is that using no
+[00:24:27.120] this the I don't pay for the jet brain
+[00:24:29.039] AIS and this is just a free one okay and
+[00:24:31.480] do you see what's on my screen this
+[00:24:32.640] exactly what I want but I only typed the
+[00:24:34.159] pr so it in first from the context what
+[00:24:36.799] I want which is already pretty great let
+[00:24:39.120] me see did I do this
+[00:24:41.039] correctly I'm not sure if I did this
+[00:24:44.080] correctly let me now let's run it let's
+[00:24:46.559] see what happens let's first run the
+[00:24:48.080] test to see if the test
+[00:24:49.679] runs wrong button sorry for
+[00:24:53.559] that yeah so you see under 50 still
+[00:24:55.840] works but negative doesn't work because
+[00:24:57.640] it doesn't throw run this code isn't
+[00:24:59.399] there yet right y now now I'm going to
+[00:25:01.960] run exactly the same command as I did
+[00:25:03.840] before so not the code container but the
+[00:25:07.200] prime number generator so I did not
+[00:25:08.960] change the prompt so the only thing
+[00:25:11.440] that's different is that currently the
+[00:25:13.159] file contains two test cases instead of
+[00:25:15.399] one test case and we expected now to
+[00:25:18.399] update the codes so also the
+[00:25:21.000] second test case you see it too find a
+[00:25:23.799] solution let's go to the implementation
+[00:25:26.200] and I think this is the new part
+[00:25:30.320] and this is how you add
+[00:25:33.640] features to your implementation just
+[00:25:36.520] write more tests that specify the
+[00:25:38.840] features that you
+[00:25:40.600] want questions no this looks awesome and
+[00:25:43.640] it's really it's that tdd way it's that
+[00:25:46.039] it will do the minimum it requires to
+[00:25:47.760] make those tests pass and I think your
+[00:25:50.039] code is as good as your tests here right
+[00:25:51.880] it's really tightly coupled yeah yeah
+[00:25:55.200] yeah I'm really happy with this tool but
+[00:25:58.520] one problem one problem left one big
+[00:26:00.399] problem actually and that's the fact
+[00:26:01.799] that it's pretty good at generating
+[00:26:04.039] plain Java code and that's what we did
+[00:26:06.360] up till now but if we at our daily job
+[00:26:09.360] we use libraries we use Frameworks and
+[00:26:11.600] the tool in its current form cannot use
+[00:26:13.559] those it doesn't know about spring boot
+[00:26:16.480] it doesn't know about quarkus and it's
+[00:26:18.159] pretty difficult because it only input
+[00:26:19.799] is a test case how can it extract from
+[00:26:21.880] this test case which libraries or
+[00:26:23.559] Frameworks you're using so I started
+[00:26:25.919] thinking about this problem and actually
+[00:26:27.600] did the solution is pretty simple we
+[00:26:29.679] have to create we have to do something
+[00:26:31.279] with your build system for Java that is
+[00:26:33.640] normally Maven or Gradle I have far more
+[00:26:35.960] experience with Maven and I have with
+[00:26:37.440] cradle therefore I created a maven
+[00:26:39.720] plugin and if you do that if you have a
+[00:26:42.159] maven plugin you can easily access all
+[00:26:45.320] your libraries and so for the tool I
+[00:26:48.159] created a ma plugin that creates a
+[00:26:50.679] custom class loader that loads all the
+[00:26:53.919] dependencies and then it can come up
+[00:26:57.120] with working code when you're
+[00:26:59.520] using libraries or Frameworks so let me
+[00:27:01.880] show you how it works so the compiling
+[00:27:04.120] part should be should know about the
+[00:27:06.679] libraries that it uses got it the P XML
+[00:27:09.720] so I there's a lot of stuff in P XML the
+[00:27:11.640] most important part is this I created a
+[00:27:13.159] new plugin it's called the test driven
+[00:27:15.320] generation Maven plugin and its most
+[00:27:18.120] important part is the configuration part
+[00:27:20.399] and like with the jar file we have to
+[00:27:22.240] provide a path to test file now notice
+[00:27:25.720] that there is a test file already over
+[00:27:27.000] here and it says end Point test let me
+[00:27:29.200] show you the endpoint
+[00:27:31.600] test so over here so this is a really
+[00:27:35.440] simple spring boot hello world example
+[00:27:37.960] now for people who are unfamiliar with
+[00:27:39.440] spring boot this is how you create a
+[00:27:40.799] spring boot test normally works with a
+[00:27:43.240] random Port which is initialized over
+[00:27:45.120] here not really important this is
+[00:27:47.000] important we have a rest template we use
+[00:27:49.200] this to do a rest call as you can see
+[00:27:52.159] over here we do a get on the root of
+[00:27:55.000] Local Host and then at random port and
+[00:27:57.240] if we do this get we expected to say
+[00:27:59.039] hello world but this is a spring boot so
+[00:28:01.000] it has to come up with a spring boot
+[00:28:03.840] solution and the tools should be capable
+[00:28:06.240] over running the spring boot Solution
+[00:28:07.960] that's why we need the ma plugin y so
+[00:28:11.799] did I point out everything I want to
+[00:28:13.600] point out I think I did let's try try it
+[00:28:16.440] so let's go we need use we need to use
+[00:28:19.159] maen you do this like this test driven
+[00:28:22.240] typo
+[00:28:24.080] generation generate so this will
+[00:28:29.519] run this plugin I talked about before
+[00:28:33.120] and of course this plugin just reuses
+[00:28:35.559] jarfile and you recognize this output
+[00:28:38.360] you've seen this before when we were
+[00:28:39.519] using the jarf fall and now it's talking
+[00:28:42.840] to the local LM and it asked llm to come
+[00:28:46.200] up with an implementation that passes
+[00:28:48.679] this test so we want a spring boot
+[00:28:51.559] application that returns hello world
+[00:28:53.440] when you do a get on the root URL now as
+[00:28:56.799] you can see things are going wrong as
+[00:28:58.480] expected so we're feeding back the
+[00:29:00.640] errors to the large language model and
+[00:29:02.720] we ask it to come up with better
+[00:29:04.720] implementations there is an
+[00:29:06.120] implementation here but the test didn't
+[00:29:07.760] suceed so we keep waiting and
+[00:29:10.799] waiting what's interesting here is that
+[00:29:12.919] it's for the first time it's looping
+[00:29:15.320] around the code loop and and it's
+[00:29:17.039] because it's a much more complex spring
+[00:29:19.399] application that needs to be built to
+[00:29:21.360] actually satisfy this yeah so this is
+[00:29:23.840] much more difficult it looks running
+[00:29:25.960] everybody yeah see build success wow
+[00:29:28.760] nice let's see let's see what it created
+[00:29:31.000] probably let me update
+[00:29:33.720] this yeah there it is endpoint
+[00:29:35.679] application so it's a spring boot
+[00:29:37.440] application now people know spring boot
+[00:29:39.519] is is default it is a rest controller a
+[00:29:42.600] gap mapping on rout returns hello world
+[00:29:45.200] this is exactly what I would write when
+[00:29:48.000] people would ask me to write this yeah
+[00:29:49.960] so this is pretty cool so let's see if
+[00:29:51.679] we can make it a little bit more complex
+[00:29:54.240] but you have questions first yeah I do
+[00:29:56.039] have a question in terms of so obviously
+[00:29:58.159] this is we're getting to that state now
+[00:29:59.960] where the a where the GPT is
+[00:30:02.360] effectively going to have a greater
+[00:30:04.960] number of attempts on the code creation
+[00:30:07.840] the more complex we get the greater
+[00:30:09.679] those numbers of attempts are going to
+[00:30:11.039] be and we're we're going to be more
+[00:30:13.039] likely to hit our timeouts or a a retry
+[00:30:15.880] limit when when you iterate through for
+[00:30:18.200] example if we in fact let's use that
+[00:30:20.279] previous example when you added that uh
+[00:30:22.360] feature to the prime number test have
+[00:30:25.480] you tried using the existing code AS
+[00:30:28.960] context to effectively say look this is
+[00:30:31.360] the code that I had that ran my previous
+[00:30:33.159] test check out my updated tests you need
+[00:30:36.080] to update my existing code so that it
+[00:30:39.640] effectively adds the functionality
+[00:30:41.240] required to pass the failing test
+[00:30:43.440] essentially so I guess it comes down to
+[00:30:45.200] a little bit more of a tdd style where
+[00:30:46.679] it might say let's use the existing code
+[00:30:49.120] let's run my test understand what is
+[00:30:50.880] failing and then write some additional
+[00:30:53.039] codes to to fix that failing test is
+[00:30:55.519] that something you've done or considered
+[00:30:57.639] so your question is does the second run
+[00:30:59.880] know about the first run right know
+[00:31:01.639] about the or or even know about the code
+[00:31:04.080] in the previous iteration where that
+[00:31:06.639] that could even be before that could
+[00:31:08.080] even be before youve run this the
+[00:31:10.279] previous time you oh sorry ah okay so
+[00:31:12.639] your question yeah but in all my
+[00:31:14.440] examples right now there is no pre we
+[00:31:16.519] always start from scratch right um the
+[00:31:18.760] prime number one we just added that new
+[00:31:20.240] functionality right so we added the
+[00:31:21.960] throw run time and I think we're going
+[00:31:23.360] to build upon the spring application as
+[00:31:25.200] well so rather than go through those
+[00:31:27.480] errors again and actually have more
+[00:31:29.559] chance of hitting that retry limit could
+[00:31:31.639] we actually say look this is the
+[00:31:32.840] previous code that passed the previous
+[00:31:34.440] test this is the change I making can you
+[00:31:36.720] almost uh adapt or iterate from this
+[00:31:40.080] starting point yeah no I did not do that
+[00:31:42.880] it is on my to-do list because I think
+[00:31:45.159] the tool would become so much better if
+[00:31:46.760] it knows more context the more context
+[00:31:48.559] you give it the better it results will
+[00:31:50.720] be but on the other hand what is there
+[00:31:54.080] is when you if you have multiple Loops
+[00:31:56.440] it knows about the previous Loops it it
+[00:31:58.279] knows what it did before yeah so there
+[00:32:00.360] is a little bit of context in there but
+[00:32:02.519] not not the entire context over here
+[00:32:05.799] that would be like the next Generation
+[00:32:07.240] right just nowadays the token window of
+[00:32:10.320] the Lang become bigger and bigger so you
+[00:32:12.080] can just put your entire project in
+[00:32:13.519] there and I think it will really improve
+[00:32:16.519] the the hit rate it will really make the
+[00:32:19.240] tool even more useful y yeah cool more
+[00:32:23.720] questions no good let's move let's move
+[00:32:25.960] on yeah I think we're going to update
+[00:32:27.240] the the spring go to the the last
+[00:32:29.279] example and maybe we can go off script
+[00:32:32.480] afterwards something harder but the
+[00:32:34.760] thing that I prepared is the following
+[00:32:36.240] one so I have an endpoint h test and the
+[00:32:38.720] idea here is again spring boot program
+[00:32:40.880] we provide it with a a birth date and it
+[00:32:43.159] should calculate the age so let me walk
+[00:32:45.919] you through the examples if you were
+[00:32:47.399] born on the 1 of January this year
+[00:32:49.360] you're zero 1 of January of 20120 or
+[00:32:52.720] four 1 of January 2000 or 24 but if
+[00:32:57.200] you're born on the last day of 2000
+[00:32:58.919] you're 23 so this is the difficult part
+[00:33:00.919] right that's dep that's depressing isn't
+[00:33:02.919] it b a date a birth dat on in 200000 in
+[00:33:06.440] the age is 23 24 you old it makes me
+[00:33:10.799] feel old yeah makes me feel makes me
+[00:33:12.320] feel like I need to go and have a nap
+[00:33:13.600] maybe
+[00:33:15.080] yeah I I I totally
+[00:33:17.399] agree that we uh we expect to do again
+[00:33:20.440] on Local Host renom P again and then the
+[00:33:22.679] birthday should be part of the URL so we
+[00:33:25.200] expect slage SL birth dat and and then
+[00:33:28.919] we expect it to return the H so let's
+[00:33:31.639] see what happens if we feed this
+[00:33:33.880] actually I I I played with this and and
+[00:33:35.840] and it couldn't solve the problem it
+[00:33:37.399] couldn't solve the problem because I
+[00:33:38.559] made a mistake in the input yeah I
+[00:33:40.720] switched up those two numbers you know I
+[00:33:43.039] was gonna ask that question actually
+[00:33:44.399] when we were back in the when we were
+[00:33:45.799] trying to trick the uh the LM at the
+[00:33:48.080] very very start by changing the method
+[00:33:51.039] names and the class names Etc from OD
+[00:33:53.600] even I wonder if you to actually change
+[00:33:55.960] maybe instead of two have one there
+[00:33:58.639] instead I wonder if it would have
+[00:34:00.440] thought would have looked at it and
+[00:34:01.679] thought do you know what there's enough
+[00:34:02.720] tests here to do a mod 2 that it would
+[00:34:05.200] pass or it looks it close enough to a
+[00:34:06.960] not even but yeah another conversation
+[00:34:08.800] perhaps yeah yeah so let's try this and
+[00:34:11.320] let's move from there I need no let's go
+[00:34:14.560] to the pum
+[00:34:15.639] file and so instead of an endpoint test
+[00:34:18.440] this one is called endpoint h test and
+[00:34:21.760] I'm going to rerun it to see what
+[00:34:24.159] happens and I think this is a fairly
+[00:34:27.040] complex problem I think if I had to code
+[00:34:29.440] it myself it would take me at least 50
+[00:34:31.599] minutes maybe more let's see if the
+[00:34:34.520] local large language models are capable
+[00:34:36.599] of solving this again let's take a look
+[00:34:40.159] at the Lock we're still using the local
+[00:34:41.919] one Lama 3.1 the time out is 30 seconds
+[00:34:45.440] uh you see there in the second code
+[00:34:47.159] attempt so the first attempt delivered
+[00:34:49.520] no code or at least not code That
+[00:34:51.119] Couldn't compile let's see if we can
+[00:34:53.280] find something interesting in here let
+[00:34:55.200] me reload it let me see what happens so
+[00:34:57.280] we see this is what I provided it came
+[00:34:59.280] up with something apparently it doesn't
+[00:35:02.960] compile I'm not sure why did this didn't
+[00:35:06.960] compile then it came up with a second
+[00:35:09.640] implementation but that didn't pass the
+[00:35:11.800] test so we ask it again come up with
+[00:35:14.040] something that passes the test if I look
+[00:35:16.400] at this it looks pretty okay I'm not
+[00:35:18.200] sure what's wrong here is aging years is
+[00:35:21.920] along and it looks like it wants to I
+[00:35:24.040] know string value of yeah but this is
+[00:35:26.480] also wrong it copied the test in here ah
+[00:35:29.280] yeah it's
+[00:35:30.560] always so now we're looking into the
+[00:35:33.240] depth of what it's doing actually you
+[00:35:34.720] don't want to do that you just want
+[00:35:35.880] passing test right yeah we' be drinking
+[00:35:38.400] our coffee somewhere yeah yeah now I
+[00:35:40.520] should get got some coffee but that
+[00:35:41.880] probably wouldn't be so interesting for
+[00:35:43.240] the users yeah no it's just tuing along
+[00:35:46.440] yeah and now you also understand why I'm
+[00:35:47.839] using 30 seconds because you don't want
+[00:35:49.200] to wait too long especially when you're
+[00:35:50.440] doing demos yeah but I think this is a
+[00:35:52.760] pretty pretty hard one I would say in
+[00:35:55.079] the beginning of the year 5% of the
+[00:35:58.000] times that I did this test it was
+[00:35:59.839] capable of solving it with a local llm
+[00:36:03.480] normally I had to go to Cloud one yeah
+[00:36:05.440] nowadays with llama 3.1 I would say it's
+[00:36:08.599] capable of solving this problem 50% of
+[00:36:11.319] the time this is is taking me too long I
+[00:36:14.440] I'm a little bit impatient so I'm going
+[00:36:16.119] to prepare for running against the cloud
+[00:36:18.000] Alum okay let's go there and what we're
+[00:36:21.200] going to do you as you can see there are
+[00:36:23.480] all kind of properties over here let's
+[00:36:26.280] use entropic you can use J GPT or you
+[00:36:28.960] can use entropic right now I'm planning
+[00:36:31.040] on adding more models as you can see
+[00:36:33.599] something went wrong no solution found
+[00:36:36.119] so let's uncomment this let's rerun it
+[00:36:40.160] so instead of going to my local llm it
+[00:36:42.920] now goes to the cloud llm let me show
+[00:36:46.920] you that it's true you can see now it
+[00:36:49.400] goes to entropic it's using Cloud 35
+[00:36:51.800] sunet now you see directly the
+[00:36:53.760] difference something is happening build
+[00:36:55.119] success yeah wow straight away look at
+[00:36:56.640] that so the is that first time yeah
+[00:36:59.920] first time so the local ones are pretty
+[00:37:01.520] impressive but the cloud ones are so
+[00:37:03.560] much better so let's see what it created
+[00:37:05.960] see where did it put it so it's an endo
+[00:37:08.960] h calculator I don't I see it should be
+[00:37:12.440] over here right ah there there it is
+[00:37:14.960] spring boot application rest controller
+[00:37:17.240] start spring boot application this is
+[00:37:19.280] what I told you it should use a slh and
+[00:37:21.440] then the birth date it uses a p varable
+[00:37:23.599] for this thing which is correct it
+[00:37:25.280] parses it with an ISO date which is
+[00:37:27.000] correct it uses today it uses the
+[00:37:31.000] difference between today and the
+[00:37:33.119] provided part date and it extracts years
+[00:37:36.240] this is fantastic this is what I would
+[00:37:38.000] write yeah and and it did it in five
+[00:37:40.640] seconds yeah yeah um yeah yeah I think I
+[00:37:44.680] need more complex and what's what I love
+[00:37:46.839] about this is the fact that you are
+[00:37:48.680] effectively starting with the validation
+[00:37:50.240] so as this gets more complex we are able
+[00:37:53.079] to rely on this code much much more
+[00:37:55.000] because we start with the tests and we
+[00:37:56.440] know the assertion
+[00:37:58.040] validated by the end of it yeah this is
+[00:38:00.280] awesome yeah and I think the validation
+[00:38:02.640] part is the really that is the
+[00:38:04.119] interesting part of this approach yeah
+[00:38:06.160] so you have a way to validate the output
+[00:38:08.440] of your large language model and the the
+[00:38:10.200] Air Canada example showed you how
+[00:38:11.800] important it is it's going to become
+[00:38:13.760] more and more important in the future
+[00:38:15.160] because people will keep making this
+[00:38:16.960] mistake over and get Burns it will cost
+[00:38:19.319] a lot of money but now for coding we
+[00:38:21.520] have a way to check which I think is
+[00:38:23.520] really cool yeah I know this is the last
+[00:38:26.319] demo can folks have a play with this
+[00:38:28.319] themselves yeah they can I will after
+[00:38:30.720] this I will give to you Simon four links
+[00:38:33.440] the first link will be this project
+[00:38:35.280] called the AI native Dev example so
+[00:38:37.000] people can play with that I will send a
+[00:38:39.119] link to the repo that contains a code
+[00:38:41.520] that creates a jarfile then a link to
+[00:38:44.400] the repo that creates the M plugin so I
+[00:38:46.880] will send those to you and if you put
+[00:38:48.560] them somewhere yeah we'll put that in
+[00:38:50.319] the description in the show notes as
+[00:38:51.720] well so absolutely absolutely perfect
+[00:38:53.520] thank you we're pretty much at times
+[00:38:54.920] Bala this has been super insightful
+[00:38:57.079] awesome to chat and awesome to awesome
+[00:38:59.040] to throw some off-script challenges at
+[00:39:00.960] you as well so thank you thank you very
+[00:39:02.839] much and appreciate the appreciate the
+[00:39:04.839] session yeah thank you for having me
+[00:39:07.200] thank you for the the fact that I could
+[00:39:09.359] show off my uh proof Concept in this
+[00:39:11.640] area I love to talk to you and I also
+[00:39:14.319] really like the upscript one those are
+[00:39:15.760] the
+[00:39:16.520] best wonderful thanks very much and for
+[00:39:18.920] everyone listening uh please tune in to
+[00:39:20.599] the next session thank you byebye
+[00:39:23.730] [Applause]
+[00:39:23.900] [Music]
+[00:39:26.080] [Applause]
+[00:39:30.490] [Music]
+[00:39:37.839] thanks for tuning in join us next time
+[00:39:39.760] on the AI native Dev brought to you by
+[00:39:42.119] Tesla
+[00:39:43.170] [Applause]
+[00:39:44.520] [Music]

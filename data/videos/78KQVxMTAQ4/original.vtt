@@ -1,0 +1,2757 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.160
+this is a this is a really interesting session about how you know
+
+2
+00:00:03.240 --> 00:00:08.040
+what happens at a, at a larger enterprise when, when skills really are distributed.
+
+3
+00:00:08.040 --> 00:00:13.040
+And there are many, many development teams wanting to wanting to use skills.
+
+4
+00:00:13.080 --> 00:00:17.280
+It really poses kind of different challenges at a larger organization.
+
+5
+00:00:17.280 --> 00:00:22.040
+So John, who's a principal engineer at Cisco, will be will be presenting this.
+
+6
+00:00:22.040 --> 00:00:22.800
+I actually presented
+
+7
+00:00:22.800 --> 00:00:26.640
+with John a little while earlier at Cisco Live down in Amsterdam.
+
+8
+00:00:26.640 --> 00:00:28.800
+So it gives me great pleasure to welcome John on stage.
+
+9
+00:00:28.800 --> 00:00:31.800
+So please give it up for John.
+
+10
+00:00:40.880 --> 00:00:41.840
+All right.
+
+11
+00:00:41.840 --> 00:00:43.680
+So hopefully everyone can hear me back there.
+
+12
+00:00:43.680 --> 00:00:47.720
+So again the title here is about skills and putting them everywhere and really
+
+13
+00:00:47.760 --> 00:00:49.120
+putting pipelines around that.
+
+14
+00:00:49.120 --> 00:00:52.680
+So you don't have to maintain multiple versions of context in various places.
+
+15
+00:00:52.720 --> 00:00:53.520
+Because again,
+
+16
+00:00:53.520 --> 00:00:57.120
+the end of the day, both humans and agents really need to consume this context.
+
+17
+00:00:57.160 --> 00:00:58.720
+So I'm going to kind of talk about some things
+
+18
+00:00:58.720 --> 00:01:02.240
+we've been struggling with and some patterns we've used internally at Cisco.
+
+19
+00:01:03.160 --> 00:01:06.120
+So this might be a little controversial for some people here,
+
+20
+00:01:06.120 --> 00:01:09.240
+especially maybe if you work for a frontier model and be earmuffs it
+
+21
+00:01:09.240 --> 00:01:11.880
+but you don't really need a smarter model today.
+
+22
+00:01:11.880 --> 00:01:15.800
+The models are perfectly capable of doing what you need for business value, right?
+
+23
+00:01:15.880 --> 00:01:20.160
+Not talking like PhD level intelligence and beyond, but getting business value
+
+24
+00:01:20.160 --> 00:01:22.160
+out of the models. It's already there today.
+
+25
+00:01:22.160 --> 00:01:23.560
+The problem is really that you need
+
+26
+00:01:23.560 --> 00:01:26.560
+smarter context and smarter context engineering.
+
+27
+00:01:26.600 --> 00:01:31.080
+And so for me, the last couple of years I've been jumping harness to harness.
+
+28
+00:01:31.120 --> 00:01:34.640
+I'm always chasing the latest, greatest thing, constantly breaking my workflows.
+
+29
+00:01:34.640 --> 00:01:36.400
+I'm sure other people can relate to this.
+
+30
+00:01:36.400 --> 00:01:40.440
+And always there's so many variables that anytime I switch to a lower model
+
+31
+00:01:40.440 --> 00:01:43.360
+and it breaks something, I'm immediately like, well, that's the model's fault.
+
+32
+00:01:43.360 --> 00:01:44.480
+I'm going back to opus, right?
+
+33
+00:01:44.480 --> 00:01:47.680
+Because this thing that I don't understand, it has to be the model, right?
+
+34
+00:01:47.720 --> 00:01:50.800
+But once skills came onto the scene, it kind of changed my perspective
+
+35
+00:01:50.800 --> 00:01:54.360
+perspective on things, especially recently with the new patterns
+
+36
+00:01:54.360 --> 00:01:58.360
+of a agentic fan out in the harness, right where I have my model set to opus,
+
+37
+00:01:58.360 --> 00:02:02.600
+and I ask it to do this massive prompt and it spawns 15 sub in.
+
+38
+00:02:02.640 --> 00:02:06.040
+That cost is just really increasing, and we're actually seeing that becoming
+
+39
+00:02:06.080 --> 00:02:10.080
+actually a concern where we had to start limiting model use on our large enterprise
+
+40
+00:02:10.080 --> 00:02:14.320
+because of the cost of this stuff and the fan out being a problem.
+
+41
+00:02:14.320 --> 00:02:16.280
+So I really wanted to figure out,
+
+42
+00:02:16.280 --> 00:02:18.560
+okay, why can't I just use sonnet for everything?
+
+43
+00:02:18.560 --> 00:02:20.200
+And I found out I can.
+
+44
+00:02:20.200 --> 00:02:23.440
+And today for the last couple of months, I largely used the medium tier model.
+
+45
+00:02:23.480 --> 00:02:24.440
+Doesn't really sonnet
+
+46
+00:02:24.440 --> 00:02:27.600
+GPT medium reasoning I don't really use those high end models.
+
+47
+00:02:27.600 --> 00:02:29.520
+It's very rare that I use those.
+
+48
+00:02:29.520 --> 00:02:32.240
+Maybe for some super complex planning. Lots of contexts.
+
+49
+00:02:32.240 --> 00:02:35.240
+I still use them, but I challenge my engineers to really try
+
+50
+00:02:35.240 --> 00:02:38.840
+to use that medium tier as their baseline and only jump into the greater tier
+
+51
+00:02:38.880 --> 00:02:39.600
+when they need to.
+
+52
+00:02:39.600 --> 00:02:43.840
+And the real unlock for this was skills, because all the harnesses,
+
+53
+00:02:43.840 --> 00:02:46.600
+all the models are training on skills, they're honoring skills.
+
+54
+00:02:46.600 --> 00:02:48.440
+And so if you can lean into that,
+
+55
+00:02:48.440 --> 00:02:51.360
+your context can actually transfer between the harnesses.
+
+56
+00:02:51.360 --> 00:02:53.200
+And that was great for me because I can
+
+57
+00:02:53.200 --> 00:02:57.320
+I can try Claude Code, I can jump into dev and I can jump into GitHub Copilot CLI.
+
+58
+00:02:57.320 --> 00:03:00.880
+And if my skills work in all three of them relatively, it works the same.
+
+59
+00:03:00.880 --> 00:03:02.440
+So it's great.
+
+60
+00:03:02.440 --> 00:03:06.440
+But what was what you need to understand is how do you manage your context, right?
+
+61
+00:03:06.480 --> 00:03:07.400
+How do you share it?
+
+62
+00:03:07.400 --> 00:03:08.240
+Package it once
+
+63
+00:03:08.240 --> 00:03:11.800
+and then ship it to everyone, but only have one source of management.
+
+64
+00:03:11.800 --> 00:03:14.480
+And the real unlock for that is evals.
+
+65
+00:03:14.480 --> 00:03:17.120
+Evals are extremely important, and you need to make sure
+
+66
+00:03:17.120 --> 00:03:19.280
+that you're actually spending engineering effort
+
+67
+00:03:19.280 --> 00:03:21.600
+learning how to build a valuations for your context.
+
+68
+00:03:21.600 --> 00:03:25.680
+And what you'll find is if you do that correctly, you can actually use
+
+69
+00:03:25.680 --> 00:03:29.360
+extremely low end models in your workflows become much more deterministic,
+
+70
+00:03:29.400 --> 00:03:32.960
+especially for things that are repetitive that you need to do all the time.
+
+71
+00:03:33.200 --> 00:03:35.960
+I don't think anyone in this room if I want them and I said, hey, I can
+
+72
+00:03:35.960 --> 00:03:39.720
+you can use opus and do this workflow, or you can use haiku
+
+73
+00:03:39.880 --> 00:03:42.840
+and one way faster and way cheaper, but you get the exact same result.
+
+74
+00:03:42.840 --> 00:03:45.000
+I mean, which one are you going to choose? It's a no brainer.
+
+75
+00:03:45.000 --> 00:03:45.720
+No one's going to choose
+
+76
+00:03:45.720 --> 00:03:49.080
+the more expensive, slower model just because if you actually figure out
+
+77
+00:03:49.120 --> 00:03:52.560
+how to do that optimization, you're going to go with the cheaper, faster one.
+
+78
+00:03:52.600 --> 00:03:54.440
+So the stories that I'm going to tell today
+
+79
+00:03:54.440 --> 00:03:58.240
+stem from kind of that journey of two completely different teams.
+
+80
+00:03:58.240 --> 00:04:02.440
+One is more of a traditional context already exist that humans maintain.
+
+81
+00:04:02.480 --> 00:04:04.000
+How do we convert that into something
+
+82
+00:04:04.000 --> 00:04:04.960
+agents can maintain
+
+83
+00:04:04.960 --> 00:04:09.000
+without reinventing it, or having complete drift in the two systems?
+
+84
+00:04:09.000 --> 00:04:12.720
+And then the second one is more developer centric, where everything we do
+
+85
+00:04:12.760 --> 00:04:17.000
+should be more skill based going forward and kind of being the starting point.
+
+86
+00:04:17.280 --> 00:04:20.720
+So before we go too deep in just a little background on myself,
+
+87
+00:04:20.800 --> 00:04:23.840
+My name is John Groetzinger, and I've been in Cisco
+
+88
+00:04:23.840 --> 00:04:25.320
+for about 14 years now,
+
+89
+00:04:25.320 --> 00:04:28.720
+actually came in through an acquisition of a company called Sourcefire.
+
+90
+00:04:28.760 --> 00:04:31.120
+We wrote an intrusion prevention software.
+
+91
+00:04:31.120 --> 00:04:35.000
+It's still one of the core technologies in Cisco's firewall today.
+
+92
+00:04:35.160 --> 00:04:35.440
+Right.
+
+93
+00:04:35.440 --> 00:04:40.000
+And so I spent about 12 years in the TAC, which is our technical
+
+94
+00:04:40.000 --> 00:04:43.560
+assistance center, technical support for enterprise customers.
+
+95
+00:04:43.800 --> 00:04:46.840
+I'd be dealing with very high pressure situations financial
+
+96
+00:04:46.840 --> 00:04:50.440
+institutions, banks, hospitals, critical infrastructure.
+
+97
+00:04:50.440 --> 00:04:51.200
+When that goes down,
+
+98
+00:04:51.200 --> 00:04:54.480
+I'd be the kind of person figuring out how do we get them up quickly, you know,
+
+99
+00:04:54.520 --> 00:04:56.720
+and I really want to automate that because those are very
+
+100
+00:04:56.720 --> 00:04:58.280
+annoying situations, right?
+
+101
+00:04:58.280 --> 00:05:02.760
+And so I've been a full stack developer for the last 12 to 14 years,
+
+102
+00:05:02.760 --> 00:05:06.560
+but the last 2 to 5 years, there's a lot of edge cases that you can't
+
+103
+00:05:06.600 --> 00:05:09.560
+handle an automation right? Easily anyway.
+
+104
+00:05:09.560 --> 00:05:11.960
+And AI kind of changed that a lot, right?
+
+105
+00:05:11.960 --> 00:05:13.360
+I really got excited and I was like,
+
+106
+00:05:13.360 --> 00:05:16.000
+oh man, these 50 edge cases, I don't have to hardcode.
+
+107
+00:05:16.000 --> 00:05:18.280
+If else is for I can just throw it to an agent
+
+108
+00:05:18.280 --> 00:05:20.480
+and with some context and it actually handles that quite well.
+
+109
+00:05:20.480 --> 00:05:25.800
+And then for the last year or so, I've been focused heavily on production system.
+
+110
+00:05:25.800 --> 00:05:30.360
+We just released a couple of weeks ago, GA we have a fully AI native
+
+111
+00:05:30.400 --> 00:05:34.480
+platform built from the ground up to be AI native, its customer external facing.
+
+112
+00:05:34.520 --> 00:05:38.960
+We have over 1000 users on board in just a few weeks, and it's been a that's
+
+113
+00:05:38.960 --> 00:05:42.160
+where these stories are actually coming from its shipping production agents.
+
+114
+00:05:43.440 --> 00:05:44.120
+Okay, so
+
+115
+00:05:44.120 --> 00:05:47.480
+let's take a step back and hopefully everyone knows what a skill is.
+
+116
+00:05:47.520 --> 00:05:50.560
+If not, you probably haven't been paying attention over the last couple of days.
+
+117
+00:05:50.600 --> 00:05:52.720
+And so I really hope you have.
+
+118
+00:05:52.720 --> 00:05:57.480
+But a core of it is it can be very simple or it can be very complex, which is nice.
+
+119
+00:05:57.520 --> 00:06:00.600
+It's flexible, but the bare minimum is just you have that skill
+
+120
+00:06:01.280 --> 00:06:04.120
+that just is like your starting point for your agent.
+
+121
+00:06:04.120 --> 00:06:07.080
+And so one skill, for example, that I've created for
+
+122
+00:06:07.080 --> 00:06:08.960
+our team is a repository standard.
+
+123
+00:06:08.960 --> 00:06:10.920
+Because we have tons of technical debt.
+
+124
+00:06:10.920 --> 00:06:14.680
+We have people creating new projects all the time on using models
+
+125
+00:06:14.680 --> 00:06:17.040
+that are trained on stuff that's not quite up to date, right?
+
+126
+00:06:17.040 --> 00:06:21.160
+So if I say creating a new Python project, it pumps out a requirements.txt
+
+127
+00:06:21.200 --> 00:06:24.880
+with a pip install and I go insane because I only want people using UV, right?
+
+128
+00:06:24.920 --> 00:06:26.760
+And so I put that into the skill
+
+129
+00:06:26.760 --> 00:06:30.520
+so I don't have to have my engineers worry about like setting up projects
+
+130
+00:06:30.520 --> 00:06:33.400
+the wrong way. They just install the skill and set up the project with the agent.
+
+131
+00:06:33.400 --> 00:06:35.120
+So that's just one example.
+
+132
+00:06:35.120 --> 00:06:36.480
+That's an easy win, right?
+
+133
+00:06:36.480 --> 00:06:39.160
+So you want to make your skill ship with rules,
+
+134
+00:06:39.160 --> 00:06:41.480
+which is essentially just more markdown files.
+
+135
+00:06:41.480 --> 00:06:42.840
+You can put scripts in there.
+
+136
+00:06:42.840 --> 00:06:46.040
+Any scaffolding you want can really be as good as you want,
+
+137
+00:06:46.040 --> 00:06:49.520
+but what's key is that you add a value for your skills, right?
+
+138
+00:06:49.600 --> 00:06:52.360
+Define the bare minimum that you expect this skill
+
+139
+00:06:52.360 --> 00:06:54.600
+to always help with and always do it well.
+
+140
+00:06:54.600 --> 00:06:56.080
+And so as you increase
+
+141
+00:06:56.080 --> 00:06:58.160
+or improve the skill or you add more to it,
+
+142
+00:06:58.160 --> 00:07:00.040
+you don't want that old functionality to break, right?
+
+143
+00:07:00.040 --> 00:07:03.600
+So you need to focus on what is the core stuff that should always do well.
+
+144
+00:07:03.640 --> 00:07:04.440
+It's going to handle
+
+145
+00:07:04.440 --> 00:07:07.720
+those other edge cases decently well, and you can update the evals as those
+
+146
+00:07:07.720 --> 00:07:08.960
+come out.
+
+147
+00:07:08.960 --> 00:07:11.240
+Now these are not really case studies.
+
+148
+00:07:11.240 --> 00:07:12.960
+This is not like, hey, you must go do this.
+
+149
+00:07:12.960 --> 00:07:14.360
+This is the way forward.
+
+150
+00:07:14.360 --> 00:07:15.240
+These are really just
+
+151
+00:07:15.240 --> 00:07:19.480
+some patterns we've tried because again, one team is a development shipping team.
+
+152
+00:07:19.480 --> 00:07:22.760
+We have extremely tight deadlines because our executive leadership
+
+153
+00:07:22.760 --> 00:07:23.760
+says you have AI now.
+
+154
+00:07:23.760 --> 00:07:26.440
+You can deliver way more features just as fast, right?
+
+155
+00:07:26.440 --> 00:07:27.640
+That the world we live in.
+
+156
+00:07:27.640 --> 00:07:30.240
+Not quite, but that is the expectation that we live in.
+
+157
+00:07:30.240 --> 00:07:34.360
+So we don't really have time to engineer our workflows day to day, unfortunately.
+
+158
+00:07:34.360 --> 00:07:35.080
+I wish we did.
+
+159
+00:07:35.080 --> 00:07:36.480
+And then our support teams,
+
+160
+00:07:36.480 --> 00:07:40.160
+same thing that under a lot of pressure have high severity cases coming in.
+
+161
+00:07:40.200 --> 00:07:42.400
+You know, I really have to figure out
+
+162
+00:07:42.400 --> 00:07:45.600
+how to spend their time on focusing on the customers and not really
+
+163
+00:07:45.640 --> 00:07:46.840
+optimizing their day to day.
+
+164
+00:07:46.840 --> 00:07:49.720
+So a lot of anecdotal stuff in here, but these are just some patterns
+
+165
+00:07:49.720 --> 00:07:52.320
+I wanted to share that might be useful for you guys.
+
+166
+00:07:53.360 --> 00:07:56.720
+So story number one comes from the support team.
+
+167
+00:07:56.760 --> 00:07:56.960
+Right.
+
+168
+00:07:56.960 --> 00:08:00.720
+And if you have an existing platform of content for humans,
+
+169
+00:08:00.720 --> 00:08:03.360
+how do you take that and make it usable for agents?
+
+170
+00:08:03.360 --> 00:08:05.840
+It's kind of the story.
+
+171
+00:08:05.840 --> 00:08:09.440
+So in our in Cisco TAC, we have a very strong culture
+
+172
+00:08:09.440 --> 00:08:12.240
+around our knowledge base, something we instill in our culture
+
+173
+00:08:12.240 --> 00:08:14.680
+because engineers are constantly shifting out.
+
+174
+00:08:14.680 --> 00:08:16.960
+The real value comes from that experience.
+
+175
+00:08:16.960 --> 00:08:19.520
+I help this customer with this really complicated problem.
+
+176
+00:08:19.520 --> 00:08:21.640
+There's other ones that are definitely going to have the same problem.
+
+177
+00:08:21.640 --> 00:08:22.520
+Let me write that down
+
+178
+00:08:22.520 --> 00:08:25.000
+so the next engineer doesn't have to suffer like I did,
+
+179
+00:08:25.000 --> 00:08:27.320
+and the customer doesn't have to wait as long for a solution.
+
+180
+00:08:27.320 --> 00:08:28.960
+It's just ingrained in our culture.
+
+181
+00:08:28.960 --> 00:08:32.400
+So we really wanted to lean into how do you leverage that which is highly
+
+182
+00:08:32.400 --> 00:08:35.960
+curated, high quality content, but feed it into an agent system?
+
+183
+00:08:36.200 --> 00:08:39.400
+I think some of the first things we tried were just given a tool
+
+184
+00:08:39.400 --> 00:08:42.960
+to search the pull in the docs and let the agent figure it out.
+
+185
+00:08:43.040 --> 00:08:44.440
+Didn't really work so well.
+
+186
+00:08:44.440 --> 00:08:45.800
+You know, there were wins here and there,
+
+187
+00:08:45.800 --> 00:08:48.480
+but there were a lot of hallucinations and stuff that just didn't make sense
+
+188
+00:08:48.480 --> 00:08:52.240
+because there is still stale content in our knowledge based system.
+
+189
+00:08:52.280 --> 00:08:52.440
+Right?
+
+190
+00:08:52.440 --> 00:08:53.880
+Not every article is up to date,
+
+191
+00:08:53.880 --> 00:08:57.600
+so you really need to pay attention to which ones you let the agent consume.
+
+192
+00:08:57.680 --> 00:08:59.360
+So two engineers that have been kind of
+
+193
+00:08:59.360 --> 00:09:01.600
+working on this for two years, a couple of months ago,
+
+194
+00:09:01.600 --> 00:09:04.600
+created a platform that converts our art articles
+
+195
+00:09:04.600 --> 00:09:07.280
+which are kind of handpicked, doesn't just blindly take every article
+
+196
+00:09:07.280 --> 00:09:10.560
+and shove it into this agent system, but high-quality articles
+
+197
+00:09:10.560 --> 00:09:14.280
+that people are actually actively maintaining get converted into skills.
+
+198
+00:09:14.280 --> 00:09:16.880
+And then we build evaluations for that, right?
+
+199
+00:09:16.880 --> 00:09:19.600
+So think customer opens a case.
+
+200
+00:09:19.600 --> 00:09:21.680
+They have a problem description.
+
+201
+00:09:21.680 --> 00:09:23.480
+We go through three weeks of collecting logs
+
+202
+00:09:23.480 --> 00:09:24.840
+and figuring out how to fix the problem.
+
+203
+00:09:24.840 --> 00:09:26.480
+And then finally we fix it. Right.
+
+204
+00:09:26.480 --> 00:09:28.000
+Why did it take three weeks?
+
+205
+00:09:28.000 --> 00:09:31.720
+How can we cut that time down into just going from like description
+
+206
+00:09:31.720 --> 00:09:33.720
+to solution on the first day? Right.
+
+207
+00:09:33.720 --> 00:09:35.720
+And you'll write an article to kind of help with that.
+
+208
+00:09:35.720 --> 00:09:39.000
+And then we give it to our agent so it can kind of automate that even more.
+
+209
+00:09:39.200 --> 00:09:42.200
+Now how many people here have actually written the skill?
+
+210
+00:09:42.400 --> 00:09:44.400
+Everyone. Most hands up. Okay.
+
+211
+00:09:44.400 --> 00:09:46.520
+Now how many people have written those skills?
+
+212
+00:09:46.520 --> 00:09:47.680
+How many write them by hand?
+
+213
+00:09:47.680 --> 00:09:49.640
+Do you write your skills out by hand?
+
+214
+00:09:49.640 --> 00:09:51.800
+All right, a few people stop doing that.
+
+215
+00:09:51.800 --> 00:09:54.600
+The skill is not for you. The skills for your agent.
+
+216
+00:09:54.600 --> 00:09:56.480
+So it's good to have human docs.
+
+217
+00:09:56.480 --> 00:09:59.120
+But skill is for agents, right?
+
+218
+00:09:59.120 --> 00:10:00.000
+It shouldn't.
+
+219
+00:10:00.000 --> 00:10:03.880
+You should not really care what is inside the skill, the context itself.
+
+220
+00:10:03.880 --> 00:10:06.160
+What you should care about is the outcome that comes out of
+
+221
+00:10:06.160 --> 00:10:08.000
+using the skill with the agent.
+
+222
+00:10:08.000 --> 00:10:11.840
+So where your human spends the time, that is your most precious resource
+
+223
+00:10:11.840 --> 00:10:15.640
+as your humans, validating your taste, the quality, what actually matters.
+
+224
+00:10:15.680 --> 00:10:16.600
+That's the eval.
+
+225
+00:10:16.600 --> 00:10:19.120
+And then the initial KB, the stuff in the middle.
+
+226
+00:10:19.120 --> 00:10:20.400
+Let the agent do it for you.
+
+227
+00:10:20.400 --> 00:10:22.120
+Let LLMs do it for you.
+
+228
+00:10:22.120 --> 00:10:25.800
+Even better, if you want a smaller model to do this workflow, let the small model
+
+229
+00:10:25.840 --> 00:10:27.160
+build the skill for itself.
+
+230
+00:10:27.160 --> 00:10:29.400
+Found a lot of anecdotal success in doing that.
+
+231
+00:10:29.400 --> 00:10:31.480
+We're just kind of like, hey, well, this is for you.
+
+232
+00:10:31.480 --> 00:10:33.560
+How do you want to organize this information
+
+233
+00:10:33.560 --> 00:10:35.120
+so you can be more efficient with it?
+
+234
+00:10:35.120 --> 00:10:38.720
+Just put that in a pipeline, have the output quality as an eval,
+
+235
+00:10:38.720 --> 00:10:41.920
+and you can kind of verify if it's working or not based on that.
+
+236
+00:10:42.880 --> 00:10:46.000
+So a lot of people will say wikis over docs go to die.
+
+237
+00:10:46.000 --> 00:10:48.440
+And of course, largely I do agree with that
+
+238
+00:10:48.440 --> 00:10:50.320
+because people just don't really maintain docs.
+
+239
+00:10:50.320 --> 00:10:54.200
+But when you have a strong culture like we do, our docs are not really dying
+
+240
+00:10:54.200 --> 00:10:55.680
+or actually seeing the opposite.
+
+241
+00:10:55.680 --> 00:10:58.120
+Our docs are becoming more important to ground the agents,
+
+242
+00:10:58.120 --> 00:11:02.040
+but what we're seeing is that a lot of people are building a agentic systems
+
+243
+00:11:02.080 --> 00:11:06.120
+that blindly try to use any content, or they'll have agents that build
+
+244
+00:11:06.120 --> 00:11:09.360
+their own memories on supporting stuff, using that, and then the memories drift
+
+245
+00:11:09.360 --> 00:11:12.880
+from the content, and then you end up having some answer come out to a customer.
+
+246
+00:11:12.880 --> 00:11:16.560
+And that's just completely unaligned with the article that it says
+
+247
+00:11:16.560 --> 00:11:19.760
+it uses a source, and then everyone just loses faith in the entire system.
+
+248
+00:11:19.800 --> 00:11:20.000
+Right?
+
+249
+00:11:20.000 --> 00:11:21.560
+And that's the problem we've been struggling with
+
+250
+00:11:21.560 --> 00:11:22.760
+for the last couple of years.
+
+251
+00:11:22.760 --> 00:11:23.560
+So we're trying to figure out
+
+252
+00:11:23.560 --> 00:11:26.720
+how do we keep these more in sync in a way that we can actually trust it.
+
+253
+00:11:26.720 --> 00:11:28.120
+And that's what the system
+
+254
+00:11:28.120 --> 00:11:31.120
+that these engineers built is that when the article changes,
+
+255
+00:11:31.160 --> 00:11:32.360
+we kind of pipeline that, right.
+
+256
+00:11:32.360 --> 00:11:36.000
+Think of like a GitHub action triggering when we update a knowledge base article
+
+257
+00:11:36.040 --> 00:11:40.320
+that goes into a pipeline with an LLM that reviews the changes, determines
+
+258
+00:11:40.320 --> 00:11:44.080
+if it's a minor change, moderate major, and then makes the change for itself
+
+259
+00:11:44.080 --> 00:11:46.960
+to update its skill. And then it runs the evals.
+
+260
+00:11:46.960 --> 00:11:49.120
+If the evals pass, great, everything's good.
+
+261
+00:11:49.120 --> 00:11:51.640
+If it's a minor change, just changing a typo or wording
+
+262
+00:11:51.640 --> 00:11:54.720
+and the evils pass, I don't really need to have my human gate.
+
+263
+00:11:54.720 --> 00:11:57.520
+That new version, just let it automatically release.
+
+264
+00:11:57.520 --> 00:11:59.040
+But if you're doing a more complex
+
+265
+00:11:59.040 --> 00:12:02.040
+change, a major change, maybe you're introducing a new topic.
+
+266
+00:12:02.080 --> 00:12:04.480
+Maybe that's something that you need some more quality control.
+
+267
+00:12:04.480 --> 00:12:06.320
+And that's where you insert your human right.
+
+268
+00:12:06.320 --> 00:12:09.840
+Your humans either go far on the left or far on the right, but in between
+
+269
+00:12:10.000 --> 00:12:13.640
+you should not be wasting your time, should not be caring about a text diff.
+
+270
+00:12:13.680 --> 00:12:15.040
+If your engineers are reviewing
+
+271
+00:12:15.040 --> 00:12:17.640
+text diffs on a skill, you are wasting a lot of time.
+
+272
+00:12:17.640 --> 00:12:20.640
+That is just unnecessary, at least in my experience.
+
+273
+00:12:21.000 --> 00:12:23.680
+So new topic means new eval, right?
+
+274
+00:12:23.680 --> 00:12:25.280
+You need to build a new evaluation.
+
+275
+00:12:25.280 --> 00:12:28.320
+Of course you can let the LM do that, but you need to really tell it what success
+
+276
+00:12:28.320 --> 00:12:31.360
+looks like in order for it to build a good evaluation.
+
+277
+00:12:31.400 --> 00:12:32.160
+Right?
+
+278
+00:12:33.880 --> 00:12:34.240
+Okay.
+
+279
+00:12:34.240 --> 00:12:38.200
+So that story number one, now story number two is a little bit more complex.
+
+280
+00:12:38.200 --> 00:12:40.040
+And it's more probably relatable
+
+281
+00:12:40.040 --> 00:12:42.440
+to everyone in the room because it's developer focused.
+
+282
+00:12:42.440 --> 00:12:46.920
+And so this is a concept of just how do you instill
+
+283
+00:12:46.920 --> 00:12:51.360
+that culture of skill first context engineering into your engineering teams.
+
+284
+00:12:51.360 --> 00:12:53.360
+And that was something that we kind of
+
+285
+00:12:53.360 --> 00:12:55.920
+did on our team building this new agent platform.
+
+286
+00:12:55.920 --> 00:12:58.120
+And so I'm going to kind of share that story here.
+
+287
+00:12:58.120 --> 00:13:02.800
+And so to talk a little bit about the complexity and the environment working in,
+
+288
+00:13:02.880 --> 00:13:05.240
+I want to tell you a little bit about the system we built first.
+
+289
+00:13:05.240 --> 00:13:09.280
+So the one that we released a few weeks ago that I mentioned earlier,
+
+290
+00:13:09.360 --> 00:13:13.240
+this AI native platform, it's a multi-agent orchestration system.
+
+291
+00:13:13.280 --> 00:13:15.160
+Of course, we have a central orchestrator.
+
+292
+00:13:15.160 --> 00:13:17.280
+We don't call it an orchestrator because we're Cisco.
+
+293
+00:13:17.280 --> 00:13:20.040
+It's a router. It's a semantic router, of course. Right.
+
+294
+00:13:20.040 --> 00:13:22.080
+So we have our semantic router.
+
+295
+00:13:22.080 --> 00:13:23.800
+It routes to multiple agents.
+
+296
+00:13:23.800 --> 00:13:26.360
+There are on these eight specialist agents.
+
+297
+00:13:26.360 --> 00:13:27.600
+That's just what we have today.
+
+298
+00:13:27.600 --> 00:13:30.120
+And we're already building ten more of this quarter. Right.
+
+299
+00:13:30.120 --> 00:13:31.560
+And that's constantly growing.
+
+300
+00:13:31.560 --> 00:13:34.000
+So those are owned by different development teams.
+
+301
+00:13:34.000 --> 00:13:35.840
+Some of them are owned by different organizations.
+
+302
+00:13:35.840 --> 00:13:38.360
+But all of this goes into one single platform.
+
+303
+00:13:38.360 --> 00:13:41.200
+So the customer gets one single unified interface.
+
+304
+00:13:41.200 --> 00:13:43.040
+They have different apps and different pages.
+
+305
+00:13:43.040 --> 00:13:44.400
+They can navigate in there.
+
+306
+00:13:44.400 --> 00:13:47.920
+There's whole pipelines and databases behind each of those apps,
+
+307
+00:13:47.920 --> 00:13:49.920
+and each of them comes with their own agent.
+
+308
+00:13:49.920 --> 00:13:53.240
+But we don't expose that kind of complexity to the customer.
+
+309
+00:13:53.280 --> 00:13:54.200
+That would be annoying.
+
+310
+00:13:54.200 --> 00:13:57.320
+They have one AI assistant that they can talk to everywhere.
+
+311
+00:13:57.520 --> 00:13:59.280
+We have AI buttons embedded everywhere.
+
+312
+00:13:59.280 --> 00:14:02.600
+Some are static buttons that are directly routed to an agent to help them.
+
+313
+00:14:02.600 --> 00:14:04.480
+But then we have free form chat as well.
+
+314
+00:14:04.480 --> 00:14:08.600
+So if I'm sitting on the configuration best practice app and I ask it
+
+315
+00:14:08.600 --> 00:14:12.000
+what tack cases I have open that shouldn't go to the configuration agent,
+
+316
+00:14:12.040 --> 00:14:15.080
+it should go to the cases agent and our system works well for that.
+
+317
+00:14:15.400 --> 00:14:17.560
+The only way we were able to ship that with confidence
+
+318
+00:14:17.560 --> 00:14:21.360
+is because we did heavy evaluations, and we have a strong engineering culture
+
+319
+00:14:21.360 --> 00:14:23.520
+around that now that we had to build. Right.
+
+320
+00:14:23.520 --> 00:14:26.600
+And so that was something that I was actually tasked
+
+321
+00:14:26.600 --> 00:14:29.240
+with, was figuring out how do we evaluate this stuff?
+
+322
+00:14:29.240 --> 00:14:32.680
+I got the goal of saying, hey, you're going to be the give the go or no, go on.
+
+323
+00:14:32.680 --> 00:14:34.760
+If this is actually going to be good enough to ship,
+
+324
+00:14:34.760 --> 00:14:37.280
+because I think a lot of people are stuck in the sea phase.
+
+325
+00:14:37.280 --> 00:14:38.600
+So we need to be very confident
+
+326
+00:14:38.600 --> 00:14:41.080
+that we're not going to release something that's just terrible.
+
+327
+00:14:41.080 --> 00:14:43.600
+We've seen all the disasters, people
+
+328
+00:14:43.600 --> 00:14:45.360
+having agents sell them a car for a dollar, right.
+
+329
+00:14:45.360 --> 00:14:49.040
+We don't need that bad PR we really needed to be confident about this.
+
+330
+00:14:49.240 --> 00:14:52.800
+So I kind of came up with this framework for testing, right?
+
+331
+00:14:52.880 --> 00:14:55.000
+We used a lot of lang chain and lang graph and Lang
+
+332
+00:14:55.000 --> 00:14:58.440
+Smith for observing our agents, which has a good eval culture.
+
+333
+00:14:58.440 --> 00:15:02.760
+But the typical way that you create evals and data sets today
+
+334
+00:15:02.800 --> 00:15:04.600
+isn't really aligned with what I wanted,
+
+335
+00:15:04.600 --> 00:15:07.600
+because I really wanted to be able to compare all the environments.
+
+336
+00:15:07.640 --> 00:15:08.040
+Right.
+
+337
+00:15:08.040 --> 00:15:12.520
+So when you build a agentic platform, your signals really come from your traces.
+
+338
+00:15:12.520 --> 00:15:15.200
+You should ship early, monitor it, and then adjust
+
+339
+00:15:15.200 --> 00:15:17.720
+based on what you're observing, how people interact with it.
+
+340
+00:15:17.720 --> 00:15:20.440
+Because when you have a free form chat, people can ask anything, right?
+
+341
+00:15:20.440 --> 00:15:22.240
+So you can't really predict what your people are going to.
+
+342
+00:15:22.240 --> 00:15:24.880
+The people are going to ask, kind of got to let them do it right.
+
+343
+00:15:24.880 --> 00:15:27.880
+So you're going to be constantly pulling evals from production data
+
+344
+00:15:27.880 --> 00:15:30.320
+and then figuring out, oh, that's a question they asked.
+
+345
+00:15:30.320 --> 00:15:33.600
+Did not go well, one to the wrong agent, even if it went to the right agent.
+
+346
+00:15:33.640 --> 00:15:35.000
+Maybe that gave a bad answer.
+
+347
+00:15:35.000 --> 00:15:38.440
+I want to build an evaluation for that because it's something we want to support.
+
+348
+00:15:38.560 --> 00:15:42.120
+Now, if I pull in this new eval and I run it on my local laptop
+
+349
+00:15:42.120 --> 00:15:46.320
+and I get it all working, okay, great, that likely resulted in some
+
+350
+00:15:46.360 --> 00:15:50.240
+sort of prompt change, some sort of tool update, whatever it might be.
+
+351
+00:15:50.280 --> 00:15:52.880
+What else did that break to fix this one thing?
+
+352
+00:15:52.880 --> 00:15:54.480
+That's the loop we constantly see.
+
+353
+00:15:54.480 --> 00:15:55.920
+I'm chasing this current bug.
+
+354
+00:15:55.920 --> 00:15:58.240
+I don't even know what that breaks when I change the prompt.
+
+355
+00:15:58.240 --> 00:15:59.720
+Without emails, you won't. Right?
+
+356
+00:15:59.720 --> 00:16:01.480
+And so I had to figure out, okay,
+
+357
+00:16:01.480 --> 00:16:04.440
+how do we actually do this more unit test style, right?
+
+358
+00:16:04.440 --> 00:16:07.040
+As an enterprise, if you've ever scaled up software unit
+
+359
+00:16:07.040 --> 00:16:08.600
+testing is absolutely essential.
+
+360
+00:16:08.600 --> 00:16:10.920
+Evals are the same in this world of the agentic.
+
+361
+00:16:10.920 --> 00:16:12.600
+They are the unit tests for your agents.
+
+362
+00:16:12.600 --> 00:16:17.520
+And so building this concept simple things I wanted basic data set schemas.
+
+363
+00:16:17.520 --> 00:16:23.200
+Everyone to use that same baseline schema and and storing that with a repository.
+
+364
+00:16:23.440 --> 00:16:26.120
+So the data set stored with the code.
+
+365
+00:16:26.120 --> 00:16:29.080
+Now typically a data set is in JSON format right.
+
+366
+00:16:29.080 --> 00:16:32.320
+And usually a JSON is just a single line file.
+
+367
+00:16:32.560 --> 00:16:35.440
+So when an agent reads it, if you have 1000 examples in there, it's
+
+368
+00:16:35.440 --> 00:16:38.040
+just this massive context that it explodes.
+
+369
+00:16:38.040 --> 00:16:40.280
+So immediately I said, okay, we need to switch.
+
+370
+00:16:40.280 --> 00:16:42.800
+Everyone needs to be using JSON, L instead of JSON.
+
+371
+00:16:42.800 --> 00:16:46.080
+So then each example for each eval is an individual line.
+
+372
+00:16:46.120 --> 00:16:49.680
+Your coding agent can make more precise edits on the data set.
+
+373
+00:16:49.760 --> 00:16:51.720
+Because again, we're not hand curating data sets.
+
+374
+00:16:51.720 --> 00:16:53.320
+We absolutely don't have time for that.
+
+375
+00:16:53.320 --> 00:16:56.400
+Everyone has a coding agent and it's basically updating the data set.
+
+376
+00:16:56.440 --> 00:16:58.040
+We need to make that more efficient.
+
+377
+00:16:58.040 --> 00:17:00.680
+This is something I've learned that I would instill into this skill.
+
+378
+00:17:00.680 --> 00:17:04.440
+And I'm going to talk about I wrote a script so this can work
+
+379
+00:17:04.440 --> 00:17:07.600
+basically into your local laptop dev staging the same exact
+
+380
+00:17:08.000 --> 00:17:11.560
+same exact code works in any environment because it's very simple.
+
+381
+00:17:11.600 --> 00:17:15.800
+You know, traditionally when you have a unit test, you import the function,
+
+382
+00:17:15.880 --> 00:17:19.040
+you pass in whatever input you're testing, and then you verify the output.
+
+383
+00:17:19.120 --> 00:17:19.760
+Right.
+
+384
+00:17:19.760 --> 00:17:23.600
+Agents are no different when you have this kind of black box evaluation.
+
+385
+00:17:23.600 --> 00:17:25.160
+You can do the exact same thing.
+
+386
+00:17:25.160 --> 00:17:28.720
+However, what happened in the middle you might actually care about as well.
+
+387
+00:17:28.760 --> 00:17:29.080
+Right.
+
+388
+00:17:29.080 --> 00:17:31.640
+And so you can actually observe that stuff in a platform
+
+389
+00:17:31.640 --> 00:17:34.640
+like Lang Smith or any system observability system.
+
+390
+00:17:34.640 --> 00:17:36.800
+That's what our eval code actually runs against.
+
+391
+00:17:36.800 --> 00:17:38.200
+So we don't import right.
+
+392
+00:17:38.200 --> 00:17:40.760
+Like a Python import don't work like that.
+
+393
+00:17:40.760 --> 00:17:42.440
+They get an endpoint. Right.
+
+394
+00:17:42.440 --> 00:17:45.960
+And we point our evaluation code at the endpoint to invoke the agent.
+
+395
+00:17:46.040 --> 00:17:47.200
+Answer comes back out.
+
+396
+00:17:47.200 --> 00:17:49.040
+We check the observability system.
+
+397
+00:17:49.040 --> 00:17:52.560
+Did it call the tools we expected it to call what the right parameters did it
+
+398
+00:17:52.800 --> 00:17:56.280
+spend the roughly the amount of tokens that we expected it to spend?
+
+399
+00:17:56.320 --> 00:17:58.880
+What was the latency on this base when we ran it last time? Right.
+
+400
+00:17:58.880 --> 00:18:01.920
+You got to have a baseline for all this stuff built into your evals.
+
+401
+00:18:02.000 --> 00:18:04.520
+So all of this is what I'm trying to basically teach
+
+402
+00:18:04.520 --> 00:18:09.000
+all of my globally distributed team in just basically have like a week or two
+
+403
+00:18:09.040 --> 00:18:12.000
+to basically introduce this concept to eight different teams
+
+404
+00:18:12.000 --> 00:18:13.760
+distributed around the world.
+
+405
+00:18:13.760 --> 00:18:15.120
+What options do I have?
+
+406
+00:18:15.120 --> 00:18:18.680
+Get one meeting and get everyone on it that they can just not pay attention to.
+
+407
+00:18:18.720 --> 00:18:21.040
+I mean, let's be honest, what meeting
+
+408
+00:18:21.040 --> 00:18:24.720
+is anyone going to pay attention to for an hour of me at them about testing?
+
+409
+00:18:24.760 --> 00:18:26.400
+No developer cares about this.
+
+410
+00:18:26.400 --> 00:18:28.360
+It's another complex problem.
+
+411
+00:18:28.360 --> 00:18:30.080
+Texting testing is not exciting.
+
+412
+00:18:30.080 --> 00:18:31.240
+It's not exciting work.
+
+413
+00:18:31.240 --> 00:18:34.240
+Engineers don't get excited about it, so you got to do it for them
+
+414
+00:18:34.240 --> 00:18:35.320
+as much as you can.
+
+415
+00:18:36.520 --> 00:18:38.000
+How do you plug it into CI?
+
+416
+00:18:38.000 --> 00:18:40.600
+How do you make it environment aware right.
+
+417
+00:18:40.600 --> 00:18:42.320
+How do we do the data set schema.
+
+418
+00:18:42.320 --> 00:18:44.800
+All these things we want to consistency around with?
+
+419
+00:18:44.800 --> 00:18:47.400
+Again, hundreds of engineers distributed around the world.
+
+420
+00:18:47.400 --> 00:18:49.760
+So my thought was okay meeting is not going to work.
+
+421
+00:18:49.760 --> 00:18:52.600
+We have a little bit of time, but everyone has a coding agent.
+
+422
+00:18:52.600 --> 00:18:56.320
+And these development teams, the actual developers, why don't we make a skill?
+
+423
+00:18:56.320 --> 00:18:58.520
+And then I can just have everyone install the skill
+
+424
+00:18:58.520 --> 00:19:00.360
+and the agent can build the evals for them.
+
+425
+00:19:00.360 --> 00:19:04.000
+So that was basically the theory and ended up working quite well.
+
+426
+00:19:04.000 --> 00:19:06.760
+So the plugin that I built has our basic skill.
+
+427
+00:19:06.760 --> 00:19:12.000
+MD has a bunch of examples scripts, example scripts, example evaluations.
+
+428
+00:19:12.040 --> 00:19:16.200
+Basically, I spent a lot of time doing this really well with one single agent
+
+429
+00:19:16.200 --> 00:19:18.240
+to basically figure out all these good patterns.
+
+430
+00:19:18.240 --> 00:19:21.240
+And then I had my agent to fill that down into a skill,
+
+431
+00:19:21.280 --> 00:19:24.520
+basically explaining, hey, everything that we just created here,
+
+432
+00:19:24.560 --> 00:19:26.480
+can you make a skill for yourself,
+
+433
+00:19:26.480 --> 00:19:29.960
+for other people with coding agents to be able to do the exact same thing?
+
+434
+00:19:29.960 --> 00:19:31.600
+And so that's what came out.
+
+435
+00:19:31.600 --> 00:19:33.520
+The agent kind of built the skill for me.
+
+436
+00:19:33.520 --> 00:19:35.480
+We iterated it with versions, right.
+
+437
+00:19:35.480 --> 00:19:37.320
+And I shared it slowly with one team,
+
+438
+00:19:37.320 --> 00:19:41.000
+got some feedback on day one, day two and other team day three.
+
+439
+00:19:41.000 --> 00:19:42.000
+Everybody. Right.
+
+440
+00:19:42.000 --> 00:19:44.120
+And so teams just kind of installed it.
+
+441
+00:19:44.120 --> 00:19:45.080
+They asked their coding agent,
+
+442
+00:19:45.080 --> 00:19:46.600
+hey, do this thing that I don't care about that
+
+443
+00:19:46.600 --> 00:19:48.800
+John wants me to do, and I have a job to do
+
+444
+00:19:48.800 --> 00:19:51.880
+by the end of the week for right there agent is kind of did it for them.
+
+445
+00:19:51.880 --> 00:19:54.080
+And by the end of the week, every agent team
+
+446
+00:19:54.080 --> 00:19:59.920
+kind of had a data set done the same way, similar metrics right as before this,
+
+447
+00:20:00.120 --> 00:20:03.440
+if we just told eight teams to go build evaluations for their agents,
+
+448
+00:20:03.520 --> 00:20:04.760
+I mean, what do you think would have happened?
+
+449
+00:20:04.760 --> 00:20:07.280
+Right. We would have had massive inconsistency.
+
+450
+00:20:07.280 --> 00:20:09.600
+If I want to go help some other team, I understand.
+
+451
+00:20:09.600 --> 00:20:12.320
+Oh, their metric 0 to 10 and ten means good.
+
+452
+00:20:12.320 --> 00:20:16.040
+This team did 0 to 5 and five means bad, and this team did 0 to 1.
+
+453
+00:20:16.080 --> 00:20:17.320
+Like that is just something
+
+454
+00:20:17.320 --> 00:20:20.480
+we have to speak the same language and engineered towards the same goal.
+
+455
+00:20:20.480 --> 00:20:22.560
+And a skill can really help you kind of do that.
+
+456
+00:20:22.560 --> 00:20:26.080
+So that's what I really wanted everyone to contribute to this framework
+
+457
+00:20:26.080 --> 00:20:28.880
+and we install it as a skill, we version it and everyone
+
+458
+00:20:28.880 --> 00:20:30.720
+kind of shipped it together.
+
+459
+00:20:30.720 --> 00:20:33.520
+So that was essentially the theory and what it worked.
+
+460
+00:20:33.520 --> 00:20:37.360
+There was one problem that happened is that the management
+
+461
+00:20:37.360 --> 00:20:40.640
+would then come to me, my boss or whoever, and they would say, hey,
+
+462
+00:20:40.680 --> 00:20:43.240
+what's the update on that evaluation framework?
+
+463
+00:20:43.240 --> 00:20:44.200
+So-and-so said they liked it.
+
+464
+00:20:44.200 --> 00:20:45.920
+Can you give me can you show me what you did?
+
+465
+00:20:45.920 --> 00:20:47.800
+And I was like, oh yeah, you can just ask your coding.
+
+466
+00:20:47.800 --> 00:20:50.680
+A you don't have one of those because you're a manager.
+
+467
+00:20:50.680 --> 00:20:52.240
+So that was a problem.
+
+468
+00:20:52.240 --> 00:20:54.320
+Immediately I was like, okay, there's still a gap here.
+
+469
+00:20:54.320 --> 00:20:56.840
+But I wanted a very simple solution for this because again,
+
+470
+00:20:56.840 --> 00:21:00.320
+I don't my immediate reaction or anyone's might be right.
+
+471
+00:21:00.440 --> 00:21:02.480
+Please confluence wiki, whatever.
+
+472
+00:21:02.480 --> 00:21:05.480
+I'll go put a document that explains this eval framework that I built,
+
+473
+00:21:05.480 --> 00:21:07.520
+and then I'll never update it and it'll drift right.
+
+474
+00:21:07.520 --> 00:21:08.960
+So I didn't want that.
+
+475
+00:21:08.960 --> 00:21:12.760
+So the concept is really just everything is in the repository.
+
+476
+00:21:12.800 --> 00:21:15.480
+The skill is obviously backed by gate. It's in a repo.
+
+477
+00:21:15.480 --> 00:21:17.040
+Publish it to a registry like Tessl.
+
+478
+00:21:17.040 --> 00:21:20.720
+But you're you maintain it in a git repository that's version controlled.
+
+479
+00:21:20.720 --> 00:21:23.000
+And you have a skill that empty for an agent.
+
+480
+00:21:23.000 --> 00:21:26.200
+And then you have a README.md for a human right.
+
+481
+00:21:26.280 --> 00:21:27.120
+Very simple.
+
+482
+00:21:27.120 --> 00:21:30.120
+You can use an AI coding agent to kind of update both, but you use
+
+483
+00:21:30.120 --> 00:21:33.160
+the human kind of just validating the readme and the skills for the agent.
+
+484
+00:21:33.160 --> 00:21:34.960
+And you have evals that make sure that works right.
+
+485
+00:21:34.960 --> 00:21:37.760
+But not everyone gets on git either.
+
+486
+00:21:37.760 --> 00:21:39.360
+A lot of our managers are not even in git.
+
+487
+00:21:39.360 --> 00:21:42.000
+They operate solely in like Jira and confluence.
+
+488
+00:21:42.000 --> 00:21:46.400
+So I can't explain to 100 managers go and go make an account on GitHub.
+
+489
+00:21:46.400 --> 00:21:48.920
+And now you got to put this in confluence.
+
+490
+00:21:48.920 --> 00:21:51.240
+So there's there's really cool open source tools.
+
+491
+00:21:51.240 --> 00:21:54.560
+You can build your own script to basically convert that readme
+
+492
+00:21:54.560 --> 00:21:57.800
+that's in the project directly to just ship that to confluence.
+
+493
+00:21:57.840 --> 00:21:58.040
+Right.
+
+494
+00:21:58.040 --> 00:22:01.280
+You make a doc, think hashtag one and markdown becomes H1.
+
+495
+00:22:01.520 --> 00:22:04.560
+It's a very simple, very deterministic conversion.
+
+496
+00:22:04.600 --> 00:22:06.400
+Don't have an LLM, just update confluence
+
+497
+00:22:06.400 --> 00:22:08.840
+I mean you can do that too, but it's kind of token heavy
+
+498
+00:22:08.840 --> 00:22:11.200
+just to have your agent write a deterministic script to
+
+499
+00:22:11.200 --> 00:22:15.320
+sync that markdown into a pretty HTML file that everyone in that other system uses.
+
+500
+00:22:15.360 --> 00:22:16.960
+And that was it. And that was all I did.
+
+501
+00:22:16.960 --> 00:22:19.000
+So now when someone asked me for, hey,
+
+502
+00:22:19.000 --> 00:22:20.960
+can you tell me about that agent framework or I,
+
+503
+00:22:20.960 --> 00:22:24.880
+they just ping me on WebEx and ask me, where can I get information about this?
+
+504
+00:22:24.920 --> 00:22:28.720
+I send them just a link to that confluence doc, which is a direct
+
+505
+00:22:28.720 --> 00:22:30.760
+1 to 1 map of the me from the repo.
+
+506
+00:22:30.760 --> 00:22:31.880
+And so there's no drift.
+
+507
+00:22:31.880 --> 00:22:34.440
+So what my agents are reading, what their managers are reading
+
+508
+00:22:34.440 --> 00:22:37.120
+is all the same content and it's all maintained in one place.
+
+509
+00:22:37.120 --> 00:22:39.920
+And that was really just a very productive unlock.
+
+510
+00:22:39.920 --> 00:22:41.560
+And it worked really well.
+
+511
+00:22:41.560 --> 00:22:44.320
+And so the cultural shift that I really have to
+
+512
+00:22:44.320 --> 00:22:47.120
+instill in my team was asking first, is this a skill?
+
+513
+00:22:47.120 --> 00:22:47.520
+Right.
+
+514
+00:22:47.520 --> 00:22:51.080
+So someone asks WebEx message like, hey,
+
+515
+00:22:51.240 --> 00:22:54.200
+new engineers onboarding today, where's the DevOps information?
+
+516
+00:22:54.200 --> 00:22:56.760
+How do I get access to the Kubernetes cluster? Right.
+
+517
+00:22:56.760 --> 00:22:59.000
+It's not really that's that is sometimes the question.
+
+518
+00:22:59.000 --> 00:23:00.680
+And when I see that I say no, no, no, no, no.
+
+519
+00:23:00.680 --> 00:23:03.000
+Go ask do we have a skill that explains this
+
+520
+00:23:03.000 --> 00:23:06.360
+so I can install it in my agent that needs to become the default reaction.
+
+521
+00:23:06.400 --> 00:23:07.680
+Right. And that's a cultural shift.
+
+522
+00:23:07.680 --> 00:23:08.120
+You have to
+
+523
+00:23:08.120 --> 00:23:12.520
+actually intentionally kind of engineer and kind of distill down to your team.
+
+524
+00:23:12.680 --> 00:23:14.040
+And so that's kind of our default
+
+525
+00:23:14.040 --> 00:23:17.240
+now that we're operating at is like, hey, does anyone have a skill for this?
+
+526
+00:23:17.280 --> 00:23:20.160
+If not, we create one together and we maintain it together.
+
+527
+00:23:20.160 --> 00:23:24.520
+Again, I don't want 15 engineers creating 15 skills for the same thing,
+
+528
+00:23:24.560 --> 00:23:27.840
+especially with this world of the token budget becoming a problem.
+
+529
+00:23:27.920 --> 00:23:30.200
+That's just extremely wasteful engineering, right?
+
+530
+00:23:30.200 --> 00:23:32.360
+We should all be trying to share when we can.
+
+531
+00:23:32.360 --> 00:23:33.360
+We have coding agents.
+
+532
+00:23:33.360 --> 00:23:33.960
+There's no reason
+
+533
+00:23:33.960 --> 00:23:37.240
+that we can't really all work together and have our agents maintain it.
+
+534
+00:23:37.280 --> 00:23:39.960
+As long as we have evals that define what the behavior should be.
+
+535
+00:23:39.960 --> 00:23:42.040
+This is actually much easier than it sounds.
+
+536
+00:23:43.320 --> 00:23:43.600
+Okay,
+
+537
+00:23:43.600 --> 00:23:46.560
+so what do you do when you go back to work Monday or maybe tomorrow?
+
+538
+00:23:46.560 --> 00:23:47.040
+Whatever.
+
+539
+00:23:47.040 --> 00:23:48.480
+Least me, I'm going back Monday.
+
+540
+00:23:48.480 --> 00:23:50.880
+But you want to just start small.
+
+541
+00:23:50.880 --> 00:23:53.880
+You don't need to go build some crazy robust platform like we did
+
+542
+00:23:53.880 --> 00:23:56.520
+that that came from like two years of us beating our head off a wall, right.
+
+543
+00:23:56.520 --> 00:23:58.680
+So really wanted something more robust.
+
+544
+00:23:58.680 --> 00:24:00.480
+But you don't have to start there.
+
+545
+00:24:00.480 --> 00:24:01.600
+Start with one workflow,
+
+546
+00:24:01.600 --> 00:24:03.800
+one concept, one thing that you find yourself
+
+547
+00:24:03.800 --> 00:24:04.480
+explaining over
+
+548
+00:24:04.480 --> 00:24:07.680
+and over to different audiences and just turn that into a skill
+
+549
+00:24:07.720 --> 00:24:09.280
+or a package, whatever you want to call it.
+
+550
+00:24:09.280 --> 00:24:11.320
+But really, at the end of the day, an agent skill
+
+551
+00:24:11.320 --> 00:24:14.400
+and really just give thought to, okay, who are the audiences?
+
+552
+00:24:14.400 --> 00:24:16.240
+What platforms are they operate on?
+
+553
+00:24:16.240 --> 00:24:20.600
+Can I maintain the Readme here and sync to those registries or whatever it is?
+
+554
+00:24:20.640 --> 00:24:22.560
+That should be kind of your objective.
+
+555
+00:24:22.560 --> 00:24:24.320
+Add evaluations.
+
+556
+00:24:24.320 --> 00:24:24.880
+That is key.
+
+557
+00:24:24.880 --> 00:24:26.960
+If you don't do that, it's just going to fall apart.
+
+558
+00:24:26.960 --> 00:24:29.080
+So make sure you define the bare minimum.
+
+559
+00:24:29.080 --> 00:24:31.760
+What do I expect this skill to actually help people with?
+
+560
+00:24:31.760 --> 00:24:34.280
+And how do I actually validate that? That's it.
+
+561
+00:24:34.280 --> 00:24:35.840
+Just give a little thought to that up front.
+
+562
+00:24:35.840 --> 00:24:38.920
+It'll go a long way and you can kind of compound on that over time.
+
+563
+00:24:39.200 --> 00:24:41.040
+And then of course start sharing it.
+
+564
+00:24:41.040 --> 00:24:44.640
+But you don't want to just share, you know, with everyone right away.
+
+565
+00:24:44.680 --> 00:24:46.800
+You kind of use it yourself first.
+
+566
+00:24:46.800 --> 00:24:48.680
+This is like the 0.0.
+
+567
+00:24:48.680 --> 00:24:50.040
+x version of the context, right?
+
+568
+00:24:50.040 --> 00:24:53.800
+You really do want to kind of semantically version your skills and your context
+
+569
+00:24:53.840 --> 00:24:56.200
+to give signal to your engineers consuming it. Right?
+
+570
+00:24:56.200 --> 00:24:59.680
+Because if I go look at a skill and it's version 1.0, I expect it to do
+
+571
+00:24:59.720 --> 00:25:02.760
+exactly what it's supposed to do on the first try with almost no friction.
+
+572
+00:25:02.800 --> 00:25:03.120
+Right?
+
+573
+00:25:03.120 --> 00:25:05.840
+And if it doesn't do that, you've lost my trust, right?
+
+574
+00:25:05.840 --> 00:25:08.080
+So signify that with your versioning.
+
+575
+00:25:08.080 --> 00:25:10.200
+How mature is that actually right.
+
+576
+00:25:10.200 --> 00:25:13.600
+So start with version zero zero, share it with a few, get some feedback.
+
+577
+00:25:13.640 --> 00:25:14.240
+Iterate.
+
+578
+00:25:14.240 --> 00:25:17.560
+Once it's becoming a little more stable, maybe zero dot x, right?
+
+579
+00:25:17.600 --> 00:25:21.240
+And then finally, once you've shared it with a lot more people and it's regularly
+
+580
+00:25:21.280 --> 00:25:23.320
+like people are like, man, this is working great for me.
+
+581
+00:25:23.320 --> 00:25:25.520
+That's a good signal to move it to version one, right?
+
+582
+00:25:25.520 --> 00:25:28.120
+And then that gives everyone else a signal, hey, you can consume this.
+
+583
+00:25:28.120 --> 00:25:29.080
+Here's what the skill does.
+
+584
+00:25:29.080 --> 00:25:32.240
+I promise it'll work because it's battle tested and evaluated.
+
+585
+00:25:32.720 --> 00:25:37.000
+So takeaways here again our agent architectures they change every day.
+
+586
+00:25:37.000 --> 00:25:39.040
+You'll have a new one next week. Next month.
+
+587
+00:25:39.040 --> 00:25:40.200
+You really can't predict that.
+
+588
+00:25:40.200 --> 00:25:42.720
+But your context is your durable investment right?
+
+589
+00:25:42.720 --> 00:25:47.520
+Really spend time on how you contacts engineer and maintain things in one place,
+
+590
+00:25:47.520 --> 00:25:50.520
+but distribute that to multiple systems to keep them in sync.
+
+591
+00:25:50.560 --> 00:25:52.200
+That's really where you want to spend your time
+
+592
+00:25:52.200 --> 00:25:55.200
+and just build your pipelines today, because everything else is definitely
+
+593
+00:25:55.200 --> 00:25:56.600
+going to change on you anyway.
+
+594
+00:25:56.600 --> 00:25:59.600
+So hopefully this was useful information for everyone.
+
+595
+00:25:59.920 --> 00:26:02.480
+And thank you for listening to me yet for a while.
+
+596
+00:26:07.320 --> 00:26:08.040
+Thank you.
+
+597
+00:26:08.040 --> 00:26:10.840
+Thank you very much. We have a few minutes.
+
+598
+00:26:10.840 --> 00:26:14.040
+If anyone has any questions, shout
+
+599
+00:26:14.240 --> 00:26:17.200
+and I'll, I don't know, not throw the microphone at you.
+
+600
+00:26:17.200 --> 00:26:20.200
+Because health and safety and all that.
+
+601
+00:26:21.800 --> 00:26:22.920
+Hi. Thanks for the talk.
+
+602
+00:26:22.920 --> 00:26:27.840
+Are the skill and the MD that come out very different?
+
+603
+00:26:28.520 --> 00:26:29.720
+To be honest, there are probably like
+
+604
+00:26:29.720 --> 00:26:33.880
+80% similar in most cases the Readme and skill looked very similar.
+
+605
+00:26:33.920 --> 00:26:36.040
+I'll usually start with the skill for the agent
+
+606
+00:26:36.040 --> 00:26:38.240
+and I'll say, can you document this and read me?
+
+607
+00:26:38.240 --> 00:26:39.080
+And if I have questions,
+
+608
+00:26:39.080 --> 00:26:43.160
+I kind of updated, but honestly they're very, very similar, which feels wasteful.
+
+609
+00:26:43.160 --> 00:26:46.240
+But again the LLMs maintaining it, so it's not really like that
+
+610
+00:26:46.240 --> 00:26:47.320
+much extra to maintain.
+
+611
+00:26:47.320 --> 00:26:49.520
+But they're very similar in my experience.
+
+612
+00:26:50.560 --> 00:26:51.360
+Hi there.
+
+613
+00:26:51.360 --> 00:26:54.320
+Nice to talk. I'm just right here.
+
+614
+00:26:54.320 --> 00:26:58.160
+So my question is around when you scale kind of like
+
+615
+00:26:58.200 --> 00:27:00.760
+having like a mutual scales I think you've been this journey
+
+616
+00:27:00.760 --> 00:27:03.760
+like starting with a few scales, but now I'm assuming that you have maybe
+
+617
+00:27:03.800 --> 00:27:05.400
+hundreds of scales.
+
+618
+00:27:05.400 --> 00:27:09.480
+How would you like like orchestrate and make sure, like the end user
+
+619
+00:27:09.480 --> 00:27:12.600
+find the right scale when it is needed, when it is distributed, as you said.
+
+620
+00:27:13.560 --> 00:27:15.640
+You're asking how to maintain like or
+
+621
+00:27:15.640 --> 00:27:18.840
+kind of prevent like skill explosion, right?
+
+622
+00:27:18.920 --> 00:27:20.480
+Is that kind of the question?
+
+623
+00:27:20.480 --> 00:27:22.720
+I don't know if I follow it.
+
+624
+00:27:22.720 --> 00:27:26.840
+So the status you already in or you would get to it, you would have mutual skills.
+
+625
+00:27:26.880 --> 00:27:32.000
+And then the end user is looking to do one task and require like 1 or 2 skills.
+
+626
+00:27:32.000 --> 00:27:36.120
+How do you orchestrate that end user to pull the right skill when it is needed?
+
+627
+00:27:36.160 --> 00:27:37.320
+Oh, right. So
+
+628
+00:27:38.400 --> 00:27:39.760
+I mean, we we
+
+629
+00:27:39.760 --> 00:27:42.880
+for our development team we're actually using Tessl, which kind of helps with that.
+
+630
+00:27:42.880 --> 00:27:45.280
+And they have kind of a server that helps you search your skills.
+
+631
+00:27:45.280 --> 00:27:49.040
+But putting figuring out how to index your skills
+
+632
+00:27:49.040 --> 00:27:51.960
+so they're searchable by an agent generally is the answer.
+
+633
+00:27:51.960 --> 00:27:55.720
+How you do that kind of depends on what what your tooling is being used.
+
+634
+00:27:55.720 --> 00:27:59.640
+But you can what we do, you can put them all in one GitHub repository,
+
+635
+00:27:59.680 --> 00:28:01.520
+and then you can have your agent have access to that,
+
+636
+00:28:01.520 --> 00:28:03.400
+and then it can just grep for the skills that it needs.
+
+637
+00:28:03.400 --> 00:28:06.400
+I mean that's a simple solution you can do today with almost no effort.
+
+638
+00:28:06.440 --> 00:28:06.680
+Right.
+
+639
+00:28:06.680 --> 00:28:09.120
+But if you need something more robust then you have to kind of look
+
+640
+00:28:09.120 --> 00:28:10.560
+to more robust systems.
+
+641
+00:28:12.080 --> 00:28:13.120
+Okay.
+
+642
+00:28:13.120 --> 00:28:14.160
+You actually just answer.
+
+643
+00:28:14.160 --> 00:28:18.480
+My first question is do you store your skills in a GitHub repo or something?
+
+644
+00:28:18.520 --> 00:28:20.680
+And rather than per project.
+
+645
+00:28:20.680 --> 00:28:21.360
+And then
+
+646
+00:28:21.360 --> 00:28:25.080
+I guess it sounds like it's a GitHub repo, like separate from the projects.
+
+647
+00:28:25.120 --> 00:28:26.760
+Correct? Yes, correct.
+
+648
+00:28:26.760 --> 00:28:30.320
+We have like each engineering team kind of has their own skills repo,
+
+649
+00:28:30.400 --> 00:28:31.400
+you know, and I'll give access to that.
+
+650
+00:28:31.400 --> 00:28:34.080
+But yes, we have one repo for like all of our team skills.
+
+651
+00:28:34.080 --> 00:28:35.640
+And so there. Sorry.
+
+652
+00:28:35.640 --> 00:28:39.040
+How do you go about evaluating like when a skill needs to get updated or something.
+
+653
+00:28:39.040 --> 00:28:42.800
+Is that is that then become a few engineers all coordinate
+
+654
+00:28:42.800 --> 00:28:45.720
+or does everyone free to like put in a pull request to update the skill?
+
+655
+00:28:45.720 --> 00:28:48.960
+Because I mean, obviously you don't want everyone's drift,
+
+656
+00:28:48.960 --> 00:28:52.440
+you know, influencing the context for all of your engineers.
+
+657
+00:28:52.640 --> 00:28:53.000
+Yeah.
+
+658
+00:28:53.000 --> 00:28:55.760
+So we evaluations are honestly the answer to that.
+
+659
+00:28:55.760 --> 00:28:57.960
+We do let anyone submit PRS to the skills.
+
+660
+00:28:57.960 --> 00:29:00.680
+We treat it just like we would a shared library. Right?
+
+661
+00:29:00.680 --> 00:29:03.240
+So if you go in with that mentality, this is a shared library.
+
+662
+00:29:03.240 --> 00:29:05.600
+You cannot break functionality for other people.
+
+663
+00:29:05.600 --> 00:29:08.440
+How do you validate that the evaluations need to cover it? Right.
+
+664
+00:29:08.440 --> 00:29:10.720
+So if there's something in the skill that you care about,
+
+665
+00:29:10.720 --> 00:29:12.120
+build an evaluation for it.
+
+666
+00:29:12.120 --> 00:29:14.840
+Every time you update the skill, make sure that evaluation passes.
+
+667
+00:29:14.840 --> 00:29:18.800
+It's not any different than a shared library with unit testing.
+
+668
+00:29:18.840 --> 00:29:21.400
+And if you think of it that way, it is. It is that simple.
+
+669
+00:29:21.400 --> 00:29:22.640
+But you have to give a little more thought
+
+670
+00:29:22.640 --> 00:29:24.400
+to how you build your evals, because it's just
+
+671
+00:29:24.400 --> 00:29:27.400
+a little more complicated with the non-deterministic nature of LLMs.
+
+672
+00:29:27.400 --> 00:29:31.000
+But conceptually it's the same. Wonderful.
+
+673
+00:29:31.000 --> 00:29:33.720
+I think there's no more questions unless there's any last minute
+
+674
+00:29:33.720 --> 00:29:35.400
+one down the front here. Thank you.
+
+675
+00:29:37.280 --> 00:29:39.720
+One minute. Go.
+
+676
+00:29:39.720 --> 00:29:40.360
+Thank you for the talk.
+
+677
+00:29:40.360 --> 00:29:41.240
+That was really good.
+
+678
+00:29:41.240 --> 00:29:44.520
+Is there any way we can go to read more into evals?
+
+679
+00:29:44.560 --> 00:29:48.880
+I presume no one is that one we can use today, or does that end up
+
+680
+00:29:48.880 --> 00:29:50.880
+just being a skill you write, for example?
+
+681
+00:29:50.880 --> 00:29:53.120
+I mean, I'm certainly happy to talk to you one on one about it.
+
+682
+00:29:53.120 --> 00:29:55.120
+I can talk about evals all day, so, you know,
+
+683
+00:29:55.120 --> 00:29:56.400
+if you want to find me afterwards.
+
+684
+00:29:56.400 --> 00:29:59.120
+I'm happy to chat about it, for sure.
+
+685
+00:29:59.120 --> 00:30:00.360
+So it's right up my alley.
+
+686
+00:30:00.360 --> 00:30:01.280
+Yeah. Yeah, sure.
+
+687
+00:30:01.280 --> 00:30:04.200
+Just come find me after the talk.
+
+688
+00:30:04.200 --> 00:30:05.520
+Sweet. Thank you very much.
+
+689
+00:30:05.520 --> 00:30:07.080
+Another round of applause for John.
